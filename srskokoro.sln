@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.App", "Kokoro.App\Kokoro.App.csproj", "{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kokoro", "Kokoro\Kokoro.csproj", "{9640F7F1-7797-4496-A8E3-1A7268F57CAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
