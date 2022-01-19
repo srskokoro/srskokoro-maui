@@ -19,6 +19,12 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	protected internal readonly SqliteConnection _db;
 	private readonly SqliteCommand _cmdGetVer;
 
+	private SqliteTransaction? _dbTransaction;
+
+	private readonly HashSet<object> _transactionSet;
+	private readonly Stack<object> _transactionStack;
+	private readonly object _transactionsLock;
+
 
 	public KokoroContextOpenMode Mode { get; }
 
@@ -93,6 +99,79 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		_db = db;
 		Mode = mode;
 		FullPath = path;
+
+		_transactionsLock = _transactionSet = new();
+		_transactionStack = new();
+	}
+
+
+	public virtual KokoroTransaction BeginTransaction() {
+		return new KokoroTransaction(this);
+	}
+
+	internal void OnInitTransaction(KokoroTransaction transaction) {
+		lock (_transactionsLock) {
+			if (_dbTransaction is null) {
+				_dbTransaction = _db.BeginTransaction();
+			}
+
+			try {
+				var key = transaction._key;
+				_transactionSet.Add(key); // May fail due to OOM for example
+				_transactionStack.Push(key);
+			} catch {
+				if (_transactionStack.Count == 0) {
+					_dbTransaction.Dispose();
+					_dbTransaction = null;
+				}
+				// Dispose here so that finalizer doesn't have to acquire a separate lock
+				transaction.Dispose();
+
+				throw;
+			}
+		}
+	}
+
+	internal bool RemoveTransactionInternal(KokoroTransaction transaction) {
+		var key = transaction._key;
+		var set = _transactionSet;
+		if (!set.Remove(key)) {
+			return false;
+		}
+
+		var stack = _transactionStack;
+		while (stack.TryPop(out var popped) && popped != key) {
+			set.Remove(popped);
+		}
+
+		return stack.Count == 0;
+	}
+
+	internal void OnCommitTransaction(KokoroTransaction transaction) {
+		lock (_transactionsLock) {
+			if (RemoveTransactionInternal(transaction)) {
+				_dbTransaction?.Commit();
+				_dbTransaction = null;
+			}
+		}
+	}
+
+	internal void OnRollbackTransaction(KokoroTransaction transaction) {
+		lock (_transactionsLock) {
+			if (RemoveTransactionInternal(transaction)) {
+				_dbTransaction?.Rollback();
+				_dbTransaction = null;
+			}
+		}
+	}
+
+	internal void OnDisposeTransaction(KokoroTransaction transaction) {
+		lock (_transactionsLock) {
+			if (RemoveTransactionInternal(transaction)) {
+				_dbTransaction?.Dispose();
+				_dbTransaction = null;
+			}
+		}
 	}
 
 
