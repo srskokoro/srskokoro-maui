@@ -132,7 +132,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 	}
 
-	internal bool RemoveTransactionInternal(KokoroTransaction transaction) {
+	private bool RemoveTransaction(KokoroTransaction transaction) {
 		var key = transaction._key;
 		var set = _transactionSet;
 		if (!set.Remove(key)) {
@@ -149,7 +149,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal void OnCommitTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
-			if (RemoveTransactionInternal(transaction)) {
+			if (RemoveTransaction(transaction)) {
 				_dbTransaction?.Commit();
 				_dbTransaction = null;
 			}
@@ -158,7 +158,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal void OnRollbackTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
-			if (RemoveTransactionInternal(transaction)) {
+			if (RemoveTransaction(transaction)) {
 				_dbTransaction?.Rollback();
 				_dbTransaction = null;
 			}
@@ -167,7 +167,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal void OnDisposeTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
-			if (RemoveTransactionInternal(transaction)) {
+			if (RemoveTransaction(transaction)) {
 				_dbTransaction?.Dispose();
 				_dbTransaction = null;
 			}
