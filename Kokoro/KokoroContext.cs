@@ -19,11 +19,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	protected internal readonly KokoroSqliteDb _db;
 	private readonly SqliteCommand _cmdGetVer;
 
-	private SqliteTransaction? _dbTransaction;
-
+	private readonly object _transactionsLock;
+	private SqliteTransaction? _transactionInternal;
 	private readonly HashSet<object> _transactionSet;
 	private readonly Stack<object> _transactionStack;
-	private readonly object _transactionsLock;
 
 
 	public KokoroContextOpenMode Mode { get; }
@@ -116,8 +115,9 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal void OnInitTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
-			if (_dbTransaction is null) {
-				_dbTransaction = _db.BeginTransaction();
+			if (_transactionInternal is null) {
+				// Throws if a DB transaction has already been created (externally)
+				_transactionInternal = _db.BeginTransaction();
 			}
 
 			try {
@@ -126,8 +126,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				_transactionStack.Push(key);
 			} catch {
 				if (_transactionStack.Count == 0) {
-					_dbTransaction.Dispose();
-					_dbTransaction = null;
+					_transactionInternal.Dispose();
+					_transactionInternal = null;
 				}
 				// Dispose here so that finalizer doesn't have to acquire a separate lock
 				transaction.Dispose();
@@ -155,8 +155,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	internal void OnCommitTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
-				_dbTransaction?.Commit();
-				_dbTransaction = null;
+				_transactionInternal?.Commit();
+				_transactionInternal = null;
 			}
 		}
 	}
@@ -164,8 +164,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	internal void OnRollbackTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
-				_dbTransaction?.Rollback();
-				_dbTransaction = null;
+				_transactionInternal?.Rollback();
+				_transactionInternal = null;
 			}
 		}
 	}
@@ -173,8 +173,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	internal void OnDisposeTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
-				_dbTransaction?.Dispose();
-				_dbTransaction = null;
+				_transactionInternal?.Dispose();
+				_transactionInternal = null;
 			}
 		}
 	}
