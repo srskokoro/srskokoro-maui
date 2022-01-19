@@ -40,7 +40,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		get {
 			var r = _collection;
 			if (r is null) {
-				KokoroCollection.ThrowIfNotOperable(this);
+				KokoroCollection.CheckIfOperable(this);
 				r = new KokoroCollection(this);
 				_collection = r;
 			}
