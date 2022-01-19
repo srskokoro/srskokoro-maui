@@ -7,7 +7,7 @@ public class KokoroCollection {
 
 	public static int OperableVersion => 1;
 
-	protected internal readonly SqliteConnection _db;
+	protected internal readonly KokoroSqliteDb _db;
 	private readonly KokoroContext _context;
 
 	public KokoroContext Context => _context;

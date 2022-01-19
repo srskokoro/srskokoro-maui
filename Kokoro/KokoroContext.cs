@@ -16,7 +16,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	private KokoroCollection? _collection;
 
-	protected internal readonly SqliteConnection _db;
+	protected internal readonly KokoroSqliteDb _db;
 	private readonly SqliteCommand _cmdGetVer;
 
 	private SqliteTransaction? _dbTransaction;
@@ -32,7 +32,12 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public bool IsReadOnly => Mode == KokoroContextOpenMode.ReadOnly;
 
-	public int Version => Convert.ToInt32((long)_cmdGetVer.ExecuteScalar()!);
+	public int Version {
+		get {
+			_cmdGetVer.Transaction = _db.Transaction;
+			return Convert.ToInt32((long)_cmdGetVer.ExecuteScalar()!);
+		}
+	}
 
 	public bool IsOperable => Version == KokoroCollection.OperableVersion;
 
@@ -81,7 +86,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				throw new DirectoryNotFoundException(path);
 		}
 
-		SqliteConnection db = new(connStrBldr.ToString());
+		KokoroSqliteDb db = new(connStrBldr.ToString());
 		db.Open();
 
 		SqliteCommand cmdGetVer = db.CreateCommand();
