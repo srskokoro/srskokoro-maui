@@ -14,10 +14,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public static int MaxSupportedVersion => KokoroCollection.OperableVersion;
 
+	private KokoroCollection? _collection;
+
 	protected internal readonly SqliteConnection _db;
 	private readonly SqliteCommand _cmdGetVer;
-
-	private KokoroCollection? _collection;
 
 
 	public KokoroContextOpenMode Mode { get; }
@@ -30,7 +30,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public bool IsOperable => Version == KokoroCollection.OperableVersion;
 
-	public KokoroCollection Collection {
+	public virtual KokoroCollection Collection {
 		get {
 			var r = _collection;
 			if (r is null) {
@@ -96,7 +96,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 
-	public void MigrateToVersion(int newVersion) {
+	public virtual void MigrateToVersion(int newVersion) {
 		if (IsReadOnly)
 			throw new NotSupportedException("Read-only");
 
