@@ -12,7 +12,7 @@ public enum KokoroContextOpenMode {
 /// <remarks>Not thread safe.</remarks>
 public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
-	public static int MaxSupportedVersion { get => KokoroCollection.OperableVersion; }
+	public static int MaxSupportedVersion => KokoroCollection.OperableVersion;
 
 	protected internal readonly SqliteConnection _db;
 	private readonly SqliteCommand _cmdGetVer;
@@ -24,11 +24,11 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public string FullPath { get; }
 
-	public bool IsReadOnly { get => Mode == KokoroContextOpenMode.ReadOnly; }
+	public bool IsReadOnly => Mode == KokoroContextOpenMode.ReadOnly;
 
-	public int Version { get => Convert.ToInt32((long)_cmdGetVer.ExecuteScalar()!); }
+	public int Version => Convert.ToInt32((long)_cmdGetVer.ExecuteScalar()!);
 
-	public bool IsOperable { get => Version == KokoroCollection.OperableVersion; }
+	public bool IsOperable => Version == KokoroCollection.OperableVersion;
 
 	public KokoroCollection Collection {
 		get {
@@ -209,7 +209,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	private bool _disposed;
 
-	public bool IsDisposed { get => _disposed; }
+	public bool IsDisposed => _disposed;
 
 	// https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose
 	protected virtual void Dispose(bool disposing) {

@@ -5,12 +5,12 @@ namespace Kokoro;
 /// <remarks>Not thread safe.</remarks>
 public class KokoroCollection {
 
-	public static int OperableVersion { get => 1; }
+	public static int OperableVersion => 1;
 
 	protected internal readonly SqliteConnection _db;
 	private readonly KokoroContext _context;
 
-	public KokoroContext Context { get => _context; }
+	public KokoroContext Context => _context;
 
 	protected internal KokoroCollection(KokoroContext context) {
 		ThrowIfNotOperable(context);
