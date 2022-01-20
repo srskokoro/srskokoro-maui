@@ -248,6 +248,11 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public void MigrateToOperableVersion() => MigrateToVersion(KokoroCollection.OperableVersion);
 
+	public KokoroCollection ForceOperableCollection() {
+		MigrateToOperableVersion();
+		return Collection;
+	}
+
 	// --
 
 	protected virtual void OnUpgrade(int oldVersion, int newVersion) {
