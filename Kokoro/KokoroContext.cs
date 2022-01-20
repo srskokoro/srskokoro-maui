@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Kokoro;
@@ -148,7 +149,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		return new KokoroTransaction(this);
 	}
 
-	internal void OnInitTransaction(KokoroTransaction transaction) {
+	internal uint OnInitTransaction() {
 		lock (_transactionsLock) {
 			if (_transactionInternal is null) {
 				// Throws if a DB transaction has already been created (externally)
@@ -159,24 +160,37 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				var key = unchecked(++_transactionKeyNext);
 				// ^ cannot be `0` until overflow happens
 				if (key == 0) {
-					// Avoid `0` to reserve it for a special case
+					// Avoid `0` to reserve it for this special case
 					key = unchecked(++_transactionKeyNext);
+
+					Trace.Fail(
+						$"`{nameof(KokoroTransaction)}` creation exhausted!",
+
+						$"`{nameof(KokoroTransaction)}` creation already exhausted. It is recommended that " +
+						$"a new instance of `{nameof(KokoroContext)}` be created instead for the purposes of " +
+						$"starting new transactions."
+					);
 				}
 
 				if (!_transactionSet.Add(key)) {
 					throw new InvalidOperationException("Too many active transactions! Current count: " + _transactionStack.Count);
 				}
+				try {
+					_transactionStack.Push(key); // May throw due to OOM for example
+				} catch {
+					_transactionSet.Remove(key);
+					if (_transactionStack.TryPeek(out var top) && top == key) {
+						_transactionStack.Pop();
+					}
+					throw;
+				}
 
-				transaction._key = key; // Assign key to allow removal via `Dispose` in case we throw
-				_transactionStack.Push(key); // May throw due to OOM for example
+				return key;
 			} catch {
 				if (_transactionStack.Count == 0) {
 					_transactionInternal.Dispose();
 					_transactionInternal = null;
 				}
-				// Dispose here so that finalizer doesn't have to acquire a separate lock
-				transaction.Dispose();
-
 				throw;
 			}
 		}

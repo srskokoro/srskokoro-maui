@@ -2,14 +2,21 @@
 
 public class KokoroTransaction : IDisposable, IAsyncDisposable {
 
-	internal uint _key;
+	internal readonly uint _key;
 	private KokoroContext? _context;
 
 	public KokoroContext Context => _context ?? throw new ObjectDisposedException(nameof(KokoroTransaction));
 
 	protected internal KokoroTransaction(KokoroContext context) {
-		_context = context;
-		context.OnInitTransaction(this);
+		try {
+			_context = context;
+			_key = context.OnInitTransaction();
+		} catch {
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+			GC.SuppressFinalize(this);
+#pragma warning restore CA1816
+			throw;
+		}
 	}
 
 	public virtual void Commit() {
