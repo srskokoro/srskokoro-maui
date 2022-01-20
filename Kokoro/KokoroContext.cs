@@ -237,9 +237,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				OnDowngrade(oldVersion, newVersion);
 			}
 
-			SqliteCommand cmdSetVer = _db.CreateCommand();
-			cmdSetVer.CommandText = "PRAGMA user_version = $newVersion";
-			cmdSetVer.Parameters.AddWithValue("$newVersion", newVersion);
+			using var cmdSetVer = _db.CreateCommand();
+			cmdSetVer.CommandText = $"PRAGMA user_version = {newVersion}";
 			cmdSetVer.ExecuteNonQuery();
 		}
 
