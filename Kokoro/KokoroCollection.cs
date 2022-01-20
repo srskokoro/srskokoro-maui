@@ -1,9 +1,7 @@
-﻿using Microsoft.Data.Sqlite;
-
-namespace Kokoro;
+﻿namespace Kokoro;
 
 /// <remarks>Not thread safe.</remarks>
-public class KokoroCollection {
+public class KokoroCollection : IDisposable, IAsyncDisposable {
 
 	public static int OperableVersion => 1;
 
@@ -25,4 +23,9 @@ public class KokoroCollection {
 		if (!context.IsOperable)
 			throw new NotSupportedException($"Version is not operable. Please migrate the `{nameof(KokoroContext)}` first to the current operable vesrion.");
 	}
+
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+	public virtual void Dispose() => _context.Dispose();
+	public virtual ValueTask DisposeAsync() => _context.DisposeAsync();
+#pragma warning restore CA1816
 }
