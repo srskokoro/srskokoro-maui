@@ -221,12 +221,16 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 	}
 
-	internal void OnDisposeTransaction(KokoroTransaction transaction) {
+	[SuppressMessage("Style", "IDE0060:Remove unused parameter")]
+	internal void OnDisposeTransaction(KokoroTransaction transaction, bool disposing) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
 				var _ = _transactionInternal;
 				if (_ is not null) {
 					_.Dispose();
+					// ^ Should dispose even if `disposing == true` to prevent
+					// leaking an undisposed DB transaction that can never be
+					// disposed (unless the DB connection is closed).
 					_transactionInternal = null;
 				}
 			}

@@ -31,7 +31,7 @@ public class KokoroTransaction : IDisposable, IAsyncDisposable {
 		var context = _context;
 		if (context is null) return;
 
-		context.OnDisposeTransaction(this);
+		context.OnDisposeTransaction(this, disposing);
 		_context = null;
 	}
 
