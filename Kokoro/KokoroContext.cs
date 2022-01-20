@@ -21,8 +21,9 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	private readonly object _transactionsLock;
 	private SqliteTransaction? _transactionInternal;
-	private readonly HashSet<object> _transactionSet;
-	private readonly Stack<object> _transactionStack;
+	private readonly HashSet<uint> _transactionSet;
+	private readonly Stack<uint> _transactionStack;
+	private uint _transactionKeyNext;
 
 
 	public KokoroContextOpenMode Mode { get; }
@@ -155,9 +156,19 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			}
 
 			try {
-				var key = transaction._key;
-				_transactionSet.Add(key); // May fail due to OOM for example
-				_transactionStack.Push(key);
+				var key = unchecked(++_transactionKeyNext);
+				// ^ cannot be `0` until overflow happens
+				if (key == 0) {
+					// Avoid `0` to reserve it for a special case
+					key = unchecked(++_transactionKeyNext);
+				}
+
+				if (!_transactionSet.Add(key)) {
+					throw new InvalidOperationException("Too many active transactions! Current count: " + _transactionStack.Count);
+				}
+
+				transaction._key = key; // Assign key to allow removal via `Dispose` in case we throw
+				_transactionStack.Push(key); // May throw due to OOM for example
 			} catch {
 				if (_transactionStack.Count == 0) {
 					_transactionInternal.Dispose();

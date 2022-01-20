@@ -2,7 +2,7 @@
 
 public class KokoroTransaction : IDisposable, IAsyncDisposable {
 
-	internal readonly object _key = new();
+	internal uint _key;
 	private KokoroContext? _context;
 
 	public KokoroContext Context => _context ?? throw new ObjectDisposedException(nameof(KokoroTransaction));
