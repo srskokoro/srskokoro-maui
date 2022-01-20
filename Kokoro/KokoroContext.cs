@@ -54,9 +54,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 
 	public KokoroContext(string path, KokoroContextOpenMode mode) {
+		const string dbName = "collection.db";
 		path = Path.GetFullPath(path);
 
-		string dbPath = Path.Combine(path, "collection.db");
+		string dbPath = Path.Combine(path, dbName);
 		SqliteConnectionStringBuilder connStrBldr = new() { RecursiveTriggers = true };
 
 		switch (mode) {
@@ -88,24 +89,57 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		KokoroSqliteDb db = new(connStrBldr.ToString());
 		db.Open();
 
-		SqliteCommand cmdGetVer = db.CreateCommand();
-		cmdGetVer.CommandText = "PRAGMA user_version";
-		_cmdGetVer = cmdGetVer;
-
-		var v = Version;
-		if (v < 0) {
-			throw new InvalidDataException($"Version (currently {v}) less than zero.");
-		}
-		if (v > MaxSupportedVersion) {
-			throw new NotSupportedException($"Version (currently {v}) is too high.");
-		}
-
 		_db = db;
 		Mode = mode;
 		FullPath = path;
 
 		_transactionsLock = _transactionSet = new();
 		_transactionStack = new();
+
+		SqliteCommand cmdGetVer = db.CreateCommand();
+		cmdGetVer.CommandText = "PRAGMA user_version";
+		_cmdGetVer = cmdGetVer;
+
+		using (var transaction = db.BeginTransaction()) {
+
+			// Application ID Check + Update
+			using (var cmdGetAppId = db.CreateCommand()) {
+				cmdGetAppId.CommandText = "PRAGMA application_id";
+				long appId = (long)cmdGetAppId.ExecuteScalar()!;
+
+				if (appId != 0x1c008087L) {
+					if (appId != 0L) {
+						throw new InvalidDataException($"SQLite database `{dbName}` found with unexpected application ID: {appId} (0x{Convert.ToString(appId, 16)})");
+					}
+					using (var cmdCountDbObj = db.CreateCommand()) {
+						cmdCountDbObj.CommandText = "SELECT COUNT(*) FROM sqlite_schema";
+
+						if ((long)cmdCountDbObj.ExecuteScalar()! != 0L) {
+							throw new InvalidDataException($"SQLite database `{dbName}` must be empty while its application ID is zero.");
+						}
+					}
+
+					if (!IsReadOnly) {
+						using var cmdSetAppId = db.CreateCommand();
+						cmdSetAppId.CommandText = "PRAGMA application_id = 0x1c008087";
+						cmdSetAppId.ExecuteNonQuery();
+
+						transaction.Commit();
+					}
+				}
+			}
+
+			// Version Check
+			var v = Version;
+			if (v < 0) {
+				throw new InvalidDataException($"Version (currently {v}) less than zero.");
+			}
+			if (v > MaxSupportedVersion) {
+				throw new NotSupportedException($"Version (currently {v}) is too high.");
+			}
+
+			cmdGetVer.Transaction = null;
+		}
 	}
 
 
