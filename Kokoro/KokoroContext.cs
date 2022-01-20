@@ -200,8 +200,11 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	internal void OnCommitTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
-				_transactionInternal?.Commit();
-				_transactionInternal = null;
+				var _ = _transactionInternal;
+				if (_ is not null) {
+					_.Commit();
+					_transactionInternal = null;
+				}
 			}
 		}
 	}
@@ -209,8 +212,11 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	internal void OnRollbackTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
-				_transactionInternal?.Rollback();
-				_transactionInternal = null;
+				var _ = _transactionInternal;
+				if (_ is not null) {
+					_.Rollback();
+					_transactionInternal = null;
+				}
 			}
 		}
 	}
@@ -218,8 +224,11 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	internal void OnDisposeTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
 			if (RemoveTransaction(transaction)) {
-				_transactionInternal?.Dispose();
-				_transactionInternal = null;
+				var _ = _transactionInternal;
+				if (_ is not null) {
+					_.Dispose();
+					_transactionInternal = null;
+				}
 			}
 		}
 	}
