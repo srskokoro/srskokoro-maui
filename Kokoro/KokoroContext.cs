@@ -196,10 +196,13 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 	}
 
-	private bool RemoveTransaction(KokoroTransaction transaction) {
+	private bool CompleteTransaction(KokoroTransaction transaction, bool throwIfCompleted = false) {
 		var key = transaction._key;
 		var set = _transactionSet;
 		if (!set.Remove(key)) {
+			if (throwIfCompleted) {
+				throw new InvalidOperationException($"`{nameof(KokoroTransaction)}` has completed already; it's no longer usable.");
+			}
 			return false;
 		}
 
@@ -213,7 +216,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal void OnCommitTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
-			if (RemoveTransaction(transaction)) {
+			if (CompleteTransaction(transaction, throwIfCompleted: true)) {
 				var _ = _transactionInternal;
 				if (_ is not null) {
 					_.Commit();
@@ -225,7 +228,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal void OnRollbackTransaction(KokoroTransaction transaction) {
 		lock (_transactionsLock) {
-			if (RemoveTransaction(transaction)) {
+			if (CompleteTransaction(transaction, throwIfCompleted: true)) {
 				var _ = _transactionInternal;
 				if (_ is not null) {
 					_.Rollback();
@@ -238,7 +241,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	[SuppressMessage("Style", "IDE0060:Remove unused parameter")]
 	internal void OnDisposeTransaction(KokoroTransaction transaction, bool disposing) {
 		lock (_transactionsLock) {
-			if (RemoveTransaction(transaction)) {
+			if (CompleteTransaction(transaction)) {
 				var _ = _transactionInternal;
 				if (_ is not null) {
 					_.Dispose();
