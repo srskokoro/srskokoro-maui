@@ -214,6 +214,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		var set = _transactionSet;
 		if (!set.Remove(key)) {
 			if (throwIfCompleted) {
+				Debug.Assert(new Func<bool>(() => {
+					var _ = transaction.GetContextOrNull();
+					return _ is null || _ == this;
+				})());
 				throw new InvalidOperationException($"`{nameof(KokoroTransaction)}` has completed already; it's no longer usable.");
 			}
 			return false;
