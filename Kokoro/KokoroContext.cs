@@ -56,6 +56,9 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 
+	public KokoroContext(string path, bool isReadOnly)
+		: this(path, isReadOnly ? KokoroContextOpenMode.ReadOnly : KokoroContextOpenMode.ReadWriteCreate) { }
+
 	public KokoroContext(string path, KokoroContextOpenMode mode) {
 		const string dbName = "collection.db";
 		path = Path.GetFullPath(path);
