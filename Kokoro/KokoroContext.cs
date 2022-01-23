@@ -22,6 +22,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	private readonly object _transactionsLock;
 	private SqliteTransaction? _transactionInternal;
+	private bool _transactionInternal_disposeRequested;
 	private readonly HashSet<uint> _transactionSet;
 	private readonly Stack<uint> _transactionStack;
 	private uint _transactionKeyNext;
@@ -151,11 +152,23 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	internal uint OnInitTransaction() {
 		lock (_transactionsLock) {
-			if (_transactionInternal is null) {
+			{
+				var _ = _transactionInternal;
+				if (_ is not null) {
+					if (_transactionInternal_disposeRequested) {
+						_.Dispose();
+						_transactionInternal_disposeRequested = false;
+						_transactionInternal = null;
+					} else {
+						goto HasTransactionInternal;
+					}
+				}
+
 				// Throws if a DB transaction has already been created (externally)
 				_transactionInternal = _db.BeginTransaction();
 			}
 
+		HasTransactionInternal:
 			try {
 				var key = unchecked(++_transactionKeyNext);
 				// ^ cannot be `0` until overflow happens
@@ -188,7 +201,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				return key;
 			} catch {
 				if (_transactionStack.Count == 0) {
-					_transactionInternal.Dispose();
+					_transactionInternal!.Dispose();
 					_transactionInternal = null;
 				}
 				throw;
@@ -220,6 +233,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				var _ = _transactionInternal;
 				if (_ is not null) {
 					_.Commit();
+					_transactionInternal_disposeRequested = false;
 					_transactionInternal = null;
 				}
 			}
@@ -232,23 +246,29 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				var _ = _transactionInternal;
 				if (_ is not null) {
 					_.Rollback();
+					_transactionInternal_disposeRequested = false;
 					_transactionInternal = null;
 				}
 			}
 		}
 	}
 
-	[SuppressMessage("Style", "IDE0060:Remove unused parameter")]
 	internal void OnDisposeTransaction(KokoroTransaction transaction, bool disposing) {
 		lock (_transactionsLock) {
-			if (CompleteTransaction(transaction)) {
-				var _ = _transactionInternal;
-				if (_ is not null) {
+			if (!CompleteTransaction(transaction))
+				return;
+
+			var _ = _transactionInternal;
+			if (_ is not null) {
+				if (disposing) {
 					_.Dispose();
+					_transactionInternal_disposeRequested = false;
+					_transactionInternal = null;
+				} else {
+					_transactionInternal_disposeRequested = true;
 					// ^ Should dispose even if `disposing == true` to prevent
 					// leaking an undisposed DB transaction that can never be
 					// disposed (unless the DB connection is closed).
-					_transactionInternal = null;
 				}
 			}
 		}
