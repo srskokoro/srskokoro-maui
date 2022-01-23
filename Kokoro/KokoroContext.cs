@@ -15,7 +15,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public static int MaxSupportedVersion => KokoroCollection.OperableVersion;
 
-	private KokoroCollection? _collection;
+	protected KokoroCollection? _collection;
 
 	protected internal readonly KokoroSqliteDb _db;
 	private readonly SqliteCommand _cmdGetVer;
