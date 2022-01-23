@@ -10,7 +10,7 @@ public enum KokoroContextOpenMode {
 	ReadOnly,
 }
 
-/// <remarks>Not thread safe.</remarks>
+/// <remarks>Not thread-safe.</remarks>
 public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public static int MaxSupportedVersion => KokoroCollection.OperableVersion;

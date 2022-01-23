@@ -1,6 +1,6 @@
 ﻿namespace Kokoro;
 
-/// <remarks>Not thread safe.</remarks>
+/// <remarks>Not thread-safe.</remarks>
 public class KokoroCollection : IDisposable, IAsyncDisposable {
 
 	public static int OperableVersion => 1;

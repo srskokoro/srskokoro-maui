@@ -1,5 +1,6 @@
 ﻿namespace Kokoro;
 
+/// <remarks>Not thread-safe.</remarks>
 public class KokoroTransaction : IDisposable, IAsyncDisposable {
 
 	internal readonly uint _key;
