@@ -7,6 +7,7 @@ public class KokoroTransaction : IDisposable, IAsyncDisposable {
 	private KokoroContext? _context;
 
 	public KokoroContext Context => _context ?? throw new ObjectDisposedException(nameof(KokoroTransaction));
+	public KokoroContext? GetContextOrNull() => _context;
 
 	protected internal KokoroTransaction(KokoroContext context) {
 		try {
@@ -29,10 +30,6 @@ public class KokoroTransaction : IDisposable, IAsyncDisposable {
 		Context.OnRollbackTransaction(this);
 		_context = null;
 	}
-
-	// --
-
-	public bool IsDisposed => _context == null;
 
 	// https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose
 	protected virtual void Dispose(bool disposing) {
