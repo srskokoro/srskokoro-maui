@@ -232,7 +232,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 					var _ = transaction.GetContextOrNull();
 					return _ is null || _ == this;
 				})());
-				throw new InvalidOperationException($"`{nameof(KokoroTransaction)}` has completed already; it's no longer usable.");
+				throw KokoroTransaction.MakeTransactionCompletedException();
 			}
 			return false;
 		}

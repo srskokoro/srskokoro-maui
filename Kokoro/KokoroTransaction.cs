@@ -6,7 +6,7 @@ public class KokoroTransaction : IDisposable, IAsyncDisposable {
 	internal readonly uint _key;
 	private KokoroContext? _context;
 
-	public KokoroContext Context => _context ?? throw new ObjectDisposedException(nameof(KokoroTransaction));
+	public KokoroContext Context => _context ?? throw MakeTransactionCompletedException();
 	public KokoroContext? GetContextOrNull() => _context;
 
 	protected internal KokoroTransaction(KokoroContext context) {
@@ -19,6 +19,10 @@ public class KokoroTransaction : IDisposable, IAsyncDisposable {
 #pragma warning restore CA1816
 			throw;
 		}
+	}
+
+	internal static Exception MakeTransactionCompletedException() {
+		return new InvalidOperationException($"`{nameof(KokoroTransaction)}` has completed already; it's no longer usable.");
 	}
 
 	public virtual void Commit() {
