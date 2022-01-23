@@ -104,44 +104,55 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		_cmdGetVer = cmdGetVer;
 
 		using (var transaction = db.BeginTransaction()) {
-
-			// Application ID Check + Update
+			long appId;
 			using (var cmdGetAppId = db.CreateCommand()) {
 				cmdGetAppId.CommandText = "PRAGMA application_id";
-				long appId = (long)cmdGetAppId.ExecuteScalar()!;
+				appId = (long)cmdGetAppId.ExecuteScalar()!;
+			}
 
-				if (appId != 0x1c008087L) {
-					if (appId != 0L) {
-						throw new InvalidDataException($"SQLite database `{dbName}` found with unexpected application ID: {appId} (0x{Convert.ToString(appId, 16)})");
+			if (appId != 0x1c008087L) {
+				if (appId != 0L) {
+					throw new InvalidDataException($"SQLite database `{dbName}` found with unexpected application ID: {appId} (0x{Convert.ToString(appId, 16)})");
+				}
+
+				using (var cmdCountDbObj = db.CreateCommand()) {
+					cmdCountDbObj.CommandText = "SELECT COUNT(*) FROM sqlite_schema";
+
+					if ((long)cmdCountDbObj.ExecuteScalar()! != 0L) {
+						throw new InvalidDataException($"SQLite database `{dbName}` must be empty while the application ID is zero.");
 					}
-					using (var cmdCountDbObj = db.CreateCommand()) {
-						cmdCountDbObj.CommandText = "SELECT COUNT(*) FROM sqlite_schema";
+				}
 
-						if ((long)cmdCountDbObj.ExecuteScalar()! != 0L) {
-							throw new InvalidDataException($"SQLite database `{dbName}` must be empty while its application ID is zero.");
-						}
+				{
+					var v = Version;
+					if (Version != 0) {
+						throw new InvalidDataException($"Version (currently {v}) must be zero while the application ID is zero (for SQLite database `{dbName}`).");
 					}
+				}
 
-					if (!IsReadOnly) {
-						using var cmdSetAppId = db.CreateCommand();
-						cmdSetAppId.CommandText = "PRAGMA application_id = 0x1c008087";
-						cmdSetAppId.ExecuteNonQuery();
+				if (!IsReadOnly) {
+					using var cmdSetAppId = db.CreateCommand();
+					cmdSetAppId.CommandText = "PRAGMA application_id = 0x1c008087";
+					cmdSetAppId.ExecuteNonQuery();
+				}
 
-						transaction.Commit();
-					}
+			} else {
+				var v = Version;
+
+				if (v < 0) {
+					throw new InvalidDataException($"Version (currently {v}) less than zero.");
+				}
+
+				if (v > MaxSupportedVersion) {
+					throw new NotSupportedException($"Version (currently {v}) is too high.");
 				}
 			}
 
-			// Version Check
-			var v = Version;
-			if (v < 0) {
-				throw new InvalidDataException($"Version (currently {v}) less than zero.");
-			}
-			if (v > MaxSupportedVersion) {
-				throw new NotSupportedException($"Version (currently {v}) is too high.");
-			}
-
 			cmdGetVer.Transaction = null;
+
+			if (!IsReadOnly) {
+				transaction.Commit();
+			}
 		}
 	}
 
