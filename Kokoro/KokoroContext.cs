@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Kokoro.Util;
+using Microsoft.Data.Sqlite;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -34,12 +35,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public bool IsReadOnly => Mode == KokoroContextOpenMode.ReadOnly;
 
-	public int Version {
-		get {
-			_cmdGetVer.Transaction = _db.Transaction;
-			return Convert.ToInt32((long)_cmdGetVer.ExecuteScalar()!);
-		}
-	}
+	public int Version => Convert.ToInt32(_cmdGetVer.In(_db.Transaction).ExecuteScalar<long>());
 
 	public bool IsOperable => Version == KokoroCollection.OperableVersion;
 
@@ -102,28 +98,19 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		_transactionsLock = _transactionSet = new();
 		_transactionStack = new();
 
-		SqliteCommand cmdGetVer = db.CreateCommand();
-		cmdGetVer.CommandText = "PRAGMA user_version";
+		SqliteCommand cmdGetVer = db.CreateCommand("PRAGMA user_version");
 		_cmdGetVer = cmdGetVer;
 
 		using (var transaction = db.BeginTransaction()) {
-			long appId;
-			using (var cmdGetAppId = db.CreateCommand()) {
-				cmdGetAppId.CommandText = "PRAGMA application_id";
-				appId = (long)cmdGetAppId.ExecuteScalar()!;
-			}
+			long appId = db.ExecuteScalar<long>("PRAGMA application_id");
 
 			if (appId != 0x1c008087L) {
 				if (appId != 0L) {
 					throw new InvalidDataException($"SQLite database `{dbName}` found with unexpected application ID: {appId} (0x{Convert.ToString(appId, 16)})");
 				}
 
-				using (var cmdCountDbObj = db.CreateCommand()) {
-					cmdCountDbObj.CommandText = "SELECT COUNT(*) FROM sqlite_schema";
-
-					if ((long)cmdCountDbObj.ExecuteScalar()! != 0L) {
-						throw new InvalidDataException($"SQLite database `{dbName}` must be empty while the application ID is zero.");
-					}
+				if (db.ExecuteScalar<long>("SELECT COUNT(*) FROM sqlite_schema") != 0L) {
+					throw new InvalidDataException($"SQLite database `{dbName}` must be empty while the application ID is zero.");
 				}
 
 				{
@@ -134,9 +121,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				}
 
 				if (!IsReadOnly) {
-					using var cmdSetAppId = db.CreateCommand();
-					cmdSetAppId.CommandText = "PRAGMA application_id = 0x1c008087";
-					cmdSetAppId.ExecuteNonQuery();
+					db.ExecuteNonQuery("PRAGMA application_id = 0x1c008087");
 				}
 
 			} else {
@@ -316,9 +301,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				OnDowngrade(oldVersion, newVersion);
 			}
 
-			using var cmdSetVer = _db.CreateCommand();
-			cmdSetVer.CommandText = $"PRAGMA user_version = {newVersion}";
-			cmdSetVer.ExecuteNonQuery();
+			_db.ExecuteNonQuery($"PRAGMA user_version = {newVersion}");
 		}
 
 		transaction.Commit();
