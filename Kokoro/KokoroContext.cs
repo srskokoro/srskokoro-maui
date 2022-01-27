@@ -140,6 +140,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 			if (!IsReadOnly) {
 				transaction.Commit();
+
+				db.ExecuteNonQuery("PRAGMA journal_mode = WAL");
 			}
 		}
 	}
