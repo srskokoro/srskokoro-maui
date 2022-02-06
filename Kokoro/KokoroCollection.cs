@@ -5,18 +5,18 @@ public class KokoroCollection : IDisposable, IAsyncDisposable {
 
 	public static int OperableVersion => 1;
 
-	protected internal readonly KokoroSqliteDb _db;
-	private readonly KokoroContext _context;
+	protected internal readonly KokoroSqliteDb db;
+	private readonly KokoroContext context;
 
-	public KokoroContext Context => _context;
+	public KokoroContext Context => context;
 
 	protected internal KokoroCollection(KokoroContext context) {
 		// A check should be done prior to instantiation instead.
 		// But, this check is for subclasses' sake.
 		CheckIfOperable(context);
 
-		_db = context._db;
-		_context = context;
+		this.db = context.db;
+		this.context = context;
 	}
 
 	internal static void CheckIfOperable(KokoroContext context) {
@@ -25,7 +25,7 @@ public class KokoroCollection : IDisposable, IAsyncDisposable {
 	}
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-	public virtual void Dispose() => _context.Dispose();
-	public virtual ValueTask DisposeAsync() => _context.DisposeAsync();
+	public virtual void Dispose() => context.Dispose();
+	public virtual ValueTask DisposeAsync() => context.DisposeAsync();
 #pragma warning restore CA1816
 }

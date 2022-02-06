@@ -16,17 +16,17 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public static int MaxSupportedVersion => KokoroCollection.OperableVersion;
 
-	protected KokoroCollection? _collection;
+	protected KokoroCollection? collection;
 
-	protected internal readonly KokoroSqliteDb _db;
-	private readonly SqliteCommand _cmdGetVer;
+	protected internal readonly KokoroSqliteDb db;
+	private readonly SqliteCommand cmdGetVer;
 
-	private readonly object _transactionsLock;
-	private SqliteTransaction? _transactionInternal;
-	private bool _transactionInternal_disposeRequested;
-	private readonly HashSet<uint> _transactionSet;
-	private readonly Stack<uint> _transactionStack;
-	private uint _transactionKeyNext;
+	private readonly object transactionsLock;
+	private SqliteTransaction? transactionInternal;
+	private bool transactionInternal_disposeRequested;
+	private readonly HashSet<uint> transactionSet;
+	private readonly Stack<uint> transactionStack;
+	private uint transactionKeyNext;
 
 
 	public KokoroContextOpenMode Mode { get; }
@@ -35,17 +35,17 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public bool IsReadOnly => Mode == KokoroContextOpenMode.ReadOnly;
 
-	public int Version => Convert.ToInt32(_cmdGetVer.In(_db.Transaction).ExecuteScalar<long>());
+	public int Version => Convert.ToInt32(cmdGetVer.In(db.Transaction).ExecuteScalar<long>());
 
 	public bool IsOperable => Version == KokoroCollection.OperableVersion;
 
 	public virtual KokoroCollection Collection {
 		get {
-			var r = _collection;
+			var r = collection;
 			if (r is null) {
 				KokoroCollection.CheckIfOperable(this);
 				r = new KokoroCollection(this);
-				_collection = r;
+				collection = r;
 			}
 			return r;
 		}
@@ -91,15 +91,15 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		KokoroSqliteDb db = new(connStrBldr.ToString());
 		db.Open();
 
-		_db = db;
+		this.db = db;
 		Mode = mode;
 		FullPath = path;
 
-		_transactionsLock = _transactionSet = new();
-		_transactionStack = new();
+		transactionsLock = transactionSet = new();
+		transactionStack = new();
 
 		SqliteCommand cmdGetVer = db.CreateCommand("PRAGMA user_version");
-		_cmdGetVer = cmdGetVer;
+		this.cmdGetVer = cmdGetVer;
 
 		using (var transaction = db.BeginTransaction()) {
 			long appId = db.ExecuteScalar<long>("PRAGMA application_id");
@@ -152,30 +152,30 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 	internal uint OnInitTransaction() {
-		lock (_transactionsLock) {
+		lock (transactionsLock) {
 			{
-				var _ = _transactionInternal;
+				var _ = transactionInternal;
 				if (_ is not null) {
-					if (_transactionInternal_disposeRequested) {
+					if (transactionInternal_disposeRequested) {
 						_.Dispose();
-						_transactionInternal_disposeRequested = false;
-						_transactionInternal = null;
+						transactionInternal_disposeRequested = false;
+						transactionInternal = null;
 					} else {
 						goto HasTransactionInternal;
 					}
 				}
 
 				// Throws if a DB transaction has already been created (externally)
-				_transactionInternal = _db.BeginTransaction();
+				transactionInternal = db.BeginTransaction();
 			}
 
 		HasTransactionInternal:
 			try {
-				var key = unchecked(++_transactionKeyNext);
+				var key = unchecked(++transactionKeyNext);
 				// ^ cannot be `0` until overflow happens
 				if (key == 0) {
 					// Avoid `0` to reserve it for this special case
-					key = unchecked(++_transactionKeyNext);
+					key = unchecked(++transactionKeyNext);
 
 					Trace.Fail(
 						$"`{nameof(KokoroTransaction)}` creation exhausted!",
@@ -186,24 +186,24 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 					);
 				}
 
-				if (!_transactionSet.Add(key)) {
-					throw new InvalidOperationException("Too many active transactions! Current count: " + _transactionStack.Count);
+				if (!transactionSet.Add(key)) {
+					throw new InvalidOperationException("Too many active transactions! Current count: " + transactionStack.Count);
 				}
 				try {
-					_transactionStack.Push(key); // May throw due to OOM for example
+					transactionStack.Push(key); // May throw due to OOM for example
 				} catch {
-					_transactionSet.Remove(key);
-					if (_transactionStack.TryPeek(out var top) && top == key) {
-						_transactionStack.Pop();
+					transactionSet.Remove(key);
+					if (transactionStack.TryPeek(out var top) && top == key) {
+						transactionStack.Pop();
 					}
 					throw;
 				}
 
 				return key;
 			} catch {
-				if (_transactionStack.Count == 0) {
-					_transactionInternal!.Dispose();
-					_transactionInternal = null;
+				if (transactionStack.Count == 0) {
+					transactionInternal!.Dispose();
+					transactionInternal = null;
 				}
 				throw;
 			}
@@ -211,8 +211,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 	private bool CompleteTransaction(KokoroTransaction transaction, bool throwIfCompleted = false) {
-		var key = transaction._key;
-		var set = _transactionSet;
+		var key = transaction.key;
+		var set = transactionSet;
 		if (!set.Remove(key)) {
 			if (throwIfCompleted) {
 				Debug.Assert(new Func<bool>(() => {
@@ -224,7 +224,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			return false;
 		}
 
-		var stack = _transactionStack;
+		var stack = transactionStack;
 		while (stack.TryPop(out var popped) && popped != key) {
 			set.Remove(popped);
 		}
@@ -233,44 +233,44 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 	internal void OnCommitTransaction(KokoroTransaction transaction) {
-		lock (_transactionsLock) {
+		lock (transactionsLock) {
 			if (CompleteTransaction(transaction, throwIfCompleted: true)) {
-				var _ = _transactionInternal;
+				var _ = transactionInternal;
 				if (_ is not null) {
 					_.Commit();
-					_transactionInternal_disposeRequested = false;
-					_transactionInternal = null;
+					transactionInternal_disposeRequested = false;
+					transactionInternal = null;
 				}
 			}
 		}
 	}
 
 	internal void OnRollbackTransaction(KokoroTransaction transaction) {
-		lock (_transactionsLock) {
+		lock (transactionsLock) {
 			if (CompleteTransaction(transaction, throwIfCompleted: true)) {
-				var _ = _transactionInternal;
+				var _ = transactionInternal;
 				if (_ is not null) {
 					_.Rollback();
-					_transactionInternal_disposeRequested = false;
-					_transactionInternal = null;
+					transactionInternal_disposeRequested = false;
+					transactionInternal = null;
 				}
 			}
 		}
 	}
 
 	internal void OnDisposeTransaction(KokoroTransaction transaction, bool disposing) {
-		lock (_transactionsLock) {
+		lock (transactionsLock) {
 			if (!CompleteTransaction(transaction))
 				return;
 
-			var _ = _transactionInternal;
+			var _ = transactionInternal;
 			if (_ is not null) {
 				if (disposing) {
 					_.Dispose();
-					_transactionInternal_disposeRequested = false;
-					_transactionInternal = null;
+					transactionInternal_disposeRequested = false;
+					transactionInternal = null;
 				} else {
-					_transactionInternal_disposeRequested = true;
+					transactionInternal_disposeRequested = true;
 					// ^ Should dispose even if `disposing == true` to prevent
 					// leaking an undisposed DB transaction that can never be
 					// disposed (unless the DB connection is closed).
@@ -290,10 +290,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		if (newVersion > MaxSupportedVersion)
 			throw new ArgumentOutOfRangeException(nameof(newVersion), $"New version cannot be greater than `{nameof(MaxSupportedVersion)}` (currently {MaxSupportedVersion}).");
 
-		if (_collection is not null)
+		if (collection is not null)
 			throw new InvalidOperationException($"Cannot migrate once `{nameof(Collection)}` is already accessed.");
 
-		using var transaction = _db.BeginTransaction();
+		using var transaction = db.BeginTransaction();
 		var oldVersion = Version;
 
 		if (oldVersion != newVersion) {
@@ -303,7 +303,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				OnDowngrade(oldVersion, newVersion);
 			}
 
-			_db.ExecuteNonQuery($"PRAGMA user_version = {newVersion}");
+			db.ExecuteNonQuery($"PRAGMA user_version = {newVersion}");
 		}
 
 		transaction.Commit();
@@ -403,7 +403,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 		if (disposing) {
 			// Dispose managed state (managed objects)
-			_db.Dispose();
+			db.Dispose();
 		}
 		// Free unmanaged resources (unmanaged objects) and override finalizer
 		// Set large fields to null
