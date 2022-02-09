@@ -16,38 +16,38 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	private unsafe struct Data {
 		public const int Size = 2*sizeof(ulong); // 16
 
-		[FieldOffset(0)] public fixed byte bytes[Size];
+		[FieldOffset(0)] public fixed byte Bytes[Size];
 
-		[FieldOffset(0*sizeof(ulong))] public ulong high;
-		[FieldOffset(1*sizeof(ulong))] public ulong low;
+		[FieldOffset(0*sizeof(ulong))] public ulong High;
+		[FieldOffset(1*sizeof(ulong))] public ulong Low;
 
-		[FieldOffset(0*sizeof(uint))] public uint u3;
-		[FieldOffset(1*sizeof(uint))] public uint u2;
-		[FieldOffset(2*sizeof(uint))] public uint u1;
-		[FieldOffset(3*sizeof(uint))] public uint u0;
+		[FieldOffset(0*sizeof(uint))] public uint U3;
+		[FieldOffset(1*sizeof(uint))] public uint U2;
+		[FieldOffset(2*sizeof(uint))] public uint U1;
+		[FieldOffset(3*sizeof(uint))] public uint U0;
 
 		public Span<byte> Span {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => MemoryMarshal.CreateSpan(ref bytes[0], Size);
+			get => MemoryMarshal.CreateSpan(ref Bytes[0], Size);
 		}
 	}
 
 	// Don't mark as `readonly` (or every access would cause a defensive copy)
-	private Data data;
+	private Data _Data;
 
 	public ReadOnlySpan<byte> Span {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => data.Span;
+		get => _Data.Span;
 	}
 
 	public ulong HighBits {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(data.high) : data.high;
+		get => BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(_Data.High) : _Data.High;
 	}
 
 	public ulong LowBits {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(data.low) : data.low;
+		get => BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(_Data.Low) : _Data.Low;
 	}
 
 	public (ulong HighBits, ulong LowBits) BitsPair {
@@ -58,7 +58,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static UniqueId Create() {
 		var uid = new UniqueId();
-		RandomNumberGenerator.Fill(uid.data.Span);
+		RandomNumberGenerator.Fill(uid._Data.Span);
 		return uid;
 	}
 
@@ -67,7 +67,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static UniqueId CreateLenient(ReadOnlySpan<byte> bytes) {
 		var uid = new UniqueId();
-		var dest = uid.data.Span;
+		var dest = uid._Data.Span;
 		if (Data.Size > bytes.Length) {
 			dest = dest[(Data.Size - bytes.Length)..];
 		} else {
@@ -80,14 +80,14 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static UniqueId Create<TState>(TState state, SpanAction<byte, TState> action) {
 		var uid = new UniqueId();
-		action(uid.data.Span, state);
+		action(uid._Data.Span, state);
 		return uid;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UniqueId Create(Guid guid) {
 		var uid = new UniqueId();
-		guid.TryWriteUuidBytes(uid.data.Span);
+		guid.TryWriteUuidBytes(uid._Data.Span);
 		return uid;
 	}
 
@@ -99,11 +99,11 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	public static UniqueId CreateLenient(string base58Str) => Parse(base58Str);
 
 
-	private static readonly UniqueId empty = new();
+	private static readonly UniqueId _Empty = new();
 
-	public static UniqueId Empty => empty;
+	public static UniqueId Empty => _Empty;
 
-	public bool IsEmpty => data.high == 0 && data.low == 0;
+	public bool IsEmpty => _Data.High == 0 && _Data.Low == 0;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool IsNullOrEmpty([NotNullWhen(false)] UniqueId? uid) => uid is null || uid.IsEmpty;
@@ -117,32 +117,32 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		if (Data.Size != bytes.Length) {
 			throw AOORE_NeedsExactlyDataSize(nameof(bytes));
 		}
-		bytes.CopyTo(data.Span);
+		bytes.CopyTo(_Data.Span);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	private UniqueId(ulong highBits, ulong lowBits) {
 		if (BitConverter.IsLittleEndian) {
-			data.high = BinaryPrimitives.ReverseEndianness(highBits);
-			data.low = BinaryPrimitives.ReverseEndianness(lowBits);
+			_Data.High = BinaryPrimitives.ReverseEndianness(highBits);
+			_Data.Low = BinaryPrimitives.ReverseEndianness(lowBits);
 		} else {
-			data.high = highBits;
-			data.low = lowBits;
+			_Data.High = highBits;
+			_Data.Low = lowBits;
 		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	private UniqueId(uint u3, uint u2, uint u1, uint u0) {
 		if (BitConverter.IsLittleEndian) {
-			data.u3 = BinaryPrimitives.ReverseEndianness(u3);
-			data.u2 = BinaryPrimitives.ReverseEndianness(u2);
-			data.u1 = BinaryPrimitives.ReverseEndianness(u1);
-			data.u0 = BinaryPrimitives.ReverseEndianness(u0);
+			_Data.U3 = BinaryPrimitives.ReverseEndianness(u3);
+			_Data.U2 = BinaryPrimitives.ReverseEndianness(u2);
+			_Data.U1 = BinaryPrimitives.ReverseEndianness(u1);
+			_Data.U0 = BinaryPrimitives.ReverseEndianness(u0);
 		} else {
-			data.u3 = u3;
-			data.u2 = u2;
-			data.u1 = u1;
-			data.u0 = u0;
+			_Data.U3 = u3;
+			_Data.U2 = u2;
+			_Data.U1 = u1;
+			_Data.U0 = u0;
 		}
 	}
 
@@ -167,15 +167,15 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 	// --
 
-	public static int Base58Size => base58Size;
+	public static int Base58Size => _Base58Size;
 
 	// Allocate enough space in big-endian base 58 representation
 	// - See, https://github.com/bitcoin/bitcoin/blob/1e7564eca8a688f39c75540877ec3bdfdde766b1/src/base58.cpp#L96
 	// - Equiv. to, ceil(N ceil(log(256) / log(58), 0.0001))
-	private const int base58Size = (Data.Size * 13657 - 1) / 10000 + 1;
+	private const int _Base58Size = (Data.Size * 13657 - 1) / 10000 + 1;
 
 	private static ReadOnlySpan<char> Base58EncodingMap => "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-	private const char base58Pad = '1'; // 0 in base 58
+	private const char _Base58Pad = '1'; // 0 in base 58
 
 	// Relies on C# compiler optimization to reference static data
 	// See also, https://github.com/dotnet/csharplang/issues/5295
@@ -206,23 +206,23 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		uint u3, u2, u1, u0;
 
 		if (BitConverter.IsLittleEndian) {
-			u3 = BinaryPrimitives.ReverseEndianness(data.u3);
-			u2 = BinaryPrimitives.ReverseEndianness(data.u2);
-			u1 = BinaryPrimitives.ReverseEndianness(data.u1);
-			u0 = BinaryPrimitives.ReverseEndianness(data.u0);
+			u3 = BinaryPrimitives.ReverseEndianness(_Data.U3);
+			u2 = BinaryPrimitives.ReverseEndianness(_Data.U2);
+			u1 = BinaryPrimitives.ReverseEndianness(_Data.U1);
+			u0 = BinaryPrimitives.ReverseEndianness(_Data.U0);
 		} else {
-			u3 = data.u3;
-			u2 = data.u2;
-			u1 = data.u1;
-			u0 = data.u0;
+			u3 = _Data.U3;
+			u2 = _Data.U2;
+			u1 = _Data.U1;
+			u0 = _Data.U0;
 		}
 
 		// Get references to avoid unnecessary range checking
 		ref char mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 		ref char destRef = ref MemoryMarshal.GetReference(destination);
 
-		Debug.Assert(base58Size <= destination.Length);
-		for (int i = base58Size; i-- > 0;) {
+		Debug.Assert(_Base58Size <= destination.Length);
+		for (int i = _Base58Size; i-- > 0;) {
 			ulong q, v;
 			ulong c; // carry
 
@@ -245,7 +245,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 			c = v - q * 58;
 			u0 = (uint)q;
 
-			Debug.Assert(i < base58Size);
+			Debug.Assert(i < _Base58Size);
 			Debug.Assert(c < 58, $"[{i}] Carry: {c} (0x{c:X})", null);
 
 			Unsafe.Add(ref destRef, i) = Unsafe.Add(ref mapRef, (int)c);
@@ -263,21 +263,21 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryWriteBase58Chars(Span<char> destination) {
-		if (base58Size > destination.Length) return false;
+		if (_Base58Size > destination.Length) return false;
 		UnsafeWriteBase58Chars(destination);
 		return true;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public void WriteBase58Chars(Span<char> destination) {
-		if (base58Size > destination.Length) {
+		if (_Base58Size > destination.Length) {
 			throw AOORE_NeedsAtLeastBase58Size(nameof(destination));
 		}
 		UnsafeWriteBase58Chars_Inline(destination);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public override string ToString() => string.Create(base58Size, this,
+	public override string ToString() => string.Create(_Base58Size, this,
 			static (destination, @this) => @this.UnsafeWriteBase58Chars(destination));
 
 
@@ -288,14 +288,14 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		// Get references to avoid unnecessary range checking
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
 		ref char srcRef = ref MemoryMarshal.GetReference(source);
-		int length = Math.Min(base58Size, source.Length);
+		int length = Math.Min(_Base58Size, source.Length);
 
 		for (int i = 0; i < length; i++) {
 			ulong c;
 
 			var x = Unsafe.Add(ref mapRef, (byte)Unsafe.Add(ref srcRef, i));
 			if (x < 0) {
-				ReadBase58CharsFailure = (ReadBase58CharsFailCode.InvalidSymbol, i, default);
+				_ReadBase58CharsFailure = (ReadBase58CharsFailCode.InvalidSymbol, i, default);
 				return null;
 			}
 
@@ -317,7 +317,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 			c >>= 32;
 
 			if (c != 0) {
-				ReadBase58CharsFailure = (ReadBase58CharsFailCode.OverflowCarry, i, c);
+				_ReadBase58CharsFailure = (ReadBase58CharsFailCode.OverflowCarry, i, c);
 				return null;
 			}
 		}
@@ -332,12 +332,12 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	}
 
 	[ThreadStatic]
-	private static (ReadBase58CharsFailCode code, int index, ulong carry) ReadBase58CharsFailure;
+	private static (ReadBase58CharsFailCode code, int index, ulong carry) _ReadBase58CharsFailure;
 
-	private static void ResetReadBase58CharsFailure() => ReadBase58CharsFailure = default;
+	private static void ResetReadBase58CharsFailure() => _ReadBase58CharsFailure = default;
 
 	private static Exception FE_ReadBase58CharsFailure() {
-		var (code, i, c) = ReadBase58CharsFailure;
+		var (code, i, c) = _ReadBase58CharsFailure;
 		return code switch {
 			ReadBase58CharsFailCode.InvalidSymbol => new FormatException($"Invalid symbol at index {i}"),
 			ReadBase58CharsFailCode.OverflowCarry => new OverflowException(
@@ -354,7 +354,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UniqueId? ParseExactOrNull(ReadOnlySpan<char> input) {
-		if (base58Size != input.Length) {
+		if (_Base58Size != input.Length) {
 			return null;
 		}
 		var result = ReadBase58Chars(input);
@@ -371,7 +371,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
-		if (base58Size != input.Length) {
+		if (_Base58Size != input.Length) {
 			throw AOORE_NeedsExactlyBase58Size(nameof(input));
 		}
 		return ReadBase58Chars_Inline(input)
@@ -403,12 +403,12 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		if (ReferenceEquals(this, other)) return true;
 		if (GetType() != other.GetType()) return false;
 
-		return data.high == other.data.high
-			&& data.low == other.data.low;
+		return _Data.High == other._Data.High
+			&& _Data.Low == other._Data.Low;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public override int GetHashCode() => HashCode.Combine(data.high, data.low);
+	public override int GetHashCode() => HashCode.Combine(_Data.High, _Data.Low);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	int IComparable.CompareTo(object? obj) {
@@ -423,10 +423,10 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	public int CompareTo(UniqueId? other) {
 		if (other is null) return 1;
 
-		int c = data.high.CompareTo(other.data.high);
+		int c = _Data.High.CompareTo(other._Data.High);
 		if (c != 0) return c;
 
-		return data.low.CompareTo(other.data.low);
+		return _Data.Low.CompareTo(other._Data.Low);
 	}
 
 	public static bool operator ==(UniqueId? left, UniqueId? right) {
@@ -456,10 +456,10 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	// --
 
 	private static ArgumentOutOfRangeException AOORE_NeedsAtLeastBase58Size(string? paramName)
-		=> new(paramName, $"Length must be at least {base58Size} (or `{nameof(UniqueId)}.{nameof(Base58Size)}`){Environment.NewLine}");
+		=> new(paramName, $"Length must be at least {_Base58Size} (or `{nameof(UniqueId)}.{nameof(Base58Size)}`){Environment.NewLine}");
 
 	private static ArgumentOutOfRangeException AOORE_NeedsExactlyBase58Size(string? paramName)
-		=> new(paramName, $"Length must be exactly {base58Size} (or `{nameof(UniqueId)}.{nameof(Base58Size)}`){Environment.NewLine}");
+		=> new(paramName, $"Length must be exactly {_Base58Size} (or `{nameof(UniqueId)}.{nameof(Base58Size)}`){Environment.NewLine}");
 
 
 	private static ArgumentOutOfRangeException AOORE_NeedsAtLeastDataSize(string? paramName)
