@@ -32,7 +32,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		}
 	}
 
-	// Don't mark as `readonly` (or every access would cause a defensive copy)
+	// Don't mark as `readonly` (or accesses to its members would cause a defensive copy)
 	private Data _Data;
 
 	public ReadOnlySpan<byte> Span {
