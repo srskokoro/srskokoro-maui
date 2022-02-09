@@ -115,7 +115,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 				{
 					var v = Version;
-					if (Version != 0) {
+					if (v != 0) {
 						throw new InvalidDataException($"Version (currently {v}) must be zero while the application ID is zero (for SQLite database `{dbName}`).");
 					}
 				}
