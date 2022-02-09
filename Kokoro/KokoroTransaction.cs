@@ -3,16 +3,16 @@
 /// <remarks>Not thread-safe.</remarks>
 public class KokoroTransaction : IDisposable, IAsyncDisposable {
 
-	internal readonly uint key;
-	private KokoroContext? context;
+	internal readonly uint _key;
+	private KokoroContext? _context;
 
-	public KokoroContext Context => context ?? throw MakeTransactionCompletedException();
-	public KokoroContext? GetContextOrNull() => context;
+	public KokoroContext Context => _context ?? throw MakeTransactionCompletedException();
+	public KokoroContext? GetContextOrNull() => _context;
 
 	protected internal KokoroTransaction(KokoroContext context) {
 		try {
-			this.context = context;
-			this.key = context.OnInitTransaction();
+			_context = context;
+			_key = context.OnInitTransaction();
 		} catch {
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
@@ -27,21 +27,21 @@ public class KokoroTransaction : IDisposable, IAsyncDisposable {
 
 	public virtual void Commit() {
 		Context.OnCommitTransaction(this);
-		context = null;
+		_context = null;
 	}
 
 	public virtual void Rollback() {
 		Context.OnRollbackTransaction(this);
-		context = null;
+		_context = null;
 	}
 
 	// https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose
 	protected virtual void Dispose(bool disposing) {
-		var context = this.context;
+		var context = _context;
 		if (context is null) return;
 
 		context.OnDisposeTransaction(this, disposing);
-		this.context = null;
+		_context = null;
 	}
 
 	// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
