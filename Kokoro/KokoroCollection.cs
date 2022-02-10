@@ -1,31 +1,47 @@
-﻿namespace Kokoro;
+﻿using System.Runtime.CompilerServices;
 
-/// <remarks>Not thread-safe.</remarks>
+namespace Kokoro;
+
 public class KokoroCollection : IDisposable, IAsyncDisposable {
-
-	public static int OperableVersion => 1;
-
-	protected internal readonly KokoroSqliteDb _Db;
 	private readonly KokoroContext _Context;
 
 	public KokoroContext Context => _Context;
+
+	internal const int _OperableVersion = 1;
+
+	public static int OperableVersion => _OperableVersion;
 
 	protected internal KokoroCollection(KokoroContext context) {
 		// A check should be done prior to instantiation instead.
 		// But, this check is for subclasses' sake.
 		CheckIfOperable(context);
-
-		_Db = context._Db;
 		_Context = context;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static void CheckIfOperable(KokoroContext context) {
 		if (!context.IsOperable)
-			throw new NotSupportedException($"Version is not operable. Please migrate the `{nameof(KokoroContext)}` first to the current operable vesrion.");
+			throw E_VersionNotOperable();
 	}
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-	public virtual void Dispose() => _Context.Dispose();
-	public virtual ValueTask DisposeAsync() => _Context.DisposeAsync();
-#pragma warning restore CA1816
+	#region `IDisposable` implementation
+
+	// Provided only for subclasses' sake.
+	protected virtual void Dispose(bool disposing) => _Context.Dispose(disposing);
+
+	public void Dispose() {
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	public virtual ValueTask DisposeAsync() {
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+		return default;
+	}
+
+	#endregion
+
+	private static NotSupportedException E_VersionNotOperable()
+		=> new($"Version is not operable. Please migrate the `{nameof(KokoroContext)}` first to the current operable vesrion.");
 }
