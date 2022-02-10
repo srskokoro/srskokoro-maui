@@ -124,10 +124,15 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	private readonly string _DbConnectionString;
 
 	private readonly ConcurrentBag<KokoroSqliteDb> _DbPool = new();
+	// Increment "before" adding to pool. Decrement "after" taking from pool.
+	// Should only be considered as a snapshot (and not the actual size).
+	private int _DbPoolSize = 0;
 
 	#endregion
 
 	#region `Borrow` and `Return` mechanics
+
+	private static readonly int _ProposedPoolingMax = Math.Max(Environment.ProcessorCount * 2, 4);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public ReturnHandler<T> Get<T>() where T : IDisposable {
@@ -141,32 +146,47 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	public virtual T Borrow<T>() where T : IDisposable {
 		if (Volatile.Read(ref _DisposeRequested) == true) {
-			// Already disposed or being disposed
-			throw E_Disposed();
+			throw E_Disposed(); // Already disposed or being disposed
 		}
 
 		if (typeof(T) == typeof(KokoroSqliteDb)) {
-			return (T)(object)(_DbPool.TryTake(out var result) ? result
-				: new KokoroSqliteDb(_DbConnectionString).OpenAndGet());
+			if (_DbPool.TryTake(out var result)) {
+				Interlocked.Decrement(ref _DbPoolSize);
+			} else {
+				result = new KokoroSqliteDb(_DbConnectionString);
+				result.Open();
+			}
+			return (T)(object)result;
 		} else {
 			throw new NotSupportedException();
 		}
 	}
 
+	/// <remarks>
+	/// WARNING: Do not return a borrowed entry more than once. Duplicate
+	/// returns may cause duplicate pool entries.
+	/// </remarks>
 	public virtual void Return<T>(T borrowed) where T : IDisposable {
 		if (typeof(T) == typeof(KokoroSqliteDb)) {
+			if (_DbPoolSize >= _ProposedPoolingMax) {
+				goto Reject;
+			}
+			Interlocked.Increment(ref _DbPoolSize);
 			_DbPool.Add((KokoroSqliteDb)(object)borrowed);
 		} else {
 			throw new NotSupportedException();
 		}
 
-		if (Volatile.Read(ref _DisposeRequested) == true) {
-			// Already disposed or being disposed
-			borrowed.Dispose(); // Must dispose too
-
-			// --
-			// Don't throw. `Return()` should be idempotent even when disposed.
+		if (Volatile.Read(ref _DisposeRequested) != true) {
+			return; // Not yet disposed. We're good then.
 		}
+
+	Reject:
+		// Either we're already disposed or the pool designated for the
+		// borrowed entry has reached its maximum size. If we're already
+		// disposed, `Return()` should not throw -- it should still simply
+		// reject returns silently.
+		borrowed.Dispose();
 	}
 
 	public ref struct ReturnHandler<T> where T : IDisposable {
