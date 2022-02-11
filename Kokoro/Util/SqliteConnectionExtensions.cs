@@ -2,7 +2,7 @@
 
 namespace Kokoro.Util;
 
-public static class SqliteConnectionExtensions {
+internal static class SqliteConnectionExtensions {
 
 	public static SqliteCommand CreateCommand(this SqliteConnection connection, string commandText) {
 		var command = connection.CreateCommand();

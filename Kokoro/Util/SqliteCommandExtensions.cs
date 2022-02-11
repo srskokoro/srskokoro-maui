@@ -2,7 +2,7 @@
 
 namespace Kokoro.Util;
 
-public static class SqliteCommandExtensions {
+internal static class SqliteCommandExtensions {
 
 	public static SqliteCommand In(this SqliteCommand command, SqliteTransaction? transaction) {
 		command.Transaction = transaction;

@@ -2,7 +2,7 @@
 
 namespace Kokoro.Util;
 
-public static class UuidUtil {
+internal static class UuidUtil {
 
 	/// <summary>
 	/// Toggles between GUID and UUID layout.
