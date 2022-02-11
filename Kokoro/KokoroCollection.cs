@@ -43,5 +43,7 @@ public class KokoroCollection : IDisposable, IAsyncDisposable {
 	#endregion
 
 	private static NotSupportedException E_VersionNotOperable()
-		=> new($"Version is not operable. Please migrate the `{nameof(KokoroContext)}` first to the current operable vesrion.");
+		=> new($"Version is not operable. Please migrate the " +
+			// TODO Consider using `this.GetType()` instead? -- for subclassing purposes
+			$"`{nameof(KokoroContext)}` first to the current operable vesrion.");
 }

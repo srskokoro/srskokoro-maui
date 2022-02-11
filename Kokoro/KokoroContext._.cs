@@ -275,5 +275,5 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	#endregion
 
-	private static ObjectDisposedException E_Disposed() => new($"{typeof(KokoroContext)}");
+	private ObjectDisposedException E_Disposed() => new($"{GetType()}");
 }
