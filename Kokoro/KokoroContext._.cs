@@ -76,7 +76,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		try {
 			Validate(db);
 		} catch (Exception ex) {
-			db.DisposePriorThrow(ex);
+			db.DisposeSafely(ex);
 			throw;
 		}
 

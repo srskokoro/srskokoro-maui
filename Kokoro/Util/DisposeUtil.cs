@@ -31,6 +31,15 @@ internal static class DisposeUtil {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void DisposeSafely<T>(this T disposable, Exception priorException) where T : IDisposable {
+#if !DEBUG
+		disposable.DisposeSafely();
+#else
+		disposable.DisposePriorThrow(priorException);
+#endif
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void DisposePriorThrow<T>(this T disposable, Exception priorException) where T : IDisposable {
 		try {
 			disposable.Dispose();
