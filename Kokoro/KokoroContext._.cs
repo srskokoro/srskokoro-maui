@@ -219,7 +219,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Dispose() => Return();
 
-		private static ObjectDisposedException E_Disposed() => new($"{typeof(ReturnHandler<T>)}");
+		private static ObjectDisposedException E_Disposed()
+			=> DisposeUtil.Ode(typeof(ReturnHandler<T>));
 	}
 
 	#endregion
@@ -275,5 +276,6 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	#endregion
 
-	private ObjectDisposedException E_Disposed() => new($"{GetType()}");
+	private ObjectDisposedException E_Disposed()
+		=> DisposeUtil.Ode(GetType());
 }
