@@ -74,6 +74,11 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		var db = new KokoroSqliteDb(_DbConnectionString = connStrBldr.ToString());
 		db.Open();
 
+		Validate(db);
+		Return(db); // Initial pool entry
+	}
+
+	private void Validate(KokoroSqliteDb db) {
 		using (var transaction = db.BeginTransaction()) {
 			long appId = db.ExecuteScalar<long>("PRAGMA application_id");
 
@@ -114,8 +119,6 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				db.ExecuteNonQuery("PRAGMA journal_mode = WAL");
 			}
 		}
-
-		Return(db); // Initial pool entry
 	}
 
 
