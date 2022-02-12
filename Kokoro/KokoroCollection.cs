@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Kokoro;
+﻿namespace Kokoro;
 
 public class KokoroCollection : IDisposable, IAsyncDisposable {
 	private readonly KokoroContext _Context;

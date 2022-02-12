@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Kokoro.Util;
+﻿namespace Kokoro.Util;
 
 internal static class Var {
 

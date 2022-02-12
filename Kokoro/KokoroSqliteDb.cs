@@ -1,6 +1,5 @@
 ﻿using Kokoro.Util;
 using Microsoft.Data.Sqlite;
-using System.Runtime.CompilerServices;
 
 namespace Kokoro;
 
