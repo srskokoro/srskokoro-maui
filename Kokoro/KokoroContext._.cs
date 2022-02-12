@@ -81,6 +81,9 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 
 		Return(db); // Initial pool entry
+
+		// Allow disposal
+		_DisposeLock = new();
 	}
 
 	private void Validate(KokoroSqliteDb db) {
@@ -235,7 +238,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	#region `IDisposable` implementation
 
-	private object? _DisposeLock = new(); // Unset once fully disposed
+	private object? _DisposeLock; // Unset once fully disposed
 	private bool _DisposeRequested; // Set once dispossal begins
 
 	protected internal virtual void Dispose(bool disposing) {
