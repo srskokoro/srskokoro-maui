@@ -6,12 +6,11 @@ namespace Kokoro;
 
 /// <remarks>Not thread-safe.</remarks>
 public class KokoroSqliteDb : SqliteConnection {
-
-	internal readonly SqliteCommand CmdGetVersion;
+	internal readonly SqliteCommand _CmdGetVersion;
 
 	public int Version {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => Convert.ToInt32(CmdGetVersion.In(Transaction).ExecuteScalar<long>());
+		get => Convert.ToInt32(_CmdGetVersion.In(Transaction).ExecuteScalar<long>());
 	}
 
 	public new SqliteTransaction? Transaction { get => base.Transaction; }
@@ -19,7 +18,7 @@ public class KokoroSqliteDb : SqliteConnection {
 	public KokoroSqliteDb() : this(null) { }
 
 	public KokoroSqliteDb(string? connectionString) : base(connectionString) {
-		CmdGetVersion = this.CreateCommand("PRAGMA user_version");
+		_CmdGetVersion = this.CreateCommand("PRAGMA user_version");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

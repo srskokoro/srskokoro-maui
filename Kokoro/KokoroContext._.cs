@@ -106,7 +106,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 				}
 			}
 
-			db.CmdGetVersion.Transaction = null;
+			db._CmdGetVersion.Transaction = null;
 
 			if (!IsReadOnly) {
 				transaction.Commit();
