@@ -1,9 +1,11 @@
 ﻿using Microsoft.Data.Sqlite;
+using System.Runtime.CompilerServices;
 
 namespace Kokoro.Util;
 
 internal static class SqliteCommandExtensions {
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static SqliteCommand In(this SqliteCommand command, SqliteTransaction? transaction) {
 		command.Transaction = transaction;
 		return command;
@@ -19,6 +21,7 @@ internal static class SqliteCommandExtensions {
 	}
 
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T ExecuteScalar<T>(this SqliteCommand command)
 		=> (T)command.ExecuteScalar()!;
 }
