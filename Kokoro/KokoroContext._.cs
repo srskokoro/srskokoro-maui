@@ -74,7 +74,13 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		var db = new KokoroSqliteDb(_DbConnectionString = connStrBldr.ToString());
 		db.Open();
 
-		Validate(db);
+		try {
+			Validate(db);
+		} catch {
+			db.Dispose();
+			throw;
+		}
+
 		Return(db); // Initial pool entry
 	}
 
