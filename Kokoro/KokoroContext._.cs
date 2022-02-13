@@ -159,7 +159,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		var db = dba._Db;
 		if (db is null) {
 			if (!_DbPool.TryTakeAggressively(out db)) {
-				if (Volatile.Read(ref _DisposeRequested)) {
+				if (_DisposeState.IsDisposed()) {
 					throw E_Disposed();
 				}
 				db = new(_DbConnectionString);
@@ -229,22 +229,21 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	#region `IDisposable` implementation
 
-	private object? _DisposeLock = new(); // Unset once fully disposed
-	private bool _DisposeRequested; // Set once dispossal begins
+	private DisposeState _DisposeState;
 
 	protected internal virtual void Dispose(bool disposing) {
-		var dlock = _DisposeLock;
-		if (dlock == null) {
-			return; // Already disposed
+		if (!_DisposeState.HandleDisposeRequest()) {
+			return; // Already disposed or being disposed
 		}
-		_DisposeRequested = true;
-		// -- Memory Barrier --
-		lock (dlock) {
-			if (_DisposeLock == null) {
-				return; // Already disposed
-			}
+		try {
 			if (disposing) {
-				// Dispose managed state (managed objects)
+				// Dispose managed state (managed objects).
+				//
+				// NOTE: If we're here, then we're sure that the constructor
+				// completed successfully. Fields that aren't supposed to be
+				// null are guaranteed to be non-null, unless we set fields to
+				// null only to be called again due to a previous failed
+				// dispose attempt.
 				// --
 				_DbPool.Dispose();
 			}
@@ -257,7 +256,12 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			// --
 
 			// Mark disposal as successful
-			_DisposeLock = null;
+			_DisposeState.CommitDisposeRequest();
+		} catch {
+			// Failed to dispose everything. Let the next caller of this method
+			// continue the disposing operation instead.
+			_DisposeState.RevertDisposeRequest();
+			throw;
 		}
 	}
 
