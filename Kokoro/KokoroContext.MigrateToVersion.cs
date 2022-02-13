@@ -20,7 +20,7 @@ public partial class KokoroContext {
 			if (_Collection is not null)
 				goto CollectionAlreadyExists;
 
-			using (var rr = Get<KokoroSqliteDb>(out var db)) {
+			using (var h = GetThreadDb(out var db)) {
 				using var transaction = db.BeginTransaction();
 				var oldVersion = db.Version;
 

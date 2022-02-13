@@ -1,6 +1,6 @@
 ﻿using Kokoro.Util;
+using Kokoro.Util.Pooling;
 using Microsoft.Data.Sqlite;
-using System.Collections.Concurrent;
 
 namespace Kokoro;
 
@@ -16,8 +16,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	public int Version {
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		get {
-			using var rr = Get<KokoroSqliteDb>();
-			return rr.Value.Version;
+			using var h = GetThreadDb();
+			return h.Db.Version;
 		}
 	}
 
@@ -80,7 +80,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			throw;
 		}
 
-		Return(db); // Initial pool entry
+		// Initial pool entry
+		if (_DbPool.TryPool(db)) {
+			Debug.Assert(false, "Initial pool attempt failed.");
+		}
 
 		// Allow disposal
 		_DisposeLock = new();
@@ -130,108 +133,99 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 
-	#region Internal `SqliteConnection`
+	#region Internal `SqliteConnection` access
 
 	private readonly string _DbConnectionString;
 
-	private readonly ConcurrentBag<KokoroSqliteDb> _DbPool = new();
-	// Increment "before" adding to pool. Decrement "after" taking from pool.
-	// Should only be considered as a snapshot (and not the actual size).
-	private int _DbPoolSize = 0;
+	private readonly DisposingObjectPool<KokoroSqliteDb> _DbPool = new();
 
-	#endregion
+	private readonly ThreadLocal<DbAccess> _CurrentDbAccess = new(static () => new DbAccess());
 
-	#region `Borrow` and `Return` mechanics
-
-	private static readonly int _ProposedPoolingMax = Math.Max(Environment.ProcessorCount * 2, 4);
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public ReturnHandler<T> Get<T>() where T : IDisposable {
-		return new(this, Borrow<T>());
+	private class DbAccess {
+		internal int _DbAccessCount;
+		internal KokoroSqliteDb? _Db;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public ReturnHandler<T> Get<T>(out T borrowed) where T : IDisposable {
-		return new(this, borrowed = Borrow<T>());
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public DbDimissingHandle GetThreadDb() => new(this, AccessThreadDb());
 
-	public virtual T Borrow<T>() where T : IDisposable {
-		if (Volatile.Read(ref _DisposeRequested) == true) {
-			throw E_Disposed(); // Already disposed or being disposed
-		}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public DbDimissingHandle GetThreadDb(out KokoroSqliteDb db) => new(this, db = AccessThreadDb());
 
-		if (typeof(T) == typeof(KokoroSqliteDb)) {
-			if (_DbPool.TryTake(out var result)) {
-				Interlocked.Decrement(ref _DbPoolSize);
-			} else {
-				result = new KokoroSqliteDb(_DbConnectionString);
-				result.Open();
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public DbDimissingHandle AccessThreadDb(out KokoroSqliteDb db) => GetThreadDb(out db); // Alias
+
+	/// <summary>Each call to this method must eventually be paired with a call
+	/// to <see cref="DimissThreadDb(KokoroSqliteDb)" />.</summary>
+	public KokoroSqliteDb AccessThreadDb() {
+		var dba = _CurrentDbAccess.Value!;
+		var db = dba._Db;
+		if (db is null) {
+			if (!_DbPool.TryTakeAggressively(out db)) {
+				if (Volatile.Read(ref _DisposeRequested)) {
+					throw E_Disposed();
+				}
+				db = new(_DbConnectionString);
+				db.Open();
 			}
-			return (T)(object)result;
-		} else {
-			throw new NotSupportedException();
+			dba._Db = db;
 		}
+		dba._DbAccessCount++;
+		return db;
 	}
 
-	/// <remarks>
-	/// WARNING: Do not return a borrowed entry more than once. Duplicate
-	/// returns may cause duplicate pool entries.
-	/// </remarks>
-	public virtual void Return<T>(T borrowed) where T : IDisposable {
-		if (typeof(T) == typeof(KokoroSqliteDb)) {
-			if (_DbPoolSize >= _ProposedPoolingMax) {
-				goto Reject;
+	/// <summary>This method must be called once (and only once) for each call
+	/// to <see cref="AccessThreadDb()" />.</summary>
+	public void DimissThreadDb(KokoroSqliteDb db) {
+		var dba = _CurrentDbAccess.Value!;
+		if (dba._Db != db) {
+			throw new ArgumentException($"`{nameof(db)}` is not owned by the current thread.", nameof(db));
+		}
+		Debug.Assert(dba._DbAccessCount > 0);
+
+		if (--dba._DbAccessCount <= 0) {
+			dba._DbAccessCount = 0;
+			dba._Db = null;
+			try {
+				_DbPool.TryPool(db);
+			} catch (ThreadInterruptedException ex) {
+				db.DisposeSafely(ex);
+				throw;
 			}
-			Interlocked.Increment(ref _DbPoolSize);
-			_DbPool.Add((KokoroSqliteDb)(object)borrowed);
-		} else {
-			throw new NotSupportedException();
 		}
-
-		if (Volatile.Read(ref _DisposeRequested) != true) {
-			return; // Not yet disposed. We're good then.
-		}
-
-	Reject:
-		// Either we're already disposed or the pool designated for the
-		// borrowed entry has reached its maximum size. If we're already
-		// disposed, `Return()` should not throw -- it should still simply
-		// reject returns silently.
-		borrowed.Dispose();
 	}
 
-	public ref struct ReturnHandler<T> where T : IDisposable {
+	public ref struct DbDimissingHandle {
 		private KokoroContext? _Context;
-		private T _Value;
+		private readonly KokoroSqliteDb _Db;
 
 		public readonly KokoroContext Context {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => _Context ?? throw E_Disposed();
 		}
 
-		public readonly T Value {
+		public readonly KokoroSqliteDb Db {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => _Value!;
+			get => _Db;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal ReturnHandler(KokoroContext context, T borrowed) {
+		internal DbDimissingHandle(KokoroContext context, KokoroSqliteDb borrowed) {
 			_Context = context;
-			_Value = borrowed;
+			_Db = borrowed;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Return() {
-			Context.Return(_Value);
-			_Context = null;
-			_Value = default!;
+		public void Dispose() {
+			var ctx = _Context;
+			if (ctx is not null) {
+				ctx.DimissThreadDb(_Db);
+				_Context = null;
+			}
 		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Dispose() => Return();
 
 		private static ObjectDisposedException E_Disposed()
-			=> DisposeUtil.Ode(typeof(ReturnHandler<T>));
+			=> DisposeUtil.Ode(typeof(DbDimissingHandle));
 	}
 
 	#endregion
@@ -255,10 +249,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			if (disposing) {
 				// Dispose managed state (managed objects)
 				// --
-				var dbPool = _DbPool;
-				while (dbPool.TryTake(out var db)) {
-					db.Dispose();
-				}
+				_DbPool.Dispose();
 			}
 
 			// Here we should free unmanaged resources (unmanaged objects),
