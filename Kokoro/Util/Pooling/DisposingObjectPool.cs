@@ -1,13 +1,7 @@
 ﻿namespace Kokoro.Util.Pooling;
 
 internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDisposable {
-	private int _DisposeState;
-
-	private enum DisposeState {
-		NotDisposed = 0,
-		DisposeRequested = 1,
-		DisposedFully = 2,
-	}
+	private DisposeState _DisposeState;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override bool TryPool(T poolable) {
@@ -19,7 +13,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			// retake the added object. It also important that we retake the
 			// added object since once we are already fully disposed, no one
 			// else will dispose the newly added object.
-			if (Volatile.Read(ref _DisposeState) == (int)DisposeState.NotDisposed || !Retake_NoInterrupts(out poolable!)) {
+			if (_DisposeState.IsNotDisposed() || !Retake_NoInterrupts(out poolable!)) {
 				// Return successfully as well if we failed to retake the added
 				// object, or any object: it simply means someone else already
 				// took care of it. The one who took the object may however
@@ -56,7 +50,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override bool TryTake([MaybeNullWhen(false)] out T poolable) {
 		if (base.TryTake(out var taken)) {
-			if (Volatile.Read(ref _DisposeState) == (int)DisposeState.NotDisposed) {
+			if (_DisposeState.IsNotDisposed()) {
 				poolable = taken;
 				return true;
 			}
@@ -67,7 +61,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public virtual bool TryTakeAggressively([MaybeNullWhen(false)] out T poolable) {
-		if (Volatile.Read(ref _DisposeState) != (int)DisposeState.NotDisposed) {
+		if (_DisposeState.IsDisposed()) {
 			poolable = default;
 			return false;
 		}
@@ -83,8 +77,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 	protected virtual void Dispose(bool disposing) {
 		if (!disposing) return;
 
-		if (Interlocked.CompareExchange(ref _DisposeState, (int)DisposeState.DisposeRequested
-			, (int)DisposeState.NotDisposed) != (int)DisposeState.NotDisposed) {
+		if (!_DisposeState.HandleDisposeRequest()) {
 			// Someone is already disposing or has already disposed us.
 			return;
 		}
@@ -97,20 +90,14 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 				// This poolable now only belongs to us, therefore we can proceed.
 				poolable.Dispose();
 			}
+			// Done
+			_DisposeState.CommitDisposeRequest();
 		} catch {
 			// Failed to dispose everything. Let the next caller of this method
 			// continue the disposing operation instead.
-			Debug.Assert(Volatile.Read(ref _DisposeState) == (int)DisposeState.DisposeRequested);
-			// Relinquish access
-			Volatile.Write(ref _DisposeState, (int)DisposeState.NotDisposed);
+			_DisposeState.RevertDisposeRequest();
 			throw;
 		}
-		// A volatile write should really suffice at this point, but just in
-		// case we're wrong, here's an assertion proving that we're the only
-		// ones who got here due to our exclusive access.
-		Debug.Assert(Volatile.Read(ref _DisposeState) == (int)DisposeState.DisposeRequested);
-		// Done
-		Volatile.Write(ref _DisposeState, (int)DisposeState.DisposedFully);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
