@@ -84,9 +84,6 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		if (_DbPool.TryPool(db)) {
 			Debug.Assert(false, "Initial pool attempt failed.");
 		}
-
-		// Allow disposal
-		_DisposeLock = new();
 	}
 
 	private void Validate(KokoroSqliteDb db) {
@@ -232,7 +229,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	#region `IDisposable` implementation
 
-	private object? _DisposeLock; // Unset once fully disposed
+	private object? _DisposeLock = new(); // Unset once fully disposed
 	private bool _DisposeRequested; // Set once dispossal begins
 
 	protected internal virtual void Dispose(bool disposing) {
@@ -253,7 +250,10 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			}
 
 			// Here we should free unmanaged resources (unmanaged objects),
-			// override finalizer, and set large fields to null
+			// override finalizer, and set large fields to null.
+			//
+			// NOTE: Make sure to check for null fields, for when the
+			// constructor fails to complete but the finalizer calls us.
 			// --
 
 			// Mark disposal as successful
