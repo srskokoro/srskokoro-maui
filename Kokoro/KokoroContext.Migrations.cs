@@ -2,7 +2,7 @@
 
 namespace Kokoro;
 
-public partial class KokoroContext {
+partial class KokoroContext {
 
 	private static partial SortedList<(int, int), Action<KokoroContext, KokoroSqliteDb>> ProvideMigrationMap() => new() {
 		{ (0, 1), (_, db) => _.Upgrade_0_To_1(db) },

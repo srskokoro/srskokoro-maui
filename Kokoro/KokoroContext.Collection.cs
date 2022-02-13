@@ -1,6 +1,6 @@
 ﻿namespace Kokoro;
 
-public partial class KokoroContext {
+partial class KokoroContext {
 
 	private KokoroCollection? _Collection;
 

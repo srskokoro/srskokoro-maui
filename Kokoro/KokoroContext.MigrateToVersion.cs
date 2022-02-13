@@ -2,7 +2,7 @@
 
 namespace Kokoro;
 
-public partial class KokoroContext {
+partial class KokoroContext {
 
 	private readonly object _MigrationLock = new();
 
