@@ -22,18 +22,18 @@ static partial class DisposeUtil {
 	}
 
 	public static void CommitDisposeRequest(ref this DisposeState currentDisposeState) {
-		AssertDisposeRequested(ref currentDisposeState);
+		AssertDisposeRequestedOnly(ref currentDisposeState);
 		Volatile.Write(ref Unsafe.As<DisposeState, int>(ref currentDisposeState), (int)DisposeState.DisposedFully);
 	}
 
 	public static void RevertDisposeRequest(ref this DisposeState currentDisposeState) {
-		AssertDisposeRequested(ref currentDisposeState);
+		AssertDisposeRequestedOnly(ref currentDisposeState);
 		Volatile.Write(ref Unsafe.As<DisposeState, int>(ref currentDisposeState), (int)DisposeState.NotDisposed);
 	}
 
 
 	[Conditional("DEBUG")]
-	private static void AssertDisposeRequested(ref DisposeState currentDisposeState) {
+	private static void AssertDisposeRequestedOnly(ref DisposeState currentDisposeState) {
 		Debug.Assert(Volatile.Read(ref Unsafe.As<DisposeState, int>(ref currentDisposeState)) == (int)DisposeState.DisposeRequested);
 	}
 }
