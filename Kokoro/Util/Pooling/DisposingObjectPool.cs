@@ -9,24 +9,56 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override bool TryPool(T poolable) {
-		if (base.TryPool(poolable)) {
-			// If already disposed or disposing, we retake the added object, or
-			// take any object that can be taken. That way, we can dispose the
-			// added object instead. Note: It is important that we only dispose
-			// objects that are no longer in the pool, which is why we must
-			// retake the added object. It is also important that we retake the
-			// added object since once we are already fully disposed, no one
-			// else will dispose the newly added object.
-			if (_DisposeState.IsNotDisposed() || !Retake_NoInterrupts(out poolable!)) {
-				// Return successfully as well if we failed to retake the added
-				// object, or any object: it simply means someone else already
-				// took care of it. The one who took the object may however
-				// choose not to dispose it, i.e., `TryTakeAggressively()`.
-				return true;
-			}
-			// If an object, any object, was taken out while we're already
-			// disposed, we must dispose it as well, or no one else will.
+		int maxSize = MaxSize;
+		int oldSize = Volatile.Read(ref _Size);
+		if (oldSize >= maxSize) {
+			goto Reject;
 		}
+		if (Interlocked.CompareExchange(ref _Size, oldSize + 1, oldSize) != oldSize) {
+			// If we failed, go to the slow path
+			SpinWait spin = default;
+			// Keep trying to CAS until we succeed
+			do {
+				// May throw `ThreadInterruptedException`
+				spin.SpinOnce(sleep1Threshold: -1);
+
+				// Re-read and check
+				oldSize = _Size; // A volatile read is unnecessary at this point
+				if (oldSize >= maxSize) {
+					goto Reject;
+				}
+			} while (Interlocked.CompareExchange(ref _Size, oldSize + 1, oldSize) != oldSize);
+		}
+
+		try {
+			// May throw `ThreadInterruptedException`
+			_Pool.Push(poolable);
+		} catch (OutOfMemoryException) {
+			// Our internal stack can no longer expand.
+			// Simply swallow the OOM exception: To the caller's perspective,
+			// returning an object shouldn't cause an allocation, since it's
+			// simply returning an already allocated resource back to the pool.
+			goto Reject;
+		}
+
+		// If already disposed or disposing, we retake the added object, or
+		// take any object that can be taken. That way, we can dispose the
+		// added object instead. Note: It is important that we only dispose
+		// objects that are no longer in the pool, which is why we must retake
+		// the added object. It is also important that we retake the added
+		// object since once we are already fully disposed, no one else will
+		// dispose the newly added object.
+		if (_DisposeState.IsNotDisposed() || !Retake_NoInterrupts(out poolable!)) {
+			// Return successfully as well if we failed to retake the added
+			// object, or any object: it simply means someone else already took
+			// care of it. The one who took the object may however choose not
+			// to dispose it, i.e., `TryTakeAggressively()`.
+			return true;
+		}
+		// If an object, any object, was taken out while we're already disposed,
+		// we must dispose it as well, or no one else will.
+		;
+	Reject:
 		poolable.Dispose();
 		return false;
 	}

@@ -23,6 +23,8 @@ internal class ObjectPool<T> {
 	/// <exception cref="ThreadInterruptedException"></exception>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public virtual bool TryTake([MaybeNullWhen(false)] out T poolable) {
+		// This method should be small enough to get inlined automatically
+
 		// May throw `ThreadInterruptedException`
 		if (_Pool.TryPop(out poolable)) {
 			Interlocked.Decrement(ref _Size);
