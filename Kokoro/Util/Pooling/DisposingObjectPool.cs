@@ -3,6 +3,10 @@
 internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDisposable {
 	private DisposeState _DisposeState;
 
+	protected DisposeState DisposeState => _DisposeState;
+
+	protected bool IsDisposed => _DisposeState.IsDisposed();
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override bool TryPool(T poolable) {
 		if (base.TryPool(poolable)) {
