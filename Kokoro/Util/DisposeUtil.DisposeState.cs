@@ -24,6 +24,17 @@ static partial class DisposeUtil {
 	}
 
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool CanHandleDisposeRequest(ref this DisposeState currentDisposeState) {
+		return currentDisposeState.VolatileRead() < DisposeState.Disposing_Flag;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool CannotHandleDisposeRequest(ref this DisposeState currentDisposeState) {
+		return currentDisposeState.VolatileRead() >= DisposeState.Disposing_Flag;
+	}
+
+
 	public static bool HandleDisposeRequest(ref this DisposeState currentDisposeState) {
 		DisposeState oldDisposeState = currentDisposeState;
 		return oldDisposeState < DisposeState.Disposing_Flag && Interlocked.CompareExchange(
