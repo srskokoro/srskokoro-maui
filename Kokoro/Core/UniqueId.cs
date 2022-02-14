@@ -199,7 +199,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 	/// Strategy: Treats the underlying data as a 128-bit unsigned integer then converts it to a base 58 integer.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private void UnsafeWriteBase58Chars_Inline(Span<char> destination) {
+	private void UnsafeWriteBase58Chars_Inlined(Span<char> destination) {
 		uint u3, u2, u1, u0;
 
 		if (BitConverter.IsLittleEndian) {
@@ -256,7 +256,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	private void UnsafeWriteBase58Chars(Span<char> destination)
-		=> UnsafeWriteBase58Chars_Inline(destination);
+		=> UnsafeWriteBase58Chars_Inlined(destination);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryWriteBase58Chars(Span<char> destination) {
@@ -270,7 +270,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		if (_Base58Size > destination.Length) {
 			throw AOORE_NeedsAtLeastBase58Size(nameof(destination));
 		}
-		UnsafeWriteBase58Chars_Inline(destination);
+		UnsafeWriteBase58Chars_Inlined(destination);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -279,7 +279,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private static UniqueId? ReadBase58Chars_Inline(ReadOnlySpan<char> source) {
+	private static UniqueId? ReadBase58Chars_Inlined(ReadOnlySpan<char> source) {
 		uint u3 = 0, u2 = 0, u1 = 0, u0 = 0;
 
 		// Get references to avoid unnecessary range checking
@@ -347,7 +347,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	private static UniqueId? ReadBase58Chars(ReadOnlySpan<char> source)
-		=> ReadBase58Chars_Inline(source);
+		=> ReadBase58Chars_Inlined(source);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UniqueId? ParseExactOrNull(ReadOnlySpan<char> input) {
@@ -371,7 +371,7 @@ public sealed class UniqueId : IComparable, IComparable<UniqueId>, IEquatable<Un
 		if (_Base58Size != input.Length) {
 			throw AOORE_NeedsExactlyBase58Size(nameof(input));
 		}
-		return ReadBase58Chars_Inline(input)
+		return ReadBase58Chars_Inlined(input)
 			?? throw FE_ReadBase58CharsFailure();
 	}
 
