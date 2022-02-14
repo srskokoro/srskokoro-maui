@@ -3,7 +3,7 @@
 internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDisposable {
 	private DisposeState _DisposeState;
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override bool TryPool(T poolable) {
 		if (base.TryPool(poolable)) {
 			// If already disposed or disposing, we retake the added object, or
@@ -47,7 +47,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override bool TryTake([MaybeNullWhen(false)] out T poolable) {
 		if (base.TryTake(out var taken)) {
 			if (_DisposeState.IsNotDisposed()) {
@@ -59,7 +59,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		return false;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public virtual bool TryTakeAggressively([MaybeNullWhen(false)] out T poolable) {
 		if (_DisposeState.IsDisposed()) {
 			poolable = default;
