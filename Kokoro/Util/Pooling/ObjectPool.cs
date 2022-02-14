@@ -52,7 +52,7 @@ internal class ObjectPool<T> {
 				spin.SpinOnce(sleep1Threshold: -1);
 
 				// Re-read and check
-				oldSize = Volatile.Read(ref _Size);
+				oldSize = _Size; // A volatile read is unnecessary at this point
 				if (oldSize >= maxSize) {
 					return false;
 				}
