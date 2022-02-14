@@ -1,17 +1,17 @@
 ﻿namespace Kokoro.Util;
 
-internal enum DisposeState : int {
-	NotDisposed = 0,
-	DisposeRequested = 1,
-	DisposedFully = 2|DisposeRequested,
-
 #pragma warning disable CA1069 // Enums values should not be duplicated
-	#region Aliases
+[Flags]
+internal enum DisposeState : uint {
+	None                   = 0,
 
-	DisposedPartially = DisposeRequested,
-	Disposed = DisposedPartially,
-	DisposeCommitted = DisposedFully,
+	DisposedPartially      = 1|None,
+	DisposedPartially_Flag = 1,
 
-	#endregion
-#pragma warning restore CA1069 // Enums values should not be duplicated
+	Disposing              = 2|DisposedPartially,
+	Disposing_Flag         = 2,
+
+	DisposedFully          = 4|Disposing,
+	DisposedFully_Flag     = 4,
 }
+#pragma warning restore CA1069 // Enums values should not be duplicated
