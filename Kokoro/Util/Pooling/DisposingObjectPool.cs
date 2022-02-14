@@ -74,6 +74,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		return base.TryTake(out poolable);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	protected virtual void Dispose(bool disposing) {
 		if (!disposing) return;
 

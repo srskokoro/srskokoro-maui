@@ -21,6 +21,7 @@ internal class ObjectPool<T> {
 	public int Size => _Size;
 
 	/// <exception cref="ThreadInterruptedException"></exception>
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public virtual bool TryTake([MaybeNullWhen(false)] out T poolable) {
 		// May throw `ThreadInterruptedException`
 		if (_Pool.TryPop(out poolable)) {
@@ -35,6 +36,7 @@ internal class ObjectPool<T> {
 	}
 
 	/// <exception cref="ThreadInterruptedException"></exception>
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public virtual bool TryPool(T poolable) {
 		int maxSize = MaxSize;
 		int oldSize = Volatile.Read(ref _Size);
