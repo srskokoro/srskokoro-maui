@@ -58,6 +58,9 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 				poolable = taken;
 				return true;
 			}
+			// If an object was taken out while we're already disposed, we must
+			// dispose it as well, or no one else will.
+			taken.Dispose();
 		}
 		poolable = default;
 		return false;
