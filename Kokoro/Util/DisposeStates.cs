@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Util;
 
-static partial class DisposeUtil {
+internal static class DisposeStates {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static DisposeState VolatileRead(ref this DisposeState currentDisposeState) {

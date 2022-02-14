@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Util;
 
-internal static partial class DisposeUtil {
+internal static class DisposeUtil {
 
 	public static ObjectDisposedException OdeFor<T>(in T obj) {
 		return Ode(Var.TypeOf(in obj));
