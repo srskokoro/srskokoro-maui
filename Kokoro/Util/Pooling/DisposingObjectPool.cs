@@ -101,7 +101,6 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Dispose() {
 		Dispose(true);
 		GC.SuppressFinalize(this);
