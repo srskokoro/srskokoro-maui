@@ -14,7 +14,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			// take any object that can be taken. That way, we can dispose the
 			// added object instead. Note: It is important that we only dispose
 			// objects that are no longer in the pool, which is why we must
-			// retake the added object. It also important that we retake the
+			// retake the added object. It is also important that we retake the
 			// added object since once we are already fully disposed, no one
 			// else will dispose the newly added object.
 			if (_DisposeState.IsNotDisposed() || !Retake_NoInterrupts(out poolable!)) {
