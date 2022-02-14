@@ -3,13 +3,24 @@
 static partial class DisposeUtil {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static DisposeState VolatileRead(ref this DisposeState currentDisposeState) {
+		return (DisposeState)Volatile.Read(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static void VolatileWrite(ref this DisposeState currentDisposeState, DisposeState newDisposeState) {
+		Volatile.Write(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState), (uint)newDisposeState);
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool IsNotDisposed(ref this DisposeState currentDisposeState) {
-		return Volatile.Read(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState)) == (uint)DisposeState.None;
+		return currentDisposeState.VolatileRead() == DisposeState.None;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool IsDisposed(ref this DisposeState currentDisposeState) {
-		return Volatile.Read(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState)) != (uint)DisposeState.None;
+		return currentDisposeState.VolatileRead() != DisposeState.None;
 	}
 
 
@@ -24,17 +35,17 @@ static partial class DisposeUtil {
 
 	public static void CommitDisposeRequest(ref this DisposeState currentDisposeState) {
 		Assert_CurrentlyDisposing(ref currentDisposeState);
-		Volatile.Write(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState), (uint)DisposeState.DisposedFully);
+		currentDisposeState.VolatileWrite(DisposeState.DisposedFully);
 	}
 
 	public static void RevertDisposeRequest(ref this DisposeState currentDisposeState) {
 		Assert_CurrentlyDisposing(ref currentDisposeState);
-		Volatile.Write(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState), (uint)DisposeState.DisposedPartially);
+		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
 	}
 
 
 	[Conditional("DEBUG")]
 	private static void Assert_CurrentlyDisposing(ref DisposeState currentDisposeState) {
-		Debug.Assert(Volatile.Read(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState)) == (uint)DisposeState.Disposing);
+		Debug.Assert(currentDisposeState.VolatileRead() == DisposeState.Disposing);
 	}
 }
