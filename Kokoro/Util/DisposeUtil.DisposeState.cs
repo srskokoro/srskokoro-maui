@@ -19,8 +19,18 @@ static partial class DisposeUtil {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool IsNotDisposed_NV(this DisposeState currentDisposeState) {
+		return currentDisposeState == DisposeState.None;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool IsDisposed(ref this DisposeState currentDisposeState) {
 		return currentDisposeState.VolatileRead() != DisposeState.None;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool IsDisposed_NV(this DisposeState currentDisposeState) {
+		return currentDisposeState != DisposeState.None;
 	}
 
 
@@ -30,14 +40,24 @@ static partial class DisposeUtil {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool CanHandleDisposeRequest_NV(this DisposeState currentDisposeState) {
+		return currentDisposeState < DisposeState.Disposing_Flag;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool CannotHandleDisposeRequest(ref this DisposeState currentDisposeState) {
 		return currentDisposeState.VolatileRead() >= DisposeState.Disposing_Flag;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool CannotHandleDisposeRequest_NV(this DisposeState currentDisposeState) {
+		return currentDisposeState >= DisposeState.Disposing_Flag;
 	}
 
 
 	public static bool HandleDisposeRequest(ref this DisposeState currentDisposeState) {
 		DisposeState oldDisposeState = currentDisposeState;
-		return oldDisposeState < DisposeState.Disposing_Flag && Interlocked.CompareExchange(
+		return oldDisposeState.CanHandleDisposeRequest_NV() && Interlocked.CompareExchange(
 			ref Unsafe.As<DisposeState, uint>(ref currentDisposeState)
 			, (uint)DisposeState.Disposing
 			, (uint)oldDisposeState
