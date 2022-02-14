@@ -55,7 +55,7 @@ internal static class DisposeStates {
 	}
 
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool HandleDisposeRequest(ref this DisposeState currentDisposeState) {
 		DisposeState oldDisposeState = currentDisposeState;
 		return oldDisposeState.CanHandleDisposeRequest_NV() && Interlocked.CompareExchange(
@@ -65,13 +65,13 @@ internal static class DisposeStates {
 		) == (uint)oldDisposeState;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void CommitDisposeRequest(ref this DisposeState currentDisposeState) {
 		Assert_CurrentlyDisposing(ref currentDisposeState);
 		currentDisposeState.VolatileWrite(DisposeState.DisposedFully);
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void RevertDisposeRequest(ref this DisposeState currentDisposeState) {
 		Assert_CurrentlyDisposing(ref currentDisposeState);
 		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
