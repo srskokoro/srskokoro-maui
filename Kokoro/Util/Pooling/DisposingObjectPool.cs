@@ -3,7 +3,7 @@
 internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDisposable {
 	private DisposeState _DisposeState;
 
-	protected DisposeState DisposeState => _DisposeState;
+	protected ref DisposeState DisposeState => ref _DisposeState;
 
 	protected bool IsDisposed => _DisposeState.IsDisposed();
 
