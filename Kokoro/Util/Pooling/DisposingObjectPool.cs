@@ -69,8 +69,8 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		// so long as we can take something out from the pool, we won't care.
 		// The fact that we can take something out from the pool either means
 		// that we're still not yet fully disposed or that there is at least
-		// one other thread that keeps on adding more to the pool even when the
-		// dispose operation has already commenced.
+		// one other thread that keeps on adding more to the pool even when a
+		// dispose operation has already kicked in.
 		return base.TryTake(out poolable);
 	}
 
