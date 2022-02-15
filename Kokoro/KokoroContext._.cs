@@ -144,16 +144,16 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public DbDismissingHandle GetThreadDb() => new(this, AccessThreadDb());
+	public DbRetiringHandle GetThreadDb() => new(this, AccessThreadDb());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public DbDismissingHandle GetThreadDb(out KokoroSqliteDb db) => new(this, db = AccessThreadDb());
+	public DbRetiringHandle GetThreadDb(out KokoroSqliteDb db) => new(this, db = AccessThreadDb());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public DbDismissingHandle AccessThreadDb(out KokoroSqliteDb db) => GetThreadDb(out db); // Alias
+	public DbRetiringHandle AccessThreadDb(out KokoroSqliteDb db) => GetThreadDb(out db); // Alias
 
 	/// <summary>Each call to this method must eventually be paired with a call
-	/// to <see cref="DismissThreadDb(KokoroSqliteDb)" />.</summary>
+	/// to <see cref="RetireThreadDb(KokoroSqliteDb)" />.</summary>
 	public KokoroSqliteDb AccessThreadDb() {
 		var dba = _CurrentDbAccess.Value!;
 		var db = dba._Db;
@@ -173,7 +173,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	/// <summary>This method must be called once (and only once) for each call
 	/// to <see cref="AccessThreadDb()" />.</summary>
-	public void DismissThreadDb(KokoroSqliteDb db) {
+	public void RetireThreadDb(KokoroSqliteDb db) {
 		var dba = _CurrentDbAccess.Value!;
 		if (dba._Db != db) {
 			throw new ArgumentException($"`{nameof(db)}` is not owned by the current thread.", nameof(db));
@@ -192,7 +192,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 	}
 
-	public ref struct DbDismissingHandle {
+	public ref struct DbRetiringHandle {
 		private KokoroContext? _Context;
 		private readonly KokoroSqliteDb _Db;
 
@@ -207,7 +207,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal DbDismissingHandle(KokoroContext context, KokoroSqliteDb borrowed) {
+		internal DbRetiringHandle(KokoroContext context, KokoroSqliteDb borrowed) {
 			_Context = context;
 			_Db = borrowed;
 		}
@@ -216,13 +216,13 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		public void Dispose() {
 			var ctx = _Context;
 			if (ctx is not null) {
-				ctx.DismissThreadDb(_Db);
+				ctx.RetireThreadDb(_Db);
 				_Context = null;
 			}
 		}
 
 		private static ObjectDisposedException E_Disposed()
-			=> DisposeUtil.Ode(typeof(DbDismissingHandle));
+			=> DisposeUtil.Ode(typeof(DbRetiringHandle));
 	}
 
 	#endregion
