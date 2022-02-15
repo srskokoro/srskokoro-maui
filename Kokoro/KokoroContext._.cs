@@ -260,7 +260,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		} catch {
 			// Failed to dispose everything. Let the next caller of this method
 			// continue the disposing operation instead.
-			_DisposeState.RevertDisposeRequest();
+			_DisposeState.RevokeDisposeRequest();
 			throw;
 		}
 	}

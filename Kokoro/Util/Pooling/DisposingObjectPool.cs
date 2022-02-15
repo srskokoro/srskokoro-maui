@@ -135,7 +135,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		} catch {
 			// Failed to dispose everything. Let the next caller of this method
 			// continue the disposing operation instead.
-			_DisposeState.RevertDisposeRequest();
+			_DisposeState.RevokeDisposeRequest();
 			throw;
 		}
 	}

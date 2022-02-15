@@ -72,7 +72,7 @@ internal static class DisposeStates {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public static void RevertDisposeRequest(ref this DisposeState currentDisposeState) {
+	public static void RevokeDisposeRequest(ref this DisposeState currentDisposeState) {
 		Assert_CurrentlyDisposing(ref currentDisposeState);
 		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
 	}
