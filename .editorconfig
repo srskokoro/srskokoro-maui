@@ -12,6 +12,9 @@ indent_style = tab
 indent_size = tab
 tab_width = 4
 
+# Guidelines -- https://github.com/pharring/EditorGuidelines
+guidelines = 80 1px dotted CAFFC000, 120 1px solid 22FF0000
+
 # ---===--- ---===--- ---===---
 # Project files
 [*.{cs,fs,vb,njs,vc,vcx,msbuild}proj]
