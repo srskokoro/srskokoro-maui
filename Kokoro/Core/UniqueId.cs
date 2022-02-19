@@ -198,6 +198,49 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		get => MemoryMarshal.CreateReadOnlySpan(ref UnsafeElementRef<UniqueId, byte>(in this, 0), _Size);
 	}
 
+	#region Constructors
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public UniqueId() => this = default;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	private UniqueId(ReadOnlySpan<byte> bytes) {
+		this = MemoryMarshal.AsRef<UniqueId>(bytes); // May throw
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	private UniqueId(ulong highBits, ulong lowBits) {
+		if (BitConverter.IsLittleEndian) {
+			UnsafeElementRef<UniqueId, ulong>(in this, 0) = BinaryPrimitives.ReverseEndianness(highBits);
+			UnsafeElementRef<UniqueId, ulong>(in this, 1) = BinaryPrimitives.ReverseEndianness(lowBits);
+		} else {
+			UnsafeElementRef<UniqueId, ulong>(in this, 0) = highBits;
+			UnsafeElementRef<UniqueId, ulong>(in this, 1) = lowBits;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	private UniqueId(uint u3, uint u2, uint u1, uint u0) {
+		if (BitConverter.IsLittleEndian) {
+			UnsafeElementRef<UniqueId, uint>(in this, 0) = BinaryPrimitives.ReverseEndianness(u3);
+			UnsafeElementRef<UniqueId, uint>(in this, 1) = BinaryPrimitives.ReverseEndianness(u2);
+			UnsafeElementRef<UniqueId, uint>(in this, 2) = BinaryPrimitives.ReverseEndianness(u1);
+			UnsafeElementRef<UniqueId, uint>(in this, 3) = BinaryPrimitives.ReverseEndianness(u0);
+		} else {
+			UnsafeElementRef<UniqueId, uint>(in this, 0) = u3;
+			UnsafeElementRef<UniqueId, uint>(in this, 1) = u2;
+			UnsafeElementRef<UniqueId, uint>(in this, 2) = u1;
+			UnsafeElementRef<UniqueId, uint>(in this, 3) = u0;
+		}
+	}
+
+	#endregion
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	private static ref TElement UnsafeElementRef<TFrom, TElement>(in TFrom from, int elementOffset) {
+		return ref Unsafe.Add(ref Unsafe.As<TFrom, TElement>(ref Unsafe.AsRef(in from)), elementOffset);
+	}
+
 	/// <summary>
 	/// Writable span, for initialization purposes only.
 	/// </summary>
@@ -261,49 +304,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	public static UniqueId Empty => _Empty;
 
 	public bool IsEmpty => HighBits == 0 && LowBits == 0;
-
-	#region Constructors
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public UniqueId() => this = default;
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private UniqueId(ReadOnlySpan<byte> bytes) {
-		this = MemoryMarshal.AsRef<UniqueId>(bytes); // May throw
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private UniqueId(ulong highBits, ulong lowBits) {
-		if (BitConverter.IsLittleEndian) {
-			UnsafeElementRef<UniqueId, ulong>(in this, 0) = BinaryPrimitives.ReverseEndianness(highBits);
-			UnsafeElementRef<UniqueId, ulong>(in this, 1) = BinaryPrimitives.ReverseEndianness(lowBits);
-		} else {
-			UnsafeElementRef<UniqueId, ulong>(in this, 0) = highBits;
-			UnsafeElementRef<UniqueId, ulong>(in this, 1) = lowBits;
-		}
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private UniqueId(uint u3, uint u2, uint u1, uint u0) {
-		if (BitConverter.IsLittleEndian) {
-			UnsafeElementRef<UniqueId, uint>(in this, 0) = BinaryPrimitives.ReverseEndianness(u3);
-			UnsafeElementRef<UniqueId, uint>(in this, 1) = BinaryPrimitives.ReverseEndianness(u2);
-			UnsafeElementRef<UniqueId, uint>(in this, 2) = BinaryPrimitives.ReverseEndianness(u1);
-			UnsafeElementRef<UniqueId, uint>(in this, 3) = BinaryPrimitives.ReverseEndianness(u0);
-		} else {
-			UnsafeElementRef<UniqueId, uint>(in this, 0) = u3;
-			UnsafeElementRef<UniqueId, uint>(in this, 1) = u2;
-			UnsafeElementRef<UniqueId, uint>(in this, 2) = u1;
-			UnsafeElementRef<UniqueId, uint>(in this, 3) = u0;
-		}
-	}
-
-	#endregion
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private static ref TElement UnsafeElementRef<TFrom, TElement>(in TFrom from, int elementOffset) {
-		return ref Unsafe.Add(ref Unsafe.As<TFrom, TElement>(ref Unsafe.AsRef(in from)), elementOffset);
-	}
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
