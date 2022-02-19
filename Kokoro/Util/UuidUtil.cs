@@ -1,4 +1,6 @@
-﻿namespace Kokoro.Util;
+﻿using System.Runtime.InteropServices;
+
+namespace Kokoro.Util;
 
 internal static class UuidUtil {
 
@@ -16,6 +18,11 @@ internal static class UuidUtil {
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static void GuidUuidSwap(Span<byte> bytes) {
+		// Initial check forces JIT to avoid unnecessary range checking
+		if (16 >= bytes.Length) {
+			throw new ArgumentOutOfRangeException(nameof(bytes), "Span is too short.");
+		}
+
 		byte x;
 
 		x = bytes[0]; bytes[0] = bytes[3]; bytes[3] = x;
@@ -31,15 +38,24 @@ internal static class UuidUtil {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static Guid GuidFromUuid(ReadOnlySpan<byte> uuidBytes) {
-		#pragma warning disable format
+		// This initial check should force JIT to avoid unnecessary range
+		// checking, except that for some unknown reasons, it doesn't...
+		if (16 >= uuidBytes.Length) {
+			throw new ArgumentOutOfRangeException(nameof(uuidBytes), "Span is too short.");
+		}
+
+		// Get reference to avoid unnecessary range checking
+		ref byte b = ref MemoryMarshal.GetReference(uuidBytes);
+
+        #pragma warning disable format
 		return new(stackalloc byte[16] {
 			// Swap bytes
-			uuidBytes[3], uuidBytes[2], uuidBytes[1], uuidBytes[0],
-			uuidBytes[5], uuidBytes[4],
-			uuidBytes[7], uuidBytes[6],
+			Unsafe.Add(ref b, 3), Unsafe.Add(ref b, 2), Unsafe.Add(ref b, 1), Unsafe.Add(ref b, 0),
+			Unsafe.Add(ref b, 5), Unsafe.Add(ref b, 4),
+			Unsafe.Add(ref b, 7), Unsafe.Add(ref b, 6),
 			// Not swapped
-			uuidBytes[8], uuidBytes[9],
-			uuidBytes[10], uuidBytes[11], uuidBytes[12], uuidBytes[13], uuidBytes[14], uuidBytes[15]
+			Unsafe.Add(ref b, 8), Unsafe.Add(ref b, 9),
+			Unsafe.Add(ref b, 10), Unsafe.Add(ref b, 11), Unsafe.Add(ref b, 12), Unsafe.Add(ref b, 13), Unsafe.Add(ref b, 14), Unsafe.Add(ref b, 15),
 		});
 		#pragma warning restore format
 	}
@@ -51,8 +67,10 @@ internal static class UuidUtil {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool TryWriteUuidBytes(in this Guid guid, Span<byte> destination) {
-		bool r = guid.TryWriteBytes(destination);
-		if (r) GuidUuidSwap(destination);
-		return r;
+		if (guid.TryWriteBytes(destination)) {
+			GuidUuidSwap(destination);
+			return true;
+		}
+		return false;
 	}
 }
