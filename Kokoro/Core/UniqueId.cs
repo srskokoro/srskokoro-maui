@@ -303,14 +303,24 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	public static UniqueId Empty => _Empty;
 
-	public bool IsEmpty => HighBits == 0 && LowBits == 0;
-
+	public bool IsEmpty {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get {
+			// Ternary operator returning true/false prevents redundant asm generation:
+			// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+			return HighBits == 0 && LowBits == 0 ? true : false;
+		}
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public byte[] ToByteArray() => Span.ToArray();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public bool TryWriteBytes(Span<byte> destination) => Span.TryCopyTo(destination);
+	public bool TryWriteBytes(Span<byte> destination) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return Span.TryCopyTo(destination) ? true : false;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Let JIT decide whether to inline
 	public void WriteBytes(Span<byte> destination) => Span.CopyTo(destination); // May throw
@@ -525,7 +535,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		if (_Base58Size != input.Length) {
 			return false;
 		}
-		return TryParse(input, out result);
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return TryParse(input, out result) ? true : false;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -559,12 +571,20 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	#region Equality and Comparability
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public override bool Equals([NotNullWhen(true)] object? obj) => obj is UniqueId other && Equals(other);
+	public override bool Equals([NotNullWhen(true)] object? obj) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return obj is UniqueId other && Equals(other) ? true : false;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public bool Equals(UniqueId uid) => HighBits == uid.HighBits && LowBits == uid.LowBits;
+	public bool Equals(UniqueId uid) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return HighBits == uid.HighBits && LowBits == uid.LowBits ? true : false;
+	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override int GetHashCode() => HashCode.Combine(HighBits, LowBits);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -603,10 +623,18 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	#region Relational Operators
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool operator ==(UniqueId left, UniqueId right) => left.Equals(right);
+	public static bool operator ==(UniqueId left, UniqueId right) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return left.Equals(right) ? true : false;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool operator !=(UniqueId left, UniqueId right) => !left.Equals(right);
+	public static bool operator !=(UniqueId left, UniqueId right) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return !left.Equals(right) ? true : false;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool operator <(UniqueId left, UniqueId right) {
@@ -615,14 +643,22 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			ulong a = left.HighBits;
 			ulong b = right.HighBits;
 
-			if (a != b) return a < b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a < b ? true : false;
+			}
 		}
 		// Compare low-order bits
 		{
 			ulong a = left.LowBits;
 			ulong b = right.LowBits;
 
-			if (a != b) return a < b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a < b ? true : false;
+			}
 		}
 		return false;
 	}
@@ -634,14 +670,22 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			ulong a = left.HighBits;
 			ulong b = right.HighBits;
 
-			if (a != b) return a < b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a < b ? true : false;
+			}
 		}
 		// Compare low-order bits
 		{
 			ulong a = left.LowBits;
 			ulong b = right.LowBits;
 
-			if (a != b) return a < b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a < b ? true : false;
+			}
 		}
 		return true;
 	}
@@ -653,14 +697,22 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			ulong a = left.HighBits;
 			ulong b = right.HighBits;
 
-			if (a != b) return a > b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a > b ? true : false;
+			}
 		}
 		// Compare low-order bits
 		{
 			ulong a = left.LowBits;
 			ulong b = right.LowBits;
 
-			if (a != b) return a > b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a > b ? true : false;
+			}
 		}
 		return false;
 	}
@@ -672,14 +724,22 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			ulong a = left.HighBits;
 			ulong b = right.HighBits;
 
-			if (a != b) return a > b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a > b ? true : false;
+			}
 		}
 		// Compare low-order bits
 		{
 			ulong a = left.LowBits;
 			ulong b = right.LowBits;
 
-			if (a != b) return a > b;
+			if (a != b) {
+				// Ternary operator returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+				return a > b ? true : false;
+			}
 		}
 		return true;
 	}
