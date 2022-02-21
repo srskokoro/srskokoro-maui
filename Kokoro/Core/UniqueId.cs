@@ -29,7 +29,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public byte this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Throw_IOORE();
+				if ((uint)index >= _Length) Throw__IOORE();
 				byte element = UnsafeElementRef<ByteData, byte>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -67,7 +67,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public uint this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Throw_IOORE();
+				if ((uint)index >= _Length) Throw__IOORE();
 				uint element = UnsafeElementRef<UInt32Data, uint>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -121,7 +121,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public ulong this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Throw_IOORE();
+				if ((uint)index >= _Length) Throw__IOORE();
 				ulong element = UnsafeElementRef<UInt64Data, ulong>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -174,7 +174,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[StackTraceHidden]
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void Throw_IOORE() => throw new IndexOutOfRangeException();
+	private static void Throw__IOORE() => throw new IndexOutOfRangeException();
 
 	#endregion
 
@@ -462,7 +462,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 			var x = Unsafe.Add(ref mapRef, (byte)Unsafe.Add(ref srcRef, i));
 			if (x < 0) {
-				ParseFailure.Current = new() {
+				ParseFail.Current = new() {
 					Code = ParseFailCode.InvalidSymbol,
 					Index = i,
 				};
@@ -487,7 +487,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			c >>= 32;
 
 			if (c != 0) {
-				ParseFailure.Current = new() {
+				ParseFail.Current = new() {
 					Code = ParseFailCode.OverflowCarry,
 					Index = i, Carry = c,
 				};
@@ -510,13 +510,13 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[StructLayout(LayoutKind.Auto)]
-	private struct ParseFailure {
+	private struct ParseFail {
 		public ParseFailCode Code;
 		public int Index;
 		public ulong Carry;
 
 		[ThreadStatic]
-		public static ParseFailure Current;
+		public static ParseFail Current;
 
 		public static Exception ToException() {
 			var current = Current;
@@ -544,26 +544,26 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UniqueId Parse(ReadOnlySpan<char> input) {
 		if (!TryParse(input, out var result)) {
-			Parse__E_Failure();
+			Parse__E_Fail();
 		}
 		return result;
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void Parse__E_Failure() => throw ParseFailure.ToException();
+	private static void Parse__E_Fail() => throw ParseFail.ToException();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
 		if (_Base58Size != input.Length || !TryParse(input, out var result)) {
-			ParseExact__E_Failure();
+			ParseExact__E_Fail();
 		}
 		return result;
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void ParseExact__E_Failure() => throw ParseFailure.ToException();
+	private static void ParseExact__E_Fail() => throw ParseFail.ToException();
 
 	#endregion
 
