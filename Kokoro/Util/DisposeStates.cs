@@ -85,20 +85,22 @@ internal static class DisposeStates {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void CommitDisposeRequest(ref this DisposeState currentDisposeState) {
-		Assert_CurrentlyDisposing(ref currentDisposeState);
+		Debug_CheckCurrentlyDisposing(ref currentDisposeState);
 		currentDisposeState.VolatileWrite(DisposeState.DisposedFully);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void RevokeDisposeRequest(ref this DisposeState currentDisposeState) {
-		Assert_CurrentlyDisposing(ref currentDisposeState);
+		Debug_CheckCurrentlyDisposing(ref currentDisposeState);
 		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
 	}
 
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[Conditional("DEBUG")]
-	private static void Assert_CurrentlyDisposing(ref DisposeState currentDisposeState) {
-		Debug.Assert(currentDisposeState.VolatileRead() == DisposeState.Disposing);
+	private static void Debug_CheckCurrentlyDisposing(ref DisposeState currentDisposeState) {
+		// Should this really be a volatile read?
+		if (currentDisposeState.VolatileRead() != DisposeState.Disposing)
+			throw new InvalidOperationException();
 	}
 }
