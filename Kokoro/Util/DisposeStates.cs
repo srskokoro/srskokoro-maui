@@ -99,8 +99,9 @@ internal static class DisposeStates {
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[Conditional("DEBUG")]
 	private static void Debug_CheckCurrentlyDisposing(ref DisposeState currentDisposeState) {
-		// Should this really be a volatile read?
-		if (currentDisposeState.VolatileRead() != DisposeState.Disposing)
+		// A volatile read is not needed here. We're simply verifying wether or
+		// not the method calling us is being used correctly.
+		if (currentDisposeState != DisposeState.Disposing)
 			throw new InvalidOperationException();
 	}
 }
