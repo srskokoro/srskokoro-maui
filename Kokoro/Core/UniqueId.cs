@@ -437,6 +437,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override string ToString() {
+		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
 		string str = new('\0', _Base58Size);
 		UnsafeWriteBase58Chars(MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(str.AsSpan()), _Base58Size));
 		return str;
