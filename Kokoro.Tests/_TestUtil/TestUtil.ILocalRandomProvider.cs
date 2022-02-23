@@ -47,7 +47,7 @@ static partial class TestUtil {
 				});
 				string? dtSeedStr = reader.ReadLine();
 				if (dtSeedStr is null || !TryParseDateTimeSeed(dtSeedStr, out dtSeed)) {
-					dtSeed = DateTimeOffset.UtcNow;
+					dtSeed = al_UtcNowOverride.Value ?? DateTimeOffset.UtcNow;
 				}
 			}
 			RandomHolder.al_RandomHolder.Value = new(dtSeed);
@@ -64,5 +64,20 @@ static partial class TestUtil {
 
 		/// <exception cref="NullReferenceException">When test framework is not set up properly.</exception>
 		private protected static int RandomSeedBase => RandomHolder.al_RandomHolder.Value!._RandomSeedBase;
+
+		private static readonly AsyncLocal<DateTimeOffset?> al_UtcNowOverride = new();
+
+		private protected static void FreezeLocalDefaultDateTimeSeed() {
+			al_UtcNowOverride.Value = DateTimeOffset.UtcNow;
+		}
+
+		private protected static void AdvanceLocalDefaultDateTimeSeed() {
+			var utcNowOverride = al_UtcNowOverride.Value ?? throw new InvalidOperationException($"Must first call `{nameof(FreezeLocalDefaultDateTimeSeed)}()`");
+			al_UtcNowOverride.Value = utcNowOverride + new TimeSpan(TimeSpan.TicksPerSecond);
+		}
+
+		private protected static void UnfreezeLocalDefaultDateTimeSeed() {
+			al_UtcNowOverride.Value = null;
+		}
 	}
 }

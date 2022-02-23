@@ -17,8 +17,6 @@ public abstract class TestUtil_ILocalRandomProvider_Test_Base {
 	private protected const string Test_DateTimeSeed_3 = "2022-02-17T21:49:06Z";
 	private protected const string Test_DateTimeSeed_3_Alt = "2022-02-17T21:49:06+00:00";
 	private protected const int Test_DateTimeSeed_3_ResultSeed = 2103003800;
-
-	private protected static Task RandomSeedBaseChangeDelay() => Task.Delay(1000);
 }
 
 public sealed class TestUtil_ILocalRandomProvider_Test
@@ -59,9 +57,12 @@ public sealed class TestUtil_ILocalRandomProvider_Test
 	[Fact]
 	public async Task RandomSeedBase_DoesNotChange_OnItsOwn() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
+		await Task.CompletedTask; // Suppress CS1998
 
+		FreezeLocalDefaultDateTimeSeed();
 		int seed1 = RandomSeedBase;
-		await RandomSeedBaseChangeDelay();
+
+		AdvanceLocalDefaultDateTimeSeed();
 		int seed2 = RandomSeedBase;
 
 		Assert.Equal(seed1, seed2);
@@ -266,10 +267,12 @@ public sealed class TestUtil_ILocalRandomProvider_Test_WithDirSetup
 	public async Task LoadLocalRandomState_Twice_Sets_DifferentSeeds() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
+		FreezeLocalDefaultDateTimeSeed();
+
 		LoadLocalRandomState("", Test_DateTimeSeedFile);
 		int seed1 = RandomSeedBase;
 
-		await RandomSeedBaseChangeDelay();
+		AdvanceLocalDefaultDateTimeSeed();
 
 		LoadLocalRandomState("", Test_DateTimeSeedFile);
 		int seed2 = RandomSeedBase;
@@ -289,10 +292,12 @@ public sealed class TestUtil_ILocalRandomProvider_Test_WithDirSetup
 		}, static async (dateTimeSeedOverride, _) => {
 			// `async` ensures our `AsyncLocal`s will be under a different context
 
+			FreezeLocalDefaultDateTimeSeed();
+
 			LoadLocalRandomState(dateTimeSeedOverride, "");
 			int seed1 = RandomSeedBase;
 
-			await RandomSeedBaseChangeDelay();
+			AdvanceLocalDefaultDateTimeSeed();
 
 			LoadLocalRandomState(dateTimeSeedOverride, "");
 			int seed2 = RandomSeedBase;
@@ -390,10 +395,12 @@ public sealed class TestUtil_ILocalRandomProvider_Test_WithDirSetup
 	public async Task SaveLocalRandomState_DoesNotModify_RandomSeedBase(int failCount) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
+		FreezeLocalDefaultDateTimeSeed();
+
 		LoadLocalRandomState("", Test_DateTimeSeedFile);
 		int expected = RandomSeedBase;
 
-		await RandomSeedBaseChangeDelay();
+		AdvanceLocalDefaultDateTimeSeed();
 
 		SaveLocalRandomState(new RunSummary { Total = 1, Failed = failCount }, Test_DateTimeSeedFile);
 		int actual = RandomSeedBase;
@@ -407,12 +414,14 @@ public sealed class TestUtil_ILocalRandomProvider_Test_WithDirSetup
 	public async Task SaveLocalRandomState_With_PersistedDateTimeSeedFile_NotChanging_When_TestsFailsStill() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
+		FreezeLocalDefaultDateTimeSeed();
+
 		LoadLocalRandomState("", Test_DateTimeSeedFile);
 		SaveLocalRandomState(new RunSummary { Total = 1, Failed = 1 }, Test_DateTimeSeedFile);
 		string expected = await ReadFirstLineAsync(Test_DateTimeSeedFile);
 
 		// Assure change if seed file will not get loaded
-		await RandomSeedBaseChangeDelay();
+		AdvanceLocalDefaultDateTimeSeed();
 
 		LoadLocalRandomState("", Test_DateTimeSeedFile);
 		SaveLocalRandomState(new RunSummary { Total = 1, Failed = 1 }, Test_DateTimeSeedFile);
