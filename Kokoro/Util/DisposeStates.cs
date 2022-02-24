@@ -88,7 +88,7 @@ internal static class DisposeStates {
 		// A volatile read is not needed here. We're simply verifying wether or
 		// not the method calling us is being used correctly.
 		if (currentDisposeState != DisposeState.Disposing) {
-			CommitDisposeRequest__IOE_Fail();
+			CommitDisposeRequest__IOE_Misuse();
 		}
 		currentDisposeState.VolatileWrite(DisposeState.DisposedFully);
 	}
@@ -105,7 +105,6 @@ internal static class DisposeStates {
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void CommitDisposeRequest__IOE_Fail() {
-		throw new InvalidOperationException($"Operation is valid only if currently disposing or handling a dispose request.");
-	}
+	private static void CommitDisposeRequest__IOE_Misuse()
+		=> throw new InvalidOperationException($"Operation is valid only if currently disposing or handling a dispose request.");
 }
