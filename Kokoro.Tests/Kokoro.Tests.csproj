@@ -28,9 +28,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions.Analyzers" Version="0.16.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SauceControl.Blake2Fast" Version="2.0.0" />
     <PackageReference Include="Xunit.Combinatorial" Version="1.4.1" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageReference Include="FluentAssertions" Version="6.5.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +53,7 @@
 
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />
+    <Using Include="FluentAssertions" />
 
     <Using Include="Kokoro.Tests" />
   </ItemGroup>
