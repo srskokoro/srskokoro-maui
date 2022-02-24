@@ -85,28 +85,27 @@ internal static class DisposeStates {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void CommitDisposeRequest(ref this DisposeState currentDisposeState) {
-		CheckCurrentlyDisposing(ref currentDisposeState);
+		// A volatile read is not needed here. We're simply verifying wether or
+		// not the method calling us is being used correctly.
+		if (currentDisposeState != DisposeState.Disposing) {
+			CommitDisposeRequest__IOE_Fail();
+		}
 		currentDisposeState.VolatileWrite(DisposeState.DisposedFully);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void RevokeDisposeRequest(ref this DisposeState currentDisposeState) {
-		CheckCurrentlyDisposing(ref currentDisposeState);
-		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
-	}
-
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private static void CheckCurrentlyDisposing(ref DisposeState currentDisposeState) {
 		// A volatile read is not needed here. We're simply verifying wether or
 		// not the method calling us is being used correctly.
-		if (currentDisposeState != DisposeState.Disposing)
-			CheckCurrentlyDisposing__IOE_Fail();
+		if (currentDisposeState != DisposeState.Disposing) {
+			return; // NOP
+		}
+		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void CheckCurrentlyDisposing__IOE_Fail() {
+	private static void CommitDisposeRequest__IOE_Fail() {
 		throw new InvalidOperationException($"Operation is valid only if currently disposing or handling a dispose request.");
 	}
 }
