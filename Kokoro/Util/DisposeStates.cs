@@ -98,7 +98,7 @@ internal static class DisposeStates {
 		// A volatile read is not needed here. We're simply verifying wether or
 		// not the method calling us is being used correctly.
 		if (currentDisposeState != DisposeState.Disposing) {
-			return; // NOP
+			return; // NOP -- let `CommitDisposeRequest()` throw for us instead
 		}
 		currentDisposeState.VolatileWrite(DisposeState.DisposedPartially);
 	}
