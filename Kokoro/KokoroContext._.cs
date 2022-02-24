@@ -82,7 +82,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 		// Initial pool entry
 		if (!_DbPool.TryPool(db)) {
-			Debug.Assert(false, "Initial pool attempt failed.");
+			Debug.Fail("Initial pool attempt shouldn't fail.");
 		}
 	}
 
