@@ -1,4 +1,6 @@
-﻿namespace Kokoro.Util;
+﻿using System.Runtime.Serialization;
+
+namespace Kokoro.Util;
 
 internal static class DisposeUtil {
 
@@ -42,7 +44,26 @@ internal static class DisposeUtil {
 		try {
 			disposable.Dispose();
 		} catch (Exception ex) {
-			throw new AggregateException(priorException, ex);
+			throw new DisposeAggregateException(priorException, ex);
 		}
 	}
+}
+
+public class DisposeAggregateException : AggregateException {
+
+	public DisposeAggregateException() { }
+
+	public DisposeAggregateException(IEnumerable<Exception> innerExceptions) : base(innerExceptions) { }
+
+	public DisposeAggregateException(params Exception[] innerExceptions) : base(innerExceptions) { }
+
+	public DisposeAggregateException(string? message) : base(message) { }
+
+	public DisposeAggregateException(string? message, IEnumerable<Exception> innerExceptions) : base(message, innerExceptions) { }
+
+	public DisposeAggregateException(string? message, Exception innerException) : base(message, innerException) { }
+
+	public DisposeAggregateException(string? message, params Exception[] innerExceptions) : base(message, innerExceptions) { }
+
+	protected DisposeAggregateException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }
