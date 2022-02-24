@@ -252,8 +252,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	#region `Create()` methods
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public static UniqueId Create() {
-		UniqueId uid = new();
+		UniqueId uid;
 		RandomNumberGenerator.Fill(uid.InitSpanBytes);
 		return uid;
 	}
@@ -279,8 +280,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public static UniqueId Create(Guid guid) {
-		UniqueId uid = new();
+		UniqueId uid;
 		guid.TryWriteUuidBytes(uid.InitSpanBytes);
 		return uid;
 	}
