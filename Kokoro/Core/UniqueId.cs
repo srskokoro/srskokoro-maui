@@ -407,10 +407,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			Unsafe.Add(ref destRef, i) = Unsafe.Add(ref mapRef, (int)c);
 		}
 
-		Debug.Assert(u3 == 0, $"{nameof(u3)}: {u3} (0x{u3:X})", null);
-		Debug.Assert(u2 == 0, $"{nameof(u2)}: {u2} (0x{u2:X})", null);
-		Debug.Assert(u1 == 0, $"{nameof(u1)}: {u1} (0x{u1:X})", null);
-		Debug.Assert(u0 == 0, $"{nameof(u0)}: {u0} (0x{u0:X})", null);
+		Debug.Assert(u3 == 0, $"{nameof(u3)}: {u3} (0x{u3:X})");
+		Debug.Assert(u2 == 0, $"{nameof(u2)}: {u2} (0x{u2:X})");
+		Debug.Assert(u1 == 0, $"{nameof(u1)}: {u1} (0x{u1:X})");
+		Debug.Assert(u0 == 0, $"{nameof(u0)}: {u0} (0x{u0:X})");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
