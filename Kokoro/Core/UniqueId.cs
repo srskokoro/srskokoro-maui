@@ -204,12 +204,22 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	public UniqueId() => this = default;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private UniqueId(ReadOnlySpan<byte> bytes) {
-		this = MemoryMarshal.AsRef<UniqueId>(bytes); // May throw
+	[SkipLocalsInit]
+	public UniqueId(ReadOnlySpan<byte> bytes) {
+		if (_Size <= bytes.Length) {
+			this = Unsafe.As<byte, UniqueId>(ref MemoryMarshal.GetReference(bytes));
+		} else {
+			UniqueId uid = default;
+			if (0 <= bytes.Length) {
+				// ^ See, https://github.com/dotnet/runtime/issues/10950
+				bytes.CopyTo(MemoryMarshal.CreateSpan(ref UnsafeElementRef<UniqueId, byte>(in uid, _Size - bytes.Length), bytes.Length));
+			}
+			this = uid;
+		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private UniqueId(ulong highBits, ulong lowBits) {
+	public UniqueId(ulong highBits, ulong lowBits) {
 		if (BitConverter.IsLittleEndian) {
 			UnsafeElementRef<UniqueId, ulong>(in this, 0) = BinaryPrimitives.ReverseEndianness(highBits);
 			UnsafeElementRef<UniqueId, ulong>(in this, 1) = BinaryPrimitives.ReverseEndianness(lowBits);
@@ -220,7 +230,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private UniqueId(uint u3, uint u2, uint u1, uint u0) {
+	public UniqueId(uint u3, uint u2, uint u1, uint u0) {
 		if (BitConverter.IsLittleEndian) {
 			UnsafeElementRef<UniqueId, uint>(in this, 0) = BinaryPrimitives.ReverseEndianness(u3);
 			UnsafeElementRef<UniqueId, uint>(in this, 1) = BinaryPrimitives.ReverseEndianness(u2);
@@ -251,7 +261,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	#region `Create()` methods
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public static UniqueId Create() {
 		UniqueId uid;
@@ -259,22 +269,25 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		return uid;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static UniqueId Create(ReadOnlySpan<byte> bytes) => new(bytes);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static UniqueId Create(ReadOnlySpan<byte> bytes) => new(bytes); // Alias
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static UniqueId CreateLenient(ReadOnlySpan<byte> bytes) {
-		if (_Size > bytes.Length) {
-			UniqueId uid = new();
-			bytes.CopyTo(uid.InitSpanBytes[(_Size - bytes.Length)..]);
-			return uid;
-		}
-		return new(bytes);
+	public static UniqueId CreateStrict(ReadOnlySpan<byte> bytes)
+		=> MemoryMarshal.AsRef<UniqueId>(bytes); // May throw
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static UniqueId Create<TState>(TState state, SpanAction<byte, TState> action) {
+		UniqueId uid = new();
+		action(uid.InitSpanBytes, state);
+		return uid;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public static UniqueId Create<TState>(TState state, SpanAction<byte, TState> action) {
-		UniqueId uid = new();
+	[SkipLocalsInit]
+	public static UniqueId CreateFast<TState>(TState state, SpanAction<byte, TState> action) {
+		UniqueId uid;
 		action(uid.InitSpanBytes, state);
 		return uid;
 	}
@@ -287,23 +300,21 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		return uid;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static UniqueId Create(ulong highBits, ulong lowBits) => new(highBits, lowBits);
-
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static UniqueId Create(uint u3, uint u2, uint u1, uint u0) => new(u3, u2, u1, u0);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static UniqueId Create(ulong highBits, ulong lowBits) => new(highBits, lowBits); // Alias
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static UniqueId Create(string base58Str) => ParseExact(base58Str);
+	public static UniqueId Create(uint u3, uint u2, uint u1, uint u0) => new(u3, u2, u1, u0); // Alias
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static UniqueId CreateLenient(string base58Str) => Parse(base58Str);
+	public static UniqueId Create(string base58Str) => ParseExact(base58Str); // Alias
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static UniqueId CreateLenient(string base58Str) => Parse(base58Str); // Alias
 
 	#endregion
 
-	private static readonly UniqueId _Empty = new();
-
-	public static UniqueId Empty => _Empty;
+	public static UniqueId Empty => default;
 
 	public bool IsEmpty {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -450,6 +461,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	#region From Base 58
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public static bool TryParse(ReadOnlySpan<char> input, out UniqueId result) {
 		uint u3 = 0, u2 = 0, u1 = 0, u0 = 0;
 		input = input.Trim();
@@ -544,6 +556,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
 	public static UniqueId Parse(ReadOnlySpan<char> input) {
 		if (!TryParse(input, out var result)) {
 			Parse__E_Fail();
@@ -556,6 +569,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	private static void Parse__E_Fail() => throw ParseFail.ToException();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
 		if (_Base58Size != input.Length || !TryParse(input, out var result)) {
 			ParseExact__E_Fail();
@@ -591,6 +605,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	public override int GetHashCode() => HashCode.Combine(HighBits, LowBits);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
 	public int CompareTo(object? obj) {
 		if (obj is not UniqueId uid) {
 			if (obj is null) return 1;
