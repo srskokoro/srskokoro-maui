@@ -5,13 +5,13 @@
 internal enum DisposeState : uint {
 	None                   = 0,
 
-	DisposedPartially      = 1|None,
 	DisposedPartially_Flag = 1,
+	DisposedPartially      = 1|None,
 
-	Disposing              = 2|DisposedPartially,
 	Disposing_Flag         = 2,
+	Disposing              = 2|DisposedPartially,
 
-	DisposedFully          = 4|Disposing,
 	DisposedFully_Flag     = 4,
+	DisposedFully          = 4|Disposing,
 }
 #pragma warning restore CA1069 // Enums values should not be duplicated
