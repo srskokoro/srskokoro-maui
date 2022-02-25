@@ -34,6 +34,18 @@ public static partial class TestUtil {
 		return random.MakeAsciiStr(random.Next(minLength, maxLength + 1));
 	}
 
+	public static T NextItem<T>(this Random random, T[] array) {
+		return array[random.Next(array.Length)];
+	}
+
+	public static TEnum NextEnum<TEnum>(this Random random) where TEnum : struct, Enum {
+		return random.NextItem(NextEnums<TEnum>.Values);
+	}
+
+	private static class NextEnums<TEnum> where TEnum : struct, Enum {
+		internal static TEnum[] Values = Enum.GetValues<TEnum>();
+	}
+
 
 	public static void RandomSpin(int minSpinCount, int maxSpinCount) {
 		DoSpin(Random.Shared.Next(minSpinCount, maxSpinCount));
@@ -63,6 +75,10 @@ public static partial class TestUtil {
 
 	public static void RandomSleep(int maxMillisecondsTimeout) {
 		Thread.Sleep(Random.Shared.Next(maxMillisecondsTimeout));
+	}
+
+	public static void RandomSleep() {
+		Thread.Sleep(Random.Shared.Next(4));
 	}
 
 
