@@ -44,18 +44,16 @@ public static partial class TestUtil {
 	}
 
 	public static void RandomSpin() {
-		DoSpin(Random.Shared.Next(0x100));
+		DoSpin(Random.Shared.Next(8));
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static void DoSpin(int spinCount) {
-		for (int i = 0; i < spinCount; i++) {
-			if (((i & 0x7) ^ 0x7) == 0) {
-				if (((i & 0x3F) ^ 0x3F) == 0) {
-					Thread.Sleep(0);
-				}
-				Thread.Yield();
-			}
+		if (spinCount > 0) {
+			SpinWait spin = default;
+			do {
+				spin.SpinOnce(-1);
+			} while (--spinCount > 0);
 		}
 	}
 
