@@ -33,4 +33,54 @@ public static partial class TestUtil {
 	public static string MakeAsciiStr(this Random random, int minLength, int maxLength) {
 		return random.MakeAsciiStr(random.Next(minLength, maxLength + 1));
 	}
+
+
+	public static void RandomSpin(int minSpinCount, int maxSpinCount) {
+		DoSpin(Random.Shared.Next(minSpinCount, maxSpinCount));
+	}
+
+	public static void RandomSpin(int maxSpinCount) {
+		DoSpin(Random.Shared.Next(maxSpinCount));
+	}
+
+	public static void RandomSpin() {
+		DoSpin(Random.Shared.Next(0x100));
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private static void DoSpin(int spinCount) {
+		for (int i = 0; i < spinCount; i++) {
+			if (((i & 0x7) ^ 0x7) == 0) {
+				if (((i & 0x3F) ^ 0x3F) == 0) {
+					Thread.Sleep(0);
+				}
+				Thread.Yield();
+			}
+		}
+	}
+
+	public static void RandomSleep(int minMillisecondsTimeout, int maxMillisecondsTimeout) {
+		Thread.Sleep(Random.Shared.Next(minMillisecondsTimeout, maxMillisecondsTimeout));
+	}
+
+	public static void RandomSleep(int maxMillisecondsTimeout) {
+		Thread.Sleep(Random.Shared.Next(maxMillisecondsTimeout));
+	}
+
+
+	[StackTraceHidden]
+	[DoesNotReturn]
+	public static void Throw(this Exception exception) {
+		ExceptionDispatchInfo.Throw(exception);
+	}
+
+	/// <summary>
+	/// Throws <see cref="Exception.InnerException">InnerException</see> if any.
+	/// </summary>
+	[StackTraceHidden]
+	public static void ThrowInner(this Exception exception) {
+		if (exception.InnerException is Exception inner) {
+			ExceptionDispatchInfo.Throw(inner);
+		}
+	}
 }
