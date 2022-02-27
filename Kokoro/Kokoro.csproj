@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
+    <InternalsVisibleTo Include="$(AssemblyName).Test" />
     <InternalsVisibleTo Include="$(AssemblyName).Experiment" />
   </ItemGroup>
 

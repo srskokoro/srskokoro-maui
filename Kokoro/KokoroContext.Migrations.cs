@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Kokoro.Sqlite;
+using Microsoft.Data.Sqlite;
 
 namespace Kokoro;
 
