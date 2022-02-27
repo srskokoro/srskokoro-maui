@@ -32,11 +32,11 @@ internal static class SqliteConnectionExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T ExecuteScalar<T>(this SqliteConnection connection, string commandText)
-		=> (T)ExecuteScalar(connection, commandText)!;
+		=> (T)connection.ExecuteScalar(commandText)!;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T ExecuteScalar<T>(this SqliteConnection connection, string commandText, params SqliteParameter[] parameters)
-		=> (T)ExecuteScalar(connection, commandText, parameters)!;
+		=> (T)connection.ExecuteScalar(commandText, parameters)!;
 
 
 	public static object? ExecuteScalar(this SqliteConnection connection, string commandText) {
