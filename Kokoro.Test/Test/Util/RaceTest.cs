@@ -35,7 +35,6 @@ public class RaceTest {
 
 	#endregion
 
-	/// <exception cref="RaceAggregateException"></exception>
 	public void Wait() {
 		Task.WaitAll(_Tasks.ToArray());
 		if (_ExceptionOrTimeout is Exception ex)
