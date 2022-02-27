@@ -83,14 +83,14 @@ public static partial class TestUtil {
 
 
 	[DoesNotReturn]
-	public static void Throw(this Exception exception) {
+	public static void ReThrow(this Exception exception) {
 		ExceptionDispatchInfo.Throw(exception);
 	}
 
 	/// <summary>
 	/// Throws <see cref="Exception.InnerException">InnerException</see> if any.
 	/// </summary>
-	public static void ThrowInner(this Exception exception) {
+	public static void ReThrowInner(this Exception exception) {
 		if (exception.InnerException is Exception inner) {
 			ExceptionDispatchInfo.Throw(inner);
 		}
