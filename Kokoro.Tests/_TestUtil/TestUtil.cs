@@ -82,7 +82,6 @@ public static partial class TestUtil {
 	}
 
 
-	[StackTraceHidden]
 	[DoesNotReturn]
 	public static void Throw(this Exception exception) {
 		ExceptionDispatchInfo.Throw(exception);
@@ -91,7 +90,6 @@ public static partial class TestUtil {
 	/// <summary>
 	/// Throws <see cref="Exception.InnerException">InnerException</see> if any.
 	/// </summary>
-	[StackTraceHidden]
 	public static void ThrowInner(this Exception exception) {
 		if (exception.InnerException is Exception inner) {
 			ExceptionDispatchInfo.Throw(inner);
