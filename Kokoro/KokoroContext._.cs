@@ -252,7 +252,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			// override finalizer, and set large fields to null.
 			//
 			// NOTE: Make sure to check for null fields, for when the
-			// constructor fails to complete but the finalizer calls us.
+			// constructor fails to complete or even execute, and the finalizer
+			// calls us anyway. See also, https://stackoverflow.com/q/34447080
 			// --
 
 			// Mark disposal as successful
