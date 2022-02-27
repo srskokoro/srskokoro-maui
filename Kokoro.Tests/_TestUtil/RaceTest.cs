@@ -2,44 +2,49 @@
 
 public class RaceTest {
 	private readonly LinkedList<Task> _Tasks = new();
-	private readonly CancellationToken _EndToken;
+	private object? _ExceptionOrTimeout;
 	private readonly int _MinSpinsPerThread;
+
+	private static readonly object _TimeoutSignal = new();
+
+	private Timer? _Timer;
 
 	#region Constructors
 
 	public RaceTest(int minSpinsPerThread) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_EndToken = new CancellationToken(true);
+		_ExceptionOrTimeout = _TimeoutSignal;
 	}
 
 	public RaceTest(int minSpinsPerThread, int millisecondsTimeoutAfterMinSpins) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_EndToken = new CancellationTokenSource(millisecondsTimeoutAfterMinSpins).Token;
+		_Timer = new(CreateTimeoutCallback(), this, millisecondsTimeoutAfterMinSpins, Timeout.Infinite);
 	}
 
 	public RaceTest(int minSpinsPerThread, TimeSpan timeoutAfterMinSpins) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_EndToken = new CancellationTokenSource(timeoutAfterMinSpins).Token;
+		_Timer = new(CreateTimeoutCallback(), this, timeoutAfterMinSpins, Timeout.InfiniteTimeSpan);
 	}
+
+	private static TimerCallback CreateTimeoutCallback() => state => {
+		var @this = (RaceTest)state!;
+		Interlocked.CompareExchange(ref @this._ExceptionOrTimeout, _TimeoutSignal, null);
+		@this._Timer!.Dispose();
+		@this._Timer = null;
+	};
 
 	#endregion
 
 	/// <exception cref="RaceAggregateException"></exception>
 	public void Wait() {
-		try {
-			Task.WaitAll(_Tasks.ToArray());
-		} catch (AggregateException ex) {
-			throw new RaceAggregateException(ex.InnerExceptions);
-		}
+		Task.WaitAll(_Tasks.ToArray());
+		if (_ExceptionOrTimeout is Exception ex)
+			ExceptionDispatchInfo.Throw(ex);
 	}
 
-	public RaceAggregateException? WaitNoThrow() {
-		try {
-			Task.WaitAll(_Tasks.ToArray());
-		} catch (AggregateException ex) {
-			return new RaceAggregateException(ex.InnerExceptions);
-		}
-		return null;
+	public Exception? WaitNoThrow() {
+		Task.WaitAll(_Tasks.ToArray());
+		return _ExceptionOrTimeout as Exception;
 	}
 
 	#region Defaults
@@ -204,37 +209,50 @@ public class RaceTest {
 		var (race, runsPerSpin, @init, @body, @finally) = (Tuple<RaceTest, int, Action, Action, Action>)state!;
 
 		int spins = race._MinSpinsPerThread;
-		var et = race._EndToken;
+		Exception? exitEx = null;
 
-		@init();
+		try {
+			@init();
+		} catch (Exception ex) {
+			exitEx = ex;
+			goto ExitWithException;
+		}
 
-		Exception? mainEx = null;
 		try {
 			for (; spins > 0; spins--) {
+				if (Volatile.Read(ref race._ExceptionOrTimeout) != null) {
+					goto Cleanup;
+				}
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body();
 				}
 			}
-			while (!et.IsCancellationRequested) {
+			while (Volatile.Read(ref race._ExceptionOrTimeout) == null) {
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body();
 				}
 			}
 		} catch (Exception ex) {
-			mainEx = ex;
+			exitEx = ex;
 		}
 
+	Cleanup:
 		try {
 			@finally();
 		} catch (Exception ex) {
-			if (mainEx != null) {
-				throw new AggregateException(mainEx, ex);
+			if (exitEx != null) {
+				exitEx = new AggregateException(exitEx, ex);
+				goto ExitWithException;
 			}
-			throw;
 		}
 
-		if (mainEx != null) {
-			ExceptionDispatchInfo.Throw(mainEx);
+		if (exitEx == null) {
+			return;
+		}
+
+	ExitWithException:
+		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) != null) {
+			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, _TimeoutSignal);
 		}
 	}
 
@@ -242,37 +260,51 @@ public class RaceTest {
 		var (race, runsPerSpin, @init, @body, @finally) = (Tuple<RaceTest, int, Func<TLocal>, Action<TLocal>, Action<TLocal>>)state!;
 
 		int spins = race._MinSpinsPerThread;
-		var et = race._EndToken;
+		Exception? exitEx = null;
 
-		TLocal local = @init();
+		TLocal local;
+		try {
+			local = @init();
+		} catch (Exception ex) {
+			exitEx = ex;
+			goto ExitWithException;
+		}
 
-		Exception? mainEx = null;
 		try {
 			for (; spins > 0; spins--) {
+				if (Volatile.Read(ref race._ExceptionOrTimeout) != null) {
+					goto Cleanup;
+				}
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body(local);
 				}
 			}
-			while (!et.IsCancellationRequested) {
+			while (Volatile.Read(ref race._ExceptionOrTimeout) == null) {
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body(local);
 				}
 			}
 		} catch (Exception ex) {
-			mainEx = ex;
+			exitEx = ex;
 		}
 
+	Cleanup:
 		try {
 			@finally(local);
 		} catch (Exception ex) {
-			if (mainEx != null) {
-				throw new AggregateException(mainEx, ex);
+			if (exitEx != null) {
+				exitEx = new AggregateException(exitEx, ex);
+				goto ExitWithException;
 			}
-			throw;
 		}
 
-		if (mainEx != null) {
-			ExceptionDispatchInfo.Throw(mainEx);
+		if (exitEx == null) {
+			return;
+		}
+
+	ExitWithException:
+		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) != null) {
+			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, _TimeoutSignal);
 		}
 	}
 
