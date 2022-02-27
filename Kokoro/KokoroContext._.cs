@@ -193,8 +193,8 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	}
 
 	public ref struct DbRetiringHandle {
-		private KokoroContext? _Context;
 		private readonly KokoroSqliteDb _Db;
+		private KokoroContext? _Context;
 
 		public readonly KokoroContext Context {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
