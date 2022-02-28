@@ -2,7 +2,6 @@
 
 using System.Reflection;
 using Xunit.Sdk;
-using static Kokoro.Test.Util.TestUtil;
 
 internal partial class TestFramework : XunitTestFramework {
 

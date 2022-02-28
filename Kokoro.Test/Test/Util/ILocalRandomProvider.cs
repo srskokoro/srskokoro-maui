@@ -6,8 +6,6 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using Xunit.Sdk;
 
-static partial class TestUtil {
-
 internal interface ILocalRandomProvider {
 
 	private class RandomHolder {
@@ -86,5 +84,4 @@ internal interface ILocalRandomProvider {
 	private protected static void UnfreezeLocalDefaultDateTimeSeed() {
 		al_UtcNowOverride.Value = null;
 	}
-}
 }
