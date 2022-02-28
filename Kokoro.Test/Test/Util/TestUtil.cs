@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Test.Util;
 
-using static Kokoro.Test.Util.ILocalRandomProvider;
+using static Kokoro.Test.Framework.IRandomizedTestFramework;
 
 public static partial class TestUtil {
 

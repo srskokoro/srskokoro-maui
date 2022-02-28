@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Test.Util;
+﻿namespace Kokoro.Test.Framework;
 
 using Blake2Fast;
 using System.Buffers.Binary;
@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using Xunit.Sdk;
 
-internal interface ILocalRandomProvider {
+internal interface IRandomizedTestFramework {
 
 	private class RandomHolder {
 		internal static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();

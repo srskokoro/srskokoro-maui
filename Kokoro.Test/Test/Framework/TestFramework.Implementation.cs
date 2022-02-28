@@ -11,7 +11,7 @@ internal partial class TestFramework : XunitTestFramework {
 		=> new TestFrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
 }
 
-internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, ILocalRandomProvider {
+internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTestFramework {
 
 	public TestFrameworkExecutor(
 		AssemblyName assemblyName,
@@ -35,10 +35,10 @@ internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, ILocalRandomP
 	private protected const string DateTimeSeedFile = @"test_start_dt_preserved_on_fail.dat";
 
 	private protected static void LoadLocalRandomState() {
-		ILocalRandomProvider.LoadLocalRandomState(TestFrameworkConfig.DateTimeSeed, DateTimeSeedFile);
+		IRandomizedTestFramework.LoadLocalRandomState(TestFrameworkConfig.DateTimeSeed, DateTimeSeedFile);
 	}
 
 	private protected static void SaveLocalRandomState(RunSummary testSummary) {
-		ILocalRandomProvider.SaveLocalRandomState(testSummary, DateTimeSeedFile);
+		IRandomizedTestFramework.SaveLocalRandomState(testSummary, DateTimeSeedFile);
 	}
 }
