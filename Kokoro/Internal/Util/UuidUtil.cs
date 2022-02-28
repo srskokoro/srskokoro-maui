@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿namespace Kokoro.Internal.Util;
 
-namespace Kokoro.Internal.Util;
+using System.Runtime.InteropServices;
 
 internal static class UuidUtil {
 

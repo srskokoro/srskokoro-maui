@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿namespace Kokoro.Internal.Util;
 
-namespace Kokoro.Internal.Util;
+using System.Text;
 
 public class StableHashCode_Test : IRandomizedTest {
 	private static Random Random => TestUtil.GetRandom<StableHashCode_Test>();

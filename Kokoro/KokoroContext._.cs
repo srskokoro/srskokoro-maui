@@ -1,9 +1,9 @@
-﻿using Kokoro.Internal.Pooling;
+﻿namespace Kokoro;
+
+using Kokoro.Internal.Pooling;
 using Kokoro.Internal.Util;
 using Kokoro.Sqlite;
 using Microsoft.Data.Sqlite;
-
-namespace Kokoro;
 
 public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	private const long SqliteDbAppId = 0x1c008087L;

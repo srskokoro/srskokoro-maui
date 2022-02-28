@@ -1,8 +1,8 @@
-﻿using System.Reflection;
+﻿namespace Kokoro.Test.Framework;
+
+using System.Reflection;
 using Xunit.Sdk;
 using static Kokoro.Test.Util.TestUtil;
-
-namespace Kokoro.Test.Framework;
 
 internal partial class TestFramework : XunitTestFramework {
 

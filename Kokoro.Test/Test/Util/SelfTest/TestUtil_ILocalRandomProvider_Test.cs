@@ -1,9 +1,9 @@
-﻿using Kokoro.Test.Framework;
+﻿namespace Kokoro.Test.Util.SelfTest;
+
+using Kokoro.Test.Framework;
 using System.Globalization;
 using Xunit.Sdk;
 using static Kokoro.Test.Util.TestUtil.ILocalRandomProvider;
-
-namespace Kokoro.Test.Util.SelfTest;
 
 public abstract class TestUtil_ILocalRandomProvider_Test_Base {
 	private protected const string Test_DateTimeSeedDir = $@"self_test";

@@ -1,6 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿namespace Kokoro.Internal.Util;
 
-namespace Kokoro.Internal.Util;
+using System.Runtime.Serialization;
 
 internal static class DisposeUtil {
 

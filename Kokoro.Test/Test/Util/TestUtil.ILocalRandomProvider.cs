@@ -1,11 +1,10 @@
-﻿using Blake2Fast;
-using Kokoro.Internal.Util;
+﻿namespace Kokoro.Test.Util;
+
+using Blake2Fast;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Globalization;
 using Xunit.Sdk;
-
-namespace Kokoro.Test.Util;
 
 static partial class TestUtil {
 

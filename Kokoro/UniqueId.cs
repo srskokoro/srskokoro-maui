@@ -1,10 +1,10 @@
-﻿using Kokoro.Internal.Util;
+﻿namespace Kokoro;
+
+using Kokoro.Internal.Util;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-
-namespace Kokoro;
 
 [StructLayout(LayoutKind.Explicit, Size = _Size)]
 public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable<UniqueId> {

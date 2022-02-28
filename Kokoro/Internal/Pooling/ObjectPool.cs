@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿namespace Kokoro.Internal.Pooling;
 
-namespace Kokoro.Internal.Pooling;
+using System.Collections.Concurrent;
 
 /// <summary>
 /// A lighter alternative to, <see href="https://www.nuget.org/packages/Microsoft.Extensions.ObjectPool"/>

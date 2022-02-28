@@ -1,6 +1,6 @@
-﻿using Microsoft.Data.Sqlite;
+﻿namespace Kokoro.Sqlite;
 
-namespace Kokoro.Sqlite;
+using Microsoft.Data.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
 public class KokoroSqliteDb : SqliteConnection {

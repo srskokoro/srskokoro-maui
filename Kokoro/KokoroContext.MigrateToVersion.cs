@@ -1,6 +1,6 @@
-﻿using Kokoro.Sqlite;
+﻿namespace Kokoro;
 
-namespace Kokoro;
+using Kokoro.Sqlite;
 
 partial class KokoroContext {
 

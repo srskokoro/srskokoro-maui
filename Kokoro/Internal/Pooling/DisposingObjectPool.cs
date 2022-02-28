@@ -1,6 +1,6 @@
-﻿using Kokoro.Internal.Util;
+﻿namespace Kokoro.Internal.Pooling;
 
-namespace Kokoro.Internal.Pooling;
+using Kokoro.Internal.Util;
 
 internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDisposable {
 	private DisposeState _DisposeState;
