@@ -7,10 +7,9 @@ using System.Globalization;
 using Xunit.Sdk;
 
 internal interface IRandomizedTestFramework {
+	private static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();
 
 	private class RandomHolder {
-		internal static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();
-
 		internal readonly int _RandomSeedBase;
 		internal readonly DateTimeOffset _RandomSeed_DateTimeComponent;
 
@@ -31,7 +30,7 @@ internal interface IRandomizedTestFramework {
 	internal interface ILocalRandomAccess {
 
 		protected static Random GetRandom(Type type) {
-			var rh = RandomHolder.al_RandomHolder.Value!;
+			var rh = al_RandomHolder.Value!;
 			return rh._RandomPerType.GetOrAdd(type
 				, static (type, randomSeedBase) => new(unchecked(randomSeedBase + StableHashCode.Of(type.ToString())))
 				, rh._RandomSeedBase);
@@ -55,12 +54,12 @@ internal interface IRandomizedTestFramework {
 				dtSeed = al_UtcNowOverride.Value ?? DateTimeOffset.UtcNow;
 			}
 		}
-		RandomHolder.al_RandomHolder.Value = new(dtSeed);
+		al_RandomHolder.Value = new(dtSeed);
 	}
 
 	private protected static void SaveLocalRandomState(RunSummary testSummary, string dateTimeSeedFile) {
 		if (testSummary.Failed > 0) {
-			File.WriteAllText(dateTimeSeedFile, RandomHolder.al_RandomHolder.Value!._RandomSeed_DateTimeComponent
+			File.WriteAllText(dateTimeSeedFile, al_RandomHolder.Value!._RandomSeed_DateTimeComponent
 				.ToString(DateTimeSeed_ExpectedFormat, CultureInfo.InvariantCulture));
 		} else {
 			File.Delete(dateTimeSeedFile);
@@ -68,7 +67,7 @@ internal interface IRandomizedTestFramework {
 	}
 
 	/// <exception cref="NullReferenceException">When test framework is not set up properly.</exception>
-	private protected static int RandomSeedBase => RandomHolder.al_RandomHolder.Value!._RandomSeedBase;
+	private protected static int RandomSeedBase => al_RandomHolder.Value!._RandomSeedBase;
 
 	private static readonly AsyncLocal<DateTimeOffset?> al_UtcNowOverride = new();
 
