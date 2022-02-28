@@ -45,7 +45,7 @@
     <ProjectReference Include="..\Kokoro\Kokoro.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro\Common.csproj.targets" />
+  <Import Project="..\Kokoro\Common.Usings.targets" />
 
   <ItemGroup>
     <Using Include="Kokoro" />
