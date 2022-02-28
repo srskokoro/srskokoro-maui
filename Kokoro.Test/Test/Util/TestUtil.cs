@@ -1,5 +1,7 @@
 ﻿namespace Kokoro.Test.Util;
 
+using static Kokoro.Test.Util.TestUtil.ILocalRandomProvider;
+
 public static partial class TestUtil {
 
 #if DEBUG

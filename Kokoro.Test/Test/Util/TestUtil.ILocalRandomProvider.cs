@@ -8,37 +8,38 @@ using Xunit.Sdk;
 
 static partial class TestUtil {
 
-	private class RandomHolder {
-		internal static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();
-
-		internal readonly int _RandomSeedBase;
-		internal readonly DateTimeOffset _RandomSeed_DateTimeComponent;
-
-		public RandomHolder(DateTimeOffset randomSeed_DateTimeComponent) {
-			Span<byte> unixSecondsBytes = stackalloc byte[sizeof(long)];
-			BinaryPrimitives.WriteInt64BigEndian(destination: unixSecondsBytes, randomSeed_DateTimeComponent.ToUnixTimeSeconds());
-
-			Span<byte> unixSecondsHashBytes = stackalloc byte[sizeof(int)];
-			Blake2b.ComputeAndWriteHash(sizeof(int), input: unixSecondsBytes, output: unixSecondsHashBytes);
-
-			_RandomSeedBase = BinaryPrimitives.ReadInt32BigEndian(unixSecondsHashBytes);
-			_RandomSeed_DateTimeComponent = randomSeed_DateTimeComponent;
-		}
-
-		internal readonly ConcurrentDictionary<Type, Random> _RandomPerType = new();
-	}
-
-	internal interface ILocalRandomAccess {
-
-		protected static Random GetRandom(Type type) {
-			var rh = RandomHolder.al_RandomHolder.Value!;
-			return rh._RandomPerType.GetOrAdd(type
-				, static (type, randomSeedBase) => new(unchecked(randomSeedBase + StableHashCode.Of(type.ToString())))
-				, rh._RandomSeedBase);
-		}
-	}
-
 	internal interface ILocalRandomProvider {
+
+		private class RandomHolder {
+			internal static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();
+
+			internal readonly int _RandomSeedBase;
+			internal readonly DateTimeOffset _RandomSeed_DateTimeComponent;
+
+			public RandomHolder(DateTimeOffset randomSeed_DateTimeComponent) {
+				Span<byte> unixSecondsBytes = stackalloc byte[sizeof(long)];
+				BinaryPrimitives.WriteInt64BigEndian(destination: unixSecondsBytes, randomSeed_DateTimeComponent.ToUnixTimeSeconds());
+
+				Span<byte> unixSecondsHashBytes = stackalloc byte[sizeof(int)];
+				Blake2b.ComputeAndWriteHash(sizeof(int), input: unixSecondsBytes, output: unixSecondsHashBytes);
+
+				_RandomSeedBase = BinaryPrimitives.ReadInt32BigEndian(unixSecondsHashBytes);
+				_RandomSeed_DateTimeComponent = randomSeed_DateTimeComponent;
+			}
+
+			internal readonly ConcurrentDictionary<Type, Random> _RandomPerType = new();
+		}
+
+		internal interface ILocalRandomAccess {
+
+			protected static Random GetRandom(Type type) {
+				var rh = RandomHolder.al_RandomHolder.Value!;
+				return rh._RandomPerType.GetOrAdd(type
+					, static (type, randomSeedBase) => new(unchecked(randomSeedBase + StableHashCode.Of(type.ToString())))
+					, rh._RandomSeedBase);
+			}
+		}
+
 		private protected const string DateTimeSeed_ExpectedFormat = "yyyy-MM-ddTHH:mm:ssK";
 
 		private protected static bool TryParseDateTimeSeed([NotNullWhen(true)] string? input, out DateTimeOffset result) {
