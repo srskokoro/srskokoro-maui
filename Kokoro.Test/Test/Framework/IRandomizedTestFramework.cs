@@ -37,6 +37,8 @@ internal interface IRandomizedTestFramework {
 		}
 	}
 
+	// --
+
 	private protected const string DateTimeSeed_ExpectedFormat = "yyyy-MM-ddTHH:mm:ssK";
 
 	private protected static bool TryParseDateTimeSeed([NotNullWhen(true)] string? input, out DateTimeOffset result) {
@@ -65,6 +67,8 @@ internal interface IRandomizedTestFramework {
 			File.Delete(dateTimeSeedFile);
 		}
 	}
+
+	// --
 
 	/// <exception cref="NullReferenceException">When test framework is not set up properly.</exception>
 	private protected static int RandomSeedBase => al_RandomHolder.Value!._RandomSeedBase;
