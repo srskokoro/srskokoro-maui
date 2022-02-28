@@ -24,7 +24,7 @@ public sealed class IRandomizedTestFramework_Test
 	: IRandomizedTestFramework_Test_Base, IRandomizedTestFramework {
 
 	[Fact]
-	public void TestFramework_ProperlySetsUp_RandomSeedBase() {
+	public void RandomSeedBase_Is_ProperlySetUp_By_TestFramework() {
 		Exception? e = Record.Exception(() => {
 			_ = RandomSeedBase;
 		});

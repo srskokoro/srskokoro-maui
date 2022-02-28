@@ -84,7 +84,7 @@ internal interface IRandomizedTestFramework {
 		al_UtcNowOverride.Value = utcNowOverride + new TimeSpan(TimeSpan.TicksPerSecond);
 	}
 
-	private protected static void UnfreezeLocalDefaultDateTimeSeed() {
+	private protected static void RestoreLocalDefaultDateTimeSeed() {
 		al_UtcNowOverride.Value = null;
 	}
 }
