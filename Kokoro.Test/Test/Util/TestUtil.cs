@@ -8,6 +8,8 @@ public static partial class TestUtil {
 	public const bool Debug = false;
 #endif
 
+	// --
+
 	public static Random GetRandom<T>() where T : class, IRandomizedTest
 		=> RandomHolder.al_RandomHolder.Value!.GetRandom(typeof(T));
 
