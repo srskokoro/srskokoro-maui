@@ -32,10 +32,10 @@ public sealed class TestUtil_ILocalRandomProvider_Test
 	}
 
 	[Fact]
-	public void TestConfig_DateTimeSeed_Is_EitherValidOrEmpty() {
+	public void TestFrameworkConfig_DateTimeSeed_Is_EitherValidOrEmpty() {
 		Assert.True(
-			TryParseDateTimeSeed(_TestConfig.DateTimeSeed, out _)
-			|| string.IsNullOrWhiteSpace(_TestConfig.DateTimeSeed)
+			TryParseDateTimeSeed(TestFrameworkConfig.DateTimeSeed, out _)
+			|| string.IsNullOrWhiteSpace(TestFrameworkConfig.DateTimeSeed)
 			, "Invalid configuration! Should be either empty or set to a valid ISO 8601 date time string."
 		);
 	}
