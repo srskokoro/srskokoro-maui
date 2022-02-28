@@ -10,11 +10,16 @@ public static partial class TestUtil {
 
 	// --
 
-	public static Random GetRandom<T>() where T : class, IRandomizedTest
-		=> RandomHolder.al_RandomHolder.Value!.GetRandom(typeof(T));
+	private class LocalRandomAccess : ILocalRandomAccess {
+		public static Random GetRandom<T>() where T : IRandomizedTest
+			=> ILocalRandomAccess.GetRandom(typeof(T));
+	}
 
-	public static Random GetRandom<T>(this T _)
-		where T : class, IRandomizedTest => GetRandom<T>();
+	public static Random GetRandom<T>() where T : class, IRandomizedTest
+		=> LocalRandomAccess.GetRandom<T>();
+
+	public static Random GetRandom<T>(this T _) where T : class, IRandomizedTest
+		=> LocalRandomAccess.GetRandom<T>();
 
 	public static Span<byte> Init(this Random random, Span<byte> bytes) {
 		random.NextBytes(bytes);

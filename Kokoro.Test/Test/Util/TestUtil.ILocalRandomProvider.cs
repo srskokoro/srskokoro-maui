@@ -25,11 +25,17 @@ static partial class TestUtil {
 			_RandomSeed_DateTimeComponent = randomSeed_DateTimeComponent;
 		}
 
-		private readonly ConcurrentDictionary<Type, Random> _RandomPerType = new();
+		internal readonly ConcurrentDictionary<Type, Random> _RandomPerType = new();
+	}
 
-		public Random GetRandom(Type type) => _RandomPerType.GetOrAdd(type
-			, static (type, randomSeedBase) => new(unchecked(randomSeedBase + StableHashCode.Of(type.ToString())))
-			, _RandomSeedBase);
+	internal interface ILocalRandomAccess {
+
+		protected static Random GetRandom(Type type) {
+			var rh = RandomHolder.al_RandomHolder.Value!;
+			return rh._RandomPerType.GetOrAdd(type
+				, static (type, randomSeedBase) => new(unchecked(randomSeedBase + StableHashCode.Of(type.ToString())))
+				, rh._RandomSeedBase);
+		}
 	}
 
 	internal interface ILocalRandomProvider {
