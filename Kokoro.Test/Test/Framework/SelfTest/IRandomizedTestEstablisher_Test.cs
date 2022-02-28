@@ -3,9 +3,9 @@
 using Kokoro.Test.Framework;
 using System.Globalization;
 using Xunit.Sdk;
-using static Kokoro.Test.Framework.IRandomizedTestFramework;
+using static Kokoro.Test.Framework.IRandomizedTestEstablisher;
 
-public abstract class IRandomizedTestFramework_Test_Base {
+public abstract class IRandomizedTestEstablisher_Test_Base {
 	private protected const string Test_DateTimeSeedDir = $@"self_test";
 	private protected const string Test_DateTimeSeedFile = $@"{Test_DateTimeSeedDir}\test_start_dt_preserved_on_fail.dat";
 
@@ -20,8 +20,8 @@ public abstract class IRandomizedTestFramework_Test_Base {
 	private protected const int Test_DateTimeSeed_3_ResultSeed = 2103003800;
 }
 
-public sealed class IRandomizedTestFramework_Test
-	: IRandomizedTestFramework_Test_Base, IRandomizedTestFramework {
+public sealed class IRandomizedTestEstablisher_Test
+	: IRandomizedTestEstablisher_Test_Base, IRandomizedTestEstablisher {
 
 	[Fact]
 	public void RandomSeedBase_Is_ProperlySetUp_By_TestFramework() {
@@ -70,9 +70,9 @@ public sealed class IRandomizedTestFramework_Test
 	}
 }
 
-public sealed class IRandomizedTestFramework_Test_WithDirSetup
-	: IRandomizedTestFramework_Test_Base, IRandomizedTestFramework
-	, IClassFixture<IRandomizedTestFramework_Test_WithDirSetup.DirectoryFixture>
+public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
+	: IRandomizedTestEstablisher_Test_Base, IRandomizedTestEstablisher
+	, IClassFixture<IRandomizedTestEstablisher_Test_WithDirSetup.DirectoryFixture>
 	, IDisposable {
 
 	public sealed class DirectoryFixture : IDisposable {
@@ -88,7 +88,7 @@ public sealed class IRandomizedTestFramework_Test_WithDirSetup
 
 	private readonly int _RandomSeedBase_Backup;
 
-	public IRandomizedTestFramework_Test_WithDirSetup(DirectoryFixture _) {
+	public IRandomizedTestEstablisher_Test_WithDirSetup(DirectoryFixture _) {
 		_RandomSeedBase_Backup = RandomSeedBase;
 
 		// Ensure doesn't exist prior any test case

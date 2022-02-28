@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using Xunit.Sdk;
 
-internal interface IRandomizedTestFramework {
+internal interface IRandomizedTestEstablisher {
 	private static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();
 
 	private class RandomHolder {

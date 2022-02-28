@@ -3,7 +3,7 @@
 using System.Reflection;
 using Xunit.Sdk;
 
-internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTestFramework {
+internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTestEstablisher {
 
 	public TestFrameworkExecutor(
 		AssemblyName assemblyName,
@@ -27,10 +27,10 @@ internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTe
 	private protected const string DateTimeSeedFile = @"test_start_dt_preserved_on_fail.dat";
 
 	private protected static void LoadLocalRandomState() {
-		IRandomizedTestFramework.LoadLocalRandomState(TestFrameworkConfig.DateTimeSeed, DateTimeSeedFile);
+		IRandomizedTestEstablisher.LoadLocalRandomState(TestFrameworkConfig.DateTimeSeed, DateTimeSeedFile);
 	}
 
 	private protected static void SaveLocalRandomState(RunSummary testSummary) {
-		IRandomizedTestFramework.SaveLocalRandomState(testSummary, DateTimeSeedFile);
+		IRandomizedTestEstablisher.SaveLocalRandomState(testSummary, DateTimeSeedFile);
 	}
 }
