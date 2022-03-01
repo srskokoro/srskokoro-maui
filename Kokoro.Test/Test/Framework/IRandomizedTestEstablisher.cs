@@ -9,7 +9,7 @@ using Xunit.Sdk;
 internal interface IRandomizedTestEstablisher {
 	private static readonly AsyncLocal<RandomHolder> al_RandomHolder = new();
 
-	private class RandomHolder {
+	private sealed class RandomHolder {
 		internal readonly int _RandomSeedBase;
 		internal readonly DateTimeOffset _RandomSeed_DateTimeComponent;
 
