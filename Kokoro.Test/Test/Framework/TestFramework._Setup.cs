@@ -9,5 +9,5 @@ partial class TestFramework {
 
 	public const string TypeName = $"{TypeNamespace}.{nameof(TestFramework)}";
 
-	public const string AssemblyName = $"Kokoro.Test";
+	public const string AssemblyName = ThisAssembly.Project.AssemblyName;
 }
