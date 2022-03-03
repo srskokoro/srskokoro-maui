@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.SelfTest.Framework;
-
 using Kokoro.Test.Framework;
 using System.Globalization;
 using Xunit.Sdk;

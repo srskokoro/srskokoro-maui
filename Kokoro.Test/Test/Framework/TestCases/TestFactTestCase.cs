@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.Framework.TestCases;
-
 using Kokoro.Test.Framework.Attributes;
 using System.ComponentModel;
 using System.Threading;

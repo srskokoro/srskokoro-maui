@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Internal.Util;
-
 using System.Text;
 
 public class StableHashCode_Test : IRandomizedTest {

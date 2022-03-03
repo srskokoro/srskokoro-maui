@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Sqlite;
-
 using Microsoft.Data.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>

@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.Framework.Discovery;
-
 using Kokoro.Test.Framework.TestCases;
 using System.Collections.Generic;
 using Xunit.Abstractions;

@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.SelfTest.Framework.Discovery;
-
 using Kokoro.Test.Framework.Discovery;
 using Xunit.Sdk;
 

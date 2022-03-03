@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.Framework;
-
 using Blake2Fast;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;

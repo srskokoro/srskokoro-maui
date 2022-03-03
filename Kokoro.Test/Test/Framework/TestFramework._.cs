@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.Framework;
-
 using System.Reflection;
 using Xunit.Sdk;
 

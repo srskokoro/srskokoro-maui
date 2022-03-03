@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Internal.Pooling;
-
 using System.Collections.Concurrent;
 
 /// <summary>

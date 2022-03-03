@@ -1,5 +1,4 @@
 ﻿namespace Kokoro;
-
 using Kokoro.Internal.Util;
 using System.Buffers;
 using System.Buffers.Binary;

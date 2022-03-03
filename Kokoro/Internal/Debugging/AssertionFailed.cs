@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Internal.Debugging;
-
 using System;
 using System.Runtime.Serialization;
 
