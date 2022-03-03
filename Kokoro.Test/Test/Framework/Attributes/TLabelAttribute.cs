@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 internal class TLabelAttribute : LabelAttribute {
 	public static readonly Regex ConformingTestNamePattern = new(@"^(T\d+)(?:_(\w+))?$", RegexOptions.Compiled);
 
-	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcfp._x~?])\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
+	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._x~?])\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
 	protected TLabelAttribute() { }
 
@@ -30,7 +30,6 @@ internal class TLabelAttribute : LabelAttribute {
 			//
 			// - '[m]' means a method member or callable function
 			// - '[c]' same as '[m]'
-			// - '[f]' same as '[m]'
 			//
 			// - '[p]' means a property or field member
 			//
@@ -60,8 +59,7 @@ internal class TLabelAttribute : LabelAttribute {
 
 				switch (inlineTypeChar) {
 					case 'm':
-					case 'c':
-					case 'f': {
+					case 'c': {
 						if (callInBackticks is null) {
 							callInBackticks = $"`{targetOfTest}()`";
 						}
