@@ -571,11 +571,18 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
-		if (_Base58Size != input.Length || !TryParse(input, out var result)) {
+		if (_Base58Size != input.Length) {
+			ParseExact__AOORE_LengthNotExact(nameof(input));
+		}
+		if (!TryParse(input, out var result)) {
 			ParseExact__E_Fail();
 		}
 		return result;
 	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	[DoesNotReturn]
+	private static void ParseExact__AOORE_LengthNotExact(string? paramName) => throw new ArgumentOutOfRangeException(paramName, $"Input span needs to be exactly {_Base58Size} in length.");
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
