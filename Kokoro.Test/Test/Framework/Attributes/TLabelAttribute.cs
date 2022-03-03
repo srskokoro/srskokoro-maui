@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 internal class TLabelAttribute : LabelAttribute {
 	public static readonly Regex ConformingTestNamePattern = new(@"^(T\d+)(?:_([a-zA-Z0-9])_(\w+)$)?", RegexOptions.Compiled);
 
-	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[[ !$%&*.0?^_~]\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
+	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[[ !$%&*.?^_~]\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
 	protected TLabelAttribute() { }
 
