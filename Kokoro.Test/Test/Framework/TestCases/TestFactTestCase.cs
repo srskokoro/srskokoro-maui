@@ -65,7 +65,7 @@ public class TestFactTestCase : SkippableFactTestCase {
 	private bool _ErrorTooManyLabelAttributes;
 
 	internal static string GetErrorMessageForTooManyLabelAttributes(ITestMethod testMethod)
-		=> $"Test method '{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}' has multiple [Label]-derived attributes";
+		=> $"Test method `{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}` has multiple [Label]-derived attributes";
 
 	public override Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource) {
 		if (_ErrorTooManyLabelAttributes) {
