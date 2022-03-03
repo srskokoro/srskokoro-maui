@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Internal.Util;
 
-internal class CoreUtil {
+internal class CoreUtils {
 #if DEBUG
 	public const bool Debug = true;
 #else

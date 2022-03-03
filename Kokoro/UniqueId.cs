@@ -346,7 +346,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public Guid ToGuid() => UuidUtil.GuidFromUuid(Span);
+	public Guid ToGuid() => UuidUtils.GuidFromUuid(Span);
 
 	#region Base 58 Conversions
 

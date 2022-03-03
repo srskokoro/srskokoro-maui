@@ -2,7 +2,7 @@
 
 using System.Runtime.InteropServices;
 
-internal static class UuidUtil {
+internal static class UuidUtils {
 
 	/// <summary>
 	/// Toggles between GUID and UUID layout.

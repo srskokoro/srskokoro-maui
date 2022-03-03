@@ -2,7 +2,7 @@
 
 using System.Runtime.Serialization;
 
-internal static class DisposeUtil {
+internal static class DisposeUtils {
 
 	public static ObjectDisposedException OdeFor<T>(in T obj) {
 		return Ode(Var.TypeOf(in obj));

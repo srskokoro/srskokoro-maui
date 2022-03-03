@@ -223,7 +223,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 
 		private static ObjectDisposedException E_Disposed()
-			=> DisposeUtil.Ode(typeof(DbRetiringHandle));
+			=> DisposeUtils.Ode(typeof(DbRetiringHandle));
 	}
 
 	#endregion
@@ -285,5 +285,5 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	#endregion
 
 	private ObjectDisposedException E_Disposed()
-		=> DisposeUtil.Ode(GetType());
+		=> DisposeUtils.Ode(GetType());
 }
