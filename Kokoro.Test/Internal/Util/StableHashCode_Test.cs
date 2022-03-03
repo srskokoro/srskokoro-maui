@@ -6,11 +6,16 @@ public class StableHashCode_Test : IRandomizedTest {
 	private static Random Random => TestUtil.GetRandom<StableHashCode_Test>();
 
 	[TestFact]
-	[TLabel("[m]: hash of 2 nulls != hash of 3 nulls")]
+	[TLabel("[m]: hash of 1 null != hash of 2 nulls != hash of 3 nulls")]
 	public void T001_Of() {
-		int hash1 = StableHashCode.Of("\0\0");
-		int hash2 = StableHashCode.Of("\0\0\0");
-		Assert.NotEqual(hash1, hash2);
+		using var scope = new AssertionScope();
+
+		int hash1 = StableHashCode.Of("\0");
+		int hash2 = StableHashCode.Of("\0\0");
+		int hash3 = StableHashCode.Of("\0\0\0");
+
+		hash1.Should().NotBe(hash2, $"the latter hash is for 2 nulls");
+		hash2.Should().NotBe(hash3, $"the latter hash is for 3 nulls");
 	}
 
 	[TestFact]

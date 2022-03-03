@@ -58,7 +58,9 @@
 
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />
+
     <Using Include="FluentAssertions" />
+    <Using Include="FluentAssertions.Execution" />
 
     <Using Include="Kokoro.Test" />
     <Using Include="Kokoro.Test.Util" />
