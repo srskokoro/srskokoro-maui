@@ -87,6 +87,9 @@ dotnet_style_prefer_simplified_interpolation = true
 # See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 dotnet_style_prefer_simplified_boolean_expressions = true:silent
 
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = warning
+
 # Field preferences
 dotnet_style_readonly_field = true
 
