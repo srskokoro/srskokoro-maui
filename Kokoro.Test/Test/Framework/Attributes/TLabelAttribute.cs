@@ -1,6 +1,5 @@
 ﻿namespace Kokoro.Test.Framework.Attributes;
 
-using Kokoro.Internal.Debugging;
 using System;
 using System.Text.RegularExpressions;
 
@@ -85,10 +84,11 @@ internal class TLabelAttribute : LabelAttribute {
 						return textNoBackticks;
 					}
 					default: {
-						throw new AssertionFailed(
+						Trace.Fail(
 							$"Character not handled at index " +
 							$"{inlineType.Index}: '{inlineTypeChar}'"
 						);
+						return match.Value;
 					}
 				}
 			});

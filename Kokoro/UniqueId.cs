@@ -1,6 +1,5 @@
 ﻿namespace Kokoro;
 
-using Kokoro.Internal.Debugging;
 using Kokoro.Internal.Util;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -536,14 +535,21 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			var current = Current;
 			Current = default;
 
-			return current.Code switch {
-				ParseFailCode.InvalidSymbol => new FormatException($"Invalid symbol at index {current.Index}"),
-				ParseFailCode.OverflowCarry => new OverflowException(
-					$"Accumulated value of base 58 input is too high.{Environment.NewLine}" +
-					$"Parsing halted at index {current.Index}, with overflow carry: {current.Carry} (0x{current.Carry:X})"
-				),
-				_ => new FormatException("NA", new AssertionFailed("Unexpected exception path")),
-			};
+			switch (current.Code) {
+				case ParseFailCode.InvalidSymbol: {
+					return new FormatException($"Invalid symbol at index {current.Index}");
+				}
+				case ParseFailCode.OverflowCarry: {
+					return new OverflowException(
+						$"Accumulated value of base 58 input is too high.{Environment.NewLine}" +
+						$"Parsing halted at index {current.Index}, with overflow carry: {current.Carry} (0x{current.Carry:X})"
+					);
+				}
+				default: {
+					Trace.Fail("Unexpected exception path");
+					return new FormatException("NA");
+				}
+			}
 		}
 	}
 

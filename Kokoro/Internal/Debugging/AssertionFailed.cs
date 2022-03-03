@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.Serialization;
 
+[Obsolete($"Better use `Trace.Fail()` or `Debug.Fail()` instead")]
 [Serializable]
 internal sealed class AssertionFailed : InvalidOperationException, ISerializable {
 
