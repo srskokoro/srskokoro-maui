@@ -1,13 +1,14 @@
 ﻿namespace Kokoro.Test.Framework.Attributes;
 
+using Kokoro.Internal.Debugging;
 using System;
 using System.Text.RegularExpressions;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 internal class TLabelAttribute : LabelAttribute {
-	public static readonly Regex ConformingTestNamePattern = new(@"^(T\d+)(?:_([a-zA-Z0-9])_(\w+)$)?", RegexOptions.Compiled);
+	public static readonly Regex ConformingTestNamePattern = new(@"^(T\d+)(?:_(\w+))?$", RegexOptions.Compiled);
 
-	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[[ !$%&*.?^_~]\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
+	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcfp._x~?])\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
 	protected TLabelAttribute() { }
 
@@ -16,33 +17,80 @@ internal class TLabelAttribute : LabelAttribute {
 
 		Match match = ConformingTestNamePattern.Match(testMethodName);
 		if (match.Success) {
-			var targetOfTest = match.Groups[3].ValueSpan;
-			if (targetOfTest.IsEmpty) {
+			var targetOfTest = match.Groups[2];
+			if (!targetOfTest.Success) {
 				goto Done;
 			}
 
 			TestMethodNameOverride = match.Groups[1].Value; // "T0", "T1", etc.
 
-			if (format is null) {
-				goto Done;
-			}
-
-			var memberType = match.Groups[2].ValueSpan; // 'm', 'p', 'x', etc.
+			// Now, transform the format string to inline the target of the
+			// test.
 
 			// Convention:
-			// - 'm' means method member
-			// - 'p' means property or field member
-			// - 'x' means unknown or explicit opt-out
-			var targetText = memberType.IsEmpty || memberType[0] != 'm'
-				? $"`{targetOfTest}`"
-				: $"`{targetOfTest}()`";
+			//
+			// - '[m]' means a method member or callable function
+			// - '[c]' same as '[m]'
+			// - '[f]' same as '[m]'
+			//
+			// - '[p]' means a property or field member
+			//
+			// - '[.]' means an inline code; same appearance as '[p]'
+			// - '[_]' same as '[.]'
+			//
+			// - '[x]' means inline without backticks
+			// - '[~]' same as '[x]'
+			// - '[?]' same as '[x]'
+
+			if (format is null) {
+				format = "[.]";
+			}
+
+			string? callInBackticks = null;
+			string? codeInBackticks = null;
+			string? textNoBackticks = null;
 
 			format = MemberInFormat_Or_EscAsciiPunc_Pattern.Replace(format, match => {
-				var escPunc = match.Groups[1];
+				Group escPunc = match.Groups[2];
 				if (escPunc.Success) {
 					return escPunc.Value;
 				}
-				return targetText;
+
+				Group inlineType = match.Groups[1];
+				char inlineTypeChar = inlineType.ValueSpan[0];
+
+				switch (inlineTypeChar) {
+					case 'm':
+					case 'c':
+					case 'f': {
+						if (callInBackticks is null) {
+							callInBackticks = $"`{targetOfTest}()`";
+						}
+						return callInBackticks;
+					}
+					case 'p':
+					case '.':
+					case '_': {
+						if (codeInBackticks is null) {
+							codeInBackticks = $"`{targetOfTest}`";
+						}
+						return codeInBackticks;
+					}
+					case 'x':
+					case '~':
+					case '?': {
+						if (textNoBackticks is null) {
+							textNoBackticks = targetOfTest.ToString();
+						}
+						return textNoBackticks;
+					}
+					default: {
+						throw new AssertionFailed(
+							$"Character not handled at index " +
+							$"{inlineType.Index}: '{inlineTypeChar}'"
+						);
+					}
+				}
 			});
 		}
 
