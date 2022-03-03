@@ -5,17 +5,19 @@ using System.Text;
 public class StableHashCode_Test : IRandomizedTest {
 	private static Random Random => TestUtil.GetRandom<StableHashCode_Test>();
 
-	[Fact]
-	public void HashOf_2Nulls_IsNot_HashOf_3Nulls() {
+	[TestFact]
+	[TLabel("[m]: hash of 2 nulls != hash of 3 nulls")]
+	public void T001_Of() {
 		int hash1 = StableHashCode.Of("\0\0");
 		int hash2 = StableHashCode.Of("\0\0\0");
 		Assert.NotEqual(hash1, hash2);
 	}
 
-	[Fact]
-	public void HashOf_String_Equals_HashOf_UTF16BE_Bytes() {
+	[TestFact]
+	[TLabel("[m]: hash of random UTF-16BE bytes == hash of string representation")]
+	public void T002_Of() {
 		string str = Random.MakeAsciiStr(0, 42);
-		byte[] bytes = Encoding.BigEndianUnicode.GetBytes(str);
+		byte[] bytes = Encoding.BigEndianUnicode.GetBytes(str); // UTF-16BE
 
 		int expected = StableHashCode.Of(bytes);
 		int returned = StableHashCode.Of(str);
@@ -23,8 +25,9 @@ public class StableHashCode_Test : IRandomizedTest {
 		Assert.Equal(expected, returned);
 	}
 
-	[Fact]
-	public void HashOf_Guid_Equals_HashOf_Guid_Bytes() {
+	[TestFact]
+	[TLabel("[m]: hash of `Guid` bytes == hash of `Guid`")]
+	public void T003_Of() {
 		// See,
 		// - https://stackoverflow.com/questions/6949598/can-i-assume-sizeofguid-16-at-all-times
 		// - https://github.com/dotnet/runtime/blob/2c487d278398b3d1ac9679f7a3bdafb22b752f21/src/libraries/System.Private.CoreLib/src/System/Guid.cs#L142
@@ -38,15 +41,13 @@ public class StableHashCode_Test : IRandomizedTest {
 		Assert.Equal(expected, returned);
 	}
 
-	/// <summary>
-	/// Hash algorithm tamper protection.
-	/// </summary>
-	[Theory]
+	[TestTheory]
+	[TLabel("[m]: Tamper Protection -- hash algorithm output is still as expected")]
 	[InlineData("", -1357330238)]
 	[InlineData("Hello World!", -1530810269)]
 	[InlineData("The quick brown fox jumps over the lazy dog.", 1323891283)]
 	[InlineData("\0In between nulls\0and more.\r\nWith new line.", 219757796)]
-	public void HashOf_String_AlgorithmOutput_Is_Still_AsExpected(string str, int hash) {
+	public void T004_Of(string str, int hash) {
 		Assert.Equal(hash, StableHashCode.Of(str));
 	}
 }

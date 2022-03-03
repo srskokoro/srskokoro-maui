@@ -4,6 +4,7 @@ using Kokoro.Test.Framework;
 using System.Globalization;
 using Xunit.Sdk;
 using static Kokoro.Test.Framework.IRandomizedTestEstablisher;
+using TestFramework = Test.Framework.TestFramework;
 
 public abstract class IRandomizedTestEstablisher_Test_Base {
 	private protected const string Test_DateTimeSeedDir = $@"self_test";
@@ -23,16 +24,18 @@ public abstract class IRandomizedTestEstablisher_Test_Base {
 public sealed class IRandomizedTestEstablisher_Test
 	: IRandomizedTestEstablisher_Test_Base, IRandomizedTestEstablisher {
 
-	[Fact]
-	public void RandomSeedBase_Is_ProperlySetUp_By_TestFramework() {
+	[TestFact]
+	[TLabel($"[p] is properly set up by `{nameof(TestFramework)}`")]
+	public void T001_RandomSeedBase() {
 		Exception? e = Record.Exception(() => {
 			_ = RandomSeedBase;
 		});
 		Assert.Null(e);
 	}
 
-	[Fact]
-	public void Config_DateTimeSeed_Is_EitherValidOrEmpty() {
+	[TestFact]
+	[TLabel($"`{nameof(_Config)}.[x]` is either valid or empty")]
+	public void T002_DateTimeSeed() {
 		Assert.True(
 			TryParseDateTimeSeed(_Config.DateTimeSeed, out _)
 			|| string.IsNullOrWhiteSpace(_Config.DateTimeSeed)
@@ -40,11 +43,12 @@ public sealed class IRandomizedTestEstablisher_Test
 		);
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] supports ISO 8601 datetime")]
 	[InlineData(Test_DateTimeSeed_1, Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2, Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_3, Test_DateTimeSeed_3_Alt)]
-	public void TryParseDateTimeSeed_Supports_IsoDateTime(string isoDateTimeStrInput, string isoDateTimeStrOutput) {
+	public void T003_TryParseDateTimeSeed(string isoDateTimeStrInput, string isoDateTimeStrOutput) {
 		Assert.True(
 			TryParseDateTimeSeed(isoDateTimeStrInput, out var dto),
 			$"Unexpected! ISO 8601 string not supported: {isoDateTimeStrInput}"
@@ -55,8 +59,9 @@ public sealed class IRandomizedTestEstablisher_Test
 		);
 	}
 
-	[Fact]
-	public async Task RandomSeedBase_DoesNotChange_OnItsOwn() {
+	[TestFact]
+	[TLabel($"[p] doesn't change on its own")]
+	public async Task T004_RandomSeedBase() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 		await Task.CompletedTask; // Suppress CS1998
 
@@ -130,21 +135,23 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 
 	#region `LoadLocalRandomState` tests
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] doesn't create datetime seed file when datetime seed override string is valid")]
 	[InlineData(Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_3)]
-	public async Task LoadLocalRandomState_DoesNotCreate_DateTimeSeedFile_When_DateTimeSeedOverride_IsValid(string validDateTimeSeed) {
+	public async Task T005_LoadLocalRandomState(string validDateTimeSeed) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		LoadLocalRandomState(validDateTimeSeed, Test_DateTimeSeedFile);
 		Assert.False(File.Exists(Test_DateTimeSeedFile), "Should've been not created.");
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] creates empty datetime seed file when datetime seed override is invalid")]
 	[InlineData("")]
 	[InlineData("An invalid content.")]
-	public async Task LoadLocalRandomState_Creates_EmptyDateTimeSeedFile_When_DateTimeSeedOverride_IsInvalid(string invalidDateTimeSeed) {
+	public async Task T006_LoadLocalRandomState(string invalidDateTimeSeed) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		// Also implies that the following will not throw on invalid input
@@ -156,10 +163,11 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Empty(contents);
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] sets up `{nameof(RandomSeedBase)}` even when datetime seed override is invalid")]
 	[InlineData("")]
 	[InlineData("An invalid content.")]
-	public async Task LoadLocalRandomState_SetsUp_RandomSeedBase_EvenWhen_DateTimeSeedOverride_IsInvalid(string invalidDateTimeSeed) {
+	public async Task T007_LoadLocalRandomState(string invalidDateTimeSeed) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		// Also implies that this will not throw on invalid input
@@ -172,12 +180,13 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Null(e);
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] sets up `{nameof(RandomSeedBase)}` even when datetime seed file is invalid")]
 	[InlineData("")]
 	[InlineData("An invalid content.")]
 	[InlineData("Foo\r\nBar\r\n")]
 	[InlineData("Foo\nBar\nBaz")]
-	public async Task LoadLocalRandomState_SetsUp_RandomSeedBase_EvenWhen_DateTimeSeedFile_IsInvalid(string invalidDateTimeSeed) {
+	public async Task T008_LoadLocalRandomState(string invalidDateTimeSeed) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		await File.WriteAllTextAsync(Test_DateTimeSeedFile, invalidDateTimeSeed);
@@ -192,8 +201,9 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Null(e);
 	}
 
-	[Theory, CombinatorialData]
-	public async Task LoadLocalRandomState_Loads_SameRandomSeedBase_WhetherFromStringOrFile_EvenWhen_FileHasExtraLines(
+	[TestTheory, CombinatorialData]
+	[TLabel($"[m] loads same `{nameof(RandomSeedBase)}` whether from string or file, even when file has extra lines")]
+	public async Task T009_LoadLocalRandomState(
 		[CombinatorialValues(Test_DateTimeSeed_1, Test_DateTimeSeed_2, Test_DateTimeSeed_3)] string dateTimeSeed,
 		[CombinatorialValues(null, "", "An invalid content.")] string? extraFileLinesContent
 	) {
@@ -221,14 +231,15 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Equal(loadedFromString, loadedFromFile);
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] loads expected `{nameof(RandomSeedBase)}` while ignoring existing datetime seed file")]
 	[InlineData(Test_DateTimeSeed_1, Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_1, Test_DateTimeSeed_3)]
 	[InlineData(Test_DateTimeSeed_2, Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2, Test_DateTimeSeed_3)]
 	[InlineData(Test_DateTimeSeed_3, Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_3, Test_DateTimeSeed_2)]
-	public async Task LoadLocalRandomState_Loads_ExpectedRandomSeedBase_While_Ignoring_ExistingDateTimeSeedFile(string dateTimeSeedOverride, string dateTimeSeedFileContent) {
+	public async Task T010_LoadLocalRandomState(string dateTimeSeedOverride, string dateTimeSeedFileContent) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		async Task<int> LoadFromString() {
@@ -248,8 +259,9 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Equal(expected, actual);
 	}
 
-	[Theory, CombinatorialData]
-	public async Task LoadLocalRandomState_DoesNotModify_ExistingDateTimeSeedFile(
+	[TestTheory, CombinatorialData]
+	[TLabel($"[m] doesn't modify existing datetime seed file")]
+	public async Task T011_LoadLocalRandomState(
 		[CombinatorialValues("", Test_DateTimeSeed_1)]
 		string dateTimeSeedOverride,
 		[CombinatorialValues(Test_DateTimeSeed_1, Test_DateTimeSeed_2, Test_DateTimeSeed_3, "", "An invalid content.")]
@@ -264,8 +276,9 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Equal(expectedContent, actualContent);
 	}
 
-	[Fact]
-	public async Task LoadLocalRandomState_Twice_Sets_DifferentSeeds() {
+	[TestFact]
+	[TLabel($"[m] twice sets different seeds")]
+	public async Task T012_LoadLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		FreezeLocalDefaultDateTimeSeed();
@@ -283,8 +296,9 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.NotEqual(seed1, seed2);
 	}
 
-	[Fact]
-	public async Task LoadLocalRandomState_Twice_OnSameDateTimeSeedOverride_Sets_SameSeed() {
+	[TestFact]
+	[TLabel($"[m] twice on same datetime seed override sets same seed")]
+	public async Task T013_LoadLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 		await Parallel.ForEachAsync(new string[] {
 			Test_DateTimeSeed_1,
@@ -308,14 +322,12 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		});
 	}
 
-	/// <summary>
-	/// Algorithm tamper protection.
-	/// </summary>
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m]: Tamper Protection -- algorithm output is still as expected")]
 	[InlineData(Test_DateTimeSeed_1, -1870755152)]
 	[InlineData(Test_DateTimeSeed_2, -556981469)]
 	[InlineData(Test_DateTimeSeed_3, 2103003800)]
-	public async Task LoadLocalRandomState_AlgorithmOutput_Is_Still_AsExpected(string dateTimeSeed, int expected) {
+	public async Task T014_LoadLocalRandomState(string dateTimeSeed, int expected) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		LoadLocalRandomState(dateTimeSeed, "");
@@ -328,8 +340,9 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 
 	#region `SaveLocalRandomState` tests
 
-	[Fact]
-	public async Task SaveLocalRandomState_Deletes_DateTimeSeedFile_When_AllTestsPassed() {
+	[TestFact]
+	[TLabel($"[m] deletes datetime seed file when all (mock) tests passed")]
+	public async Task T015_SaveLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		LoadLocalRandomState("", Test_DateTimeSeedFile); // Should at least create an empty file
@@ -339,13 +352,14 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.False(File.Exists(Test_DateTimeSeedFile), "Shouldn't exist anymore.");
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] persists valid datetime seed file when some (mock) tests failed, but overwrites prior file content if any")]
 	[InlineData(null)]
 	[InlineData($"{Test_DateTimeSeed_1}\r\nAn invalid content.")]
 	[InlineData($"{Test_DateTimeSeed_2}\r\nAn invalid content.")]
 	[InlineData($"An invalid content.\r\n{Test_DateTimeSeed_3}")]
 	[InlineData($"An invalid content.")]
-	public async Task SaveLocalRandomState_Persists_ValidDateTimeSeedFile_When_SomeTestsFailed_But_Overwrites_PriorFileContent_IfAny(string? priorFileContent) {
+	public async Task T016_SaveLocalRandomState(string? priorFileContent) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		if (priorFileContent is not null) {
@@ -371,11 +385,12 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		}
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] saves expected datetime seed when some (mock) tests failed")]
 	[InlineData(Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_3)]
-	public async Task SaveLocalRandomState_Saves_ExpectedDateTimeSeed_When_SomeTestsFailed(string dateTimeSeed) {
+	public async Task T017_SaveLocalRandomState(string dateTimeSeed) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		bool success = TryParseDateTimeSeed(dateTimeSeed, out var expected);
@@ -390,10 +405,11 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Equal(expected, actual);
 	}
 
-	[Theory]
+	[TestTheory]
+	[TLabel($"[m] doesn't modify `{nameof(RandomSeedBase)}`")]
 	[InlineData(0)]
 	[InlineData(1)]
-	public async Task SaveLocalRandomState_DoesNotModify_RandomSeedBase(int failCount) {
+	public async Task T018_SaveLocalRandomState(int failCount) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		FreezeLocalDefaultDateTimeSeed();
@@ -411,8 +427,9 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 		Assert.Equal(expected, actual);
 	}
 
-	[Fact]
-	public async Task SaveLocalRandomState_With_PersistedDateTimeSeedFile_NotChanging_When_TestsFailsStill() {
+	[TestFact]
+	[TLabel($"[m] with persisted datetime seed file not changing when (mock) tests fails still")]
+	public async Task T019_SaveLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		FreezeLocalDefaultDateTimeSeed();
