@@ -532,15 +532,17 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		[ThreadStatic]
 		public static ParseFail Current;
 
-		public static Exception ToException() {
+		public static Exception ConsumeException() {
 			var current = Current;
+			Current = default;
+
 			return current.Code switch {
 				ParseFailCode.InvalidSymbol => new FormatException($"Invalid symbol at index {current.Index}"),
 				ParseFailCode.OverflowCarry => new OverflowException(
 					$"Accumulated value of base 58 input is too high.{Environment.NewLine}" +
 					$"Parsing halted at index {current.Index}, with overflow carry: {current.Carry} (0x{current.Carry:X})"
 				),
-				_ => new FormatException(),
+				_ => new FormatException("NA"),
 			};
 		}
 	}
@@ -566,7 +568,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void Parse__E_Fail() => throw ParseFail.ToException();
+	private static void Parse__E_Fail() => throw ParseFail.ConsumeException();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
@@ -586,7 +588,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void ParseExact__E_Fail() => throw ParseFail.ToException();
+	private static void ParseExact__E_Fail() => throw ParseFail.ConsumeException();
 
 	#endregion
 
