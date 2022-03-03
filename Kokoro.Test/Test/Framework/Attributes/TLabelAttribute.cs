@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 internal class TLabelAttribute : LabelAttribute {
 	public static readonly Regex ConformingTestNamePattern = new(@"^(T\d+)(?:_([a-zA-Z0-9])_(\w+)$)?", RegexOptions.Compiled);
 
-	private static readonly Regex MemberInFormatPattern = new(@"((?:\[\[)+)|((?:\]\])+)|\[[_\`\%\*\!\?\.]\]", RegexOptions.Compiled);
+	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[[ !$%&*.0?^_~]\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
 	protected TLabelAttribute() { }
 
@@ -37,37 +37,11 @@ internal class TLabelAttribute : LabelAttribute {
 				? $"`{targetOfTest}`"
 				: $"`{targetOfTest}()`";
 
-			format = MemberInFormatPattern.Replace(format, match => {
-				var group = match.Groups[1];
-
-				if (group.Success) {
-					int length = group.Length;
-					switch (length) {
-						case 2: return "[";
-						case 4: return "[[";
-						case 6: return "[[[";
-					}
-					AssertEven(length);
-					return new string('[', length/2);
+			format = MemberInFormat_Or_EscAsciiPunc_Pattern.Replace(format, match => {
+				var escPunc = match.Groups[1];
+				if (escPunc.Success) {
+					return escPunc.Value;
 				}
-
-				group = match.Groups[2];
-				if (group.Success) {
-					int length = group.Length;
-					switch (length) {
-						case 2: return "]";
-						case 4: return "]]";
-						case 6: return "]]]";
-					}
-					AssertEven(length);
-					return new string(']', length/2);
-				}
-
-				static void AssertEven(int length) {
-					Debug.Assert(length > 1 && (length & 1) == 0
-						, $"Expected positive integer, got `{length}` instead.");
-				}
-
 				return targetText;
 			});
 		}
