@@ -1,12 +1,13 @@
-﻿namespace Kokoro.Test.Framework;
+﻿namespace Kokoro.Test.Framework.Discovery;
 
+using Kokoro.Test.Framework.TestCases;
 using System.Collections.Generic;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 public class TestTheoryDiscoverer : TheoryDiscoverer {
 
-	public const string TypeNamespace = $"Kokoro.Test.Framework";
+	public const string TypeNamespace = $"Kokoro.Test.Framework.Discovery";
 
 	public const string TypeName = $"{TypeNamespace}.{nameof(TestTheoryDiscoverer)}";
 

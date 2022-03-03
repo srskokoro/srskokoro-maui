@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Test.Framework.SelfTest;
+﻿namespace Kokoro.Test.SelfTest.Framework;
 
 using Kokoro.Test.Framework;
 using System.Globalization;

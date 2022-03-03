@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Test;
+﻿namespace Kokoro.Test.Framework.Attributes;
 
 using System;
 using System.Text.RegularExpressions;

@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Test.Framework;
+﻿namespace Kokoro.Test.Framework.TestCases;
 
 using System.Threading;
 using System.Threading.Tasks;

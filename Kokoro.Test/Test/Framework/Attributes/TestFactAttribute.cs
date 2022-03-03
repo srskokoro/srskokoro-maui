@@ -1,6 +1,6 @@
-﻿namespace Kokoro.Test;
+﻿namespace Kokoro.Test.Framework.Attributes;
 
-using Kokoro.Test.Framework;
+using Kokoro.Test.Framework.Discovery;
 using System;
 using Xunit.Sdk;
 

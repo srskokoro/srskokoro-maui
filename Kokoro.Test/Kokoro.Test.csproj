@@ -62,6 +62,7 @@
 
     <Using Include="Kokoro.Test" />
     <Using Include="Kokoro.Test.Util" />
+    <Using Include="Kokoro.Test.Framework.Attributes" />
   </ItemGroup>
 
 </Project>
