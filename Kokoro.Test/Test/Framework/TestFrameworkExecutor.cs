@@ -27,7 +27,7 @@ internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTe
 	private protected const string DateTimeSeedFile = @"test_start_dt_preserved_on_fail.dat";
 
 	private protected static void LoadLocalRandomState() {
-		IRandomizedTestEstablisher.LoadLocalRandomState(TestFrameworkConfig.DateTimeSeed, DateTimeSeedFile);
+		IRandomizedTestEstablisher.LoadLocalRandomState(_Config.DateTimeSeed, DateTimeSeedFile);
 	}
 
 	private protected static void SaveLocalRandomState(RunSummary testSummary) {
