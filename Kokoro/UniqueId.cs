@@ -477,10 +477,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 			var x = Unsafe.Add(ref mapRef, (byte)Unsafe.Add(ref srcRef, i));
 			if (x < 0) {
-				ParseFail.Current = new() {
-					Code = ParseFailCode.InvalidSymbol,
-					Index = i,
-				};
+				ref var fail = ref ParseFail.Current;
+				fail.Code = ParseFailCode.InvalidSymbol;
+				fail.Index = i;
 				goto Fail;
 			}
 
@@ -502,10 +501,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			c >>= 32;
 
 			if (c != 0) {
-				ParseFail.Current = new() {
-					Code = ParseFailCode.OverflowCarry,
-					Index = i, Carry = c,
-				};
+				ref var fail = ref ParseFail.Current;
+				fail.Code = ParseFailCode.OverflowCarry;
+				fail.Index = i;
+				fail.Carry = c;
 				goto Fail;
 			}
 		}
