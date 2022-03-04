@@ -40,10 +40,6 @@ public class TestFactTestCase : SkippableFactTestCase, ITestFactTestCase {
 		return method.GetDisplayNameWithArguments(fallbackDisplayName, arguments, genericTypes);
 	}
 
-	internal static LabelAttribute? GetLabelAttribute(IAttributeInfo attributeInfo) {
-		return (attributeInfo as IReflectionAttributeInfo)?.Attribute as LabelAttribute;
-	}
-
 	protected override string GetDisplayName(IAttributeInfo factAttribute, string displayName) {
 		return GetDisplayName(TestMethod, TestMethodArguments, MethodGenericTypes, displayName, DefaultMethodDisplay);
 	}
