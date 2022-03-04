@@ -13,29 +13,37 @@ internal class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 
 	protected override bool FindTestsForMethod(ITestMethod testMethod, bool includeSourceInformation, IMessageBus messageBus, ITestFrameworkDiscoveryOptions discoveryOptions) {
 		var method = testMethod.Method;
+		var labelAttributes = method.GetCustomAttributes(typeof(LabelAttribute)).FirstTwoOrDefault();
 
-		var labelAttribute = method.GetCustomAttributes(typeof(LabelAttribute)).FirstOrDefault();
-		if (labelAttribute is not null) {
+		if (labelAttributes.Item1 is not null) {
+			string errorMessage;
+
 			var factAttribute = method.GetCustomAttributes(typeof(FactAttribute)).FirstOrDefault();
 			if (factAttribute is IReflectionAttributeInfo reflectFact
 					&& reflectFact.Attribute is not ITestFactAttribute) {
 				// Note that we don't fail when we don't have an `IReflectionAttributeInfo`,
 				// since the actual attribute might indeed be fulfilling the contract.
-				var errorMessage = $"[Label]-derived attribute must only be " +
+				errorMessage = $"[Label]-derived attribute must only be " +
 					$"given to a test method whose [Fact]-derived attribute " +
 					$"implements `{nameof(ITestFactAttribute)}`";
-
-				var testCase = new ExecutionErrorTestCase(
-					DiagnosticMessageSink,
-					discoveryOptions.MethodDisplayOrDefault(),
-					discoveryOptions.MethodDisplayOptionsOrDefault(),
-					testMethod, errorMessage
-				);
-
-				return ReportDiscoveredTestCase(testCase, includeSourceInformation, messageBus);
+			} else if (labelAttributes.Item2 is not null) {
+				errorMessage = $"Test method `{testMethod.TestClass.Class.Name}." +
+					$"{method.Name}` has multiple [Label]-derived attributes";
+			} else {
+				goto Success;
 			}
+
+			var testCase = new ExecutionErrorTestCase(
+				DiagnosticMessageSink,
+				discoveryOptions.MethodDisplayOrDefault(),
+				discoveryOptions.MethodDisplayOptionsOrDefault(),
+				testMethod, errorMessage
+			);
+
+			return ReportDiscoveredTestCase(testCase, includeSourceInformation, messageBus);
 		}
 
+	Success:
 		return base.FindTestsForMethod(testMethod, includeSourceInformation, messageBus, discoveryOptions);
 	}
 }

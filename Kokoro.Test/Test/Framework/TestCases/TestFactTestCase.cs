@@ -1,8 +1,6 @@
 ﻿namespace Kokoro.Test.Framework.TestCases;
 using Kokoro.Test.Framework.Attributes;
 using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -30,20 +28,16 @@ public class TestFactTestCase : SkippableFactTestCase, ITestFactTestCase {
 		object[]? testMethodArguments = null
 	) : base(skippingExceptionNames, diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments) { }
 
-	internal static bool ResolveDisplayName(out string resolvedDisplayName, ITestMethod testMethod, object[] arguments, ITypeInfo[] genericTypes, string fallbackDisplayName, TestMethodDisplay methodDisplay) {
+	internal static string GetDisplayName(ITestMethod testMethod, object[] arguments, ITypeInfo[] genericTypes, string fallbackDisplayName, TestMethodDisplay methodDisplay) {
 		var method = testMethod.Method;
 
-		var labelAttributes = method.GetCustomAttributes(typeof(LabelAttribute)).CastOrToList();
-		int labelAttributesCount = labelAttributes.Count;
-
-		if (labelAttributesCount == 1) {
-			if (GetLabelAttribute(labelAttributes[0]) is LabelAttribute labelAttribute) {
-				resolvedDisplayName = labelAttribute.GetDisplayName(testMethod, arguments, genericTypes, methodDisplay);
-				return true;
-			}
+		var attributeInfo = method.GetCustomAttributes(typeof(LabelAttribute)).FirstOrDefault();
+		if (attributeInfo is IReflectionAttributeInfo reflectInfo) {
+			var labelAttribute = (LabelAttribute)reflectInfo.Attribute;
+			return labelAttribute.GetDisplayName(testMethod, arguments, genericTypes, methodDisplay);
 		}
-		resolvedDisplayName = method.GetDisplayNameWithArguments(fallbackDisplayName, arguments, genericTypes);
-		return labelAttributesCount <= 1; // `false` means error: too many label attributes
+
+		return method.GetDisplayNameWithArguments(fallbackDisplayName, arguments, genericTypes);
 	}
 
 	internal static LabelAttribute? GetLabelAttribute(IAttributeInfo attributeInfo) {
@@ -51,28 +45,6 @@ public class TestFactTestCase : SkippableFactTestCase, ITestFactTestCase {
 	}
 
 	protected override string GetDisplayName(IAttributeInfo factAttribute, string displayName) {
-		_ErrorTooManyLabelAttributes = !ResolveDisplayName(
-			out string resolvedDisplayName,
-			TestMethod,
-			TestMethodArguments,
-			MethodGenericTypes,
-			displayName,
-			DefaultMethodDisplay
-		);
-		return resolvedDisplayName;
-	}
-
-	private bool _ErrorTooManyLabelAttributes;
-
-	internal static string GetErrorMessageForTooManyLabelAttributes(ITestMethod testMethod)
-		=> $"Test method `{testMethod.TestClass.Class.Name}.{testMethod.Method.Name}` has multiple [Label]-derived attributes";
-
-	public override Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource) {
-		if (_ErrorTooManyLabelAttributes) {
-			var message = GetErrorMessageForTooManyLabelAttributes(TestMethod);
-			var runner = new ErrorTestCaseRunner<TestFactTestCase>(this, message, messageBus, aggregator, cancellationTokenSource);
-			return runner.RunAsync();
-		}
-		return base.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource);
+		return GetDisplayName(TestMethod, TestMethodArguments, MethodGenericTypes, displayName, DefaultMethodDisplay);
 	}
 }
