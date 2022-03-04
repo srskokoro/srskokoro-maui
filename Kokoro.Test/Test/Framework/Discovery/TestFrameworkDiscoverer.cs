@@ -52,7 +52,7 @@ internal class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 					goto Success;
 				}
 				int tnum = tlabelAttribute.TestNumber;
-				if (map.TryAdd(tnum, method)) {
+				if (tnum < 0 || map.TryAdd(tnum, method)) {
 					goto Success;
 				}
 				errorMessage = $"Test class `{testMethod.TestClass.Class.Name}`" +

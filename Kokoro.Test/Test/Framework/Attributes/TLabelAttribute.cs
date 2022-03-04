@@ -16,7 +16,9 @@ internal class TLabelAttribute : LabelAttribute {
 		LabelSeparator = labelSeparator;
 
 		Match match = ConformingTestNamePattern.Match(testMethodName);
-		if (match.Success) {
+		if (!match.Success) {
+			TestNumber = -1; // Indicate nonconformance
+		} else {
 			TestNumber = int.Parse(match.Groups[2].ValueSpan);
 
 			Group targetOfTest = match.Groups[3];
