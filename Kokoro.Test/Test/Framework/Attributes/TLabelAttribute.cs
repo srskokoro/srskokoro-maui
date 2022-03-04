@@ -15,7 +15,7 @@ internal class TLabelAttribute : LabelAttribute {
 
 		Match match = ConformingTestNamePattern.Match(testMethodName);
 		if (match.Success) {
-			var targetOfTest = match.Groups[2];
+			Group targetOfTest = match.Groups[2];
 			if (!targetOfTest.Success) {
 				goto Done;
 			}
@@ -76,7 +76,7 @@ internal class TLabelAttribute : LabelAttribute {
 					case '~':
 					case '?': {
 						if (textNoBackticks is null) {
-							textNoBackticks = targetOfTest.ToString();
+							textNoBackticks = targetOfTest.Value;
 						}
 						return textNoBackticks;
 					}
