@@ -10,7 +10,7 @@ internal class TLabelAttribute : LabelAttribute {
 
 	protected TLabelAttribute() { }
 
-	public TLabelAttribute(string? format, [CallerMemberName] string testMethodName = "", string? labelSeparator = null) {
+	public TLabelAttribute(string? format = null, [CallerMemberName] string testMethodName = "", string? labelSeparator = null) {
 		LabelSeparator = labelSeparator;
 
 		Match match = ConformingTestNamePattern.Match(testMethodName);
