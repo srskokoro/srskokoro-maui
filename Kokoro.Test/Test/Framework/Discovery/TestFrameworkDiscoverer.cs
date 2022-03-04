@@ -11,6 +11,18 @@ internal class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 		IXunitTestCollectionFactory? collectionFactory = null
 	) : base(assemblyInfo, sourceProvider, diagnosticMessageSink, collectionFactory) { }
 
+	[ThreadStatic]
+	private static Dictionary<int, IMethodInfo>? _CurrentTestNumbers = null;
+
+	protected override bool FindTestsForType(ITestClass testClass, bool includeSourceInformation, IMessageBus messageBus, ITestFrameworkDiscoveryOptions discoveryOptions) {
+		try {
+			_CurrentTestNumbers = new();
+			return base.FindTestsForType(testClass, includeSourceInformation, messageBus, discoveryOptions);
+		} finally {
+			_CurrentTestNumbers = null;
+		}
+	}
+
 	protected override bool FindTestsForMethod(ITestMethod testMethod, bool includeSourceInformation, IMessageBus messageBus, ITestFrameworkDiscoveryOptions discoveryOptions) {
 		var method = testMethod.Method;
 		var labelAttributes = method.GetCustomAttributes(typeof(LabelAttribute)).FirstTwoOrDefault();
@@ -29,6 +41,23 @@ internal class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 			} else if (labelAttributes.Item2 is not null) {
 				errorMessage = $"Test method `{testMethod.TestClass.Class.Name}." +
 					$"{method.Name}` has multiple [Label]-derived attributes";
+			} else if (labelAttributes.Item1 is IReflectionAttributeInfo reflectLabel
+					&& reflectLabel.Attribute is TLabelAttribute tlabelAttribute) {
+				var map = _CurrentTestNumbers;
+				if (map is null) {
+					if (TestUtil.Debug) {
+						DiagnosticMessageSink.OnMessage(new DiagnosticMessage(
+							$"`{nameof(FindTestsForMethod)}()` called outside of `{nameof(FindTestsForType)}()`"));
+					}
+					goto Success;
+				}
+				int tnum = tlabelAttribute.TestNumber;
+				if (map.TryAdd(tnum, method)) {
+					goto Success;
+				}
+				errorMessage = $"Test class `{testMethod.TestClass.Class.Name}`" +
+					$" has multiple test methods with the same test number: " +
+					$"`{method.Name}()` conflicts with `{map[tnum].Name}()`";
 			} else {
 				goto Success;
 			}

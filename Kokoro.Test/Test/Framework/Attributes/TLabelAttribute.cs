@@ -4,9 +4,11 @@ using System.Text.RegularExpressions;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 internal class TLabelAttribute : LabelAttribute {
-	public static readonly Regex ConformingTestNamePattern = new(@"^(T\d+)(?:_(\w+))?$", RegexOptions.Compiled);
+	public static readonly Regex ConformingTestNamePattern = new(@"^(T(\d+))(?:_(\w+))?", RegexOptions.Compiled);
 
 	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._x~?])\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
+
+	public virtual int TestNumber { get; protected set; }
 
 	protected TLabelAttribute() { }
 
@@ -15,11 +17,12 @@ internal class TLabelAttribute : LabelAttribute {
 
 		Match match = ConformingTestNamePattern.Match(testMethodName);
 		if (match.Success) {
-			Group targetOfTest = match.Groups[2];
+			TestNumber = int.Parse(match.Groups[2].ValueSpan);
+
+			Group targetOfTest = match.Groups[3];
 			if (!targetOfTest.Success) {
 				goto Done;
 			}
-
 			TestMethodNameOverride = match.Groups[1].Value; // "T0", "T1", etc.
 
 			// Now, transform the format string to inline the target of the
