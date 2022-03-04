@@ -47,6 +47,9 @@ dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = false
 file_header_template = unset
 
+# IDE0005: Using directive is unnecessary
+;dotnet_diagnostic.IDE0005.severity = warning
+
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false
 dotnet_style_qualification_for_field = false:none
@@ -154,9 +157,6 @@ csharp_style_unused_value_expression_statement_preference = discard_variable
 
 # 'using' directive preferences
 csharp_using_directive_placement = inside_namespace:suggestion
-
-# IDE0005: Using directive is unnecessary
-;dotnet_diagnostic.IDE0005.severity = warning
 
 # New line preferences
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true
