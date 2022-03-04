@@ -219,14 +219,14 @@ public class RaceTest {
 
 		try {
 			for (; spins > 0; spins--) {
-				if (Volatile.Read(ref race._ExceptionOrTimeout) != null) {
+				if (Volatile.Read(ref race._ExceptionOrTimeout) is not null) {
 					goto Cleanup;
 				}
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body();
 				}
 			}
-			while (Volatile.Read(ref race._ExceptionOrTimeout) == null) {
+			while (Volatile.Read(ref race._ExceptionOrTimeout) is null) {
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body();
 				}
@@ -239,18 +239,18 @@ public class RaceTest {
 		try {
 			@finally();
 		} catch (Exception ex) {
-			if (exitEx != null) {
+			if (exitEx is not null) {
 				exitEx = new AggregateException(exitEx, ex);
 				goto ExitWithException;
 			}
 		}
 
-		if (exitEx == null) {
+		if (exitEx is null) {
 			return;
 		}
 
 	ExitWithException:
-		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) != null) {
+		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) is not null) {
 			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, _TimeoutSignal);
 		}
 	}
@@ -271,14 +271,14 @@ public class RaceTest {
 
 		try {
 			for (; spins > 0; spins--) {
-				if (Volatile.Read(ref race._ExceptionOrTimeout) != null) {
+				if (Volatile.Read(ref race._ExceptionOrTimeout) is not null) {
 					goto Cleanup;
 				}
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body(local);
 				}
 			}
-			while (Volatile.Read(ref race._ExceptionOrTimeout) == null) {
+			while (Volatile.Read(ref race._ExceptionOrTimeout) is null) {
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body(local);
 				}
@@ -291,18 +291,18 @@ public class RaceTest {
 		try {
 			@finally(local);
 		} catch (Exception ex) {
-			if (exitEx != null) {
+			if (exitEx is not null) {
 				exitEx = new AggregateException(exitEx, ex);
 				goto ExitWithException;
 			}
 		}
 
-		if (exitEx == null) {
+		if (exitEx is null) {
 			return;
 		}
 
 	ExitWithException:
-		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) != null) {
+		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) is not null) {
 			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, _TimeoutSignal);
 		}
 	}
