@@ -28,7 +28,7 @@ public class TestFactTestCase : SkippableFactTestCase, ITestFactTestCase {
 		object[]? testMethodArguments = null
 	) : base(skippingExceptionNames, diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments) { }
 
-	internal static string GetDisplayName(ITestMethod testMethod, object[] arguments, ITypeInfo[] genericTypes, string fallbackDisplayName, TestMethodDisplay methodDisplay) {
+	public static string GetDisplayName(ITestMethod testMethod, object[] arguments, ITypeInfo[] genericTypes, string fallbackDisplayName, TestMethodDisplay methodDisplay) {
 		var method = testMethod.Method;
 
 		var attributeInfo = method.GetCustomAttributes(typeof(LabelAttribute)).FirstOrDefault();
