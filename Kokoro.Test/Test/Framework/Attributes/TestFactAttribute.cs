@@ -5,7 +5,7 @@ using Xunit.Sdk;
 
 [XunitTestCaseDiscoverer(TestFactDiscoverer.TypeName, ThisAssembly.Name)]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class TestFactAttribute : SkippableFactAttribute {
+public class TestFactAttribute : SkippableFactAttribute, ITestFactAttribute {
 
 	public TestFactAttribute(params Type[] skippingExceptions) : base(skippingExceptions) { }
 }

@@ -6,7 +6,7 @@ using Xunit.Sdk;
 
 using static TestFactTestCase;
 
-public class TestTheoryTestCase : SkippableTheoryTestCase {
+public class TestTheoryTestCase : SkippableTheoryTestCase, ITestFactTestCase {
 
 	[Obsolete("Called by the de-serializer", true)]
 	public TestTheoryTestCase() { }

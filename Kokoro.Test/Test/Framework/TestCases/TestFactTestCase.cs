@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-public class TestFactTestCase : SkippableFactTestCase {
+public class TestFactTestCase : SkippableFactTestCase, ITestFactTestCase {
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Obsolete("Called by the de-serializer", true)]
