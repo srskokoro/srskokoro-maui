@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Internal.Util;
 
-#pragma warning disable CA1069 // Enums values should not be duplicated
+#pragma warning disable CA1069 // Enums should not have duplicate values
 [Flags]
 internal enum DisposeState : uint {
 	None                   = 0,
@@ -14,4 +14,4 @@ internal enum DisposeState : uint {
 	DisposedFully_Flag     = 4,
 	DisposedFully          = 4|Disposing,
 }
-#pragma warning restore CA1069 // Enums values should not be duplicated
+#pragma warning restore CA1069 // Enums should not have duplicate values
