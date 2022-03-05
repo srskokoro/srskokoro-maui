@@ -24,7 +24,7 @@ public sealed class IRandomizedTestEstablisher_Test
 	: IRandomizedTestEstablisher_Test_Base, IRandomizedTestEstablisher {
 
 	[TestFact]
-	[TLabel($"[p] is properly set up by `{nameof(TestFramework)}`")]
+	[TLabel($"[p!] is properly set up by `{nameof(TestFramework)}`")]
 	public void T001_RandomSeedBase() {
 		Exception? e = Record.Exception(() => {
 			_ = RandomSeedBase;
@@ -33,7 +33,7 @@ public sealed class IRandomizedTestEstablisher_Test
 	}
 
 	[TestFact]
-	[TLabel($"`{nameof(_Config)}.[x]` is either valid or empty")]
+	[TLabel($"`{nameof(_Config)}.[p]` is either valid or empty")]
 	public void T002_DateTimeSeed() {
 		Assert.True(
 			TryParseDateTimeSeed(_Config.DateTimeSeed, out _)
@@ -43,7 +43,7 @@ public sealed class IRandomizedTestEstablisher_Test
 	}
 
 	[TestTheory]
-	[TLabel($"[m] supports ISO 8601 datetime")]
+	[TLabel($"[m!] supports ISO 8601 datetime")]
 	[InlineData(Test_DateTimeSeed_1, Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2, Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_3, Test_DateTimeSeed_3_Alt)]
@@ -59,7 +59,7 @@ public sealed class IRandomizedTestEstablisher_Test
 	}
 
 	[TestFact]
-	[TLabel($"[p] doesn't change on its own")]
+	[TLabel($"[p!] doesn't change on its own")]
 	public async Task T004_RandomSeedBase() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 		await Task.CompletedTask; // Suppress CS1998
@@ -135,7 +135,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	#region `LoadLocalRandomState` tests
 
 	[TestTheory]
-	[TLabel($"[m] doesn't create datetime seed file when datetime seed override string is valid")]
+	[TLabel($"[m!] doesn't create datetime seed file when datetime seed override string is valid")]
 	[InlineData(Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_3)]
@@ -147,7 +147,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] creates empty datetime seed file when datetime seed override is invalid")]
+	[TLabel($"[m!] creates empty datetime seed file when datetime seed override is invalid")]
 	[InlineData("")]
 	[InlineData("An invalid content.")]
 	public async Task T006_LoadLocalRandomState(string invalidDateTimeSeed) {
@@ -163,7 +163,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] sets up `{nameof(RandomSeedBase)}` even when datetime seed override is invalid")]
+	[TLabel($"[m!] sets up `{nameof(RandomSeedBase)}` even when datetime seed override is invalid")]
 	[InlineData("")]
 	[InlineData("An invalid content.")]
 	public async Task T007_LoadLocalRandomState(string invalidDateTimeSeed) {
@@ -180,7 +180,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] sets up `{nameof(RandomSeedBase)}` even when datetime seed file is invalid")]
+	[TLabel($"[m!] sets up `{nameof(RandomSeedBase)}` even when datetime seed file is invalid")]
 	[InlineData("")]
 	[InlineData("An invalid content.")]
 	[InlineData("Foo\r\nBar\r\n")]
@@ -201,7 +201,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory, CombinatorialData]
-	[TLabel($"[m] loads same `{nameof(RandomSeedBase)}` whether from string or file, even when file has extra lines")]
+	[TLabel($"[m!] loads same `{nameof(RandomSeedBase)}` whether from string or file, even when file has extra lines")]
 	public async Task T009_LoadLocalRandomState(
 		[CombinatorialValues(Test_DateTimeSeed_1, Test_DateTimeSeed_2, Test_DateTimeSeed_3)] string dateTimeSeed,
 		[CombinatorialValues(null, "", "An invalid content.")] string? extraFileLinesContent
@@ -231,7 +231,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] loads expected `{nameof(RandomSeedBase)}` while ignoring existing datetime seed file")]
+	[TLabel($"[m!] loads expected `{nameof(RandomSeedBase)}` while ignoring existing datetime seed file")]
 	[InlineData(Test_DateTimeSeed_1, Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_1, Test_DateTimeSeed_3)]
 	[InlineData(Test_DateTimeSeed_2, Test_DateTimeSeed_1)]
@@ -259,7 +259,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory, CombinatorialData]
-	[TLabel($"[m] doesn't modify existing datetime seed file")]
+	[TLabel($"[m!] doesn't modify existing datetime seed file")]
 	public async Task T011_LoadLocalRandomState(
 		[CombinatorialValues("", Test_DateTimeSeed_1)]
 		string dateTimeSeedOverride,
@@ -276,7 +276,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestFact]
-	[TLabel($"[m] twice sets different seeds")]
+	[TLabel($"[m!] twice sets different seeds")]
 	public async Task T012_LoadLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
@@ -296,7 +296,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestFact]
-	[TLabel($"[m] twice on same datetime seed override sets same seed")]
+	[TLabel($"[m!] twice on same datetime seed override sets same seed")]
 	public async Task T013_LoadLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 		await Parallel.ForEachAsync(new string[] {
@@ -340,7 +340,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	#region `SaveLocalRandomState` tests
 
 	[TestFact]
-	[TLabel($"[m] deletes datetime seed file when all (mock) tests passed")]
+	[TLabel($"[m!] deletes datetime seed file when all (mock) tests passed")]
 	public async Task T015_SaveLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
@@ -352,7 +352,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] persists valid datetime seed file when some (mock) tests failed, but overwrites prior file content if any")]
+	[TLabel($"[m!] persists valid datetime seed file when some (mock) tests failed, but overwrites prior file content if any")]
 	[InlineData(null)]
 	[InlineData($"{Test_DateTimeSeed_1}\r\nAn invalid content.")]
 	[InlineData($"{Test_DateTimeSeed_2}\r\nAn invalid content.")]
@@ -385,7 +385,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] saves expected datetime seed when some (mock) tests failed")]
+	[TLabel($"[m!] saves expected datetime seed when some (mock) tests failed")]
 	[InlineData(Test_DateTimeSeed_1)]
 	[InlineData(Test_DateTimeSeed_2)]
 	[InlineData(Test_DateTimeSeed_3)]
@@ -405,7 +405,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestTheory]
-	[TLabel($"[m] doesn't modify `{nameof(RandomSeedBase)}`")]
+	[TLabel($"[m!] doesn't modify `{nameof(RandomSeedBase)}`")]
 	[InlineData(0)]
 	[InlineData(1)]
 	public async Task T018_SaveLocalRandomState(int failCount) {
@@ -427,7 +427,7 @@ public sealed class IRandomizedTestEstablisher_Test_WithDirSetup
 	}
 
 	[TestFact]
-	[TLabel($"[m] with persisted datetime seed file not changing when (mock) tests fails still")]
+	[TLabel($"[m!] with persisted datetime seed file not changing when (mock) tests fails still")]
 	public async Task T019_SaveLocalRandomState() {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 

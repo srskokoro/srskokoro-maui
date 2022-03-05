@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 public class TLabelAttribute : LabelAttribute {
 	public static readonly Regex ConformingTestNamePattern = new(@"^(T(\d+))(?:_(\w+))?", RegexOptions.Compiled);
 
-	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._x~?])\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
+	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._]\!?)\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
 	public virtual int TestNumber { get; protected set; }
 
@@ -40,17 +40,18 @@ public class TLabelAttribute : LabelAttribute {
 			// - '[.]' means an inline code; same appearance as '[p]'
 			// - '[_]' same as '[.]'
 			//
-			// - '[x]' means inline without backticks
-			// - '[~]' same as '[x]'
-			// - '[?]' same as '[x]'
+			// - '[_!]' means inline in backticks -- replace the '_' with the
+			// character from any of the above formats.
 
 			if (format is null) {
 				format = "[.]";
 			}
 
 			string? callInBackticks = null;
+			string? callNoBackticks = null;
+
 			string? codeInBackticks = null;
-			string? textNoBackticks = null;
+			string? codeNoBackticks = null;
 
 			format = MemberInFormat_Or_EscAsciiPunc_Pattern.Replace(format, match => {
 				Group escPunc = match.Groups[2];
@@ -59,40 +60,58 @@ public class TLabelAttribute : LabelAttribute {
 				}
 
 				Group inlineType = match.Groups[1];
-				char inlineTypeChar = inlineType.ValueSpan[0];
+				var inlineTypeSpan = inlineType.ValueSpan;
 
+				bool inlineInBackticks = inlineTypeSpan.Length > 1;
+				char inlineTypeChar = inlineTypeSpan[0];
+
+				string? text;
 				switch (inlineTypeChar) {
 					case 'm':
 					case 'c': {
-						if (callInBackticks is null) {
-							callInBackticks = $"`{targetOfTest}()`";
+						if (inlineInBackticks) {
+							text = callInBackticks;
+							if (text is null) {
+								text = $"`{targetOfTest}()`";
+								callInBackticks = text;
+							}
+						} else {
+							text = callNoBackticks;
+							if (text is null) {
+								text = $"{targetOfTest}()";
+								callNoBackticks = text;
+							}
 						}
-						return callInBackticks;
+						break;
 					}
 					case 'p':
 					case '.':
 					case '_': {
-						if (codeInBackticks is null) {
-							codeInBackticks = $"`{targetOfTest}`";
+						if (inlineInBackticks) {
+							text = codeInBackticks;
+							if (text is null) {
+								text = $"`{targetOfTest}`";
+								codeInBackticks = text;
+							}
+						} else {
+							text = codeNoBackticks;
+							if (text is null) {
+								text = targetOfTest.Value;
+								codeNoBackticks = text;
+							}
 						}
-						return codeInBackticks;
-					}
-					case 'x':
-					case '~':
-					case '?': {
-						if (textNoBackticks is null) {
-							textNoBackticks = targetOfTest.Value;
-						}
-						return textNoBackticks;
+						break;
 					}
 					default: {
 						Trace.Fail(
 							$"Character not handled at index " +
 							$"{inlineType.Index}: '{inlineTypeChar}'"
 						);
-						return match.Value;
+						text = match.Value;
+						break;
 					}
 				}
+				return text;
 			});
 		}
 
