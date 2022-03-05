@@ -3,11 +3,12 @@ using Kokoro.Test.Framework;
 
 public class TestFramework_Test {
 
-	[Fact(DisplayName = $"`{nameof(TestFramework)}` has proper `TypeName` constant")]
+	[Fact(DisplayName = $"{nameof(T001)} :: " +
+		$"`{nameof(TestFramework)}` has proper `TypeName` constant")]
 	public void T001() {
 		using var scope = new AssertionScope();
 
-		// --
+		// Guard against name refactoring
 		{
 			const string expected = "TypeName";
 			nameof(TestFramework.TypeName).Should()

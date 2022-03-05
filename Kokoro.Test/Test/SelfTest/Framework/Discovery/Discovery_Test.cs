@@ -4,7 +4,9 @@ using Xunit.Sdk;
 
 public class Discovery_Test {
 
-	[Fact(DisplayName = $"All `{nameof(IXunitTestCaseDiscoverer)}` implementations have proper `TypeName` constants")]
+	[Fact(DisplayName = $"{nameof(T001)} :: " +
+		$"All `{nameof(IXunitTestCaseDiscoverer)}` implementations have " +
+		$"proper `TypeName` constants")]
 	public void T001() {
 		using var scope = new AssertionScope();
 
