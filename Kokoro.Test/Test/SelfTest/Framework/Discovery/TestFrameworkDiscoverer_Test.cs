@@ -49,8 +49,8 @@ public class TestFrameworkDiscoverer_Test {
 
 		// Assert that the error message above is correct about `TestFactAttribute`
 		// and `TestTheoryAttribute` both implementing `ITestFactAttribute`
-		typeof(TestFactAttribute).Should().Implement(typeof(ITestFactAttribute));
-		typeof(TestTheoryAttribute).Should().Implement(typeof(ITestFactAttribute));
+		typeof(TestFactAttribute).Should().Implement<ITestFactAttribute>();
+		typeof(TestTheoryAttribute).Should().Implement<ITestFactAttribute>();
 	}
 
 	// --
