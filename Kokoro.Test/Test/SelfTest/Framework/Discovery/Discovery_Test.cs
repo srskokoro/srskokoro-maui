@@ -8,7 +8,7 @@ public class Discovery_Test {
 	public void T001() {
 		using var scope = new AssertionScope();
 
-		// --
+		// Guard against name refactoring
 		{
 			const string expected = "TypeName";
 			// Guard only against one name refactoring, since all the others
