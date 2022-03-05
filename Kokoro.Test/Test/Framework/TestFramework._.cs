@@ -7,9 +7,8 @@ internal partial class TestFramework : XunitTestFramework {
 
 	public TestFramework(IMessageSink messageSink) : base(messageSink) { }
 
-	protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo) {
-		return new TestFrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink);
-	}
+	protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
+		=> new TestFrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink);
 
 	protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
 		=> new TestFrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
