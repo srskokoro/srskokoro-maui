@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 public class TLabelAttribute : LabelAttribute {
 	public static readonly Regex ConformingTestNamePattern = new(@"^(T(\d+))(?:_(\w+))?", RegexOptions.Compiled);
 
-	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._]\!?)\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
+	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._x?]\!?)\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
 	public virtual int TestNumber { get; protected set; }
 
@@ -39,6 +39,8 @@ public class TLabelAttribute : LabelAttribute {
 			//
 			// - '[.]' means an inline code; same appearance as '[p]'
 			// - '[_]' same as '[.]'
+			// - '[x]' same as '[.]'
+			// - '[?]' same as '[.]'
 			//
 			// - '[_!]' means inline in backticks -- replace the '_' with the
 			// character from any of the above formats.
@@ -86,7 +88,9 @@ public class TLabelAttribute : LabelAttribute {
 					}
 					case 'p':
 					case '.':
-					case '_': {
+					case '_':
+					case 'x':
+					case '?': {
 						if (inlineInBackticks) {
 							text = codeInBackticks;
 							if (text is null) {
