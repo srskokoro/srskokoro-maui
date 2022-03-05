@@ -3,7 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-internal class TLabelAttribute : LabelAttribute {
+public class TLabelAttribute : LabelAttribute {
 	public static readonly Regex ConformingTestNamePattern = new(@"^(T(\d+))(?:_(\w+))?", RegexOptions.Compiled);
 
 	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._x~?])\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);

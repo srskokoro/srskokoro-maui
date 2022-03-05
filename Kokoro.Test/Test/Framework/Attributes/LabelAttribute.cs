@@ -4,7 +4,7 @@ using System.Text;
 using Xunit.Sdk;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-internal class LabelAttribute : Attribute {
+public class LabelAttribute : Attribute {
 	public const string DefaultLabelSeparator = " :: ";
 
 	public virtual string? Text { get; set; }

@@ -3,7 +3,7 @@ using System.Reflection;
 using Xunit.Sdk;
 using TestFrameworkDiscoverer = Discovery.TestFrameworkDiscoverer;
 
-internal partial class TestFramework : XunitTestFramework {
+public partial class TestFramework : XunitTestFramework {
 
 	public TestFramework(IMessageSink messageSink) : base(messageSink) { }
 

@@ -2,7 +2,7 @@
 using System.Reflection;
 using Xunit.Sdk;
 
-internal class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTestEstablisher {
+public class TestFrameworkExecutor : XunitTestFrameworkExecutor, IRandomizedTestEstablisher {
 
 	public TestFrameworkExecutor(
 		AssemblyName assemblyName,

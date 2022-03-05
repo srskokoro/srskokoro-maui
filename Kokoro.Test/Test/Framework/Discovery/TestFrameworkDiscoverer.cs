@@ -2,7 +2,7 @@
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-internal class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
+public class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 
 	public TestFrameworkDiscoverer(
 		IAssemblyInfo assemblyInfo,
