@@ -37,7 +37,8 @@ internal class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 				// since the actual attribute might indeed be fulfilling the contract.
 				errorMessage = $"[Label]-derived attribute must only be " +
 					$"given to a test method whose [Fact]-derived attribute " +
-					$"implements `{nameof(ITestFactAttribute)}`";
+					$"implements `{nameof(ITestFactAttribute)}` (e.g., " +
+					$"`{nameof(TestFactAttribute)}` or `{nameof(TestTheoryAttribute)}`)";
 			} else if (labelAttributes.Item2 is not null) {
 				errorMessage = $"Test method `{testMethod.TestClass.Class.Name}." +
 					$"{method.Name}` has multiple [Label]-derived attributes";
