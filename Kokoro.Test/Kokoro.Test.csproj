@@ -43,11 +43,17 @@
     <PackageReference Include="Xunit.Combinatorial" Version="1.4.1" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
     <PackageReference Include="FluentAssertions" Version="6.5.1" />
+    <PackageReference Include="Moq" Version="4.17.1" />
     <PackageReference Include="SauceControl.Blake2Fast" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kokoro\Kokoro.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Needed for, Moq 4 -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <Import Project="..\Kokoro\Common.Usings.targets" />
