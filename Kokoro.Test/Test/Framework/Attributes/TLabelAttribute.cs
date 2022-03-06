@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class TLabelAttribute : LabelAttribute {
-	public static readonly Regex ConformingTestNamePattern = new(@"^(T(\d+))(?:_(\w+))?", RegexOptions.Compiled);
+	public static readonly Regex ConformingTestNamePattern = new(@"^([TD](\d+))(?:_(\w+))?", RegexOptions.Compiled);
 
 	private static readonly Regex MemberInFormat_Or_EscAsciiPunc_Pattern = new(@"\[([mcp._x?]\!?)\]|\\([!-/:-@[-`{-~])", RegexOptions.Compiled);
 
