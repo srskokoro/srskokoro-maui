@@ -1,6 +1,11 @@
 ﻿namespace Kokoro.Test.Util;
 using System.Runtime.Serialization;
 
+/// <summary>
+/// An <see cref="AggregateException"/> with very minimal string representation
+/// (by not repeating <see cref="AggregateException.InnerExceptions">InnerExceptions</see>'
+/// messages).
+/// </summary>
 [Serializable]
 public class MinimalAggregateException : AggregateException, ISerializable {
 
