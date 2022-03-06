@@ -9,23 +9,38 @@ using System.Runtime.Serialization;
 [Serializable]
 public class MinimalAggregateException : AggregateException, ISerializable {
 
-	public MinimalAggregateException() : base("") { }
+	public MinimalAggregateException()
+		: base("") { }
 
-	public MinimalAggregateException(IEnumerable<Exception> innerExceptions) : base("", innerExceptions) { }
+	public MinimalAggregateException(IEnumerable<Exception> innerExceptions)
+		: base("", innerExceptions) { }
 
-	public MinimalAggregateException(params Exception[] innerExceptions) : base("", innerExceptions) { }
+	public MinimalAggregateException(params Exception[] innerExceptions)
+		: base("", innerExceptions) { }
 
-	public MinimalAggregateException(Exception innerException) : base("", innerException) { }
+	public MinimalAggregateException(Exception innerException)
+		: base("", innerException) { }
 
-	public MinimalAggregateException(string? message) : base(message ?? "") => _Message = message;
+	// --
 
-	public MinimalAggregateException(string? message, IEnumerable<Exception> innerExceptions) : base(message ?? "", innerExceptions) => _Message = message;
+	public MinimalAggregateException(string? message)
+		: base(message ?? "") => _Message = message;
 
-	public MinimalAggregateException(string? message, params Exception[] innerExceptions) : base(message ?? "", innerExceptions) => _Message = message;
+	public MinimalAggregateException(string? message, IEnumerable<Exception> innerExceptions)
+		: base(message ?? "", innerExceptions) => _Message = message;
 
-	public MinimalAggregateException(string? message, Exception innerException) : base(message ?? "", innerException) => _Message = message;
+	public MinimalAggregateException(string? message, params Exception[] innerExceptions)
+		: base(message ?? "", innerExceptions) => _Message = message;
 
-	protected MinimalAggregateException(SerializationInfo info, StreamingContext context) : base(info, context) => _Message = info.GetString("Message");
+	public MinimalAggregateException(string? message, Exception innerException)
+		: base(message ?? "", innerException) => _Message = message;
+
+	// --
+
+	protected MinimalAggregateException(SerializationInfo info, StreamingContext context)
+		: base(info, context) => _Message = info.GetString("Message");
+
+	// --
 
 	private readonly string? _Message;
 
