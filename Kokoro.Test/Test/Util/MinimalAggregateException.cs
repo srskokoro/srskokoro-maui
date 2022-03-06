@@ -17,7 +17,17 @@ public class MinimalAggregateException : AggregateException, ISerializable {
 
 	public MinimalAggregateException(Exception innerException) : base("", innerException) { }
 
-	protected MinimalAggregateException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+	public MinimalAggregateException(string? message) : base(message ?? "") => _Message = message;
 
-	public override string Message => "";
+	public MinimalAggregateException(string? message, IEnumerable<Exception> innerExceptions) : base(message ?? "", innerExceptions) => _Message = message;
+
+	public MinimalAggregateException(string? message, params Exception[] innerExceptions) : base(message ?? "", innerExceptions) => _Message = message;
+
+	public MinimalAggregateException(string? message, Exception innerException) : base(message ?? "", innerException) => _Message = message;
+
+	protected MinimalAggregateException(SerializationInfo info, StreamingContext context) : base(info, context) => _Message = info.GetString("Message");
+
+	private readonly string? _Message;
+
+	public override string Message => _Message ?? "";
 }
