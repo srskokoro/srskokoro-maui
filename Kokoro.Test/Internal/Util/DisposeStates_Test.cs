@@ -124,4 +124,31 @@ public class DisposeStates_Test : IRandomizedTest {
 
 		state.Should().Be(oldState);
 	}
+
+	[TestTheory, CombinatorialData]
+	[TLabel($"When `[m] == true`, the resulting state is `{nameof(DisposeState.Disposing)}`")]
+	internal void T006_HandleDisposeRequest(DisposeState initState) {
+		DisposeState state = initState;
+		bool stateShouldChange = state.HandleDisposeRequest();
+
+		DisposeState expected = stateShouldChange ? DisposeState.Disposing : initState;
+		state.Should().Be(expected, because:
+			$"`{nameof(DisposeStates.HandleDisposeRequest)}() == {stateShouldChange.ToKeyword()}`");
+	}
+
+	[TestFact]
+	[TLabel($"[m!] sets state to `{nameof(DisposeState.DisposedFully)}`")]
+	internal void T007_CommitDisposeRequest() {
+		DisposeState state = DisposeState.Disposing;
+		state.CommitDisposeRequest();
+		state.Should().Be(DisposeState.DisposedFully);
+	}
+
+	[TestFact]
+	[TLabel($"[m!] sets state to `{nameof(DisposeState.DisposedPartially)}`")]
+	internal void T008_RevokeDisposeRequest() {
+		DisposeState state = DisposeState.Disposing;
+		state.RevokeDisposeRequest();
+		state.Should().Be(DisposeState.DisposedPartially);
+	}
 }
