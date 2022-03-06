@@ -1,7 +1,8 @@
 ﻿namespace Kokoro.Test.Util;
 using System.Runtime.Serialization;
 
-public class MinimalAggregateException : AggregateException {
+[Serializable]
+public class MinimalAggregateException : AggregateException, ISerializable {
 
 	public MinimalAggregateException() : base("") { }
 
