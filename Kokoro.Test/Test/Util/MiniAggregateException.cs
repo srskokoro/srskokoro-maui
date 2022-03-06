@@ -7,37 +7,37 @@ using System.Runtime.Serialization;
 /// messages).
 /// </summary>
 [Serializable]
-public class MinimalAggregateException : AggregateException, ISerializable {
+public class MiniAggregateException : AggregateException, ISerializable {
 
-	public MinimalAggregateException()
+	public MiniAggregateException()
 		: base("") { }
 
-	public MinimalAggregateException(IEnumerable<Exception> innerExceptions)
+	public MiniAggregateException(IEnumerable<Exception> innerExceptions)
 		: base("", innerExceptions) { }
 
-	public MinimalAggregateException(params Exception[] innerExceptions)
+	public MiniAggregateException(params Exception[] innerExceptions)
 		: base("", innerExceptions) { }
 
-	public MinimalAggregateException(Exception innerException)
+	public MiniAggregateException(Exception innerException)
 		: base("", innerException) { }
 
 	// --
 
-	public MinimalAggregateException(string? message)
+	public MiniAggregateException(string? message)
 		: base(message ?? "") => _Message = message;
 
-	public MinimalAggregateException(string? message, IEnumerable<Exception> innerExceptions)
+	public MiniAggregateException(string? message, IEnumerable<Exception> innerExceptions)
 		: base(message ?? "", innerExceptions) => _Message = message;
 
-	public MinimalAggregateException(string? message, params Exception[] innerExceptions)
+	public MiniAggregateException(string? message, params Exception[] innerExceptions)
 		: base(message ?? "", innerExceptions) => _Message = message;
 
-	public MinimalAggregateException(string? message, Exception innerException)
+	public MiniAggregateException(string? message, Exception innerException)
 		: base(message ?? "", innerException) => _Message = message;
 
 	// --
 
-	protected MinimalAggregateException(SerializationInfo info, StreamingContext context)
+	protected MiniAggregateException(SerializationInfo info, StreamingContext context)
 		: base(info, context) => _Message = info.GetString("Message");
 
 	// --
