@@ -17,7 +17,7 @@ public class Discovery_Test {
 			// should be changed to match it also anyway.
 			nameof(TestFactDiscoverer.TypeName).Should()
 				.Be(expected, $"because it's currently being used in the test" +
-				$" method `{nameof(FactAttribute.DisplayName)}` (since, " +
+				$" method's `{nameof(FactAttribute.DisplayName)}` (since " +
 				$"`nameof({nameof(TestFactDiscoverer)}.{expected})` makes " +
 				$"legibility bad)");
 		}

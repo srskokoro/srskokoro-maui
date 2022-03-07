@@ -13,7 +13,7 @@ public class TestFramework_Test {
 			const string expected = "TypeName";
 			nameof(TestFramework.TypeName).Should()
 				.Be(expected, $"because it's currently being used in the test" +
-				$" method `{nameof(FactAttribute.DisplayName)}` (since, " +
+				$" method's `{nameof(FactAttribute.DisplayName)}` (since " +
 				$"`nameof({nameof(TestFramework)}.{expected})` makes " +
 				$"legibility bad)");
 		}
