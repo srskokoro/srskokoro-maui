@@ -30,5 +30,8 @@ public class Discovery_Test {
 
 		typeof(TestTheoryDiscoverer).ToString().Should()
 			.Be(TestTheoryDiscoverer.TypeName);
+
+		typeof(TestDataDiscoverer).ToString().Should()
+			.Be(TestDataDiscoverer.TypeName);
 	}
 }
