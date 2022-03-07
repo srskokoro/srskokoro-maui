@@ -11,7 +11,7 @@ public class TestFrameworkDiscoverer_Test {
 		$"being currently implemented by both `{nameof(TestFactAttribute)}` " +
 		$"and `{nameof(TestTheoryAttribute)}`")]
 	public void T001() {
-		using var scope = new AssertionScope();
+		using var scope = new AssertionCapture();
 
 		var assemblyInfo = new ReflectionAssemblyInfo(typeof(TestFrameworkDiscoverer).Assembly);
 		using var spyBus = new SpyMessageBus();

@@ -6,7 +6,7 @@ public class TestFramework_Test {
 	[Fact(DisplayName = $"{nameof(T001)} :: " +
 		$"`{nameof(TestFramework)}` has proper `TypeName` constant")]
 	public void T001() {
-		using var scope = new AssertionScope();
+		using var scope = new AssertionCapture();
 
 		// Guard against name refactoring
 		{

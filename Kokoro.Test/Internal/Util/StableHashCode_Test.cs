@@ -7,7 +7,7 @@ public class StableHashCode_Test : IRandomizedTest {
 	[TestFact]
 	[TLabel("[m]: hash of 1 null != hash of 2 nulls != hash of 3 nulls")]
 	public void T001_Of() {
-		using var scope = new AssertionScope();
+		using var scope = new AssertionCapture();
 
 		int hash1 = StableHashCode.Of("\0");
 		int hash2 = StableHashCode.Of("\0\0");

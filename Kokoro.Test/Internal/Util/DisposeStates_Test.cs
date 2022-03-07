@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Internal.Util;
-using FluentAssertions.Execution;
 
 public class DisposeStates_Test : IRandomizedTest {
 	static Random Random => TestUtil.GetRandom<DisposeStates_Test>();
@@ -7,7 +6,7 @@ public class DisposeStates_Test : IRandomizedTest {
 	[TestTheory, CombinatorialData]
 	[TLabel($"Volatile access == non-volatile counterpart")]
 	internal void T001(DisposeState state) {
-		using (new AssertionScope()) {
+		using (new AssertionCapture()) {
 			state.VolatileRead().Should().Be(state);
 
 			state.IsNotDisposed().Should()
@@ -116,7 +115,7 @@ public class DisposeStates_Test : IRandomizedTest {
 	[InlineData(DisposeState.DisposedPartially)]
 	[InlineData(DisposeState.DisposedFully)]
 	internal void T005_RevokeDisposeRequest(DisposeState state) {
-		using var scope = new AssertionScope();
+		using var scope = new AssertionCapture();
 		var oldState = state;
 
 		new Action(() => state.RevokeDisposeRequest())
