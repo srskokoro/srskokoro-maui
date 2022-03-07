@@ -3,7 +3,7 @@
 public class DisposeStates_Test : IRandomizedTest {
 	static Random Random => TestUtil.GetRandom<DisposeStates_Test>();
 
-	[TestTheory, CombinatorialData]
+	[TestTheory, TestCombinatorialData]
 	[TLabel($"Volatile access == non-volatile counterpart")]
 	internal void T001(DisposeState state) {
 		using (new AssertionCapture()) {
@@ -27,7 +27,7 @@ public class DisposeStates_Test : IRandomizedTest {
 		}
 	}
 
-	[TestTheory, CombinatorialData]
+	[TestTheory, TestCombinatorialData]
 	[TLabel($"[m!] usage demo")]
 	internal void D002_HandleDisposeRequest(DisposeState disposeState, bool disposing) {
 		var disposable = new DummyDisposable();
@@ -124,7 +124,7 @@ public class DisposeStates_Test : IRandomizedTest {
 		state.Should().Be(oldState);
 	}
 
-	[TestTheory, CombinatorialData]
+	[TestTheory, TestCombinatorialData]
 	[TLabel($"When `[m] == true`, the resulting state is `{nameof(DisposeState.Disposing)}`")]
 	internal void T006_HandleDisposeRequest(DisposeState initState) {
 		DisposeState state = initState;
