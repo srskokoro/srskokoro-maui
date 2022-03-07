@@ -27,7 +27,7 @@ public class DisposeStates_Test : IRandomizedTest {
 		}
 	}
 
-	[TestTheory, TestCombinatorialData]
+	[TestTheory, TestCombinatorialData(DisableDiscoveryEnumeration = true)]
 	[TLabel($"[m!] usage demo")]
 	internal void D002_HandleDisposeRequest(DisposeState disposeState, bool disposing) {
 		var disposable = new DummyDisposable();
@@ -124,7 +124,7 @@ public class DisposeStates_Test : IRandomizedTest {
 		state.Should().Be(oldState);
 	}
 
-	[TestTheory, TestCombinatorialData]
+	[TestTheory, TestCombinatorialData(DisableDiscoveryEnumeration = true)]
 	[TLabel($"When `[m] == true`, the resulting state is `{nameof(DisposeState.Disposing)}`")]
 	internal void T006_HandleDisposeRequest(DisposeState initState) {
 		DisposeState state = initState;
