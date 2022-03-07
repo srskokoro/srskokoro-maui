@@ -22,7 +22,7 @@ public class LabelAttribute : Attribute {
 	}
 
 	public virtual string GetDisplayName(ITestMethod testMethod, object[]? testMethodArguments, ITypeInfo[]? methodGenericTypes, TestMethodDisplay testMethodDisplay) {
-		var baseDisplayNameBuilder = new StringBuilder();
+		var sb = new StringBuilder();
 
 		var method = testMethod.Method;
 		string? methodName;
@@ -30,7 +30,7 @@ public class LabelAttribute : Attribute {
 		if (testMethodDisplay != TestMethodDisplay.ClassAndMethod) {
 			methodName = TestMethodNameOverride ?? method.Name;
 		} else {
-			baseDisplayNameBuilder.Append(testMethod.TestClass.Class.Name);
+			sb.Append(testMethod.TestClass.Class.Name);
 
 			methodName = TestMethodNameOverride;
 			if (methodName is null) {
@@ -40,31 +40,31 @@ public class LabelAttribute : Attribute {
 				goto AppendMethodName; // Omit the dot (below)
 			}
 
-			baseDisplayNameBuilder.Append('.');
+			sb.Append('.');
 		}
 
 	AppendMethodName:
-		baseDisplayNameBuilder.Append(methodName);
+		sb.Append(methodName);
 
 		string labelSeparator;
 		if (Text is string text) {
 			labelSeparator = LabelSeparator ?? DefaultLabelSeparator;
-			if (baseDisplayNameBuilder.Length != 0) {
-				baseDisplayNameBuilder.Append(labelSeparator);
+			if (sb.Length != 0) {
+				sb.Append(labelSeparator);
 			}
-			baseDisplayNameBuilder.Append(text);
+			sb.Append(text);
 		} else {
 			labelSeparator = "";
 		}
 
 		if (testMethodArguments?.Length > 0 || methodGenericTypes?.Length > 0) {
 			// `baseDisplayNameBuilder` may currently be empty: let it be then
-			baseDisplayNameBuilder.Append(labelSeparator);
+			sb.Append(labelSeparator);
 
-			string baseDisplayName = baseDisplayNameBuilder.ToString();
+			string baseDisplayName = sb.ToString();
 			return method.GetDisplayNameWithArguments(baseDisplayName, testMethodArguments, methodGenericTypes);
 		}
 
-		return baseDisplayNameBuilder.ToString();
+		return sb.ToString();
 	}
 }
