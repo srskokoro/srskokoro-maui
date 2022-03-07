@@ -146,7 +146,7 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 			}
 
 			Exception ex = exceptions.Count == 1 ? exceptions[0]
-				: new MiniAggregateException(mainMessage, exceptions);
+				: new MinimalAggregateException(mainMessage, exceptions);
 
 			ExceptionDispatchInfo.Throw(ex);
 		}
