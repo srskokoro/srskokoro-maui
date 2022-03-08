@@ -291,3 +291,8 @@ dotnet_naming_style.u_pascal_case.required_prefix = _
 dotnet_naming_style.u_pascal_case.required_suffix = 
 dotnet_naming_style.u_pascal_case.word_separator = 
 dotnet_naming_style.u_pascal_case.capitalization = pascal_case
+
+#### Warnings and Errors ####
+
+# CS0436: Type conflicts with imported type
+dotnet_diagnostic.CS0436.severity = silent

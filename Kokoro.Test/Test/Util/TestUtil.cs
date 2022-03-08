@@ -3,14 +3,6 @@ using static Kokoro.Test.Framework.IRandomizedTestEstablisher;
 
 public static partial class TestUtil {
 
-#if DEBUG
-	public const bool Debug = true;
-#else
-	public const bool Debug = false;
-#endif
-
-	// --
-
 	private class LocalRandomAccess : ILocalRandomAccess {
 		public static Random GetRandom<T>() where T : IRandomizedTest
 			=> ILocalRandomAccess.GetRandom(typeof(T));

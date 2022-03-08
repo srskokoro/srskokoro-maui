@@ -46,7 +46,7 @@ public class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 					&& reflectLabel.Attribute is TLabelAttribute tlabelAttribute) {
 				var map = _CurrentTestNumbers;
 				if (map is null) {
-					if (TestUtil.Debug) {
+					if (ThisAssembly.Debug) {
 						DiagnosticMessageSink.OnMessage(new DiagnosticMessage(
 							$"`{nameof(FindTestsForMethod)}()` called outside of `{nameof(FindTestsForType)}()`"));
 					}
