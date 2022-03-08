@@ -1,8 +1,22 @@
-﻿
+﻿global using static ThisAssembly.GlobalConstants;
+
 partial class ThisAssembly {
+
+	// --
+
+	#region Global Constants
+
+	public static partial class GlobalConstants {
 #if DEBUG
-	public const bool Debug = true;
+		public const bool DEBUG = true;
 #else
-	public const bool Debug = false;
+		public const bool DEBUG = false;
 #endif
+	}
+
+	static partial class GlobalConstants__global_using__prevent_mark_as_unused {
+		static class X { static X() => _ = DEBUG; }
+	}
+
+	#endregion
 }
