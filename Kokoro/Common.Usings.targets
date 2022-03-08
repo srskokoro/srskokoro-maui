@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <ItemGroup>
     <Using Include="System.Diagnostics" />
     <Using Include="System.Diagnostics.CodeAnalysis" />
