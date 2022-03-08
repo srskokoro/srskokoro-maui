@@ -18,7 +18,7 @@ internal static class UuidUtils {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static void GuidUuidSwap(Span<byte> bytes) {
 		// Initial check forces JIT to avoid unnecessary range checking
-		if (16 >= bytes.Length) {
+		if (16 > bytes.Length) {
 			// ^ See also, https://github.com/dotnet/runtime/issues/10950
 			throw new ArgumentOutOfRangeException(nameof(bytes), "Span is too short.");
 		}
@@ -41,7 +41,7 @@ internal static class UuidUtils {
 	public static Guid GuidFromUuid(ReadOnlySpan<byte> uuidBytes) {
 		// This initial check should force JIT to avoid unnecessary range
 		// checking, except that for some unknown reasons, it doesn't...
-		if (16 >= uuidBytes.Length) {
+		if (16 > uuidBytes.Length) {
 			// ^ See also, https://github.com/dotnet/runtime/issues/10950
 			throw new ArgumentOutOfRangeException(nameof(uuidBytes), "Span is too short.");
 		}
