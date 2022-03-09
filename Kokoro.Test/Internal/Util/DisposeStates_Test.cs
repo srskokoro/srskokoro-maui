@@ -83,7 +83,7 @@ public class DisposeStates_Test : IRandomizedTest {
 	[TLabel($"`[m] == true` for only one thread")]
 	internal void T003_HandleDisposeRequest() {
 		DisposeState state = default;
-		new RaceTest(1, 300).Queue(-1, 0x1000, () => {
+		using (new RaceTest(1, 300).Queue(-1, 0x1000, () => {
 			if (!state.HandleDisposeRequest()) {
 				return;
 			}
@@ -96,7 +96,7 @@ public class DisposeStates_Test : IRandomizedTest {
 
 			// --
 			state.RevokeDisposeRequest();
-		}).Wait();
+		})) { }
 	}
 
 	[TestTheory]

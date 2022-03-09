@@ -1,51 +1,147 @@
 ﻿namespace Kokoro.Test.Util;
 
-public class RaceTest {
-	private readonly LinkedList<Task> _Tasks = new();
+public class RaceTest : IDisposable, IAsyncDisposable {
+	private LinkedList<TaskItem>? _TaskItems = new();
 	private object? _ExceptionOrTimeout;
 	private readonly int _MinSpinsPerThread;
+	private readonly int _MillisecondsTimeoutAfterMinSpins;
 
-	// Used to indicate that the test has already timed out and should stop.
-	private static readonly object s_TimeoutSignal = new();
-
+	private readonly ManualResetEventSlim _StartEvent = new();
 	private Timer? _Timer;
 
 	#region Constructors
 
 	public RaceTest(int minSpinsPerThread) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_ExceptionOrTimeout = s_TimeoutSignal;
 	}
 
 	public RaceTest(int minSpinsPerThread, int millisecondsTimeoutAfterMinSpins) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_Timer = new(s_TimeoutCallback, this, millisecondsTimeoutAfterMinSpins, Timeout.Infinite);
+		_MillisecondsTimeoutAfterMinSpins = millisecondsTimeoutAfterMinSpins;
 	}
 
-	public RaceTest(int minSpinsPerThread, TimeSpan timeoutAfterMinSpins) {
-		_MinSpinsPerThread = minSpinsPerThread;
-		_Timer = new(s_TimeoutCallback, this, timeoutAfterMinSpins, Timeout.InfiniteTimeSpan);
-	}
+	#endregion
+
+	#region Internal Setup
+
+	// Used to indicate that the test has already timed out and should stop.
+	private static readonly object s_TimeoutSignal = new();
 
 	private static readonly TimerCallback s_TimeoutCallback = state => {
 		var @this = (RaceTest)state!;
 		Interlocked.CompareExchange(ref @this._ExceptionOrTimeout, s_TimeoutSignal, null);
-		@this._Timer!.Dispose();
-		@this._Timer = null;
+		@this.DisposeTimer(); // Release resource
 	};
+
+	private void DisposeTimer() {
+		var timer = _Timer;
+		if (timer is not null) {
+			timer.Dispose(); // Thread-safe
+			_Timer = null;
+		}
+	}
+
+	private Task[] ConsumeCore(LinkedList<TaskItem> items) {
+		var tasks = new Task[items.Count]; // Better to throw OOM early
+
+		int timeout = _MillisecondsTimeoutAfterMinSpins;
+		if (timeout <= 0) {
+			_ExceptionOrTimeout = s_TimeoutSignal; // Set as already timed out
+		} else {
+			_Timer = new(s_TimeoutCallback, this, timeout, Timeout.Infinite);
+		}
+
+		try {
+			int i = 0;
+			for (var node = items.First; node is not null; node = node.Next) {
+				// The ff. shouldn't normally throw though
+				tasks[i++] = node.Value.StartTask();
+			}
+			return tasks;
+		} catch (Exception ex) {
+			// Force termination of already running tasks
+			_ExceptionOrTimeout = ex;
+			throw;
+		} finally {
+			// Must set event, so that waiting threads get to preceed, and
+			// eventually terminate.
+			try {
+				_StartEvent.Set(); // Also shouldn't normally throw
+			} catch (Exception ex) {
+#pragma warning disable CA2219 // Do not raise exceptions in finally clauses
+				if (_ExceptionOrTimeout is not Exception priorEx) throw;
+				throw new MinimalAggregateException(priorEx, ex);
+#pragma warning restore CA2219
+			}
+		}
+	}
 
 	#endregion
 
-	public void Wait() {
-		Task.WaitAll(_Tasks.ToArray());
-		if (_ExceptionOrTimeout is Exception ex)
+	public Exception? Consume() {
+		var items = Interlocked.Exchange(ref _TaskItems, null);
+		if (items is null) return null;
+
+		try {
+			var tasks = ConsumeCore(items);
+			Task.WaitAll(tasks);
+			// Event can now be safely disposed
+			_StartEvent.Dispose();
+		} finally {
+			// Dispose `Timer` set up by `ConsumeCore()`
+			DisposeTimer();
+		}
+
+		return _ExceptionOrTimeout as Exception;
+	}
+
+	public async Task<Exception?> ConsumeAsync() {
+		var items = Interlocked.Exchange(ref _TaskItems, null);
+		if (items is null) return null;
+
+		try {
+			var tasks = ConsumeCore(items);
+			await Task.WhenAll(tasks).ConfigureAwait(false);
+			// Event can now be safely disposed
+			_StartEvent.Dispose();
+		} finally {
+			// Dispose `Timer` set up by `ConsumeCore()`
+			DisposeTimer();
+		}
+
+		return _ExceptionOrTimeout as Exception;
+	}
+
+	#region `IDisposable` implementation
+
+	protected virtual void Dispose(bool disposing) {
+		if (!disposing) return; // Will also skip the throwing code below
+
+		if (Consume() is Exception ex)
 			ExceptionDispatchInfo.Throw(ex);
 	}
 
-	public Exception? WaitNoThrow() {
-		Task.WaitAll(_Tasks.ToArray());
-		return _ExceptionOrTimeout as Exception;
+	~RaceTest() => Dispose(disposing: false);
+
+	public void Dispose() {
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+		// ^- Side-effect: `this` is kept alive 'til the method ends.
+		// - See, https://stackoverflow.com/q/816818
 	}
+
+	public async ValueTask DisposeAsync() {
+		await DisposeAsyncCore().ConfigureAwait(false);
+
+		Dispose(disposing: false);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual ValueTask DisposeAsyncCore() => new(ConsumeAsync());
+
+	#endregion
+
+	// --
 
 	#region Defaults
 
@@ -160,27 +256,54 @@ public class RaceTest {
 
 	#region Main implementation
 
+	#region `Task` creation
+
+	private abstract record TaskItem {
+		public abstract Task StartTask();
+	}
+
 	private const TaskCreationOptions CommonTaskCreationOptions
 			= TaskCreationOptions.LongRunning
 			| TaskCreationOptions.HideScheduler
 			| TaskCreationOptions.DenyChildAttach;
 
+	private sealed record TaskItemWithoutLocal(
+		RaceTest Race, int RunsPerSpin,
+		Action Init, Action Body, Action Finally
+	) : TaskItem {
+
+		public override Task StartTask() => Task.Factory.StartNew(
+			DoTaskLoopWithoutLocal, this,
+			CancellationToken.None,
+			CommonTaskCreationOptions,
+			TaskScheduler.Default
+		);
+	}
+
+	private sealed record TaskItemWithLocal<TLocal>(
+		RaceTest Race, int RunsPerSpin,
+		Func<TLocal> Init, Action<TLocal> Body, Action<TLocal> Finally
+	) : TaskItem {
+
+		public override Task StartTask() => Task.Factory.StartNew(
+			DoTaskLoopWithLocal<TLocal>, this,
+			CancellationToken.None,
+			CommonTaskCreationOptions,
+			TaskScheduler.Default
+		);
+	}
+
+	#endregion
+
 	public RaceTest Queue(int numThreads, int runsPerSpin, Action @init, Action @body, Action @finally) {
 		if (numThreads < 0) numThreads = DefaultNumThreads;
 		if (runsPerSpin < 0) throw new ArgumentOutOfRangeException(nameof(runsPerSpin));
 
-		Tuple<RaceTest, int, Action, Action, Action> state
-			= new(this, runsPerSpin, @init, @body, @finally);
+		var items = _TaskItems ?? throw new ObjectDisposedException(GetType().ToString());
+		TaskItemWithoutLocal item = new(this, runsPerSpin, @init, @body, @finally);
 
-		for (; numThreads > 0; numThreads--) {
-			var task = Task.Factory.StartNew(
-				DoTaskLoopWithoutLocal, state,
-				CancellationToken.None,
-				CommonTaskCreationOptions,
-				TaskScheduler.Default
-			);
-			_Tasks.AddLast(task);
-		}
+		for (; numThreads > 0; numThreads--)
+			items.AddLast(item);
 
 		return this;
 	}
@@ -189,24 +312,17 @@ public class RaceTest {
 		if (numThreads < 0) numThreads = DefaultNumThreads;
 		if (runsPerSpin < 0) throw new ArgumentOutOfRangeException(nameof(runsPerSpin));
 
-		Tuple<RaceTest, int, Func<TLocal>, Action<TLocal>, Action<TLocal>> state
-			= new(this, runsPerSpin, @init, @body, @finally);
+		var items = _TaskItems ?? throw new ObjectDisposedException(GetType().ToString());
+		TaskItemWithLocal<TLocal> item = new(this, runsPerSpin, @init, @body, @finally);
 
-		for (; numThreads > 0; numThreads--) {
-			var task = Task.Factory.StartNew(
-				DoTaskLoopWithLocal<TLocal>, state,
-				CancellationToken.None,
-				CommonTaskCreationOptions,
-				TaskScheduler.Default
-			);
-			_Tasks.AddLast(task);
-		}
+		for (; numThreads > 0; numThreads--)
+			items.AddLast(item);
 
 		return this;
 	}
 
 	private static void DoTaskLoopWithoutLocal(object? state) {
-		var (race, runsPerSpin, @init, @body, @finally) = (Tuple<RaceTest, int, Action, Action, Action>)state!;
+		var (race, runsPerSpin, @init, @body, @finally) = (TaskItemWithoutLocal)state!;
 
 		int spins = race._MinSpinsPerThread;
 		Exception? exitEx = null;
@@ -219,6 +335,8 @@ public class RaceTest {
 		}
 
 		try {
+			race._StartEvent.Wait(); // Should throw only on extremely rare case
+
 			for (; spins > 0; spins--) {
 				if (Volatile.Read(ref race._ExceptionOrTimeout) is Exception) {
 					goto Cleanup;
@@ -257,7 +375,7 @@ public class RaceTest {
 	}
 
 	private static void DoTaskLoopWithLocal<TLocal>(object? state) {
-		var (race, runsPerSpin, @init, @body, @finally) = (Tuple<RaceTest, int, Func<TLocal>, Action<TLocal>, Action<TLocal>>)state!;
+		var (race, runsPerSpin, @init, @body, @finally) = (TaskItemWithLocal<TLocal>)state!;
 
 		int spins = race._MinSpinsPerThread;
 		Exception? exitEx = null;
@@ -271,6 +389,8 @@ public class RaceTest {
 		}
 
 		try {
+			race._StartEvent.Wait(); // Should throw only on extremely rare case
+
 			for (; spins > 0; spins--) {
 				if (Volatile.Read(ref race._ExceptionOrTimeout) is Exception) {
 					goto Cleanup;
