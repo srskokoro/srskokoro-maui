@@ -22,7 +22,7 @@ internal static class StableHashCode {
 			}
 
 			hash1 += hash2 * 1566083941;
-			return (hash1 << 5) - hash1 + 2 * chars.Length;
+			return (hash1 << 5) - hash1 + (chars.Length << 1);
 		}
 	}
 
