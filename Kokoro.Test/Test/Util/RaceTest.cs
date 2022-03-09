@@ -5,7 +5,8 @@ public class RaceTest {
 	private object? _ExceptionOrTimeout;
 	private readonly int _MinSpinsPerThread;
 
-	private static readonly object _TimeoutSignal = new();
+	// Used to indicate that the test has already timed out and should stop.
+	private static readonly object s_TimeoutSignal = new();
 
 	private Timer? _Timer;
 
@@ -13,7 +14,7 @@ public class RaceTest {
 
 	public RaceTest(int minSpinsPerThread) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_ExceptionOrTimeout = _TimeoutSignal;
+		_ExceptionOrTimeout = s_TimeoutSignal;
 	}
 
 	public RaceTest(int minSpinsPerThread, int millisecondsTimeoutAfterMinSpins) {
@@ -28,7 +29,7 @@ public class RaceTest {
 
 	private static TimerCallback CreateTimeoutCallback() => state => {
 		var @this = (RaceTest)state!;
-		Interlocked.CompareExchange(ref @this._ExceptionOrTimeout, _TimeoutSignal, null);
+		Interlocked.CompareExchange(ref @this._ExceptionOrTimeout, s_TimeoutSignal, null);
 		@this._Timer!.Dispose();
 		@this._Timer = null;
 	};
@@ -251,7 +252,7 @@ public class RaceTest {
 
 	ExitWithException:
 		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) is not null) {
-			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, _TimeoutSignal);
+			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, s_TimeoutSignal);
 		}
 	}
 
@@ -303,7 +304,7 @@ public class RaceTest {
 
 	ExitWithException:
 		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) is not null) {
-			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, _TimeoutSignal);
+			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, s_TimeoutSignal);
 		}
 	}
 
