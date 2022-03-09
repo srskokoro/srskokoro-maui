@@ -220,7 +220,7 @@ public class RaceTest {
 
 		try {
 			for (; spins > 0; spins--) {
-				if (Volatile.Read(ref race._ExceptionOrTimeout) is not null) {
+				if (Volatile.Read(ref race._ExceptionOrTimeout) is Exception) {
 					goto Cleanup;
 				}
 				for (int i = runsPerSpin; i > 0; i--) {
@@ -272,7 +272,7 @@ public class RaceTest {
 
 		try {
 			for (; spins > 0; spins--) {
-				if (Volatile.Read(ref race._ExceptionOrTimeout) is not null) {
+				if (Volatile.Read(ref race._ExceptionOrTimeout) is Exception) {
 					goto Cleanup;
 				}
 				for (int i = runsPerSpin; i > 0; i--) {
