@@ -271,13 +271,15 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	public void Dispose() {
 		Dispose(disposing: true);
 		GC.SuppressFinalize(this);
-		// ^- Side-effect: `this` is kept alive 'til the method ends
+		// ^- Side-effect: `this` is kept alive 'til the method ends.
+		// - See, https://stackoverflow.com/q/816818
 	}
 
 	public virtual ValueTask DisposeAsync() {
 		Dispose(disposing: true);
 		GC.SuppressFinalize(this);
-		// ^- Side-effect: `this` is kept alive 'til the method ends
+		// ^- Side-effect: `this` is kept alive 'til the method ends.
+		// - See, https://stackoverflow.com/q/816818
 		return default;
 	}
 
