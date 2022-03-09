@@ -8,7 +8,8 @@ internal static class StableHashCode {
 		// Modified from, https://stackoverflow.com/a/36846609
 		unchecked {
 			// TODO Use hardware accelerated vector instructions instead
-			// See, https://sergiopedri.medium.com/186816010ad9
+			// See, https://github.com/CommunityToolkit/dotnet/blob/7daf7bf7ce228c48a818dc7e833973f6323b598d/CommunityToolkit.HighPerformance/Helpers/Internals/SpanHelper.Hash.cs#L82
+			// See also, https://sergiopedri.medium.com/186816010ad9
 
 			int hash1 = 5381;
 			int hash2 = hash1;
@@ -31,7 +32,8 @@ internal static class StableHashCode {
 		// Modified from, https://stackoverflow.com/a/36846609
 		unchecked {
 			// TODO Use hardware accelerated vector instructions instead
-			// See, https://sergiopedri.medium.com/186816010ad9
+			// See, https://github.com/CommunityToolkit/dotnet/blob/7daf7bf7ce228c48a818dc7e833973f6323b598d/CommunityToolkit.HighPerformance/Helpers/Internals/SpanHelper.Hash.cs#L82
+			// See also, https://sergiopedri.medium.com/186816010ad9
 
 			int hash1 = 5381;
 			int hash2 = hash1;
