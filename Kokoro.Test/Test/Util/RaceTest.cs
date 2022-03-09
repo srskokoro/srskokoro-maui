@@ -19,15 +19,15 @@ public class RaceTest {
 
 	public RaceTest(int minSpinsPerThread, int millisecondsTimeoutAfterMinSpins) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_Timer = new(CreateTimeoutCallback(), this, millisecondsTimeoutAfterMinSpins, Timeout.Infinite);
+		_Timer = new(TimeoutCallback, this, millisecondsTimeoutAfterMinSpins, Timeout.Infinite);
 	}
 
 	public RaceTest(int minSpinsPerThread, TimeSpan timeoutAfterMinSpins) {
 		_MinSpinsPerThread = minSpinsPerThread;
-		_Timer = new(CreateTimeoutCallback(), this, timeoutAfterMinSpins, Timeout.InfiniteTimeSpan);
+		_Timer = new(TimeoutCallback, this, timeoutAfterMinSpins, Timeout.InfiniteTimeSpan);
 	}
 
-	private static TimerCallback CreateTimeoutCallback() => state => {
+	private static TimerCallback TimeoutCallback => state => {
 		var @this = (RaceTest)state!;
 		Interlocked.CompareExchange(ref @this._ExceptionOrTimeout, s_TimeoutSignal, null);
 		@this._Timer!.Dispose();
