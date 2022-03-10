@@ -56,7 +56,7 @@ public static partial class TestUtil {
 	}
 
 	public static void RandomSpin() {
-		DoSpin(Random.Shared.Next(8));
+		DoSpin(Random.Shared.Next(128));
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
@@ -78,7 +78,7 @@ public static partial class TestUtil {
 	}
 
 	public static void RandomSleep() {
-		Thread.Sleep(Random.Shared.Next(4));
+		Thread.Sleep(Random.Shared.Next(8));
 	}
 
 
