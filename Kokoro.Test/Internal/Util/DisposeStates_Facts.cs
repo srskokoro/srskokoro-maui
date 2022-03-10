@@ -92,7 +92,7 @@ public class DisposeStates_Facts : IRandomizedTest {
 			}
 
 			// Only 1 thread should be here at this point.
-			TestUtil.CheckEntry(ref entered).Should().Be(1);
+			Assert.Equal(1, TestUtil.CheckEntry(ref entered));
 
 			// --
 			state.RevokeDisposeRequest();

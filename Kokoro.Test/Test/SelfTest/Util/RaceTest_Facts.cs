@@ -16,9 +16,10 @@ public class RaceTest_Facts {
 					return;
 				}
 				barrier = 1;
+				Interlocked.MemoryBarrier();
 
 				// Only 1 thread should be here at this point.
-				TestUtil.CheckEntry(ref entered).Should().Be(1);
+				Assert.Equal(1, TestUtil.CheckEntry(ref entered));
 
 				barrier = 0;
 			});
@@ -38,7 +39,7 @@ public class RaceTest_Facts {
 				}
 
 				// Only 1 thread should be here at this point.
-				TestUtil.CheckEntry(ref entered).Should().Be(1);
+				Assert.Equal(1, TestUtil.CheckEntry(ref entered));
 
 				barrier = 0;
 			});
