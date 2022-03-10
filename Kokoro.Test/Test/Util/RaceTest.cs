@@ -4,7 +4,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 	private LinkedList<TaskItem>? _TaskItems = new();
 	private object? _ExceptionOrTimeout;
 	private readonly int _MinSpinsPerThread;
-	private readonly int _MillisecondsTimeoutAfterMinSpins;
+	private readonly int _MinRunMillis;
 
 	private readonly ManualResetEventSlim _StartEvent = new();
 	private Timer? _Timer;
@@ -12,19 +12,19 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 	#region Constructor
 
 	private const int DefaultMinSpinsPerThread = 8;
-	private const int DefaultTimeoutAfterMinSpins = 150;
+	private const int DefaultMinRunMillis = 150;
 
-	public RaceTest(int minSpinsPerThread = DefaultMinSpinsPerThread, int millisecondsTimeoutAfterMinSpins = DefaultTimeoutAfterMinSpins) {
+	public RaceTest(int minSpinsPerThread = DefaultMinSpinsPerThread, int minRunMillis = DefaultMinRunMillis) {
 		_MinSpinsPerThread = minSpinsPerThread < 0 ? DefaultMinSpinsPerThread : minSpinsPerThread;
-		_MillisecondsTimeoutAfterMinSpins = millisecondsTimeoutAfterMinSpins < 0
-			? DefaultTimeoutAfterMinSpins : millisecondsTimeoutAfterMinSpins;
+		_MinRunMillis = minRunMillis < 0 ? DefaultMinRunMillis : minRunMillis;
 	}
 
 	#endregion
 
 	#region Internal Setup
 
-	// Used to indicate that the test has already timed out and should stop.
+	// Used to indicate that the test has already timed out and should stop as
+	// early as it can.
 	private static readonly object s_TimeoutSignal = new();
 
 	private static readonly TimerCallback s_TimeoutCallback = state => {
@@ -44,7 +44,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 	private Task[] ConsumeCore(LinkedList<TaskItem> items) {
 		var tasks = new Task[items.Count]; // Better to throw OOM early
 
-		int timeout = _MillisecondsTimeoutAfterMinSpins;
+		int timeout = _MinRunMillis;
 		if (timeout <= 0) {
 			_ExceptionOrTimeout = s_TimeoutSignal; // Set as already timed out
 		} else {
