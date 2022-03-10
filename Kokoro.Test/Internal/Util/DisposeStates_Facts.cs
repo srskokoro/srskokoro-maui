@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Internal.Util;
 
-public class DisposeStates_Test : IRandomizedTest {
-	static Random Random => TestUtil.GetRandom<DisposeStates_Test>();
+public class DisposeStates_Facts : IRandomizedTest {
+	static Random Random => TestUtil.GetRandom<DisposeStates_Facts>();
 
 	[TestTheory, TestCombinatorialData]
 	[TLabel($"Volatile access == non-volatile counterpart")]

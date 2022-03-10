@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Internal.Util;
 
-public class Var_Test : IRandomizedTest {
-	private static Random Random => TestUtil.GetRandom<Var_Test>();
+public class Var_Facts : IRandomizedTest {
+	private static Random Random => TestUtil.GetRandom<Var_Facts>();
 
 	[TestFact]
 	[TLabel($"`[.](Guid)` returns `Guid` type object")]

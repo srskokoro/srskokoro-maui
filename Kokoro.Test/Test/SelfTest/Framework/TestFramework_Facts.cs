@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Test.SelfTest.Framework;
 using Kokoro.Test.Framework;
 
-public class TestFramework_Test {
+public class TestFramework_Facts {
 
 	[Fact(DisplayName = $"{nameof(T001)} :: " +
 		$"`{nameof(TestFramework)}` has proper `TypeName` constant")]

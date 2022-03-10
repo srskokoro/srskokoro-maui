@@ -4,7 +4,7 @@ using Moq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-public class TestFrameworkDiscoverer_Test {
+public class TestFrameworkDiscoverer_Facts {
 
 	[Fact(DisplayName = $"{nameof(T001)} :: " +
 		$"Error message is still correct about `{nameof(ITestFactAttribute)}` " +

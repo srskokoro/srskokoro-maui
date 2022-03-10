@@ -2,7 +2,7 @@
 using Kokoro.Test.Framework.Discovery;
 using Xunit.Sdk;
 
-public class Discovery_Test {
+public class Discovery_Facts {
 
 	[Fact(DisplayName = $"{nameof(T001)} :: " +
 		$"All `{nameof(IXunitTestCaseDiscoverer)}` implementations have " +
