@@ -83,20 +83,20 @@ public class DisposeStates_Test : IRandomizedTest {
 	[TLabel($"`[m] == true` for only one thread")]
 	internal void T003_HandleDisposeRequest() {
 		DisposeState state = default;
-		using (new RaceTest(1, 300).Queue(-1, 0x1000, () => {
+		int entered = 0;
+
+		using RaceTest race = new(4, 150);
+		race.Queue(-1, 0x100, () => {
 			if (!state.HandleDisposeRequest()) {
 				return;
 			}
+
 			// Only 1 thread should be here at this point.
-
-			// Let's wait for the others to get in, if any could.
-			TestUtil.BarrierYieldSpin();
-
-			Assert.Equal(DisposeState.Disposing, state.VolatileRead());
+			TestUtil.CheckEntry(ref entered).Should().Be(1);
 
 			// --
 			state.RevokeDisposeRequest();
-		})) { }
+		});
 	}
 
 	[TestTheory]

@@ -97,6 +97,12 @@ public static partial class TestUtil {
 		RandomSpin(spinCount);
 	}
 
+	public static int CheckEntry(ref int entered) {
+		int current = Interlocked.Increment(ref entered);
+		Interlocked.Decrement(ref entered);
+		return current;
+	}
+
 
 	[DoesNotReturn]
 	public static void ReThrow(this Exception exception) {
