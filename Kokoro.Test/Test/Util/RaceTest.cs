@@ -9,15 +9,15 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 	private readonly ManualResetEventSlim _StartEvent = new();
 	private Timer? _Timer;
 
-	#region Constructors
+	#region Constructor
 
-	public RaceTest(int minSpinsPerThread) {
-		_MinSpinsPerThread = minSpinsPerThread;
-	}
+	private const int DefaultMinSpinsPerThread = 8;
+	private const int DefaultTimeoutAfterMinSpins = 150;
 
-	public RaceTest(int minSpinsPerThread, int millisecondsTimeoutAfterMinSpins) {
-		_MinSpinsPerThread = minSpinsPerThread;
-		_MillisecondsTimeoutAfterMinSpins = millisecondsTimeoutAfterMinSpins;
+	public RaceTest(int minSpinsPerThread = DefaultMinSpinsPerThread, int millisecondsTimeoutAfterMinSpins = DefaultTimeoutAfterMinSpins) {
+		_MinSpinsPerThread = minSpinsPerThread < 0 ? DefaultMinSpinsPerThread : minSpinsPerThread;
+		_MillisecondsTimeoutAfterMinSpins = millisecondsTimeoutAfterMinSpins < 0
+			? DefaultTimeoutAfterMinSpins : millisecondsTimeoutAfterMinSpins;
 	}
 
 	#endregion
