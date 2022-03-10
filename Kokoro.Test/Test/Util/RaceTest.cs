@@ -300,7 +300,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 	public RaceTest Queue(int numThreads, int runsPerSpin, Action @init, Action @body, Action @finally) {
 		if (numThreads < 0) numThreads = DefaultNumThreads;
-		if (runsPerSpin < 0) throw new ArgumentOutOfRangeException(nameof(runsPerSpin));
+		if (runsPerSpin < 0) runsPerSpin = DefaultRunsPerSpin;
 
 		var items = _TaskItems ?? throw new ObjectDisposedException(GetType().ToString());
 		TaskItemWithoutLocal item = new(this, runsPerSpin, @init, @body, @finally);
@@ -313,7 +313,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 	public RaceTest Queue<TLocal>(int numThreads, int runsPerSpin, Func<TLocal> @init, Action<TLocal> @body, Action<TLocal> @finally) {
 		if (numThreads < 0) numThreads = DefaultNumThreads;
-		if (runsPerSpin < 0) throw new ArgumentOutOfRangeException(nameof(runsPerSpin));
+		if (runsPerSpin < 0) runsPerSpin = DefaultRunsPerSpin;
 
 		var items = _TaskItems ?? throw new ObjectDisposedException(GetType().ToString());
 		TaskItemWithLocal<TLocal> item = new(this, runsPerSpin, @init, @body, @finally);
