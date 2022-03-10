@@ -81,6 +81,22 @@ public static partial class TestUtil {
 		Thread.Sleep(Random.Shared.Next(8));
 	}
 
+	public static void BarrierYield() {
+		// See also, https://stackoverflow.com/questions/6581848/memory-barrier-generators
+		Thread.Sleep(0);
+		Interlocked.MemoryBarrier();
+	}
+
+	public static void BarrierYieldSpin() {
+		BarrierYield();
+		RandomSpin();
+	}
+
+	public static void BarrierYieldSpin(int spinCount) {
+		BarrierYield();
+		RandomSpin(spinCount);
+	}
+
 
 	[DoesNotReturn]
 	public static void ReThrow(this Exception exception) {

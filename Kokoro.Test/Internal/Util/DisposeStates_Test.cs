@@ -90,7 +90,7 @@ public class DisposeStates_Test : IRandomizedTest {
 			// Only 1 thread should be here at this point.
 
 			// Let's wait for the others to get in, if any could.
-			TestUtil.RandomSpin();
+			TestUtil.BarrierYieldSpin();
 
 			Assert.Equal(DisposeState.Disposing, state.VolatileRead());
 
