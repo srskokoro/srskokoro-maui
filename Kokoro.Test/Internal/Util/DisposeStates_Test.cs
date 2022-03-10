@@ -85,7 +85,7 @@ public class DisposeStates_Test : IRandomizedTest {
 		DisposeState state = default;
 		int entered = 0;
 
-		using RaceTest race = new(4, 150);
+		using RaceTest race = new(8, 150);
 		race.Queue(-1, 0x100, () => {
 			if (!state.HandleDisposeRequest()) {
 				return;

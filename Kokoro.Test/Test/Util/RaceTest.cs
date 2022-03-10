@@ -145,7 +145,10 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 	#region Defaults
 
-	private static readonly int DefaultNumThreads = Math.Max(Environment.ProcessorCount * 2, 4);
+	private const int CompetingThreadsPerProcessor = 4;
+	private static readonly int DefaultNumThreads =
+		Math.Max(Environment.ProcessorCount * CompetingThreadsPerProcessor, CompetingThreadsPerProcessor);
+
 	private const int DefaultRunsPerSpin = 8;
 
 	private static readonly Action DefaultAction = () => { };
