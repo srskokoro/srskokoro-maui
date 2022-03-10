@@ -63,6 +63,9 @@ public static class ComprehensiveAssert {
 			equalInstance2.Equals(null).Should().BeFalse(because: reasons);
 			notEqualInstance.Equals(null).Should().BeFalse(because: reasons);
 		}
+
+		// Force end current scope
+		scope.Strategy.ClearAndThrowIfAny();
 	}
 
 	public static void ProperlyImplements_GetHashCode<T>(T testInstance, T equalInstance, T equalInstance2) where T : notnull {
@@ -85,6 +88,9 @@ public static class ComprehensiveAssert {
 			(equalHash == equalInstance.GetHashCode()).Should().BeTrue(because: reasons);
 			(equalHash2 == equalInstance2.GetHashCode()).Should().BeTrue(because: reasons);
 		}
+
+		// Force end current scope
+		scope.Strategy.ClearAndThrowIfAny();
 	}
 
 	public static void ProperlyImplements_IComparable<T>(T testInstance, T equalInstance, T lesserInstance, T greaterInstance) where T : IComparable {

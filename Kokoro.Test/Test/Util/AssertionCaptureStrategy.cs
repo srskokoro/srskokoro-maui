@@ -124,12 +124,16 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 		return discards;
 	}
 
-	public void ThrowIfAny(IDictionary<string, object> context) {
+	public void ClearFailures() {
+		_Exceptions.Clear();
+	}
+
+	public void ThrowIfAny(IDictionary<string, object>? context = null) {
 		var exceptions = _Exceptions;
 		if (exceptions.Count > 0) {
 
 			string mainMessage;
-			if (context.Count <= 0) {
+			if (context is null || context.Count <= 0) {
 				mainMessage = "";
 			} else {
 				const string Indent = "    ";
@@ -149,6 +153,14 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 				: new MinimalAggregateException(mainMessage, exceptions);
 
 			ExceptionDispatchInfo.Throw(ex);
+		}
+	}
+
+	public void ClearAndThrowIfAny(IDictionary<string, object>? context = null) {
+		try {
+			ThrowIfAny(context);
+		} finally {
+			ClearFailures();
 		}
 	}
 }
