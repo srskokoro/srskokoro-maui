@@ -40,6 +40,7 @@ public class KokoroCollection : IDisposable, IAsyncDisposable {
 
 	#endregion
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static NotSupportedException E_VersionNotOperable()
 		=> new($"Version is not operable. Please migrate the " +
 			// TODO Consider using `GetType()` instead? -- for subclassing purposes

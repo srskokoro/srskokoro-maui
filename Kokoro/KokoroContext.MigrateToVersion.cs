@@ -121,6 +121,7 @@ partial class KokoroContext {
 
 	private static partial SortedList<(int, int), Action<KokoroContext, KokoroSqliteDb>> ProvideMigrationMap();
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static NotImplementedException E_ExpectedMigration(int fromVersion, int toVersion)
 		=> new($"Expected migration from {fromVersion} to {toVersion} is apparently not implemented.");
 }

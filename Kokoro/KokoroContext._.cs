@@ -221,6 +221,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 			}
 		}
 
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static ObjectDisposedException E_Disposed()
 			=> DisposeUtils.Ode(typeof(DbRetiringHandle));
 	}
@@ -285,6 +286,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 	#endregion
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private ObjectDisposedException E_Disposed()
 		=> DisposeUtils.Ode(GetType());
 }
