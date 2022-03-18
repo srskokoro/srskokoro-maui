@@ -26,7 +26,7 @@ internal static class DisposeUtils {
 			disposable.Dispose();
 		} catch (Exception ex) {
 			// Swallow
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 		}
 	}
 
