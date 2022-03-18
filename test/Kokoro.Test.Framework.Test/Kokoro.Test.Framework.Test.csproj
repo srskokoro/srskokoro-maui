@@ -41,14 +41,14 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.5.1" />
+    <PackageReference Include="Moq" Version="4.17.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kokoro.Test.Framework\Kokoro.Test.Framework.csproj" />
-    <ProjectReference Include="..\Kokoro.Common\Kokoro.Common.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <Import Project="..\..\src\Kokoro.Common\Kokoro.Common.Usings.targets" />
 
   <ItemGroup>
     <Using Include="Kokoro.Common" />

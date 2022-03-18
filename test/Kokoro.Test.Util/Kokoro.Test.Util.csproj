@@ -28,14 +28,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kokoro.Common\Kokoro.Common.csproj" />
+    <ProjectReference Include="..\..\src\Kokoro.Common\Kokoro.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Test" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <Import Project="..\..\src\Kokoro.Common\Kokoro.Common.Usings.targets" />
 
   <ItemGroup>
     <Using Include="Kokoro.Common" />

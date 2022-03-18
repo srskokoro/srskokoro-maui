@@ -3,23 +3,27 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.App", "Kokoro.App\Kokoro.App.csproj", "{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.App", "src\Kokoro.App\Kokoro.App.csproj", "{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Common", "Kokoro.Common\Kokoro.Common.csproj", "{61CAC8CA-0664-429D-AB39-A739D5D85067}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Common", "src\Kokoro.Common\Kokoro.Common.csproj", "{61CAC8CA-0664-429D-AB39-A739D5D85067}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Common.Test", "Kokoro.Common.Test\Kokoro.Common.Test.csproj", "{B319F661-4405-49F2-AE85-9C6A5089C509}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Common.Test", "test\Kokoro.Common.Test\Kokoro.Common.Test.csproj", "{B319F661-4405-49F2-AE85-9C6A5089C509}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro", "Kokoro\Kokoro.csproj", "{9640F7F1-7797-4496-A8E3-1A7268F57CAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro", "src\Kokoro\Kokoro.csproj", "{9640F7F1-7797-4496-A8E3-1A7268F57CAC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test", "Kokoro.Test\Kokoro.Test.csproj", "{20A301D0-70AF-4C05-807D-DBA29C70E61A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test", "test\Kokoro.Test\Kokoro.Test.csproj", "{20A301D0-70AF-4C05-807D-DBA29C70E61A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Util", "Kokoro.Test.Util\Kokoro.Test.Util.csproj", "{6B52BD9E-ECDB-4134-B6A8-16FADCB44E64}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Util", "test\Kokoro.Test.Util\Kokoro.Test.Util.csproj", "{6B52BD9E-ECDB-4134-B6A8-16FADCB44E64}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Util.Test", "Kokoro.Test.Util.Test\Kokoro.Test.Util.Test.csproj", "{F8DDAC1C-AAB9-401E-96D8-20F647088B74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Util.Test", "test\Kokoro.Test.Util.Test\Kokoro.Test.Util.Test.csproj", "{F8DDAC1C-AAB9-401E-96D8-20F647088B74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Framework", "Kokoro.Test.Framework\Kokoro.Test.Framework.csproj", "{FD2BE9CA-FF5E-44A2-A468-901B59ED1E8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Framework", "test\Kokoro.Test.Framework\Kokoro.Test.Framework.csproj", "{FD2BE9CA-FF5E-44A2-A468-901B59ED1E8A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Framework.Test", "Kokoro.Test.Framework.Test\Kokoro.Test.Framework.Test.csproj", "{E8F907DE-9E00-4C9B-B85B-083A78209D81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Framework.Test", "test\Kokoro.Test.Framework.Test\Kokoro.Test.Framework.Test.csproj", "{E8F907DE-9E00-4C9B-B85B-083A78209D81}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3328B854-E1F0-4DD1-AAB3-81D8D2C256EA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{03742892-5872-4903-916A-E4292F2ECEB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +72,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89} = {3328B854-E1F0-4DD1-AAB3-81D8D2C256EA}
+		{61CAC8CA-0664-429D-AB39-A739D5D85067} = {3328B854-E1F0-4DD1-AAB3-81D8D2C256EA}
+		{B319F661-4405-49F2-AE85-9C6A5089C509} = {03742892-5872-4903-916A-E4292F2ECEB3}
+		{9640F7F1-7797-4496-A8E3-1A7268F57CAC} = {3328B854-E1F0-4DD1-AAB3-81D8D2C256EA}
+		{20A301D0-70AF-4C05-807D-DBA29C70E61A} = {03742892-5872-4903-916A-E4292F2ECEB3}
+		{6B52BD9E-ECDB-4134-B6A8-16FADCB44E64} = {03742892-5872-4903-916A-E4292F2ECEB3}
+		{F8DDAC1C-AAB9-401E-96D8-20F647088B74} = {03742892-5872-4903-916A-E4292F2ECEB3}
+		{FD2BE9CA-FF5E-44A2-A468-901B59ED1E8A} = {03742892-5872-4903-916A-E4292F2ECEB3}
+		{E8F907DE-9E00-4C9B-B85B-083A78209D81} = {03742892-5872-4903-916A-E4292F2ECEB3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}

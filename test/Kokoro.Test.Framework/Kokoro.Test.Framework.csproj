@@ -31,7 +31,7 @@
     <InternalsVisibleTo Include="$(AssemblyName).Test" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <Import Project="..\..\src\Kokoro.Common\Kokoro.Common.Usings.targets" />
 
   <ItemGroup>
     <Using Include="Kokoro.Common" />
