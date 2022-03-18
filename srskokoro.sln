@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3328B854-E1F0-4DD1-AAB3-81D8D2C256EA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{03742892-5872-4903-916A-E4292F2ECEB3}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.App", "src\Kokoro.App\Kokoro.App.csproj", "{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Common", "src\Kokoro.Common\Kokoro.Common.csproj", "{61CAC8CA-0664-429D-AB39-A739D5D85067}"
@@ -20,10 +24,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Framework", "test\Kokoro.Test.Framework\Kokoro.Test.Framework.csproj", "{FD2BE9CA-FF5E-44A2-A468-901B59ED1E8A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test.Framework.Test", "test\Kokoro.Test.Framework.Test\Kokoro.Test.Framework.Test.csproj", "{E8F907DE-9E00-4C9B-B85B-083A78209D81}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3328B854-E1F0-4DD1-AAB3-81D8D2C256EA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{03742892-5872-4903-916A-E4292F2ECEB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
