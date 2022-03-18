@@ -45,13 +45,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kokoro.Test.Framework\Kokoro.Test.Framework.csproj" />
-    <ProjectReference Include="..\Kokoro\Kokoro.csproj" />
+    <ProjectReference Include="..\Kokoro.Common\Kokoro.Common.csproj" />
   </ItemGroup>
 
   <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
 
   <ItemGroup>
-    <Using Include="Kokoro" />
     <Using Include="Kokoro.Common" />
     <Using Include="Kokoro.Common.Util" />
 

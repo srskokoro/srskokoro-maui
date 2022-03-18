@@ -1,5 +1,4 @@
-﻿namespace Kokoro.Test.SelfTest.Framework;
-using Kokoro.Test.Framework;
+﻿namespace Kokoro.Test.Framework;
 
 public class TestFramework_Facts {
 

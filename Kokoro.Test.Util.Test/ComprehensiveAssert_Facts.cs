@@ -1,5 +1,4 @@
-﻿namespace Kokoro.Test.SelfTest.Util;
-
+﻿namespace Kokoro.Test.Util;
 using Xunit.Sdk;
 
 public class ComprehensiveAssert_Facts {

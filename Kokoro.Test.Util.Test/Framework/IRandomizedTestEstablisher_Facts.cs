@@ -1,8 +1,7 @@
-﻿namespace Kokoro.Test.SelfTest.Framework;
-using Kokoro.Test.Framework;
+﻿namespace Kokoro.Test.Util.Framework;
 using System.Globalization;
 using Xunit.Sdk;
-using static Kokoro.Test.Framework.IRandomizedTestEstablisher;
+using static Kokoro.Test.Util.Framework.IRandomizedTestEstablisher;
 using TestFramework = Test.Framework.TestFramework;
 
 public abstract class IRandomizedTestEstablisher_Facts_Base {

@@ -1,5 +1,4 @@
-﻿namespace Kokoro.Test.SelfTest.Framework.Discovery;
-using Kokoro.Test.Framework.Discovery;
+﻿namespace Kokoro.Test.Framework.Discovery;
 using Xunit.Sdk;
 
 public class Discovery_Facts {

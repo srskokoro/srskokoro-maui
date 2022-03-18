@@ -1,5 +1,5 @@
 ﻿namespace Kokoro.Test.Util;
-using static Kokoro.Test.Framework.IRandomizedTestEstablisher;
+using static Kokoro.Test.Util.Framework.IRandomizedTestEstablisher;
 
 public static partial class TestUtil {
 

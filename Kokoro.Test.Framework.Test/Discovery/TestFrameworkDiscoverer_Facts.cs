@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Test.SelfTest.Framework.Discovery;
+﻿namespace Kokoro.Test.Framework.Discovery;
 using Kokoro.Test.Framework.Util;
 using Moq;
 using Xunit.Abstractions;
@@ -56,7 +56,7 @@ public class TestFrameworkDiscoverer_Facts {
 	// --
 
 	// Exposes `protected` members that we want to test
-	private class TestFrameworkDiscoverer : Test.Framework.Discovery.TestFrameworkDiscoverer {
+	private class TestFrameworkDiscoverer : Discovery.TestFrameworkDiscoverer {
 
 		public TestFrameworkDiscoverer(
 			IAssemblyInfo assemblyInfo,

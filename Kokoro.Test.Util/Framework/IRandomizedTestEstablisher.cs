@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Test.Framework;
+﻿namespace Kokoro.Test.Util.Framework;
 using Blake2Fast;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -44,7 +44,7 @@ public interface IRandomizedTestEstablisher {
 		return DateTimeOffset.TryParseExact(input, DateTimeSeed_ExpectedFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 	}
 
-	private protected static void LoadLocalRandomState(string dateTimeSeedOverride, string dateTimeSeedFile) {
+	protected static void LoadLocalRandomState(string dateTimeSeedOverride, string dateTimeSeedFile) {
 		if (!TryParseDateTimeSeed(dateTimeSeedOverride, out var dtSeed)) {
 			using var reader = new StreamReader(dateTimeSeedFile, new FileStreamOptions() {
 				Mode = FileMode.OpenOrCreate,
@@ -58,7 +58,7 @@ public interface IRandomizedTestEstablisher {
 		al_RandomHolder.Value = new(dtSeed);
 	}
 
-	private protected static void SaveLocalRandomState(RunSummary testSummary, string dateTimeSeedFile) {
+	protected static void SaveLocalRandomState(RunSummary testSummary, string dateTimeSeedFile) {
 		if (testSummary.Failed > 0) {
 			File.WriteAllText(dateTimeSeedFile, al_RandomHolder.Value!._RandomSeed_DateTimeComponent
 				.ToString(DateTimeSeed_ExpectedFormat, CultureInfo.InvariantCulture));

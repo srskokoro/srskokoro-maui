@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Test.Framework.Discovery;
+using Kokoro.Test.Framework.Attributes;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
