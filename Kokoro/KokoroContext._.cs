@@ -1,6 +1,6 @@
 ﻿namespace Kokoro;
-using Kokoro.Internal.Pooling;
-using Kokoro.Internal.Util;
+using Kokoro.Common.Pooling;
+using Kokoro.Common.Util;
 using Kokoro.Sqlite;
 using Microsoft.Data.Sqlite;
 

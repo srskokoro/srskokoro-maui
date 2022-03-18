@@ -64,11 +64,12 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro\Common.Usings.targets" />
+  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
 
   <ItemGroup>
     <Using Include="Kokoro" />
-    <Using Include="Kokoro.Internal.Util" />
+    <Using Include="Kokoro.Common" />
+    <Using Include="Kokoro.Common.Util" />
 
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />

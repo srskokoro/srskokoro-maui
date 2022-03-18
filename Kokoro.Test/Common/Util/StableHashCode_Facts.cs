@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Util;
+﻿namespace Kokoro.Common.Util;
 using System.Text;
 
 public class StableHashCode_Facts : IRandomizedTest {

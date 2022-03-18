@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Util;
+﻿namespace Kokoro.Common.Util;
 
 #pragma warning disable CA1069 // Enums should not have duplicate values
 [Flags]

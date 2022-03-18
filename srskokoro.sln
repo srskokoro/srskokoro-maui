@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.App", "Kokoro.App\Kokoro.App.csproj", "{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Common", "Kokoro.Common\Kokoro.Common.csproj", "{61CAC8CA-0664-429D-AB39-A739D5D85067}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro", "Kokoro\Kokoro.csproj", "{9640F7F1-7797-4496-A8E3-1A7268F57CAC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kokoro.Test", "Kokoro.Test\Kokoro.Test.csproj", "{20A301D0-70AF-4C05-807D-DBA29C70E61A}"
@@ -21,6 +23,10 @@ Global
 		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4C703445-F0C6-4DDC-BDCB-2E0C351D6D89}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{61CAC8CA-0664-429D-AB39-A739D5D85067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61CAC8CA-0664-429D-AB39-A739D5D85067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61CAC8CA-0664-429D-AB39-A739D5D85067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61CAC8CA-0664-429D-AB39-A739D5D85067}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9640F7F1-7797-4496-A8E3-1A7268F57CAC}.Release|Any CPU.ActiveCfg = Release|Any CPU

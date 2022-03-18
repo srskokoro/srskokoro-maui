@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Util;
+﻿namespace Kokoro.Common.Util;
 
 public class Var_Facts : IRandomizedTest {
 	private static Random Random => TestUtil.GetRandom<Var_Facts>();

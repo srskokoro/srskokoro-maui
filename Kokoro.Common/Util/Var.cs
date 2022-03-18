@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Util;
+﻿namespace Kokoro.Common.Util;
 
 internal static class Var {
 

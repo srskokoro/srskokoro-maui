@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Util;
+﻿namespace Kokoro.Common.Util;
 using System.Runtime.InteropServices;
 
 internal static class StableHashCode {

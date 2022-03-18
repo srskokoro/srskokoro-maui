@@ -18,19 +18,20 @@
   -->
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.3" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.7" />
-  </ItemGroup>
+    <InternalsVisibleTo Include="Kokoro" />
+    <InternalsVisibleTo Include="Kokoro.Test" />
+    <InternalsVisibleTo Include="Kokoro.Experiment" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\Kokoro.Common\Kokoro.Common.csproj" />
-  </ItemGroup>
+    <InternalsVisibleTo Include="Kokoro.App" />
+    <InternalsVisibleTo Include="Kokoro.App.Test" />
+    <InternalsVisibleTo Include="Kokoro.App.Experiment" />
 
-  <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Test" />
-    <InternalsVisibleTo Include="$(AssemblyName).Experiment" />
+
+    <InternalsVisibleTo Include="Kokoro.Test.Util" />
+    <InternalsVisibleTo Include="Kokoro.Test.Framework" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <Import Project="Kokoro.Common.Usings.targets" />
 
 </Project>
