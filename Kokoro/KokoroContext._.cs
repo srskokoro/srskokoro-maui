@@ -183,12 +183,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		if (--dba._DbAccessCount <= 0) {
 			dba._DbAccessCount = 0;
 			dba._Db = null;
-			try {
-				_DbPool.TryPool(db);
-			} catch (ThreadInterruptedException ex) {
-				db.DisposeSafely(ex);
-				throw;
-			}
+			_DbPool.TryPool(db);
 		}
 	}
 

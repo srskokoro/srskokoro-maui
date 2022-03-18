@@ -16,19 +16,25 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			goto Reject;
 		}
 		if (Interlocked.CompareExchange(ref _Size, oldSize + 1, oldSize) != oldSize) {
-			// If we failed, go to the slow path
-			SpinWait spin = default;
-			// Keep trying to CAS until we succeed
-			do {
-				// May throw `ThreadInterruptedException`
-				spin.SpinOnce(sleep1Threshold: -1);
+			try {
+				// If we failed, go to the slow path
+				SpinWait spin = default;
+				// Keep trying to CAS until we succeed
+				do {
+					// May throw `ThreadInterruptedException`
+					spin.SpinOnce(sleep1Threshold: -1);
 
-				// Re-read and check
-				oldSize = _Size; // A volatile read is unnecessary at this point
-				if (oldSize >= maxSize) {
-					goto Reject;
-				}
-			} while (Interlocked.CompareExchange(ref _Size, oldSize + 1, oldSize) != oldSize);
+					// Re-read and check
+					oldSize = _Size; // A volatile read is unnecessary at this point
+					if (oldSize >= maxSize) {
+						goto Reject;
+					}
+				} while (Interlocked.CompareExchange(ref _Size, oldSize + 1, oldSize) != oldSize);
+			} catch (ThreadInterruptedException ex) {
+				// Prevent leakage of resource that might never get disposed
+				poolable.DisposeSafely(ex);
+				throw;
+			}
 		}
 
 		try {
@@ -40,6 +46,10 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			// returning an object shouldn't cause an allocation, since it's
 			// simply returning an already allocated resource back to the pool.
 			goto Reject;
+		} catch (ThreadInterruptedException ex) {
+			// Prevent leakage of resource that might never get disposed
+			poolable.DisposeSafely(ex);
+			throw;
 		}
 
 		// If already disposed or disposing, we retake the added object, or
