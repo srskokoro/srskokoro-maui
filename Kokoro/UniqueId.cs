@@ -28,7 +28,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public byte this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Throw__IOORE();
+				if ((uint)index >= _Length) Th__IOORE();
 				byte element = UnsafeElementRef<ByteData, byte>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -66,7 +66,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public uint this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Throw__IOORE();
+				if ((uint)index >= _Length) Th__IOORE();
 				uint element = UnsafeElementRef<UInt32Data, uint>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -120,7 +120,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public ulong this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Throw__IOORE();
+				if ((uint)index >= _Length) Th__IOORE();
 				ulong element = UnsafeElementRef<UInt64Data, ulong>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -173,7 +173,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[StackTraceHidden]
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void Throw__IOORE() => throw new IndexOutOfRangeException();
+	private static void Th__IOORE() => throw new IndexOutOfRangeException();
 
 	#endregion
 
