@@ -296,3 +296,6 @@ dotnet_naming_style.u_pascal_case.capitalization = pascal_case
 
 # CS0436: Type conflicts with imported type
 dotnet_diagnostic.CS0436.severity = silent
+
+# CA2211: Non-constant static fields should not be visible
+dotnet_diagnostic.CA2211.severity = silent
