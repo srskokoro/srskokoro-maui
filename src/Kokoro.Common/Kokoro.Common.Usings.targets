@@ -2,7 +2,10 @@
   <ItemGroup>
     <Using Include="System.Diagnostics" />
     <Using Include="System.Diagnostics.CodeAnalysis" />
+
     <Using Include="System.Runtime.CompilerServices" />
     <Using Include="System.Runtime.ExceptionServices" />
+
+    <Using Include="Kokoro.Common.Sqlite.Extensions" />
   </ItemGroup>
 </Project>
