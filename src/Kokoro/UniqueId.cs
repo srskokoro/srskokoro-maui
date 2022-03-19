@@ -29,8 +29,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
 				if ((uint)index >= _Length) Th__IOORE();
-				byte element = UnsafeElementRef<ByteData, byte>(in this, _End-index);
-				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
+				return UnsafeElementRef<ByteData, byte>(in this, _End-index);
 			}
 		}
 
