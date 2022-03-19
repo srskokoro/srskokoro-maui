@@ -10,19 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.assert" Version="2.4.1" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.4.1" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ThisAssembly.Project" Version="1.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Xunit.Combinatorial" Version="1.4.1" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageReference Include="SauceControl.Blake2Fast" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
