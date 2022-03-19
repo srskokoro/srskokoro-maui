@@ -19,7 +19,7 @@ public class KokoroCollection : IDisposable, IAsyncDisposable {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static void CheckIfOperable(KokoroContext context) {
 		if (!context.IsOperable)
-			throw Ex__NSE_VersionNotOperable();
+			throw Ex_VersionNotOperable_NS();
 	}
 
 	#region `IDisposable` implementation
@@ -41,7 +41,7 @@ public class KokoroCollection : IDisposable, IAsyncDisposable {
 	#endregion
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static NotSupportedException Ex__NSE_VersionNotOperable()
+	private static NotSupportedException Ex_VersionNotOperable_NS()
 		=> new($"Version is not operable. Please migrate the " +
 			// TODO Consider using `GetType()` instead? -- for subclassing purposes
 			$"`{nameof(KokoroContext)}` first to the current operable vesrion.");

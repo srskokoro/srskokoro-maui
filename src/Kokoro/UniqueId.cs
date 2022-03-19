@@ -28,7 +28,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public byte this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Th__IOORE();
+				if ((uint)index >= _Length) E_IOOR();
 				return UnsafeElementRef<ByteData, byte>(in this, _End-index);
 			}
 		}
@@ -70,7 +70,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public uint this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Th__IOORE();
+				if ((uint)index >= _Length) E_IOOR();
 				uint element = UnsafeElementRef<UInt32Data, uint>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -129,7 +129,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public ulong this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) Th__IOORE();
+				if ((uint)index >= _Length) E_IOOR();
 				ulong element = UnsafeElementRef<UInt64Data, ulong>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -182,7 +182,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[StackTraceHidden]
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void Th__IOORE() => throw new IndexOutOfRangeException();
+	private static void E_IOOR() => throw new IndexOutOfRangeException();
 
 	#endregion
 
@@ -446,14 +446,14 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteBase58Chars(Span<char> destination) {
 		if (_Base58Size > destination.Length) {
-			WriteBase58Chars__AOORE_DestinationTooShort(nameof(destination));
+			WriteBase58Chars__E_DestinationTooShort_AOOR(nameof(destination));
 		}
 		UnsafeWriteBase58Chars(destination);
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void WriteBase58Chars__AOORE_DestinationTooShort(string? paramName)
+	private static void WriteBase58Chars__E_DestinationTooShort_AOOR(string? paramName)
 		=> throw new ArgumentOutOfRangeException(paramName, "Destination is too short.");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -588,7 +588,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
 		if (_Base58Size != input.Length) {
-			ParseExact__AOORE_LengthNotExact(nameof(input));
+			ParseExact__E_LengthNotExact_AOOR(nameof(input));
 		}
 		if (!TryParse(input, out var result)) {
 			ParseExact__E_Fail();
@@ -598,7 +598,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void ParseExact__AOORE_LengthNotExact(string? paramName) => throw new ArgumentOutOfRangeException(paramName, $"Input span needs to be exactly {_Base58Size} in length.");
+	private static void ParseExact__E_LengthNotExact_AOOR(string? paramName) => throw new ArgumentOutOfRangeException(paramName, $"Input span needs to be exactly {_Base58Size} in length.");
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
@@ -632,14 +632,14 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	public int CompareTo(object? obj) {
 		if (obj is not UniqueId uid) {
 			if (obj is null) return 1;
-			CompareTo__AE_IncompatibleType();
+			CompareTo__E_IncompatibleType_Arg();
 		}
 		return CompareTo(uid);
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private void CompareTo__AE_IncompatibleType()
+	private void CompareTo__E_IncompatibleType_Arg()
 		=> throw new ArgumentException($"Object must be of type {nameof(UniqueId)}.");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

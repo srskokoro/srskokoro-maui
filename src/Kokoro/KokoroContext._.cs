@@ -160,7 +160,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		if (db is null) {
 			if (!_DbPool.TryTakeAggressively(out db)) {
 				if (_DisposeState.IsDisposed()) {
-					throw Ex__ODE_Disposed();
+					throw Ex_ODisposed();
 				}
 				db = new(_DbConnectionString);
 				db.Open();
@@ -193,7 +193,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 
 		public readonly KokoroContext Context {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => _Context ?? throw Ex__ODE_Disposed();
+			get => _Context ?? throw Ex_ODisposed();
 		}
 
 		public readonly KokoroSqliteDb Db {
@@ -217,7 +217,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static ObjectDisposedException Ex__ODE_Disposed()
+		private static ObjectDisposedException Ex_ODisposed()
 			=> DisposeUtils.Ode(typeof(DbRetiringHandle));
 	}
 
@@ -282,6 +282,6 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	#endregion
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private ObjectDisposedException Ex__ODE_Disposed()
+	private ObjectDisposedException Ex_ODisposed()
 		=> DisposeUtils.Ode(GetType());
 }

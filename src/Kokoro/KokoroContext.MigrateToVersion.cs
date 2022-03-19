@@ -64,11 +64,11 @@ partial class KokoroContext {
 			if (i < 0) {
 				i = ~i - 1;
 				if (i < 0) {
-					throw Ex__NIE_ExpectedMigration(curVersion, newVersion);
+					throw Ex_ExpectedMigration_NI(curVersion, newVersion);
 				}
 				(int from, target) = keys[i];
 				if (from != curVersion || from >= target) {
-					throw Ex__NIE_ExpectedMigration(curVersion, newVersion);
+					throw Ex_ExpectedMigration_NI(curVersion, newVersion);
 				}
 			} else {
 				(_, target) = keys[i];
@@ -93,11 +93,11 @@ partial class KokoroContext {
 			if (i < 0) {
 				i = ~i;
 				if (i >= len) {
-					throw Ex__NIE_ExpectedMigration(curVersion, newVersion);
+					throw Ex_ExpectedMigration_NI(curVersion, newVersion);
 				}
 				(int from, target) = keys[i];
 				if (from != curVersion || from <= target) {
-					throw Ex__NIE_ExpectedMigration(curVersion, newVersion);
+					throw Ex_ExpectedMigration_NI(curVersion, newVersion);
 				}
 			} else {
 				(_, target) = keys[i];
@@ -122,6 +122,6 @@ partial class KokoroContext {
 	private static partial SortedList<(int, int), Action<KokoroContext, KokoroSqliteDb>> ProvideMigrationMap();
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static NotImplementedException Ex__NIE_ExpectedMigration(int fromVersion, int toVersion)
+	private static NotImplementedException Ex_ExpectedMigration_NI(int fromVersion, int toVersion)
 		=> new($"Expected migration from {fromVersion} to {toVersion} is apparently not implemented.");
 }
