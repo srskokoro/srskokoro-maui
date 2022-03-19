@@ -20,7 +20,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		private const int _Length = _Size;
 		private const int _End = _Length-1;
 
-		public ReadOnlySpan<byte> Span {
+		public ReadOnlySpan<byte> RawSpan {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get => MemoryMarshal.CreateReadOnlySpan(ref UnsafeElementRef<ByteData, byte>(in this, 0), _Length);
 		}
@@ -57,7 +57,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		private const int _Length = _Size/sizeof(uint);
 		private const int _End = _Length-1;
 
-		public ReadOnlySpan<uint> Span {
+		/// <summary>
+		/// <b>Warning:</b> The endianness of each <see langword="uint"/>
+		/// element in the returned <see cref="ReadOnlySpan{uint}">span</see>
+		/// is system-dependent.
+		/// </summary>
+		public ReadOnlySpan<uint> RawSpan {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get => MemoryMarshal.CreateReadOnlySpan(ref UnsafeElementRef<UInt32Data, uint>(in this, 0), _Length);
 		}
@@ -111,7 +116,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		private const int _Length = _Size/sizeof(ulong);
 		private const int _End = _Length-1;
 
-		public ReadOnlySpan<ulong> Span {
+		/// <summary>
+		/// <b>Warning:</b> The endianness of each <see langword="ulong"/>
+		/// element in the returned <see cref="ReadOnlySpan{ulong}">span</see>
+		/// is system-dependent.
+		/// </summary>
+		public ReadOnlySpan<ulong> RawSpan {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get => MemoryMarshal.CreateReadOnlySpan(ref UnsafeElementRef<UInt64Data, ulong>(in this, 0), _Length);
 		}
