@@ -28,7 +28,7 @@ public class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 		var method = testMethod.Method;
 		var labelAttributes = method.GetCustomAttributes(typeof(LabelAttribute)).FirstTwoOrDefault();
 
-		if (labelAttributes.Item1 is not null) {
+		if (labelAttributes.Item1 != null) {
 			string errorMessage;
 
 			var factAttribute = method.GetCustomAttributes(typeof(FactAttribute)).FirstOrDefault();
@@ -40,13 +40,13 @@ public class TestFrameworkDiscoverer : XunitTestFrameworkDiscoverer {
 					$"given to a test method whose [Fact]-derived attribute " +
 					$"implements `{nameof(ITestFactAttribute)}` (e.g., " +
 					$"`{nameof(TestFactAttribute)}` or `{nameof(TestTheoryAttribute)}`)";
-			} else if (labelAttributes.Item2 is not null) {
+			} else if (labelAttributes.Item2 != null) {
 				errorMessage = $"Test method `{testMethod.TestClass.Class.Name}." +
 					$"{method.Name}` has multiple [Label]-derived attributes";
 			} else if (labelAttributes.Item1 is IReflectionAttributeInfo reflectLabel
 					&& reflectLabel.Attribute is TLabelAttribute tlabelAttribute) {
 				var map = _CurrentTestNumbers;
-				if (map is null) {
+				if (map == null) {
 					if (DEBUG) {
 						DiagnosticMessageSink.OnMessage(new DiagnosticMessage(
 							$"`{nameof(FindTestsForMethod)}()` called outside of `{nameof(FindTestsForType)}()`"));

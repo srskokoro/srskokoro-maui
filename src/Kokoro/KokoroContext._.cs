@@ -157,7 +157,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 	public KokoroSqliteDb AccessThreadDb() {
 		var dba = _CurrentDbAccess.Value!;
 		var db = dba._Db;
-		if (db is null) {
+		if (db == null) {
 			if (!_DbPool.TryTakeAggressively(out db)) {
 				if (_DisposeState.IsDisposed()) {
 					throw Ex_ODisposed();
@@ -210,7 +210,7 @@ public partial class KokoroContext : IDisposable, IAsyncDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Dispose() {
 			var ctx = _Context;
-			if (ctx is not null) {
+			if (ctx != null) {
 				ctx.RetireThreadDb(_Db);
 				_Context = null;
 			}

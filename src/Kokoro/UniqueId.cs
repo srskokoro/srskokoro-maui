@@ -631,7 +631,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public int CompareTo(object? obj) {
 		if (obj is not UniqueId uid) {
-			if (obj is null) return 1;
+			if (obj == null) return 1;
 			CompareTo__E_IncompatibleType_Arg();
 		}
 		return CompareTo(uid);

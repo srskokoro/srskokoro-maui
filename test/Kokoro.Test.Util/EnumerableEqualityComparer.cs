@@ -37,7 +37,7 @@ public class EnumerableEqualityComparer<TEnumerable, TElement>
 		=> DefaultImplementation.Instance;
 
 	public bool Equals(TEnumerable? x, TEnumerable? y) {
-		return x == y || (x is not null && y is not null && x.SequenceEqual(y, Comparer));
+		return x == y || (x != null && y != null && x.SequenceEqual(y, Comparer));
 	}
 
 	public int GetHashCode([DisallowNull] TEnumerable enumerables) {

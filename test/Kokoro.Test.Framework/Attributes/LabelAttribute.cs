@@ -33,7 +33,7 @@ public class LabelAttribute : Attribute {
 			sb.Append(testMethod.TestClass.Class.Name);
 
 			methodName = TestMethodNameOverride;
-			if (methodName is null) {
+			if (methodName == null) {
 				methodName = method.Name;
 			} else if (methodName.Length == 0) {
 				// Empty method name; Let it be just the class name then

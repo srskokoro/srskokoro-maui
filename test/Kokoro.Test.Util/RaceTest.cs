@@ -35,7 +35,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 	private void DisposeTimer() {
 		var timer = _Timer;
-		if (timer is not null) {
+		if (timer != null) {
 			timer.Dispose(); // Thread-safe
 			_Timer = null;
 		}
@@ -53,7 +53,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 		try {
 			int i = 0;
-			for (var node = items.First; node is not null; node = node.Next) {
+			for (var node = items.First; node != null; node = node.Next) {
 				// The ff. shouldn't normally throw though
 				tasks[i++] = node.Value.StartTask();
 			}
@@ -80,7 +80,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 	public Exception? Consume() {
 		var items = Interlocked.Exchange(ref _TaskItems, null);
-		if (items is null) return null;
+		if (items == null) return null;
 
 		try {
 			var tasks = ConsumeCore(items);
@@ -97,7 +97,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 
 	public async Task<Exception?> ConsumeAsync() {
 		var items = Interlocked.Exchange(ref _TaskItems, null);
-		if (items is null) return null;
+		if (items == null) return null;
 
 		try {
 			var tasks = ConsumeCore(items);
@@ -348,7 +348,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 					@body();
 				}
 			}
-			while (Volatile.Read(ref race._ExceptionOrTimeout) is null) {
+			while (Volatile.Read(ref race._ExceptionOrTimeout) == null) {
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body();
 				}
@@ -361,18 +361,18 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 		try {
 			@finally();
 		} catch (Exception ex) {
-			if (exitEx is not null) {
+			if (exitEx != null) {
 				exitEx = new AggregateException(exitEx, ex);
 				goto ExitWithException;
 			}
 		}
 
-		if (exitEx is null) {
+		if (exitEx == null) {
 			return;
 		}
 
 	ExitWithException:
-		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) is not null) {
+		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) != null) {
 			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, s_TimeoutSignal);
 		}
 	}
@@ -402,7 +402,7 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 					@body(local);
 				}
 			}
-			while (Volatile.Read(ref race._ExceptionOrTimeout) is null) {
+			while (Volatile.Read(ref race._ExceptionOrTimeout) == null) {
 				for (int i = runsPerSpin; i > 0; i--) {
 					@body(local);
 				}
@@ -415,18 +415,18 @@ public class RaceTest : IDisposable, IAsyncDisposable {
 		try {
 			@finally(local);
 		} catch (Exception ex) {
-			if (exitEx is not null) {
+			if (exitEx != null) {
 				exitEx = new AggregateException(exitEx, ex);
 				goto ExitWithException;
 			}
 		}
 
-		if (exitEx is null) {
+		if (exitEx == null) {
 			return;
 		}
 
 	ExitWithException:
-		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) is not null) {
+		if (Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, null) != null) {
 			Interlocked.CompareExchange(ref race._ExceptionOrTimeout, exitEx, s_TimeoutSignal);
 		}
 	}

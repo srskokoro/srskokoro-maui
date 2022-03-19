@@ -6,7 +6,7 @@ partial class KokoroContext {
 	private readonly object _MigrationLock = new();
 
 	public virtual void MigrateToVersion(int newVersion) {
-		if (_Collection is not null)
+		if (_Collection != null)
 			goto CollectionAlreadyExists;
 
 		if (newVersion < 0)
@@ -16,7 +16,7 @@ partial class KokoroContext {
 			throw new ArgumentOutOfRangeException(nameof(newVersion), $"New version cannot be greater than `{nameof(MaxSupportedVersion)}` (currently {MaxSupportedVersion}).");
 
 		lock (_MigrationLock) {
-			if (_Collection is not null)
+			if (_Collection != null)
 				goto CollectionAlreadyExists;
 
 			using (GetThreadDb(out var db)) {

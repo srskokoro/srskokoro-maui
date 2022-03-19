@@ -17,7 +17,7 @@ public class SpyMessageBus : LongLivedMarshalByRefObject, Xunit.Sdk.IMessageBus 
 	/// <inheritdoc/>
 	public virtual void Dispose() {
 		var msgs = _Messages;
-		if (msgs is null) {
+		if (msgs == null) {
 			return; // Already disposed
 		}
 

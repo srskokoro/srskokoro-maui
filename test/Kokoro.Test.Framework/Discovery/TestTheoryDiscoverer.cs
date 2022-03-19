@@ -42,7 +42,7 @@ public class TestTheoryDiscoverer : TheoryDiscoverer {
 
 	private static string[] GetSkippableExceptionNames(IAttributeInfo theoryAttribute) {
 		ref var cached = ref _CachedPair_AttributeToSkippingExceptionNames;
-		if (cached.TheoryAttribute != theoryAttribute || cached.SkippingExceptionNames is null) {
+		if (cached.TheoryAttribute != theoryAttribute || cached.SkippingExceptionNames == null) {
 			cached = (theoryAttribute, SkippableFactDiscoverer.GetSkippableExceptionNames(theoryAttribute));
 			_CachedPair_AttributeToSkippingExceptionNames = cached;
 		}

@@ -7,6 +7,6 @@ internal static class Var {
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static Type TypeOf<T>(in T var) {
-		return typeof(T).IsValueType || var is null ? typeof(T) : var.GetType();
+		return typeof(T).IsValueType || var == null ? typeof(T) : var.GetType();
 	}
 }

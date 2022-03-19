@@ -45,7 +45,7 @@ public class TLabelAttribute : LabelAttribute {
 			// - '[_!]' means inline in backticks -- replace the '_' with the
 			// character from any of the above formats.
 
-			if (format is null) {
+			if (format == null) {
 				format = "[.]";
 			}
 
@@ -73,13 +73,13 @@ public class TLabelAttribute : LabelAttribute {
 					case 'c': {
 						if (inlineInBackticks) {
 							text = callInBackticks;
-							if (text is null) {
+							if (text == null) {
 								text = $"`{targetOfTest}()`";
 								callInBackticks = text;
 							}
 						} else {
 							text = callNoBackticks;
-							if (text is null) {
+							if (text == null) {
 								text = $"{targetOfTest}()";
 								callNoBackticks = text;
 							}
@@ -93,13 +93,13 @@ public class TLabelAttribute : LabelAttribute {
 					case '?': {
 						if (inlineInBackticks) {
 							text = codeInBackticks;
-							if (text is null) {
+							if (text == null) {
 								text = $"`{targetOfTest}`";
 								codeInBackticks = text;
 							}
 						} else {
 							text = codeNoBackticks;
-							if (text is null) {
+							if (text == null) {
 								text = targetOfTest.Value;
 								codeNoBackticks = text;
 							}

@@ -208,7 +208,7 @@ public sealed class IRandomizedTestEstablisher_Facts_WithDirSetup
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
 		string dateTimeSeedFileContent = dateTimeSeed;
-		if (extraFileLinesContent is not null) {
+		if (extraFileLinesContent != null) {
 			dateTimeSeedFileContent += Environment.NewLine + extraFileLinesContent;
 		}
 
@@ -360,7 +360,7 @@ public sealed class IRandomizedTestEstablisher_Facts_WithDirSetup
 	public async Task T016_SaveLocalRandomState(string? priorFileContent) {
 		// `async` ensures our `AsyncLocal`s will be under a different context
 
-		if (priorFileContent is not null) {
+		if (priorFileContent != null) {
 			Assert.False(TryParseDateTimeSeed(priorFileContent, out _), "Input must first be unparsable in whole.");
 			await File.WriteAllTextAsync(Test_DateTimeSeedFile, priorFileContent);
 		}
@@ -378,7 +378,7 @@ public sealed class IRandomizedTestEstablisher_Facts_WithDirSetup
 
 		Assert.True(success, $"Should've persisted a valid date time string.{Environment.NewLine}Persisted instead: {dateTimeSeed}");
 
-		if (priorFileContent is not null) {
+		if (priorFileContent != null) {
 			Assert.NotEqual(priorFileContent, outputFileContent);
 		}
 	}

@@ -51,7 +51,7 @@ public interface IRandomizedTestEstablisher {
 				BufferSize = "0000-12-22T03:33:38+08:00\r\n".Length * 4, // In case UTF-32
 			});
 			string? dtSeedStr = reader.ReadLine();
-			if (dtSeedStr is null || !TryParseDateTimeSeed(dtSeedStr, out dtSeed)) {
+			if (dtSeedStr == null || !TryParseDateTimeSeed(dtSeedStr, out dtSeed)) {
 				dtSeed = al_UtcNowOverride.Value ?? DateTimeOffset.UtcNow;
 			}
 		}

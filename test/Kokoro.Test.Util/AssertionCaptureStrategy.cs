@@ -133,7 +133,7 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 		if (exceptions.Count > 0) {
 
 			string mainMessage;
-			if (context is null || context.Count <= 0) {
+			if (context == null || context.Count <= 0) {
 				mainMessage = "";
 			} else {
 				const string Indent = "    ";
