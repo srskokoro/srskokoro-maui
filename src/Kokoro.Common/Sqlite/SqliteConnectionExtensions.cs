@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Sqlite;
+﻿namespace Kokoro.Common.Sqlite;
 using Microsoft.Data.Sqlite;
 
 internal static class SqliteConnectionExtensions {
