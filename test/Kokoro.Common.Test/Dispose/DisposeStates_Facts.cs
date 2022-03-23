@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Common.Util;
+﻿namespace Kokoro.Common.Dispose;
 
 public class DisposeStates_Facts : IRandomizedTest {
 	static Random Random => TestUtil.GetRandom<DisposeStates_Facts>();

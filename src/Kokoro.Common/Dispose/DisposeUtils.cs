@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Common.Util;
+﻿namespace Kokoro.Common.Dispose;
 using System.Runtime.Serialization;
 
 internal static class DisposeUtils {

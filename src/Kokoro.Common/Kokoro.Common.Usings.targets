@@ -6,6 +6,8 @@
     <Using Include="System.Runtime.CompilerServices" />
     <Using Include="System.Runtime.ExceptionServices" />
 
+    <Using Include="Kokoro.Common" />
+    <Using Include="Kokoro.Common.Dispose" />
     <Using Include="Kokoro.Common.Sqlite.Extensions" />
   </ItemGroup>
 </Project>

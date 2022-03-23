@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Common.Util;
+﻿namespace Kokoro.Common.Dispose;
 
 internal static class DisposeStates {
 
