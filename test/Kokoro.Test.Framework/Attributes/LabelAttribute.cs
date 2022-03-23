@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Test.Framework.Attributes;
-using System;
 using System.Text;
 using Xunit.Sdk;
 
