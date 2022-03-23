@@ -17,7 +17,7 @@ internal class ObjectPool<T> {
 
 	public virtual int MaxSize => _DefaultMaxSize;
 
-	public int Size => _Size;
+	public int Size => Volatile.Read(ref _Size);
 
 	/// <exception cref="ThreadInterruptedException"></exception>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
