@@ -33,49 +33,48 @@ public class DisposeStates_Facts : IRandomizedTest {
 		var disposable = new DummyDisposable();
 		var oldDisposeState = disposeState;
 
-		RunDemo(); // See demo code below
+		// Run demo code
+		DisposeState_MainUsageDemo(ref disposeState, disposing, disposable);
 
 		disposeState.Should().BeOneOf(
 			DisposeState.DisposedPartially,
 			DisposeState.DisposedFully,
 			oldDisposeState
 		);
+	}
 
-		// --
-
-		void RunDemo() {
-			if (!disposeState.HandleDisposeRequest()) {
-				return; // Already disposed or being disposed
-			}
-			try {
-				if (disposing) {
-					// Dispose managed state (managed objects).
-					//
-					// NOTE: If we're here, then we're sure that the constructor
-					// completed successfully. Fields that aren't supposed to be
-					// null are guaranteed to be non-null, unless we set fields to
-					// null only to be called again due to a previous failed
-					// dispose attempt.
-					// --
-					disposable.Dispose();
-				}
-
-				// Here we should free unmanaged resources (unmanaged objects),
-				// override finalizer, and set large fields to null.
+	private static void DisposeState_MainUsageDemo(ref DisposeState disposeState, bool disposing, IDisposable managedState) {
+		if (!disposeState.HandleDisposeRequest()) {
+			return; // Already disposed or being disposed
+		}
+		try {
+			if (disposing) {
+				// Dispose managed state (managed objects).
 				//
-				// NOTE: Make sure to check for null fields, for when the
-				// constructor fails to complete or even execute, and the finalizer
-				// calls us anyway. See also, https://stackoverflow.com/q/34447080
+				// NOTE: If we're here, then we're sure that the constructor
+				// completed successfully. Fields that aren't supposed to be
+				// null are guaranteed to be non-null, unless we set fields to
+				// null only to be called again due to a previous failed
+				// dispose attempt.
 				// --
-
-				// Mark disposal as successful
-				disposeState.CommitDisposeRequest();
-			} catch {
-				// Failed to dispose everything. Let the next caller of this method
-				// continue the disposing operation instead.
-				disposeState.RevokeDisposeRequest();
-				throw;
+				managedState.Dispose();
 			}
+
+			// Here we should free unmanaged resources (unmanaged objects),
+			// override finalizer, and set large fields to null.
+			//
+			// NOTE: Make sure to check for null fields, for when the
+			// constructor fails to complete or even execute, and the finalizer
+			// calls us anyway. See also, https://stackoverflow.com/q/34447080
+			// --
+
+			// Mark disposal as successful
+			disposeState.CommitDisposeRequest();
+		} catch {
+			// Failed to dispose everything. Let the next caller of this method
+			// continue the disposing operation instead.
+			disposeState.RevokeDisposeRequest();
+			throw;
 		}
 	}
 
