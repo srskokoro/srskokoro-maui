@@ -102,19 +102,4 @@ public static partial class TestUtil {
 		Interlocked.Decrement(ref entered);
 		return current;
 	}
-
-
-	[DoesNotReturn]
-	public static void ReThrow(this Exception exception) {
-		ExceptionDispatchInfo.Throw(exception);
-	}
-
-	/// <summary>
-	/// Throws <see cref="Exception.InnerException">InnerException</see> if any.
-	/// </summary>
-	public static void ReThrowInner(this Exception exception) {
-		if (exception.InnerException is Exception inner) {
-			ExceptionDispatchInfo.Throw(inner);
-		}
-	}
 }
