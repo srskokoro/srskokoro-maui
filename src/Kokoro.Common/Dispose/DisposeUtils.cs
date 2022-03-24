@@ -46,6 +46,14 @@ internal static class DisposeUtils {
 			throw new DisposeAggregateException(priorException, ex);
 		}
 	}
+
+	public static void DisposeSafely<T>(this T disposable, ref ICollection<Exception>? priorExceptions) where T : IDisposable {
+		try {
+			disposable.Dispose();
+		} catch (Exception ex) {
+			(priorExceptions ??= new LinkedList<Exception>()).Add(ex);
+		}
+	}
 }
 
 public class DisposeAggregateException : AggregateException {
