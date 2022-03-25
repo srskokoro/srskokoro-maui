@@ -628,11 +628,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	public override int GetHashCode() => HashCode.Combine(HighBits, LowBits);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	[SkipLocalsInit]
 	public int CompareTo(object? obj) {
 		if (obj is not UniqueId uid) {
-			if (obj == null) return 1;
-			CompareTo__E_IncompatibleType_Arg();
+			if (obj != null) CompareTo__E_IncompatibleType_Arg();
+			return 1;
 		}
 		return CompareTo(uid);
 	}
