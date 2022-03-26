@@ -133,13 +133,15 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		}
 		// Successfully acquired an "exclusive" access to perform disposal.
 		try {
+			ICollection<Exception>? exc = null;
 			// All objects that are in the pool belongs to the pool. So we must
 			// first take them out of the pool before we can do whatever we
 			// want with them (i.e., before we can dispose them).
 			while (base.TryTake(out var poolable)) {
 				// This poolable now only belongs to us, therefore we can proceed.
-				poolable.Dispose();
+				poolable.DisposeSafely(ref exc);
 			}
+			exc?.ReThrow();
 			// Done
 			_DisposeState.CommitDisposeRequest();
 		} catch {
