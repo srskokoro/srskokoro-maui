@@ -27,7 +27,7 @@ internal static class ExceptionExtensions {
 	/// </summary>
 	[DoesNotReturn]
 	public static void ReThrowFlatten(this Exception exception) {
-		if (exception is AggregateException aggrEx) {
+		if (exception is AggregateException aggrEx && aggrEx.ShouldFlatten()) {
 			exception = aggrEx.Flatten();
 		}
 		ExceptionDispatchInfo.Throw(exception);
@@ -57,7 +57,32 @@ internal static class ExceptionExtensions {
 			count = exceptions.Count();
 		}
 		if (count == 0) return;
-		ExceptionDispatchInfo.Throw(count == 1 ?
-			exceptions.Single() : new AggregateException(exceptions).Flatten());
+
+		Exception ex;
+		if (count == 1) {
+			ex = exceptions.Single();
+		} else {
+			var aggrEx = new AggregateException(exceptions);
+			ex = exceptions.ShouldFlatten() ? aggrEx.Flatten() : aggrEx;
+		}
+
+		ExceptionDispatchInfo.Throw(ex);
 	}
+
+	// --
+
+	public static bool ShouldFlatten(this IEnumerable<Exception> exceptions) {
+		foreach (var ex in exceptions) {
+			if (ex is AggregateException) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static bool ShouldFlatten(this AggregateException aggregateException)
+		=> aggregateException.InnerExceptions.ShouldFlatten();
+
+	public static AggregateException FlattenIfNeeded(this AggregateException aggregateException)
+		=> aggregateException.ShouldFlatten() ? aggregateException.Flatten() : aggregateException;
 }
