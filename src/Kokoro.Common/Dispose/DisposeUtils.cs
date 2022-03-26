@@ -47,10 +47,12 @@ internal static class DisposeUtils {
 		}
 	}
 
+	// TODO Add an overload that uses a specialized collection instead that throws `DisposeAggregateException`
 	public static void DisposeSafely<T>(this T disposable, ref ICollection<Exception>? priorExceptions) where T : IDisposable {
 		try {
 			disposable.Dispose();
 		} catch (Exception ex) {
+			// TODO Use an even more lighter alternative: a simpler linked-list node.
 			(priorExceptions ??= new LinkedList<Exception>()).Add(ex);
 		}
 	}
