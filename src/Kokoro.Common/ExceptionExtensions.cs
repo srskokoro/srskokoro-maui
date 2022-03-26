@@ -27,8 +27,8 @@ internal static class ExceptionExtensions {
 	/// </summary>
 	[DoesNotReturn]
 	public static void ReThrowFlatten(this Exception exception) {
-		if (exception is AggregateException aggregateEx) {
-			exception = aggregateEx.Flatten();
+		if (exception is AggregateException aggrEx) {
+			exception = aggrEx.Flatten();
 		}
 		ExceptionDispatchInfo.Throw(exception);
 	}
