@@ -137,12 +137,17 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			// All objects that are in the pool belongs to the pool. So we must
 			// first take them out of the pool before we can do whatever we
 			// want with them (i.e., before we can dispose them).
-			while (base.TryTake(out var poolable)) {
-				// This poolable now only belongs to us, therefore we can proceed.
-				poolable.DisposeSafely(ref exc);
+			for (; ; ) {
+				try {
+					if (!base.TryTake(out var poolable)) break;
+					// This poolable now only belongs to us, thus we can proceed.
+					poolable.DisposeSafely(ref exc);
+				} catch (ThreadInterruptedException ex) {
+					(exc ??= DisposeUtils.CreateExceptionCollection()).Add(ex);
+				}
 			}
 			exc?.ReThrow();
-			// Done
+			// Mark disposal as successful
 			_DisposeState.CommitDisposeRequest();
 		} catch {
 			// Failed to dispose everything. Let the next caller of this method
