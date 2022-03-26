@@ -47,4 +47,18 @@ internal static class ExceptionExtensions {
 		ExceptionDispatchInfo.Throw(count == 1 ?
 			exceptions.Single() : new AggregateException(exceptions));
 	}
+
+	/// <summary>
+	/// Similar to <see cref="ReThrow(IEnumerable{Exception})"/> but flattens
+	/// any <see cref="AggregateException"/> among the <paramref name="exceptions"/>.
+	/// </summary>
+	public static void ReThrowFlatten(this IEnumerable<Exception> exceptions) {
+		if (!exceptions.TryGetNonEnumeratedCount(out int count)) {
+			count = exceptions.Count();
+		}
+		if (count == 0) return;
+		ExceptionDispatchInfo.Throw(count == 1 ?
+			exceptions.Single() : new AggregateException(exceptions.Select(
+				ex => ex is AggregateException aggrEx ? aggrEx.Flatten() : ex)));
+	}
 }
