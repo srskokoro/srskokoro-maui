@@ -364,7 +364,19 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	// - Equiv. to, ceil(N ceil(log(256) / log(58), 0.0001))
 	private const int _Base58Size = (_Size * 13657 - 1) / 10000 + 1;
 
-	private static ReadOnlySpan<char> Base58EncodingMap => "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+	// Relies on C# compiler optimization to reference static data
+	// See also, https://github.com/dotnet/csharplang/issues/5295
+	private static ReadOnlySpan<byte> Base58EncodingMap => new byte[58] {
+		(byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8',
+		(byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',
+		(byte)'H', (byte)'J', (byte)'K', (byte)'L', (byte)'M', (byte)'N', (byte)'P', (byte)'Q',
+		(byte)'R', (byte)'S', (byte)'T', (byte)'U', (byte)'V', (byte)'W', (byte)'X', (byte)'Y',
+		(byte)'Z', (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f', (byte)'g',
+		(byte)'h', (byte)'i', (byte)'j', (byte)'k', (byte)'m', (byte)'n', (byte)'o', (byte)'p',
+		(byte)'q', (byte)'r', (byte)'s', (byte)'t', (byte)'u', (byte)'v', (byte)'w', (byte)'x',
+		(byte)'y', (byte)'z',
+	};
+
 	private const char _Base58Pad = '1'; // 0 in base 58
 
 	// Relies on C# compiler optimization to reference static data
@@ -398,7 +410,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		uint u3 = _UInt32s[3], u2 = _UInt32s[2], u1 = _UInt32s[1], u0 = _UInt32s[0];
 
 		// Get references to avoid unnecessary range checking
-		ref char mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
+		ref byte mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 		ref char destRef = ref MemoryMarshal.GetReference(destination);
 
 		Debug.Assert(_Base58Size <= destination.Length);
@@ -425,7 +437,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			c = v - q * 58;
 			u0 = (uint)q;
 
-			Unsafe.Add(ref destRef, i) = Unsafe.Add(ref mapRef, (int)c);
+			Unsafe.Add(ref destRef, i) = (char)Unsafe.Add(ref mapRef, (int)c);
 		}
 
 		Debug.Assert(u3 == 0, $"{nameof(u3)}: {u3} (0x{u3:X})");
