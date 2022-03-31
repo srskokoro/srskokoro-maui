@@ -2,21 +2,14 @@
 using Microsoft.Data.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
-public class KokoroSqliteDb : SqliteConnection {
-	internal readonly SqliteCommand _CmdGetVersion;
-
-	public int Version {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => Convert.ToInt32(_CmdGetVersion.In(Transaction).ExecuteScalar<long>());
-	}
+internal class KokoroSqliteDb : SqliteConnection {
+	internal const long SqliteDbAppId = 0x1c008087L; // Hint: It's an RGBA hex
 
 	public new SqliteTransaction? Transaction { get => base.Transaction; }
 
 	public KokoroSqliteDb() : this(null) { }
 
-	public KokoroSqliteDb(string? connectionString) : base(connectionString) {
-		_CmdGetVersion = this.CreateCommand("PRAGMA user_version");
-	}
+	public KokoroSqliteDb(string? connectionString) : base(connectionString) { }
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public KokoroSqliteDb OpenAndGet() { Open(); return this; }

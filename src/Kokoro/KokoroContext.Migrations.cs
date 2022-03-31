@@ -1,19 +1,13 @@
-﻿namespace Kokoro;
-using Kokoro.Internal.Sqlite;
-using Microsoft.Data.Sqlite;
+namespace Kokoro;
 
 partial class KokoroContext {
 
-	private static partial SortedList<(int, int), Action<KokoroContext, KokoroSqliteDb>> ProvideMigrationMap() => new() {
-		{ (0, 1), (_, db) => _.Upgrade_0_To_1(db) },
-		{ (1, 0), (_, db) => _.Downgrade_1_To_0(db) },
-	};
-
-	private void Upgrade_0_To_1(KokoroSqliteDb db) {
-		// TODO
+	private static partial void InitMigrationMap(MigrationMap map) {
+		map.Add(_ => _.Upgrade_v0w0_To_v0w1());
+		map.Add(_ => _.Downgrade_v0w1_To_v0w0());
 	}
 
-	private void Downgrade_1_To_0(KokoroSqliteDb db) {
-		// TODO
-	}
+	private void Upgrade_v0w0_To_v0w1() => _ = this; // TODO
+
+	private void Downgrade_v0w1_To_v0w0() => _ = this; // TODO
 }

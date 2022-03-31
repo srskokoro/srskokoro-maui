@@ -1,7 +1,7 @@
 ﻿namespace Kokoro;
 
 public enum KokoroContextOpenMode {
-	ReadWriteCreate,
-	ReadWrite,
-	ReadOnly,
+	ReadOnly         = 0b00,
+	ReadWrite        = 0b01,
+	ReadWriteCreate  = 0b11,
 }
