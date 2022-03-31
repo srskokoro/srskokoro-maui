@@ -474,6 +474,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
 		string str = new('\0', _Base58Size);
 		UnsafeWriteBase58Chars(MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(str.AsSpan()), _Base58Size));
+		// Given how strings are represented in memory, and that we're creating
+		// via `new string()`, it's very unlikely that the above trick will
+		// break something. That is, it should be guaranteed that we'll get a
+		// different reference (or `ref char` location) every time.
 		return str;
 	}
 
