@@ -382,6 +382,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	private static ReadOnlySpan<sbyte> Base58DecodingMap => new sbyte[256] {
 		// Relies on C# compiler optimization to reference static data
 		// - See, https://github.com/dotnet/csharplang/issues/5295
+		// - See also, https://github.com/dotnet/runtime/blob/v6.0.3/src/libraries/System.Private.CoreLib/src/System/Convert.Base64.cs#L195
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
