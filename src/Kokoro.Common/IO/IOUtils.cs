@@ -14,7 +14,7 @@ internal static partial class IOUtils {
 	public static byte[] ToUTF8Bytes(this string s) => Encoding.UTF8.GetBytes(s);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ReadOnlySpan<byte> ToUTF8Bytes(this string s, Span<byte> bytes) => bytes[..s.GetUTF8Bytes(bytes)];
+	public static Span<byte> ToUTF8Bytes(this string s, Span<byte> bytes) => bytes[..s.GetUTF8Bytes(bytes)];
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int GetUTF8Bytes(this string s, Span<byte> bytes) => Encoding.UTF8.GetBytes(s, bytes);
