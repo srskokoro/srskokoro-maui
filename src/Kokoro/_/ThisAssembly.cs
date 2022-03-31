@@ -12,6 +12,12 @@ partial class ThisAssembly {
 #else
 		public const bool DEBUG = false;
 #endif
+
+#if TEST
+		public const bool TEST = true;
+#else
+		public const bool TEST = false;
+#endif
 	}
 
 	static partial class GlobalConstants__global_using__prevent_mark_as_unused {
