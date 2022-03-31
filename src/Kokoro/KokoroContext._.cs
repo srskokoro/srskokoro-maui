@@ -2,6 +2,7 @@
 using Kokoro.Common.IO;
 using Kokoro.Common.Pooling;
 using Kokoro.Internal.Sqlite;
+using Microsoft.Win32.SafeHandles;
 
 public partial class KokoroContext : IDisposable {
 
@@ -60,7 +61,7 @@ public partial class KokoroContext : IDisposable {
 	private KokoroDataVersion _Version;
 	public KokoroDataVersion Version => _Version;
 
-	private readonly FileStream _LockStream;
+	private readonly SafeFileHandle _LockHandle;
 
 	[SkipLocalsInit]
 	public KokoroContext(string path, KokoroContextOpenMode mode = KokoroContextOpenMode.ReadWriteCreate) {
@@ -74,7 +75,7 @@ public partial class KokoroContext : IDisposable {
 		DataPath = dataPath;
 		Mode = mode;
 
-		FileStream? lockStream = null;
+		SafeFileHandle? lockHandle = null;
 		string lockPath = Path.Join(path, LockFile);
 		string verPath = Path.Join(dataPath, DataVersionFile);
 
@@ -91,8 +92,7 @@ public partial class KokoroContext : IDisposable {
 			}
 
 			// Attempt to acquire a lock
-			// TODO-XXX Use `SafeFileHandle` instead, via `File.OpenHandle()`
-			lockStream = new(lockPath, lockFileMode, FileAccess.Read, FileShare.None, bufferSize: 0, FileOptions.None);
+			lockHandle = File.OpenHandle(lockPath, lockFileMode, FileAccess.Read, FileShare.None, FileOptions.None, preallocationSize: 0);
 
 			if (mode != KokoroContextOpenMode.ReadOnly) {
 				// Perform recovery if previous process crashed
@@ -158,7 +158,8 @@ public partial class KokoroContext : IDisposable {
 			; // Nothing (for now)
 
 		} catch (Exception ex) {
-			lockStream?.DisposeSafely(ex);
+			// TODO `DisposeSafely()` is unnecessary here
+			lockHandle?.DisposeSafely(ex);
 			// Check if the cause of the exception is a read-only attribute
 			if (ex is UnauthorizedAccessException
 				&& File.Exists(verPath)
@@ -170,7 +171,7 @@ public partial class KokoroContext : IDisposable {
 			}
 			throw;
 		}
-		_LockStream = lockStream;
+		_LockHandle = lockHandle;
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
@@ -825,7 +826,8 @@ public partial class KokoroContext : IDisposable {
 			_OperableDbPool?.DisposeSafely(ref exc);
 
 			// Should be done last (as it'll release the lock)
-			_LockStream.DisposeSafely(ref exc);
+			_LockHandle.DisposeSafely(ref exc);
+			// TODO ^- `DisposeSafely()` is unnecessary above
 		}
 		exc?.ReThrowFlatten();
 	}
