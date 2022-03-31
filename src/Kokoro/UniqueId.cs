@@ -364,9 +364,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	// - Equiv. to, ceil(N ceil(log(256) / log(58), 0.0001))
 	private const int _Base58Size = (_Size * 13657 - 1) / 10000 + 1;
 
-	// Relies on C# compiler optimization to reference static data
-	// See also, https://github.com/dotnet/csharplang/issues/5295
 	private static ReadOnlySpan<byte> Base58EncodingMap => new byte[58] {
+		// Relies on C# compiler optimization to reference static data
+		// - See, https://github.com/dotnet/csharplang/issues/5295
 		(byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8',
 		(byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',
 		(byte)'H', (byte)'J', (byte)'K', (byte)'L', (byte)'M', (byte)'N', (byte)'P', (byte)'Q',
@@ -379,9 +379,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	private const char _Base58Pad = '1'; // 0 in base 58
 
-	// Relies on C# compiler optimization to reference static data
-	// See also, https://github.com/dotnet/csharplang/issues/5295
 	private static ReadOnlySpan<sbyte> Base58DecodingMap => new sbyte[256] {
+		// Relies on C# compiler optimization to reference static data
+		// - See, https://github.com/dotnet/csharplang/issues/5295
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
