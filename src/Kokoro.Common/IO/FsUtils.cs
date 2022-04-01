@@ -91,7 +91,7 @@ internal static class FsUtils {
 
 	public static void CopyDirectory(string srcDir, string destDir) {
 		var srcDirInfo = new DirectoryInfo(srcDir);
-		if (!srcDirInfo.Exists) throw new DirectoryNotFoundException();
+		if (!srcDirInfo.Exists) throw new DirectoryNotFoundException(srcDirInfo.FullName);
 
 		// NOTE: We don't throw when the destination already exists. We simply
 		// merge contents and change metadata to match the source. This is
