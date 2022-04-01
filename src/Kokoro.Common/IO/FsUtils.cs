@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Common.IO;
-
 using System.IO.Enumeration;
 
 /// <summary>
