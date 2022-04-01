@@ -131,25 +131,33 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
-	/// Deletes the specified directory recursively, atomically.
+	/// Deletes the specified directory recursively, atomically, by first
+	/// moving the specified directory inside the given trash directory. If a
+	/// directory or file with the same name already exists under the trash
+	/// directory, it is deleted first.
 	/// </summary>
-	/// <remarks>
-	/// Works like <see cref="DeleteDirectory(string)"/> but moves the target
-	/// first into the specified <paramref name="trashDir"/> directory before
-	/// attempting deletion.
-	/// </remarks>
 	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
+		string deleteLater = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
 		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
 
-		// TODO Hash instead `path`, generate an 8.3 filename from it, and if
-		// the resulting path already exists, delete it first, then finally,
-		// rename the `path` to that to delete it later.
-		string deleteLater = Path.Join(trashDir, Path.GetRandomFileName());
-
-		Directory.Move(path, deleteLater);
-		// ^ Will NOT throw if `path` isn't a directory
-		// ^ Will throw if `trashDir` isn't a directory
-		// ^ Will throw when moving to a different volume
+		try {
+			Directory.Move(path, deleteLater);
+			// ^ Will NOT throw if `path` isn't a directory
+			// ^ Will throw if `trashDir` isn't a directory
+			// ^ Will throw when moving to a different volume
+		} catch (IOException) {
+			// Check if we bumped into an existing file or directory, and if so,
+			// delete it first instead.
+			if (Directory.Exists(deleteLater)) {
+				DeleteDirectory(deleteLater);
+			} else if (File.Exists(deleteLater)) {
+				// Bypass read-only attribute (as it would prevent deletion)
+				File.SetAttributes(deleteLater, 0);
+				File.Delete(deleteLater);
+			} else {
+				throw;
+			}
+		}
 
 		DeleteDirectory(deleteLater);
 	}
