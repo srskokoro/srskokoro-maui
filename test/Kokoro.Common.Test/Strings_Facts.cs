@@ -1,8 +1,9 @@
-﻿namespace Kokoro;
+﻿namespace Kokoro.Common;
 
 using System.Runtime.InteropServices;
 
-public class String_Facts {
+public class Strings_Facts {
+	static Random Random => TestUtil.GetRandom<DisposeStates_Facts>();
 
 	[TestTheory]
 	[TLabel($@"`new string(char, int)` points to different (`ref char`) references (unless interned)")]
@@ -35,5 +36,18 @@ public class String_Facts {
 
 			Unsafe.AreSame(ref fiveNulls1Ref, ref fiveNulls2Ref).Should().BeFalse();
 		}
+	}
+
+	[TestFact]
+	[TLabel($@"[m!] gives a different string every time")]
+	public void T002_UnsafeCreate() {
+		using AssertionCapture scope = new();
+
+		int length = Random.Next(1, 64);
+		ref char c1 = ref Strings.UnsafeCreate(length, out var s1);
+		ref char c2 = ref Strings.UnsafeCreate(length, out var s2);
+
+		Unsafe.AreSame(ref c1, ref c2).Should().BeFalse();
+		ReferenceEquals(s1, s2).Should().BeFalse();
 	}
 }
