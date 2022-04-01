@@ -1,5 +1,7 @@
 ﻿namespace Kokoro.Common.IO;
+using Blake2Fast;
 using System.IO.Enumeration;
+using System.Runtime.InteropServices;
 
 /// <summary>
 /// Some file system utilities.
@@ -192,5 +194,77 @@ internal static class FsUtils {
 				File.Delete(child);
 			}
 		}
+	}
+
+	// --
+
+	// Crockford's Base 32 alphabet in lowercase
+	private static ReadOnlySpan<byte> Base32EncodingMap => new byte[32] {
+		// Relies on C# compiler optimization to reference static data
+		// - See, https://github.com/dotnet/csharplang/issues/5295
+		(byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7',
+		(byte)'8', (byte)'9', (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f',
+		(byte)'g', (byte)'h', (byte)'j', (byte)'k', (byte)'m', (byte)'n', (byte)'p', (byte)'q',
+		(byte)'r', (byte)'s', (byte)'t', (byte)'v', (byte)'w', (byte)'x', (byte)'y', (byte)'z',
+	};
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static string GetRandomFileName(string seed)
+		=> GetRandomFileName(MemoryMarshal.AsBytes<char>(seed));
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static string GetRandomFileName(ReadOnlySpan<char> seed)
+		=> GetRandomFileName(MemoryMarshal.AsBytes(seed));
+
+	[SkipLocalsInit]
+	public static string GetRandomFileName(ReadOnlySpan<byte> seed) {
+		// 8 bytes will provide 12 chars for the "8.3 filename" encoding below
+		Span<byte> hash = stackalloc byte[8];
+		Blake2b.ComputeAndWriteHash(8, seed, hash);
+
+		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
+		ref char destRef = ref Strings.UnsafeCreate(12, out string filename);
+		// ^ 12 is the length of "8.3 filenames" (a.k.a., "short filenames" or SFN)
+
+		// The following is similar to `Path.Populate83FileNameFromRandomBytes()` used by `Path.GetRandomFileName()`
+		// - See, https://github.com/dotnet/runtime/blob/v6.0.3/src/libraries/System.Private.CoreLib/src/System/IO/Path.cs#L801
+
+		// Get references to avoid unnecessary range checking
+		ref byte mapRef = ref MemoryMarshal.GetReference(Base32EncodingMap);
+		ref byte srcRef = ref MemoryMarshal.GetReference(hash);
+
+		// Consume the 5 LSBs of the first 5 bytes
+		Unsafe.Add(ref destRef, 0) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 0) & 0b_0001_1111);
+		Unsafe.Add(ref destRef, 1) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 1) & 0b_0001_1111);
+		Unsafe.Add(ref destRef, 2) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 2) & 0b_0001_1111);
+		Unsafe.Add(ref destRef, 3) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 3) & 0b_0001_1111);
+		Unsafe.Add(ref destRef, 4) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 4) & 0b_0001_1111);
+
+		// Consume the 3 MSBs of bytes 0 and 1, and the 6th and 7th bit of bytes 3 and 4
+		Unsafe.Add(ref destRef, 5) = (char)Unsafe.Add(ref mapRef
+			, ((Unsafe.Add(ref srcRef, 0) & 0b_1110_0000) >> 5)
+			| ((Unsafe.Add(ref srcRef, 3) & 0b_0110_0000) >> 2)
+		);
+		Unsafe.Add(ref destRef, 6) = (char)Unsafe.Add(ref mapRef
+			, ((Unsafe.Add(ref srcRef, 1) & 0b_1110_0000) >> 5)
+			| ((Unsafe.Add(ref srcRef, 4) & 0b_0110_0000) >> 2)
+		);
+
+		// Consume the 3 MSBs of byte 2, and the 8th bit from bytes 3 and 4
+		int b32 = Unsafe.Add(ref srcRef, 2) >> 5;
+		Debug.Assert((b32 & 0b_1111_1000) == 0, "Impossible!");
+		b32 |= (Unsafe.Add(ref srcRef, 3) & 0b_1000_0000) >> 4;
+		b32 |= (Unsafe.Add(ref srcRef, 4) & 0b_1000_0000) >> 3;
+		Unsafe.Add(ref destRef, 7) = (char)Unsafe.Add(ref mapRef, b32);
+
+		// Set the file extension separator
+		Unsafe.Add(ref destRef, 8) = '.';
+
+		// Consume the 5 LSBs of the remaining 3 bytes
+		Unsafe.Add(ref destRef, 9)  = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 5) & 0b_0001_1111);
+		Unsafe.Add(ref destRef, 10) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 6) & 0b_0001_1111);
+		Unsafe.Add(ref destRef, 11) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 7) & 0b_0001_1111);
+
+		return filename;
 	}
 }
