@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Common.Util;
 
 public class StableHashCode_Facts : IRandomizedTest {
-	private static Random Random => TestUtil.GetRandom<StableHashCode_Facts>();
+	static Random Random => TestUtil.GetRandom<StableHashCode_Facts>();
 
 	[TestFact]
 	[TLabel("[m]: hash of 1 null != hash of 2 nulls != hash of 3 nulls")]
