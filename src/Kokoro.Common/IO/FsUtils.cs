@@ -134,20 +134,9 @@ internal static class FsUtils {
 	/// Deletes the specified directory recursively, atomically.
 	/// </summary>
 	/// <remarks>
-	/// Works like <see cref="DeleteDirectory(string)"/> but renames the
-	/// target first (with a random name) before attempting deletion.
-	/// </remarks>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DeleteDirectoryAtomic(string path) =>
-		DeleteDirectoryAtomic(path = Path.GetFullPath(path), Path.GetDirectoryName(path));
-
-	/// <summary>
-	/// Deletes the specified directory recursively, atomically.
-	/// </summary>
-	/// <remarks>
-	/// Works like <see cref="DeleteDirectoryAtomic(string)"/> but moves the
-	/// target first to the specified <paramref name="trashDir"/> directory
-	/// before attempting deletion.
+	/// Works like <see cref="DeleteDirectory(string)"/> but moves the target
+	/// first into the specified <paramref name="trashDir"/> directory before
+	/// attempting deletion.
 	/// </remarks>
 	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
 		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
