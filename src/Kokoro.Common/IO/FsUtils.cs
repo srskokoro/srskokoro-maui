@@ -122,7 +122,9 @@ internal static class FsUtils {
 		// TODO Hash instead the filename, generate an 8.3 filename from it,
 		// and if the resulting path already exists, delete it first, then
 		// finally, rename the target path to that to delete it.
-		string deleteLater = Path.GetRandomFileName();
+		path = Path.GetFullPath(path);
+		var dir = Path.GetDirectoryName(path.AsSpan());
+		string deleteLater = Path.Join(dir, Path.GetRandomFileName());
 
 		Directory.Move(path, deleteLater); // Will NOT throw if not a directory
 		DeleteDirectory(deleteLater); // Will throw if not a directory
