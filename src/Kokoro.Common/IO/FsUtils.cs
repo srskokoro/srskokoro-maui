@@ -193,34 +193,4 @@ internal static class FsUtils {
 			}
 		}
 	}
-
-	/// <summary>
-	/// Moves/renames the specified directory, deleting the destination
-	/// directory if it already exists.
-	/// </summary>
-	public static void ForceMoveDirectory(string path, string dest) {
-		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
-
-		string? deleteLater = null;
-		// Before we rename the `dest` directory (for the purposes of deletion),
-		// we make sure that the source `path` really is a directory; Otherwise,
-		// we don't perform the rename and just let `Directory.Move(path, dest)`
-		// to throw for us later down.
-		if (Directory.Exists(dest) && Directory.Exists(path)) {
-			// TODO Hash instead the filename, generate an 8.3 filename from it,
-			// and if the resulting path already exists, delete it first, then
-			// finally, rename the target path to that to delete it later.
-			deleteLater = Path.GetRandomFileName();
-			// Push the existing directory out of the way
-			Directory.Move(dest, deleteLater);
-		}
-
-		// If `dest` doesn't exist, the following will NOT throw if `path`
-		// isn't a directory.
-		Directory.Move(path, dest);
-
-		// Delete the directory we pushed away
-		if (deleteLater != null)
-			DeleteDirectory(deleteLater); // Will throw if not a directory
-	}
 }
