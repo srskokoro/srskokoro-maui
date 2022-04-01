@@ -15,9 +15,6 @@ internal static class FsUtils {
 			new() { MatchType = MatchType.Simple, AttributesToSkip = 0, IgnoreInaccessible = false, RecurseSubdirectories = true };
 	}
 
-	public static void CopyDirectory(string srcDir, string destDir)
-		=> CopyDirContents(srcDir, Directory.CreateDirectory(destDir).FullName);
-
 	private readonly record struct CopyDirContents_FseResult(
 		string Child, int RootLength, int NameLength, FileAttributes Attributes,
 		(DateTimeOffset LastAccessUtc, DateTimeOffset LastWriteUtc) FileTimes
@@ -75,22 +72,47 @@ internal static class FsUtils {
 			}
 
 		RestoreMetadataLikeFileCopy:
-			// Make the operation behave like `File.Copy` which copies
-			// timestamps & permission attributes automatically.
-			// - See, https://github.com/dotnet/runtime/issues/16366
+			// Make it behave like `File.Copy` which copies file metadata as
+			// well. See, https://github.com/dotnet/runtime/issues/16366
 
 			// Mimics, https://github.com/dotnet/runtime/blob/aded3141e39eb9391fb5dfbe367b866bfb26736a/src/native/libs/System.Native/pal_io.c#L1306
 			// - See also, https://github.com/dotnet/corefx/pull/6098
 			fsInfo.LastAccessTimeUtc = lastAccessUtc.DateTime;
 			fsInfo.LastWriteTimeUtc = lastWriteUtc.DateTime;
 			fsInfo.Attributes = attr;
-			// Not copying permissions because we don't know how to do it in a
-			// portable way. As a bonus, we get to avoid the extra overhead.
+			// TODO Copy permissions metadata as well?
+			// - There's `FileSystemAclExtensions.SetAccessControl()` and
+			// others but it seems Windows-specific though.
 
 			// NOTE: It's not possible to change the compression status using
 			// `File.SetAttributes()` or `FileSystemInfo.Attributes`.
 			// - See also, https://stackoverflow.com/q/31032834
 		}
+	}
+
+	public static void CopyDirectory(string srcDir, string destDir) {
+		var srcDirInfo = new DirectoryInfo(srcDir);
+		if (!srcDirInfo.Exists) throw new DirectoryNotFoundException();
+
+		// NOTE: We don't throw when the destination already exists. We simply
+		// merge contents and change metadata to match the source. This is
+		// important when trying to recover from a crash and to resume an
+		// interrupted copy operation.
+		var destDirInfo = Directory.CreateDirectory(destDir);
+
+		// Make it behave like `File.Copy` which copies file metadata as well.
+		// See, https://github.com/dotnet/runtime/issues/16366
+
+		// Mimics, https://github.com/dotnet/runtime/blob/aded3141e39eb9391fb5dfbe367b866bfb26736a/src/native/libs/System.Native/pal_io.c#L1306
+		// - See also, https://github.com/dotnet/corefx/pull/6098
+		destDirInfo.LastAccessTimeUtc = srcDirInfo.LastAccessTimeUtc;
+		destDirInfo.LastWriteTimeUtc = srcDirInfo.LastWriteTimeUtc;
+		destDirInfo.Attributes = srcDirInfo.Attributes;
+		// TODO Copy permissions metadata as well?
+		// - There's `FileSystemAclExtensions.SetAccessControl()` and others
+		// but it seems Windows-specific though.
+
+		CopyDirContents(srcDir, destDirInfo.FullName);
 	}
 
 	/// <summary>
