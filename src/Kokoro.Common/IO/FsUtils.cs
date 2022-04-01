@@ -2,6 +2,7 @@
 using Blake2Fast;
 using System.IO.Enumeration;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 /// <summary>
 /// Some file system utilities.
@@ -218,20 +219,35 @@ internal static class FsUtils {
 
 	[SkipLocalsInit]
 	public static string GetRandomFileName(ReadOnlySpan<byte> seed) {
-		// 8 bytes will provide 12 chars for the "8.3 filename" encoding below
 		Span<byte> hash = stackalloc byte[8];
 		Blake2b.ComputeAndWriteHash(8, seed, hash);
+		return Get83FileNameFrom8RandomBytes(hash);
+	}
+
+	[SkipLocalsInit]
+	public static string GetRandomFileName() {
+		Span<byte> rand = stackalloc byte[8];
+		RandomNumberGenerator.Fill(rand);
+		return Get83FileNameFrom8RandomBytes(rand);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static string Get83FileNameFrom8RandomBytes(Span<byte> src) {
+		// 8 bytes will provide 12 chars for the "8.3 filename" encoding below
+		Debug.Assert(src.Length == 8, $"Should be exactly 8 bytes");
+
+		// Length of an "8.3 filename" (a.k.a., "short filename" or SFN)
+		const int SfnLength = 12; // 8 char name + dot char + 3 char extension
 
 		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
-		ref char destRef = ref Strings.UnsafeCreate(12, out string filename);
-		// ^ 12 is the length of "8.3 filenames" (a.k.a., "short filenames" or SFN)
+		ref char destRef = ref Strings.UnsafeCreate(SfnLength, out string filename);
 
 		// The following is similar to `Path.Populate83FileNameFromRandomBytes()` used by `Path.GetRandomFileName()`
 		// - See, https://github.com/dotnet/runtime/blob/v6.0.3/src/libraries/System.Private.CoreLib/src/System/IO/Path.cs#L801
 
 		// Get references to avoid unnecessary range checking
 		ref byte mapRef = ref MemoryMarshal.GetReference(Base32EncodingMap);
-		ref byte srcRef = ref MemoryMarshal.GetReference(hash);
+		ref byte srcRef = ref MemoryMarshal.GetReference(src);
 
 		// Consume the 5 LSBs of the first 5 bytes
 		Unsafe.Add(ref destRef, 0) = (char)Unsafe.Add(ref mapRef, Unsafe.Add(ref srcRef, 0) & 0b_0001_1111);
