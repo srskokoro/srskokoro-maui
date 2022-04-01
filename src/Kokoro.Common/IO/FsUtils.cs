@@ -116,19 +116,9 @@ internal static class FsUtils {
 	/// Works like <see cref="DeleteDirectory(string)"/> but renames the
 	/// target first (with a random name) before attempting deletion.
 	/// </remarks>
-	public static void DeleteDirectoryAtomic(string path) {
-		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
-
-		// TODO Hash instead the filename, generate an 8.3 filename from it,
-		// and if the resulting path already exists, delete it first, then
-		// finally, rename the target path to that to delete it.
-		path = Path.GetFullPath(path);
-		var dir = Path.GetDirectoryName(path.AsSpan());
-		string deleteLater = Path.Join(dir, Path.GetRandomFileName());
-
-		Directory.Move(path, deleteLater); // Will NOT throw if not a directory
-		DeleteDirectory(deleteLater); // Will throw if not a directory
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void DeleteDirectoryAtomic(string path) =>
+		DeleteDirectoryAtomic(path = Path.GetFullPath(path), Path.GetDirectoryName(path));
 
 	/// <summary>
 	/// Deletes the specified directory recursively, atomically.
@@ -138,7 +128,7 @@ internal static class FsUtils {
 	/// target first to the specified <paramref name="trashDir"/> directory
 	/// before attempting deletion.
 	/// </remarks>
-	public static void DeleteDirectoryAtomic(string path, string trashDir) {
+	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
 		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
 
 		// TODO Hash instead `path`, generate an 8.3 filename from it, and if
