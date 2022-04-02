@@ -355,11 +355,11 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public Guid ToGuid() => UuidUtils.GuidFromUuid(Span);
 
-	#region Base 58 Conversions
+	#region Base58 Conversions
 
 	public static int Base58Size => _Base58Size;
 
-	// Allocate enough space in big-endian base 58 representation
+	// Allocate enough space in big-endian Base58 representation
 	// - See, https://github.com/bitcoin/bitcoin/blob/1e7564eca8a688f39c75540877ec3bdfdde766b1/src/base58.cpp#L96
 	// - Equiv. to, ceil(N ceil(log(256) / log(58), 0.0001))
 	private const int _Base58Size = (_Size * 13657 - 1) / 10000 + 1;
@@ -377,7 +377,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		(byte)'y', (byte)'z',
 	};
 
-	private const char _Base58Pad = '1'; // 0 in base 58
+	private const char _Base58Pad = '1'; // 0 in Base58
 
 	private static ReadOnlySpan<sbyte> Base58DecodingMap => new sbyte[256] {
 		// Relies on C# compiler optimization to reference static data
@@ -401,10 +401,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 	};
 
-	#region To Base 58
+	#region To Base58
 
 	/// <summary>
-	/// Strategy: Treats the underlying data as a 128-bit unsigned integer then converts it to a base 58 integer.
+	/// Strategy: Treats the underlying data as a 128-bit unsigned integer then converts it to a Base58 integer.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	private void UnsafeWriteBase58Chars(Span<char> destination) {
@@ -483,7 +483,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	#endregion
 
-	#region From Base 58
+	#region From Base58
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
@@ -566,7 +566,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 				}
 				case ParseFailCode.OverflowCarry: {
 					return new OverflowException(
-						$"Accumulated value of base 58 input is too high.{Environment.NewLine}" +
+						$"Accumulated value of Base58 input is too high.{Environment.NewLine}" +
 						$"Parsing halted at index {current.Index}, with overflow carry: {current.Carry} (0x{current.Carry:X})"
 					);
 				}
