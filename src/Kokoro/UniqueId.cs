@@ -377,8 +377,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		(byte)'y', (byte)'z',
 	};
 
-	private const char _Base58Pad = '1'; // 0 in Base58
-
 	private static ReadOnlySpan<sbyte> Base58DecodingMap => new sbyte[256] {
 		// Relies on C# compiler optimization to reference static data
 		// - See, https://github.com/dotnet/csharplang/issues/5295
