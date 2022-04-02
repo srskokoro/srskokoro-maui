@@ -49,10 +49,16 @@ public readonly ref struct KokoroCollectionMaintenance {
 
 	/// <summary>
 	/// Runs a long running operation that removes rowid gaps and ensures that
-	/// the first rowid is 1. Zero and negative rowids are left untouched.
+	/// the first rowid is 1.
 	/// </summary>
 	public void CompressRowIds(CompressRowIdsProgress progress) {
-		// TODO Implement
+		// TODO Implement algorithm outline:
+		// Scan rowids starting from rowid 1, remove gaps, until the last
+		// positive rowid. Then, scan for zero and negative rowids, starting
+		// from the least rowid: give each a positive rowid greater than the
+		// current greatest. In the unlikely event that the maximum positive
+		// rowid has already been reached, ignore the rest of the remaining
+		// zero and negative rowids.
 		throw new NotImplementedException("TODO");
 	}
 }
