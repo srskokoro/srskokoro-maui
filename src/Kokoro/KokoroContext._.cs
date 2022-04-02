@@ -536,6 +536,9 @@ public partial class KokoroContext : IDisposable {
 					dataDirTransaction.Dispose();
 #endif
 				} catch (Exception ex2) {
+#if DEBUG
+					_DEBUG_PendingDataDirTransaction = false;
+#endif
 					throw new DisposeAggregateException(ex, ex2);
 				}
 				throw; // Rollback successful so throw the original
@@ -632,6 +635,9 @@ public partial class KokoroContext : IDisposable {
 					dataDirTransaction.Dispose();
 #endif
 				} catch (Exception ex2) {
+#if DEBUG
+					_DEBUG_PendingDataDirTransaction = false;
+#endif
 					throw new DisposeAggregateException(ex, ex2);
 				}
 				throw; // Rollback successful so throw the original
