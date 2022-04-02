@@ -539,6 +539,10 @@ public partial class KokoroContext : IDisposable {
 #if DEBUG
 					_DEBUG_PendingDataDirTransaction = false;
 #endif
+					// Unless we can rollback successfully, we're currently in
+					// an unusable state. So let that state materialize then.
+					Dispose();
+
 					throw new DisposeAggregateException(ex, ex2);
 				}
 				throw; // Rollback successful so throw the original
@@ -638,6 +642,10 @@ public partial class KokoroContext : IDisposable {
 #if DEBUG
 					_DEBUG_PendingDataDirTransaction = false;
 #endif
+					// Unless we can rollback successfully, we're currently in
+					// an unusable state. So let that state materialize then.
+					Dispose();
+
 					throw new DisposeAggregateException(ex, ex2);
 				}
 				throw; // Rollback successful so throw the original
