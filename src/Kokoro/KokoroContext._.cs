@@ -232,6 +232,9 @@ public partial class KokoroContext : IDisposable {
 	private const bool _DEBUG_PendingDataDirTransaction = false; // Dummy for `!DEBUG`
 #endif
 
+	// TODO Remove `DataDirTransaction`. Have methods instead direcly under
+	// `KokoroContext` that handle data restructuring, with automatic disposal
+	// of the context object itself when rollback fails.
 	internal ref struct DataDirTransaction {
 		private string? _DataRollbackPath; // Also used to indicate completion when null
 		private readonly string _DataPath;
