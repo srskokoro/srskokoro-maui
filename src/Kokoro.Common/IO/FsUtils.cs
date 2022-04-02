@@ -193,4 +193,41 @@ internal static class FsUtils {
 			}
 		}
 	}
+
+	/// <summary>
+	/// Performs <see cref="DeleteDirectory(string)"/> if the given path is an
+	/// <see cref="Directory.Exists(string?)">existing directory</see>.
+	/// </summary>
+	public static bool DeleteDirectoryIfExists(string path) {
+		if (Directory.Exists(path)) {
+			DeleteDirectory(path);
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Performs <see cref="DeleteDirectoryAtomic(string, ReadOnlySpan{char})"/>
+	/// if the given path is an <see cref="Directory.Exists(string?)">existing
+	/// directory</see>.
+	/// </summary>
+	public static bool DeleteDirectoryAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
+		if (Directory.Exists(path)) {
+			DeleteDirectoryAtomic(path, trashDir);
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Performs <see cref="ClearDirectory(string)"/> if the given path is an
+	/// <see cref="Directory.Exists(string?)">existing directory</see>.
+	/// </summary>
+	public static bool ClearDirectoryIfExists(string path) {
+		if (Directory.Exists(path)) {
+			ClearDirectory(path);
+			return true;
+		}
+		return false;
+	}
 }
