@@ -472,6 +472,10 @@ public partial class KokoroContext : IDisposable {
 	/// </exception>
 	[SkipLocalsInit]
 	public MigrationResult TryUpgradeToVersion(KokoroDataVersion target) {
+		// TODO An overload that reports progress via file system watchers.
+		// - Simply set up some file system watchers then have the new method
+		// overload call onto this original overload.
+
 		MarkUsageExclusive();
 		try {
 			var current = Version;
@@ -574,6 +578,10 @@ public partial class KokoroContext : IDisposable {
 	/// </exception>
 	[SkipLocalsInit]
 	public MigrationResult TryDowngradeToVersion(KokoroDataVersion target) {
+		// TODO An overload that reports progress via file system watchers.
+		// - Simply set up some file system watchers then have the new method
+		// overload call onto this original overload.
+
 		MarkUsageExclusive();
 		try {
 			var current = Version;
