@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Common;
-
 using System.Runtime.InteropServices;
 
 public class Strings_Facts {
