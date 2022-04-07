@@ -4,6 +4,13 @@ using Microsoft.Data.Sqlite;
 internal static class SqliteConnectionExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static SqliteConnection OpenAndGet(this SqliteConnection connection) {
+		connection.Open();
+		return connection;
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static SqliteCommand CreateCommand(this SqliteConnection connection, string commandText) {
 		var command = connection.CreateCommand();
 		command.CommandText = commandText;

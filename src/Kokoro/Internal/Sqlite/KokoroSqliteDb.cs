@@ -17,7 +17,4 @@ internal class KokoroSqliteDb : SqliteConnection {
 		this.ExecuteNonQuery("PRAGMA ignore_check_constraints=1");
 #endif
 	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public KokoroSqliteDb OpenAndGet() { Open(); return this; }
 }
