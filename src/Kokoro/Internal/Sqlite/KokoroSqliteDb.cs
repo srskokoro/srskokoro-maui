@@ -11,6 +11,13 @@ internal class KokoroSqliteDb : SqliteConnection {
 
 	public KokoroSqliteDb(string? connectionString) : base(connectionString) { }
 
+	public override void Open() {
+		base.Open();
+#if !DEBUG
+		this.ExecuteNonQuery("PRAGMA ignore_check_constraints=1");
+#endif
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public KokoroSqliteDb OpenAndGet() { Open(); return this; }
 }
