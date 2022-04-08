@@ -27,7 +27,7 @@ partial class KokoroContext {
 		using var transaction = db.BeginTransaction();
 
 		const string RowIdPk = "rowid INT PRIMARY KEY CHECK(rowid != 0)";
-		const string UidUkCk = "uid BLOB UNIQUE CHECK(ifnull(length(uid) == 16, FALSE))";
+		const string UidUkCk = "uid BLOB UNIQUE NOT NULL CHECK(length(uid) == 16)";
 
 		// NOTE: Even without `ON DELETE RESTRICT`, SQLite prohibits parent key
 		// deletions -- consult the SQLite docs for details.
@@ -166,11 +166,11 @@ partial class KokoroContext {
 
 			// The expected number of modstamps in the schemable where the
 			// schema is applied.
-			"localModStampCount INT CHECK(ifnull(localModStampCount >= 0, FALSE))," +
+			"localModStampCount INT NOT NULL CHECK(localModStampCount >= 0)," +
 
 			// The expected number of field data in the schemable where the
 			// schema is applied.
-			"localFieldCount INT CHECK(ifnull(localFieldCount >= 0, FALSE))," +
+			"localFieldCount INT NOT NULL CHECK(localFieldCount >= 0)," +
 
 			// The blob comprising the list of shared modstamps and shared field
 			// data.
@@ -190,7 +190,7 @@ partial class KokoroContext {
 
 			"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
 
-			"index_st INT CHECK(ifnull(index_st >= 0, FALSE))," +
+			"index_st INT NOT NULL CHECK(index_st >= 0)," +
 
 			"index_loc INT AS ((index_st >> 1) | (index_st & 0x1))," +
 
@@ -206,7 +206,7 @@ partial class KokoroContext {
 			// - 1: Local
 			"loc INT AS (st != 0)," +
 
-			"modStampIndex INT CHECK(ifnull(modStampIndex >= 0, FALSE))," +
+			"modStampIndex INT NOT NULL CHECK(modStampIndex >= 0)," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -284,7 +284,7 @@ partial class KokoroContext {
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INT CHECK(ifnull(st BETWEEN 0x0 AND 0x2, FALSE))," +
+			"st INT NOT NULL CHECK(st BETWEEN 0x0 AND 0x2)," +
 
 			"PRIMARY KEY(type, fld)" +
 
