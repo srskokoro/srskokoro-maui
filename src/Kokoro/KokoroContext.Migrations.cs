@@ -29,6 +29,12 @@ partial class KokoroContext {
 		const string RowIdPk = "rowid INT PRIMARY KEY CHECK(rowid != 0)";
 		const string UidUkCk = "uid BLOB UNIQUE CHECK(ifnull(length(uid) == 16, FALSE))";
 
+		// NOTE: Even without `ON DELETE RESTRICT`, SQLite prohibits parent key
+		// deletions -- consult the SQLite docs for details.
+		const string OnRowIdFk = " ON UPDATE CASCADE";
+		const string OnRowIdFkCascDel = " ON DELETE CASCADE" + " ON UPDATE CASCADE";
+		const string OnRowIdFkNullDel = " ON DELETE SET NULL" + " ON UPDATE CASCADE";
+
 		db.ExecuteNonQuery(
 
 			// A schemable item.
@@ -38,12 +44,12 @@ partial class KokoroContext {
 
 				UidUkCk + "," +
 
-				"parent INT REFERENCES Items," +
+				"parent INT REFERENCES Items" + OnRowIdFk + "," +
 
 				// The item ordinal.
 				"ordinal INT," +
 
-				"schema INT REFERENCES Schemas," +
+				"schema INT REFERENCES Schemas" + OnRowIdFk + "," +
 
 				// The blob comprising the list of modstamps and field data.
 				//
@@ -142,9 +148,9 @@ partial class KokoroContext {
 			// -
 			"CREATE TABLE SchemaToFields(" +
 
-				"schema INT REFERENCES Schemas," +
+				"schema INT REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-				"fld INT REFERENCES FieldNames," +
+				"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
 
 				"index_st INT CHECK(ifnull(index_st >= 0, FALSE))," +
 
@@ -174,9 +180,9 @@ partial class KokoroContext {
 			// itself. This table lists the schema types that was used.
 			"CREATE TABLE SchemaToSchemaTypes(" +
 
-				"schema INT REFERENCES Schemas," +
+				"schema INT REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-				"type INT REFERENCES SchemaTypes," +
+				"type INT REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
 				// The cryptographic checksum of the schema type when the schema
 				// was created. Null if not available when the schema was
@@ -218,7 +224,8 @@ partial class KokoroContext {
 				// The schema type ordinal.
 				"ordinal INT," +
 
-				"src INT REFERENCES Items," +
+				// TODO A trigger for when this column is nulled out: consider deleting the schema type as well
+				"src INT REFERENCES Items" + OnRowIdFkNullDel + "," +
 
 				"name TEXT COLLATE NOCASE," +
 
@@ -229,9 +236,9 @@ partial class KokoroContext {
 			// -
 			"CREATE TABLE SchemaTypeToFields(" +
 
-				"type INT REFERENCES SchemaTypes," +
+				"type INT REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
 
-				"fld INT REFERENCES FieldNames," +
+				"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
 
 				// The field ordinal.
 				"ordinal INT," +
@@ -244,10 +251,10 @@ partial class KokoroContext {
 			"CREATE TABLE SchemaTypeToIncludes(" +
 
 				// The including schema type.
-				"type INT REFERENCES SchemaTypes," +
+				"type INT REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
 
 				// The included schema type.
-				"incl INT REFERENCES SchemaTypes," +
+				"incl INT REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
 				"PRIMARY KEY(type, incl)" +
 
