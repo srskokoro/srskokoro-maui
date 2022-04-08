@@ -54,4 +54,14 @@ internal static class SqliteConnectionExtensions {
 		using var command = connection.CreateCommand(commandText, parameters);
 		return command.ExecuteScalar();
 	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int Exec(this SqliteConnection connection, string commandText)
+		=> connection.ExecuteNonQuery(commandText);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int Exec(this SqliteConnection connection, string commandText, params SqliteParameter[] parameters)
+		=> connection.ExecuteNonQuery(commandText, parameters);
 }

@@ -20,9 +20,9 @@ partial class KokoroContext {
 		db.Open();
 
 		const long SqliteDbAppId = 0x1c008087L; // Hint: It's an RGBA hex
-		db.ExecuteNonQuery($"PRAGMA application_id={SqliteDbAppId}");
-		db.ExecuteNonQuery($"PRAGMA journal_mode=WAL");
-		db.ExecuteNonQuery($"PRAGMA synchronous=NORMAL");
+		db.Exec($"PRAGMA application_id={SqliteDbAppId}");
+		db.Exec($"PRAGMA journal_mode=WAL");
+		db.Exec($"PRAGMA synchronous=NORMAL");
 
 		using var transaction = db.BeginTransaction();
 
@@ -35,7 +35,7 @@ partial class KokoroContext {
 		const string OnRowIdFkCascDel = " ON DELETE CASCADE" + " ON UPDATE CASCADE";
 		const string OnRowIdFkNullDel = " ON DELETE SET NULL" + " ON UPDATE CASCADE";
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// A string interning table for field names.
 			"CREATE TABLE FieldNames(" +
@@ -47,7 +47,7 @@ partial class KokoroContext {
 			")"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// A schemable item.
 			"CREATE TABLE Items(" +
@@ -116,7 +116,7 @@ partial class KokoroContext {
 			")"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// -
 			"CREATE TABLE ItemToColdFields(" +
@@ -143,7 +143,7 @@ partial class KokoroContext {
 			")"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// -
 			"CREATE TABLE ItemToFatFields(" +
@@ -160,7 +160,7 @@ partial class KokoroContext {
 			")" // TODO Consider `WITHOUT ROWID` optimization?"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// An immutable data structure meant to describe a schemable -- a
 			// schemable is anything where a schema can be attached/applied.
@@ -202,7 +202,7 @@ partial class KokoroContext {
 			")"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// -
 			"CREATE TABLE SchemaToFields(" +
@@ -236,7 +236,7 @@ partial class KokoroContext {
 			") WITHOUT ROWID"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// Each schema is a snapshot of the schema types it used to build
 			// itself. This table lists the schema types that was used.
@@ -272,7 +272,7 @@ partial class KokoroContext {
 			") WITHOUT ROWID"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// -
 			"CREATE TABLE SchemaTypes(" +
@@ -299,7 +299,7 @@ partial class KokoroContext {
 			")"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// -
 			"CREATE TABLE SchemaTypeToFields(" +
@@ -316,7 +316,7 @@ partial class KokoroContext {
 			") WITHOUT ROWID"
 		);
 
-		db.ExecuteNonQuery(
+		db.Exec(
 
 			// -
 			"CREATE TABLE SchemaTypeToIncludes(" +
