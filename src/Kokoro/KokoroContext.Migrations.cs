@@ -89,9 +89,10 @@ partial class KokoroContext {
 				//   considered an error.
 				// - The first entry of the modstamp list is always the Unix
 				// time when the `parent` and/or `ordinal` columns were last
-				// modified. This implies that the modstamp list is never empty.
-				//   - The first time the `parent` and/or `ordinal` columns are
-				//   modified is always when the item is first created.
+				// modified.
+				//   - The first time an item is created, both the `parent` and
+				//   `ordinal` columns are considered modified for the first
+				//   time. This implies that the modstamp list is never empty.
 				"data BLOB" +
 
 			");" +
