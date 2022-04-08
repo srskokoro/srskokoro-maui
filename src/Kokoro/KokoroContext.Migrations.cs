@@ -64,46 +64,45 @@ partial class KokoroContext {
 			// 1. A 64-bit integer stored as a varint.
 			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
-			//   integers that will be defined in *point 3*; the remaining
-			//   bits indicate the number of integers in the said list.
+			//   integers that will be defined in *point 3*; the remaining bits
+			//   indicate the number of integers in the said list.
 			// 2. A 64-bit integer stored as a varint.
 			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
-			//   integers that will be defined in *point 4*; the remaining
-			//   bits indicate the number of integers in the said list.
+			//   integers that will be defined in *point 4*; the remaining bits
+			//   indicate the number of integers in the said list.
 			// 3. The list of field offsets, as a list of integers.
-			//   - Each is a byte offset, where offset 0 is the location of
-			//   the first byte in *point 5*.
-			//   - Each occupies X bytes, where X is the minimum amount of
-			//   bytes needed to store the largest integer in the list. The
-			//   3 LSBs in *point 1* determines X: `0b000` (or `0x0`) means
-			//   X is 1 byte, `0b111` (or `0x7`) means X is 8 bytes, etc.
+			//   - Each is a byte offset, where offset 0 is the location of the
+			//   first byte in *point 5*.
+			//   - Each occupies X bytes, where X is the minimum amount of bytes
+			//   needed to store the largest integer in the list. The 3 LSBs in
+			//   *point 1* determines X: `0b000` (or `0x0`) means X is 1 byte,
+			//   `0b111` (or `0x7`) means X is 8 bytes, etc.
 			// 4. The list of modstamps, as a list of integers.
 			//   - Each is a span of milliseconds since Unix epoch.
-			//   - Each occupies X bytes, where X is the minimum amount of
-			//   bytes needed to store the largest integer in the list. The
-			//   3 LSBs in *point 2* determines X: `0b000` (or `0x0`) means
-			//   X is 1 byte, `0b111` (or `0x7`) means X is 8 bytes, etc.
+			//   - Each occupies X bytes, where X is the minimum amount of bytes
+			//   needed to store the largest integer in the list. The 3 LSBs in
+			//   *point 2* determines X: `0b000` (or `0x0`) means X is 1 byte,
+			//   `0b111` (or `0x7`) means X is 8 bytes, etc.
 			// 5. The list of field values -- the bytes simply concatenated.
 			//
 			// Quirks:
-			// - A field offset may point to the same byte offset as another
-			// if they share the same field value.
-			// - During a modstamp lookup, if the modstamp index is greater
-			// than the last modstamp index available, the largest modstamp
-			// in the list of modstamps should be returned instead.
-			//   - Lookups via negative modstamp indices should be
-			//   considered an error.
-			// - The first entry of the modstamp list is always the Unix
-			// time when the `parent` and/or `ordinal` columns were last
-			// modified.
+			// - A field offset may point to the same byte offset as another if
+			// they share the same field value.
+			// - During a modstamp lookup, if the modstamp index is greater than
+			// the last modstamp index available, the largest modstamp in the
+			// list of modstamps should be returned instead.
+			//   - Lookups via negative modstamp indices should be considered an
+			//   error.
+			// - The first entry of the modstamp list is always the Unix time
+			// when the `parent` and/or `ordinal` columns were last modified.
 			//   - The first time an item is created, both the `parent` and
-			//   `ordinal` columns are considered modified for the first
-			//   time. This implies that the modstamp list is never empty.
+			//   `ordinal` columns are considered modified for the first time.
+			//   This implies that the modstamp list is never empty.
 			// - If the modstamp list is empty (which shouldn't happen
-			// normally), the fallback for modstamp lookups should simply be
-			// the Unix time when the collection was "first" created (which
-			// is independent of collection creation due to device syncs).
+			// normally), the fallback for modstamp lookups should simply be the
+			// Unix time when the collection was "first" created (which is
+			// independent of collection creation due to device syncs).
 			// - If an item holds fat fields, the last entry of the modstamp
 			// list is always the modstamp of the last modified fat field.
 			"data BLOB" +
@@ -115,21 +114,21 @@ partial class KokoroContext {
 
 			RowIdPk + " REFERENCES Items" + OnRowIdFkCascDel + "," +
 
-			// The blob comprising the list of field offsets and field
-			// values for cold fields.
+			// The blob comprising the list of field offsets and field values
+			// for cold fields.
 			//
 			// The blob format is similar to the `Items.data` column, except
 			// that there's no modstamp list.
 			//
 			// The values for cold fields are initially stored in the parent
 			// table, under the `Items.data` column, alongside hot fields.
-			// However, when the `Items.data` column of an item row exceeds
-			// a certain size, the values for the cold fields are moved here
-			// (but their modstamps still remain in the parent table).
+			// However, when the `Items.data` column of an item row exceeds a
+			// certain size, the values for the cold fields are moved here (but
+			// their modstamps still remain in the parent table).
 			//
-			// Under normal conditions, this column is never empty, nor does
-			// it contain an empty list of field offsets; nonetheless, field
-			// values can still be empty as they can be zero-length blobs.
+			// Under normal conditions, this column is never empty, nor does it
+			// contain an empty list of field offsets; nonetheless, field values
+			// can still be empty as they can be zero-length blobs.
 			"vals BLOB" +
 
 		")");
@@ -154,14 +153,14 @@ partial class KokoroContext {
 
 			RowIdPk + "," +
 
-			// The cryptographic checksum of the schema's primary data,
-			// which includes other tables that comprises the schema, but
-			// excludes the `rowid` and modstamps.
+			// The cryptographic checksum of the schema's primary data, which
+			// includes other tables that comprises the schema, but excludes the
+			// `rowid` and modstamps.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
-			// There should not be any schema whose primary data is the same
-			// as another yet holds a different `rowid`.
+			// There should not be any schema whose primary data is the same as
+			// another yet holds a different `rowid`.
 			//
 			// If null, the schema should be considered a draft, yet to be
 			// finalized and not yet immutable.
@@ -175,14 +174,14 @@ partial class KokoroContext {
 			// schema is applied.
 			"localFieldCount INT CHECK(ifnull(localFieldCount >= 0, FALSE))," +
 
-			// The blob comprising the list of shared modstamps and shared
-			// field data.
+			// The blob comprising the list of shared modstamps and shared field
+			// data.
 			//
 			// The blob format is the same as `Items.data` column with a few
 			// differences: the modstamp list can be empty, along with the
-			// obvious reason as to why it can be empty. Refer to the notes
-			// on `Items.data` column regarding what will happen when a
-			// modstamp is looked up while the modstamp list is empty.
+			// obvious reason as to why it can be empty. Refer to the notes on
+			// `Items.data` column regarding what will happen when a modstamp is
+			// looked up while the modstamp list is empty.
 			"data BLOB" +
 
 		")");
@@ -226,17 +225,17 @@ partial class KokoroContext {
 
 			"type INT REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
-			// The cryptographic checksum of the schema type when the schema
-			// was created. Null if not available when the schema was
-			// created, even though it might now be available at the present
-			// moment -- remember, a schema is a snapshot.
+			// The cryptographic checksum of the schema type when the schema was
+			// created. Null if not available when the schema was created, even
+			// though it might now be available at the present moment --
+			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
 			// Quirks:
 			// - Null when not contributing any shared fields.
 			// - While a schema can never be modified upon creation, it can
-			// inherit the modstamps of an older schema it was based on and
-			// only differ on modstamp entries that really changed.
+			// inherit the modstamps of an older schema it was based on and only
+			// differ on modstamp entries that really changed.
 			"sharedModStampIndex INT CHECK(sharedModStampIndex >= 0)," +
 
 			// Quirks:
@@ -259,8 +258,8 @@ partial class KokoroContext {
 			UidUkCk + "," +
 
 			// The cryptographic checksum of the schema type's primary data,
-			// which includes other tables that comprises the schema type,
-			// but excludes the `rowid`, `src` and `name`.
+			// which includes other tables that comprises the schema type, but
+			// excludes the `rowid`, `src` and `name`.
 			"csum BLOB," +
 
 			// The schema type ordinal.
