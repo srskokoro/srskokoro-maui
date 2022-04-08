@@ -280,6 +280,12 @@ partial class KokoroContext {
 			// The field ordinal.
 			"ordinal INT," +
 
+			// The field store type:
+			// - 0b00: Shared
+			// - 0b01: Hot
+			// - 0b10: Cold
+			"st INT CHECK(ifnull(st BETWEEN 0x0 AND 0x2, FALSE))," +
+
 			"PRIMARY KEY(type, fld)" +
 
 		") WITHOUT ROWID");
