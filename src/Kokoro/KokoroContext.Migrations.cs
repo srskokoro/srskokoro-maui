@@ -37,6 +37,15 @@ partial class KokoroContext {
 
 		db.ExecuteNonQuery(
 
+			// A string interning table for field names.
+			"CREATE TABLE FieldNames(" +
+
+				RowIdPk + "," +
+
+				"name TEXT UNIQUE" +
+
+			");" +
+
 			// A schemable item.
 			"CREATE TABLE Items(" +
 
@@ -134,15 +143,6 @@ partial class KokoroContext {
 				// collection was "first" created (which is independent of
 				// collection creation due to device syncs).
 				"data BLOB" +
-
-			");" +
-
-			// -
-			"CREATE TABLE FieldNames(" +
-
-				RowIdPk + "," +
-
-				"name TEXT UNIQUE" +
 
 			");" +
 
