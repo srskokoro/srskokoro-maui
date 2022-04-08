@@ -102,6 +102,10 @@ partial class KokoroContext {
 				//   - The first time an item is created, both the `parent` and
 				//   `ordinal` columns are considered modified for the first
 				//   time. This implies that the modstamp list is never empty.
+				// - If the modstamp list is empty (which shouldn't happen
+				// normally), the fallback for modstamp lookups should simply be
+				// the Unix time when the collection was "first" created (which
+				// is independent of collection creation due to device syncs).
 				// - If an item holds fat fields, the last entry of the modstamp
 				// list is always the modstamp of the last modified fat field.
 				"data BLOB" +
@@ -177,11 +181,10 @@ partial class KokoroContext {
 				// field data.
 				//
 				// The blob format is the same as `Items.data` column with a few
-				// differences:
-				// - The modstamp list can be empty, and if so, the fallback for
-				// modstamp lookups should simply be the Unix time when the
-				// collection was "first" created (which is independent of
-				// collection creation due to device syncs).
+				// differences: the modstamp list can be empty, along with the
+				// obvious reason as to why it can be empty. Refer to the notes
+				// on `Items.data` column regarding what will happen when a
+				// modstamp is looked up while the modstamp list is empty.
 				"data BLOB" +
 
 			");" +
