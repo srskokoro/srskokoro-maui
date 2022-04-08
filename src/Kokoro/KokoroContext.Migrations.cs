@@ -102,9 +102,25 @@ partial class KokoroContext {
 				//   - The first time an item is created, both the `parent` and
 				//   `ordinal` columns are considered modified for the first
 				//   time. This implies that the modstamp list is never empty.
+				// - If an item holds fat fields, the last entry of the modstamp
+				// list is always the modstamp of the last modified fat field.
 				"data BLOB" +
 
 			");" +
+
+			// -
+			"CREATE TABLE ItemToFatFields(" +
+
+				"item INT REFERENCES Items" + OnRowIdFkCascDel + "," +
+
+				"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
+
+				// The field value.
+				"val BLOB," +
+
+				"PRIMARY KEY(item, fld)" +
+
+			");" + // TODO Consider `WITHOUT ROWID` optimization?
 
 			// An immutable data structure meant to describe a schemable -- a
 			// schemable is anything where a schema can be attached/applied.
@@ -161,7 +177,7 @@ partial class KokoroContext {
 				// - 0b00: Shared
 				// - 0b01: Hot
 				// - 0b10: Cold
-				// - 0b11: Dangling
+				// - 0b11: Fat
 				"st INT AS (index_st & 0x3)," +
 
 				// The field locality type:
