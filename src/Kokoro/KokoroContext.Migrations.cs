@@ -109,6 +109,30 @@ partial class KokoroContext {
 			");" +
 
 			// -
+			"CREATE TABLE ItemToColdFields(" +
+
+				RowIdPk + " REFERENCES Items" + OnRowIdFkCascDel + "," +
+
+				// The blob comprising the list of field offsets and field
+				// values for cold fields.
+				//
+				// The blob format is similar to the `Items.data` column, except
+				// that there's no modstamp list.
+				//
+				// The values for cold fields are initially stored in the parent
+				// table, under the `Items.data` column, alongside hot fields.
+				// However, when the `Items.data` column of an item row exceeds
+				// a certain size, the values for the cold fields are moved here
+				// (but their modstamps still remain in the parent table).
+				//
+				// Under normal conditions, this column is never empty, nor does
+				// it contain an empty list of field offsets; nonetheless, field
+				// values can still be empty as they can be zero-length blobs.
+				"vals BLOB" +
+
+			");" +
+
+			// -
 			"CREATE TABLE ItemToFatFields(" +
 
 				"item INT REFERENCES Items" + OnRowIdFkCascDel + "," +
