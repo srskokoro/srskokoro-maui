@@ -109,7 +109,6 @@ partial class KokoroContext {
 
 		")");
 
-		// -
 		db.Exec("CREATE TABLE ItemToColdFields(" +
 
 			RowIdPk + " REFERENCES Items" + OnRowIdFkCascDel + "," +
@@ -133,7 +132,6 @@ partial class KokoroContext {
 
 		")");
 
-		// -
 		db.Exec("CREATE TABLE ItemToFatFields(" +
 
 			"item INT REFERENCES Items" + OnRowIdFkCascDel + "," +
@@ -186,7 +184,6 @@ partial class KokoroContext {
 
 		")");
 
-		// -
 		db.Exec("CREATE TABLE SchemaToFields(" +
 
 			"schema INT REFERENCES Schemas" + OnRowIdFkCascDel + "," +
@@ -274,7 +271,6 @@ partial class KokoroContext {
 
 		")");
 
-		// -
 		db.Exec("CREATE TABLE SchemaTypeToFields(" +
 
 			"type INT REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
@@ -288,7 +284,6 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// -
 		db.Exec("CREATE TABLE SchemaTypeToIncludes(" +
 
 			// The including schema type.
