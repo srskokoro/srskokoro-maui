@@ -44,7 +44,10 @@ partial class KokoroContext {
 
 				"name TEXT UNIQUE" +
 
-			");" +
+			")"
+		);
+
+		db.ExecuteNonQuery(
 
 			// A schemable item.
 			"CREATE TABLE Items(" +
@@ -110,7 +113,10 @@ partial class KokoroContext {
 				// list is always the modstamp of the last modified fat field.
 				"data BLOB" +
 
-			");" +
+			")"
+		);
+
+		db.ExecuteNonQuery(
 
 			// -
 			"CREATE TABLE ItemToColdFields(" +
@@ -134,7 +140,10 @@ partial class KokoroContext {
 				// values can still be empty as they can be zero-length blobs.
 				"vals BLOB" +
 
-			");" +
+			")"
+		);
+
+		db.ExecuteNonQuery(
 
 			// -
 			"CREATE TABLE ItemToFatFields(" +
@@ -148,7 +157,10 @@ partial class KokoroContext {
 
 				"PRIMARY KEY(item, fld)" +
 
-			");" + // TODO Consider `WITHOUT ROWID` optimization?
+			")" // TODO Consider `WITHOUT ROWID` optimization?"
+		);
+
+		db.ExecuteNonQuery(
 
 			// An immutable data structure meant to describe a schemable -- a
 			// schemable is anything where a schema can be attached/applied.
@@ -187,7 +199,10 @@ partial class KokoroContext {
 				// modstamp is looked up while the modstamp list is empty.
 				"data BLOB" +
 
-			");" +
+			")"
+		);
+
+		db.ExecuteNonQuery(
 
 			// -
 			"CREATE TABLE SchemaToFields(" +
@@ -218,7 +233,10 @@ partial class KokoroContext {
 
 				"UNIQUE(schema, index_loc)" +
 
-			") WITHOUT ROWID;" +
+			") WITHOUT ROWID"
+		);
+
+		db.ExecuteNonQuery(
 
 			// Each schema is a snapshot of the schema types it used to build
 			// itself. This table lists the schema types that was used.
@@ -251,7 +269,10 @@ partial class KokoroContext {
 
 				"UNIQUE(schema, localModStampIndex)" +
 
-			") WITHOUT ROWID;" +
+			") WITHOUT ROWID"
+		);
+
+		db.ExecuteNonQuery(
 
 			// -
 			"CREATE TABLE SchemaTypes(" +
@@ -275,7 +296,10 @@ partial class KokoroContext {
 
 				"UNIQUE(src, name)" +
 
-			");" +
+			")"
+		);
+
+		db.ExecuteNonQuery(
 
 			// -
 			"CREATE TABLE SchemaTypeToFields(" +
@@ -289,7 +313,10 @@ partial class KokoroContext {
 
 				"PRIMARY KEY(type, fld)" +
 
-			") WITHOUT ROWID;" +
+			") WITHOUT ROWID"
+		);
+
+		db.ExecuteNonQuery(
 
 			// -
 			"CREATE TABLE SchemaTypeToIncludes(" +
@@ -302,10 +329,7 @@ partial class KokoroContext {
 
 				"PRIMARY KEY(type, incl)" +
 
-			") WITHOUT ROWID;" +
-
-			// --
-			""
+			") WITHOUT ROWID"
 		);
 
 		// Done!
