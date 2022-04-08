@@ -71,14 +71,14 @@ partial class KokoroContext {
 			//   bytes needed to store the largest integer in the list of
 			//   integers that will be defined in *point 4*; the remaining bits
 			//   indicate the number of integers in the said list.
-			// 3. The list of field offsets, as a list of integers.
+			// 3. The list of field offsets, as a list of unsigned integers.
 			//   - Each is a byte offset, where offset 0 is the location of the
 			//   first byte in *point 5*.
 			//   - Each occupies X bytes, where X is the minimum amount of bytes
 			//   needed to store the largest integer in the list. The 3 LSBs in
 			//   *point 1* determines X: `0b000` (or `0x0`) means X is 1 byte,
 			//   `0b111` (or `0x7`) means X is 8 bytes, etc.
-			// 4. The list of modstamps, as a list of integers.
+			// 4. The list of modstamps, as a list of unsigned integers.
 			//   - Each is a span of milliseconds since Unix epoch.
 			//   - Each occupies X bytes, where X is the minimum amount of bytes
 			//   needed to store the largest integer in the list. The 3 LSBs in
