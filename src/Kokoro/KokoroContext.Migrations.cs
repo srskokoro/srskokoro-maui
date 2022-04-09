@@ -125,9 +125,9 @@ partial class KokoroContext {
 			// certain size, the values for the cold fields are moved here (but
 			// their modstamps still remain in the parent table).
 			//
-			// Under normal conditions, this column is never empty, nor does it
-			// contain an empty list of field offsets; nonetheless, field values
-			// can still be empty as they can be zero-length blobs.
+			// Under normal circumstances, this column is never empty, nor does
+			// it contain an empty list of field offsets; nonetheless, field
+			// values can still be empty as they can be zero-length blobs.
 			"vals BLOB NOT NULL" +
 
 		")");
