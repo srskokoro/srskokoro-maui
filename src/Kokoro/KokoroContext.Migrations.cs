@@ -40,7 +40,7 @@ partial class KokoroContext {
 
 			RowIdPk + "," +
 
-			"name TEXT UNIQUE" +
+			"name TEXT UNIQUE NOT NULL" +
 
 		")");
 
@@ -54,9 +54,9 @@ partial class KokoroContext {
 			"parent INT REFERENCES Items" + OnRowIdFk + "," +
 
 			// The item ordinal.
-			"ordinal INT," +
+			"ordinal INT NOT NULL," +
 
-			"schema INT REFERENCES Schemas" + OnRowIdFk + "," +
+			"schema INT NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
 
 			// The blob comprising the list of modstamps and field data.
 			//
@@ -105,7 +105,7 @@ partial class KokoroContext {
 			// independent of collection creation due to device syncs).
 			// - If an item holds fat fields, the last entry of the modstamp
 			// list is always the modstamp of the last modified fat field.
-			"data BLOB" +
+			"data BLOB NOT NULL" +
 
 		")");
 
@@ -128,18 +128,18 @@ partial class KokoroContext {
 			// Under normal conditions, this column is never empty, nor does it
 			// contain an empty list of field offsets; nonetheless, field values
 			// can still be empty as they can be zero-length blobs.
-			"vals BLOB" +
+			"vals BLOB NOT NULL" +
 
 		")");
 
 		db.Exec("CREATE TABLE ItemToFatFields(" +
 
-			"item INT REFERENCES Items" + OnRowIdFkCascDel + "," +
+			"item INT NOT NULL REFERENCES Items" + OnRowIdFkCascDel + "," +
 
-			"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INT NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
 			// The field value.
-			"val BLOB," +
+			"val BLOB NOT NULL," +
 
 			"PRIMARY KEY(item, fld)" +
 
@@ -180,15 +180,15 @@ partial class KokoroContext {
 			// obvious reason as to why it can be empty. Refer to the notes on
 			// `Items.data` column regarding what will happen when a modstamp is
 			// looked up while the modstamp list is empty.
-			"data BLOB" +
+			"data BLOB NOT NULL" +
 
 		")");
 
 		db.Exec("CREATE TABLE SchemaToFields(" +
 
-			"schema INT REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INT NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INT NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
 			"index_st INT NOT NULL CHECK(index_st >= 0)," +
 
@@ -218,9 +218,9 @@ partial class KokoroContext {
 		// itself. This table lists the schema types that was used.
 		db.Exec("CREATE TABLE SchemaToSchemaTypes(" +
 
-			"schema INT REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INT NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"type INT REFERENCES SchemaTypes" + OnRowIdFk + "," +
+			"type INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the schema type when the schema was
 			// created. Null if not available when the schema was created, even
@@ -260,7 +260,7 @@ partial class KokoroContext {
 			"csum BLOB," +
 
 			// The schema type ordinal.
-			"ordinal INT," +
+			"ordinal INT NOT NULL," +
 
 			// TODO A trigger for when this column is nulled out: consider deleting the schema type as well
 			"src INT REFERENCES Items" + OnRowIdFkNullDel + "," +
@@ -273,12 +273,12 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE SchemaTypeToFields(" +
 
-			"type INT REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
+			"type INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
 
-			"fld INT REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INT NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
 			// The field ordinal.
-			"ordinal INT," +
+			"ordinal INT NOT NULL," +
 
 			// The field store type:
 			// - 0b00: Shared
@@ -293,10 +293,10 @@ partial class KokoroContext {
 		db.Exec("CREATE TABLE SchemaTypeToIncludes(" +
 
 			// The including schema type.
-			"type INT REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
+			"type INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
 
 			// The included schema type.
-			"incl INT REFERENCES SchemaTypes" + OnRowIdFk + "," +
+			"incl INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(type, incl)" +
 
