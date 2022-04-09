@@ -257,6 +257,10 @@ partial class KokoroContext {
 			// The cryptographic checksum of the schema type's primary data,
 			// which includes other tables that comprises the schema type, but
 			// excludes the `rowid`, `src` and `name`.
+			//
+			// Null if the schema type is runtime-bound. That is, the runtime is
+			// the one defining the schema type and the schema type definition
+			// is never persisted to disk or DB.
 			"csum BLOB," +
 
 			// The schema type ordinal.
@@ -265,6 +269,8 @@ partial class KokoroContext {
 			// TODO A trigger for when this column is nulled out: consider deleting the schema type as well
 			"src INT REFERENCES Items" + OnRowIdFkNullDel + "," +
 
+			// Quirks:
+			// - Null when unnamed.
 			"name TEXT COLLATE NOCASE," +
 
 			"UNIQUE(src, name)" +
