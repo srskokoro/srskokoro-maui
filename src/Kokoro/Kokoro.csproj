@@ -24,6 +24,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Test" />
     <InternalsVisibleTo Include="$(AssemblyName).Experiment" />
+    <InternalsVisibleTo Include="$(AssemblyName).Experiment.Benchmark" />
   </ItemGroup>
 
   <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />

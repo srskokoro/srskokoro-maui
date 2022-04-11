@@ -27,6 +27,7 @@
     <InternalsVisibleTo Include="Kokoro" />
     <InternalsVisibleTo Include="Kokoro.Test" />
     <InternalsVisibleTo Include="Kokoro.Experiment" />
+    <InternalsVisibleTo Include="Kokoro.Experiment.Benchmark" />
 
     <InternalsVisibleTo Include="Kokoro.App" />
     <InternalsVisibleTo Include="Kokoro.App.Test" />
