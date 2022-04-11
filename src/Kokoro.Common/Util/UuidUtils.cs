@@ -52,12 +52,12 @@ internal static class UuidUtils {
         #pragma warning disable format
 		return new(stackalloc byte[16] {
 			// Swap bytes
-			Unsafe.Add(ref b, 3), Unsafe.Add(ref b, 2), Unsafe.Add(ref b, 1), Unsafe.Add(ref b, 0),
-			Unsafe.Add(ref b, 5), Unsafe.Add(ref b, 4),
-			Unsafe.Add(ref b, 7), Unsafe.Add(ref b, 6),
+			U.Add(ref b, 3), U.Add(ref b, 2), U.Add(ref b, 1), U.Add(ref b, 0),
+			U.Add(ref b, 5), U.Add(ref b, 4),
+			U.Add(ref b, 7), U.Add(ref b, 6),
 			// Not swapped
-			Unsafe.Add(ref b, 8), Unsafe.Add(ref b, 9),
-			Unsafe.Add(ref b, 10), Unsafe.Add(ref b, 11), Unsafe.Add(ref b, 12), Unsafe.Add(ref b, 13), Unsafe.Add(ref b, 14), Unsafe.Add(ref b, 15),
+			U.Add(ref b, 8), U.Add(ref b, 9),
+			U.Add(ref b, 10), U.Add(ref b, 11), U.Add(ref b, 12), U.Add(ref b, 13), U.Add(ref b, 14), U.Add(ref b, 15),
 		});
 		#pragma warning restore format
 	}

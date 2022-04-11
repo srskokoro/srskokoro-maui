@@ -102,7 +102,7 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 				stCur = stCur[..d];
 				break; // No more characters to compare
 			}
-			if (Unsafe.Add(ref x, --i) != Unsafe.Add(ref y, --j)) {
+			if (U.Add(ref x, --i) != U.Add(ref y, --j)) {
 				int d = swap ? i : j;
 				int p = stCur[d..].IndexOf(Environment.NewLine);
 				if (p >= 0) {

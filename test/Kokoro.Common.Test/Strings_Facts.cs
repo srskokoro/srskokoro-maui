@@ -28,12 +28,12 @@ public class Strings_Facts {
 			ref char fiveNulls1Ref = ref MemoryMarshal.GetReference(fiveNulls1.AsSpan());
 			ref char fiveNulls2Ref = ref MemoryMarshal.GetReference(fiveNulls2.AsSpan());
 
-			Unsafe.AreSame(ref FiveNullsRef, ref fiveNulls0Ref).Should().BeTrue();
+			U.AreSame(ref FiveNullsRef, ref fiveNulls0Ref).Should().BeTrue();
 
-			Unsafe.AreSame(ref fiveNulls0Ref, ref fiveNulls1Ref).Should().BeFalse();
-			Unsafe.AreSame(ref fiveNulls0Ref, ref fiveNulls2Ref).Should().BeFalse();
+			U.AreSame(ref fiveNulls0Ref, ref fiveNulls1Ref).Should().BeFalse();
+			U.AreSame(ref fiveNulls0Ref, ref fiveNulls2Ref).Should().BeFalse();
 
-			Unsafe.AreSame(ref fiveNulls1Ref, ref fiveNulls2Ref).Should().BeFalse();
+			U.AreSame(ref fiveNulls1Ref, ref fiveNulls2Ref).Should().BeFalse();
 		}
 	}
 
@@ -46,7 +46,7 @@ public class Strings_Facts {
 		ref char c1 = ref Strings.UnsafeCreate(length, out var s1);
 		ref char c2 = ref Strings.UnsafeCreate(length, out var s2);
 
-		Unsafe.AreSame(ref c1, ref c2).Should().BeFalse();
+		U.AreSame(ref c1, ref c2).Should().BeFalse();
 		ReferenceEquals(s1, s2).Should().BeFalse();
 	}
 }

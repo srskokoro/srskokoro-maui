@@ -4,22 +4,22 @@ internal static class DisposeStates {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static DisposeState VolatileRead(ref this DisposeState currentDisposeState) {
-		return (DisposeState)Volatile.Read(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState));
+		return (DisposeState)Volatile.Read(ref U.As<DisposeState, uint>(ref currentDisposeState));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static DisposeStatePlain VolatileRead(ref this DisposeStatePlain currentDisposeState) {
-		return (DisposeStatePlain)Volatile.Read(ref Unsafe.As<DisposeStatePlain, uint>(ref currentDisposeState));
+		return (DisposeStatePlain)Volatile.Read(ref U.As<DisposeStatePlain, uint>(ref currentDisposeState));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void VolatileWrite(ref this DisposeState currentDisposeState, DisposeState newDisposeState) {
-		Volatile.Write(ref Unsafe.As<DisposeState, uint>(ref currentDisposeState), (uint)newDisposeState);
+		Volatile.Write(ref U.As<DisposeState, uint>(ref currentDisposeState), (uint)newDisposeState);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static void VolatileWrite(ref this DisposeStatePlain currentDisposeState, DisposeStatePlain newDisposeState) {
-		Volatile.Write(ref Unsafe.As<DisposeStatePlain, uint>(ref currentDisposeState), (uint)newDisposeState);
+		Volatile.Write(ref U.As<DisposeStatePlain, uint>(ref currentDisposeState), (uint)newDisposeState);
 	}
 
 
@@ -145,7 +145,7 @@ internal static class DisposeStates {
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		return oldDisposeState.CanHandleDisposeRequest_NV() && Interlocked.CompareExchange(
-			ref Unsafe.As<DisposeState, uint>(ref currentDisposeState)
+			ref U.As<DisposeState, uint>(ref currentDisposeState)
 			, (uint)DisposeState.Disposing
 			, (uint)oldDisposeState
 		) == (uint)oldDisposeState ? true : false;
@@ -156,7 +156,7 @@ internal static class DisposeStates {
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		return Interlocked.Exchange(
-			ref Unsafe.As<DisposeStatePlain, uint>(ref currentDisposeState)
+			ref U.As<DisposeStatePlain, uint>(ref currentDisposeState)
 			, (uint)DisposeStatePlain.Disposed
 		) == (uint)DisposeStatePlain.None ? true : false;
 	}

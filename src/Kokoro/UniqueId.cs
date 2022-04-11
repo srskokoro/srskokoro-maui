@@ -36,7 +36,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator UniqueId(in ByteData data)
-			=> Unsafe.As<ByteData, UniqueId>(ref Unsafe.AsRef(in data));
+			=> U.As<ByteData, UniqueId>(ref U.AsRef(in data));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator ByteData(in UniqueId uid)
@@ -79,7 +79,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator UniqueId(in UInt32Data data)
-			=> Unsafe.As<UInt32Data, UniqueId>(ref Unsafe.AsRef(in data));
+			=> U.As<UInt32Data, UniqueId>(ref U.AsRef(in data));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator UInt32Data(in UniqueId uid)
@@ -142,7 +142,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator UniqueId(in UInt64Data data)
-			=> Unsafe.As<UInt64Data, UniqueId>(ref Unsafe.AsRef(in data));
+			=> U.As<UInt64Data, UniqueId>(ref U.AsRef(in data));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator UInt64Data(in UniqueId uid)
@@ -215,7 +215,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public UniqueId(ReadOnlySpan<byte> bytes) {
 		if (_Size <= bytes.Length) {
-			this = Unsafe.As<byte, UniqueId>(ref MemoryMarshal.GetReference(bytes));
+			this = U.As<byte, UniqueId>(ref MemoryMarshal.GetReference(bytes));
 		} else {
 			UniqueId uid = default;
 			if (0 <= bytes.Length) {
@@ -256,7 +256,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	private static ref TElement UnsafeElementRef<TFrom, TElement>(in TFrom from, int elementOffset) {
-		return ref Unsafe.Add(ref Unsafe.As<TFrom, TElement>(ref Unsafe.AsRef(in from)), elementOffset);
+		return ref U.Add(ref U.As<TFrom, TElement>(ref U.AsRef(in from)), elementOffset);
 	}
 
 	/// <summary>
@@ -436,7 +436,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			c = v - q * 58;
 			u0 = (uint)q;
 
-			Unsafe.Add(ref destRef, i) = (char)Unsafe.Add(ref mapRef, (int)c);
+			U.Add(ref destRef, i) = (char)U.Add(ref mapRef, (int)c);
 		}
 
 		Debug.Assert(u3 == 0, $"{nameof(u3)}: {u3} (0x{u3:X})");
@@ -497,7 +497,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		for (int i = 0; i < length; i++) {
 			ulong c;
 
-			var x = Unsafe.Add(ref mapRef, (byte)Unsafe.Add(ref srcRef, i));
+			var x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) {
 				ref var fail = ref ParseFail.Current;
 				fail.Code = ParseFailCode.InvalidSymbol;

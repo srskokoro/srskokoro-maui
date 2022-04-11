@@ -1,6 +1,5 @@
 ﻿namespace Kokoro.Internal;
 using System.Runtime.InteropServices;
-using U = Unsafe;
 
 // Variable-length integer encoding from SQLite 4.
 //

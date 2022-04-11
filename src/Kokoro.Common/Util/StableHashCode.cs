@@ -57,6 +57,6 @@ internal static class StableHashCode {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int Of<T>(in T unmanaged) where T : unmanaged {
-		return Of(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(in unmanaged)), Unsafe.SizeOf<T>()));
+		return Of(MemoryMarshal.CreateReadOnlySpan(ref U.As<T, byte>(ref U.AsRef(in unmanaged)), U.SizeOf<T>()));
 	}
 }

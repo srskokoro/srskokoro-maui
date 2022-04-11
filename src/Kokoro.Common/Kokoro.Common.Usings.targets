@@ -11,5 +11,7 @@
     <Using Include="Kokoro.Common" />
     <Using Include="Kokoro.Common.Dispose" />
     <Using Include="Kokoro.Common.Sqlite.Extensions" />
+
+    <Using Include="System.Runtime.CompilerServices.Unsafe" Alias="U" />
   </ItemGroup>
 </Project>
