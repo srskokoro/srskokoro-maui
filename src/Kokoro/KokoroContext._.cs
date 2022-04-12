@@ -94,15 +94,19 @@ public partial class KokoroContext : IDisposable {
 			// Attempt to acquire a lock
 			lockHandle = File.OpenHandle(lockPath, lockFileMode, FileAccess.Read, FileShare.None, FileOptions.None, preallocationSize: 0);
 
+			string rollbackPath = $"{dataPath}{RollbackSuffix}";
 			if (mode != KokoroContextOpenMode.ReadOnly) {
 				// Perform recovery if previous process crashed
-				if (!TryPendingRollback($"{dataPath}{RollbackSuffix}", dataPath)) {
+				if (!TryPendingRollback(rollbackPath, dataPath)) {
 					// Didn't rollback. Perhaps this is the initial access so…
 					Directory.CreateDirectory(dataPath); // Ensure exists
 
 					// Ensure version file exists
 					if (!File.Exists(verPath)) goto DataVersionZeroInit;
 				}
+			} else if (HasPendingRollback(rollbackPath)) {
+				// Can't perform recovery in read-only mode
+				E_RollbackPendingButReadOnly_NS();
 			}
 
 			// Parse the existing version file
@@ -173,6 +177,11 @@ public partial class KokoroContext : IDisposable {
 		}
 		_LockHandle = lockHandle;
 	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	[DoesNotReturn]
+	private static void E_RollbackPendingButReadOnly_NS()
+		=> throw new NotSupportedException($"Rollback pending, but can't rollback while opened in read-only mode");
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
@@ -415,8 +424,11 @@ public partial class KokoroContext : IDisposable {
 		private static void Commit__E_AlreadyComplete() => throw Ex_AlreadyComplete();
 	}
 
+	private static bool HasPendingRollback(string rollbackPath)
+		=> File.Exists(Path.Join(rollbackPath, DataVersionFile));
+
 	private static bool TryPendingRollback(string rollbackPath, string dataPath) {
-		if (!File.Exists(Path.Join(rollbackPath, DataVersionFile))) {
+		if (!HasPendingRollback(rollbackPath)) {
 			return false; // Nothing to rollback
 		}
 
