@@ -51,12 +51,12 @@ partial class KokoroContext {
 
 			UidUkCk + "," +
 
-			"parent INT REFERENCES Items" + OnRowIdFk + "," +
+			"parent INTEGER REFERENCES Items" + OnRowIdFk + "," +
 
 			// The item ordinal.
-			"ordinal INT NOT NULL," +
+			"ordinal INTEGER NOT NULL," +
 
-			"schema INT NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
+			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
 
 			// The blob comprising the list of modstamps and field data.
 			//
@@ -134,9 +134,9 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE ItemToFatFields(" +
 
-			"item INT NOT NULL REFERENCES Items" + OnRowIdFkCascDel + "," +
+			"item INTEGER NOT NULL REFERENCES Items" + OnRowIdFkCascDel + "," +
 
-			"fld INT NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
 			// The field value.
 			"val BLOB NOT NULL," +
@@ -166,11 +166,11 @@ partial class KokoroContext {
 
 			// The expected number of modstamps in the schemable where the
 			// schema is applied.
-			"localModStampCount INT NOT NULL CHECK(localModStampCount >= 0)," +
+			"localModStampCount INTEGER NOT NULL CHECK(localModStampCount >= 0)," +
 
 			// The expected number of field data in the schemable where the
 			// schema is applied.
-			"localFieldCount INT NOT NULL CHECK(localFieldCount >= 0)," +
+			"localFieldCount INTEGER NOT NULL CHECK(localFieldCount >= 0)," +
 
 			// The blob comprising the list of shared modstamps and shared field
 			// data.
@@ -186,27 +186,27 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE SchemaToFields(" +
 
-			"schema INT NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"fld INT NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
-			"index_st INT NOT NULL CHECK(index_st >= 0)," +
+			"index_st INTEGER NOT NULL CHECK(index_st >= 0)," +
 
-			"index_loc INT AS ((index_st >> 1) | (index_st & 0x1))," +
+			"index_loc INTEGER AS ((index_st >> 1) | (index_st & 0x1))," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
 			// - 0b11: Fat
-			"st INT AS (index_st & 0x3)," +
+			"st INTEGER AS (index_st & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
-			"loc INT AS (st != 0)," +
+			"loc INTEGER AS (st != 0)," +
 
-			"modStampIndex INT NOT NULL CHECK(modStampIndex >= 0)," +
+			"modStampIndex INTEGER NOT NULL CHECK(modStampIndex >= 0)," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -218,9 +218,9 @@ partial class KokoroContext {
 		// itself. This table lists the schema types that was used.
 		db.Exec("CREATE TABLE SchemaToSchemaTypes(" +
 
-			"schema INT NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"type INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
+			"type INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the schema type when the schema was
 			// created. Null if not available when the schema was created, even
@@ -233,11 +233,11 @@ partial class KokoroContext {
 			// - While a schema can never be modified upon creation, it can
 			// inherit the modstamps of an older schema it was based on and only
 			// differ on modstamp entries that really changed.
-			"sharedModStampIndex INT CHECK(sharedModStampIndex >= 0)," +
+			"sharedModStampIndex INTEGER CHECK(sharedModStampIndex >= 0)," +
 
 			// Quirks:
 			// - Null when not contributing any local fields.
-			"localModStampIndex INT CHECK(localModStampIndex >= 0)," +
+			"localModStampIndex INTEGER CHECK(localModStampIndex >= 0)," +
 
 			"PRIMARY KEY(schema, type)," +
 
@@ -264,10 +264,10 @@ partial class KokoroContext {
 			"csum BLOB," +
 
 			// The schema type ordinal.
-			"ordinal INT NOT NULL," +
+			"ordinal INTEGER NOT NULL," +
 
 			// TODO A trigger for when this column is nulled out: consider deleting the schema type as well
-			"src INT REFERENCES Items" + OnRowIdFkNullDel + "," +
+			"src INTEGER REFERENCES Items" + OnRowIdFkNullDel + "," +
 
 			// Quirks:
 			// - Null when unnamed.
@@ -279,18 +279,18 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE SchemaTypeToFields(" +
 
-			"type INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
+			"type INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
 
-			"fld INT NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
 			// The field ordinal.
-			"ordinal INT NOT NULL," +
+			"ordinal INTEGER NOT NULL," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INT NOT NULL CHECK(st BETWEEN 0x0 AND 0x2)," +
+			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2)," +
 
 			"PRIMARY KEY(type, fld)" +
 
@@ -299,10 +299,10 @@ partial class KokoroContext {
 		db.Exec("CREATE TABLE SchemaTypeToIncludes(" +
 
 			// The including schema type.
-			"type INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
+			"type INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
 
 			// The included schema type.
-			"incl INT NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
+			"incl INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(type, incl)" +
 
