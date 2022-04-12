@@ -1,6 +1,5 @@
 namespace Kokoro;
 using Kokoro.Common.IO;
-using Kokoro.Common.Sqlite;
 using Microsoft.Data.Sqlite;
 
 partial class KokoroContext {
@@ -11,8 +10,21 @@ partial class KokoroContext {
 	}
 
 	private void Upgrade_v0w0_To_v0w1() {
+		// NOTE: Aside from ensuring that the temporary files used by SQLite are
+		// kept together in one place, keeping a database file in its own
+		// private subdirectory can also help avoid corruption in rare cases on
+		// some filesystems.
+		//
+		// See,
+		// - https://web.archive.org/web/20220317081844/https://www.sqlite.org/atomiccommit.html#_deleting_or_renaming_a_hot_journal:~:text=consider%20putting,subdirectory
+		// - https://web.archive.org/web/20220407150600/https://www.sqlite.org/lockingv3.html#how_to_corrupt:~:text=could%20happen%2E-,The%20best%20defenses,themselves
+		//
+		string colDbDir = Path.Join(DataPath, "col.db");
+		string colDbPath = Path.Join(colDbDir, "main");
+		Directory.CreateDirectory(colDbDir);
+
 		using var db = new SqliteConnection(new SqliteConnectionStringBuilder() {
-			DataSource = Path.Join(DataPath, "col.db"),
+			DataSource = colDbPath,
 			Mode = SqliteOpenMode.ReadWriteCreate,
 			Pooling = false,
 			RecursiveTriggers = true,
@@ -316,7 +328,7 @@ partial class KokoroContext {
 	private void Downgrade_v0w1_To_v0w0() {
 		FsUtils.DeleteDirectoryIfExists(Path.Join(DataPath, "ext"));
 		FsUtils.DeleteDirectoryIfExists(Path.Join(DataPath, "media"));
-		SqliteUtils.DeleteSqliteDb(Path.Join(DataPath, "col.db"));
-		SqliteUtils.DeleteSqliteDb(Path.Join(DataPath, "conf.db"));
+		FsUtils.DeleteDirectoryIfExists(Path.Join(DataPath, "col.db"));
+		FsUtils.DeleteDirectoryIfExists(Path.Join(DataPath, "conf.db"));
 	}
 }
