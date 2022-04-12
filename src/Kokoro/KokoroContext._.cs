@@ -276,6 +276,22 @@ public partial class KokoroContext : IDisposable {
 
 			// Backup data directory contents to the rollback draft
 			FsUtils.CopyDirContents(dataPath, rollbackDraftPath);
+			// TODO-XXX For each file being copied above, acquire an exclusive
+			// lock for writing, and only after all needed files have been
+			// copied should the acquired locks be released. If a lock can't be
+			// acquired, throw.
+			//
+			// This is to ensure that no other process is modifying the files
+			// being copied. Not doing so could cause files to go out of sync,
+			// and some software being used (either by us or the user) might see
+			// unexpected mispairings. For example, SQLite currently operates
+			// across multiple files (e.g., the database file and its journal).
+			//
+			// Now, to ensure that anti-virus software doesn't cause us to
+			// throw, perhaps we only need to prevent other processes from
+			// writing to the files we're about to copy, i.e., perhaps use at
+			// least `FileShare.Read` (instead of `FileShare.None`). See also,
+			// https://stackoverflow.com/q/876473
 
 			try {
 				// Atomically mark the rollback draft as ready
