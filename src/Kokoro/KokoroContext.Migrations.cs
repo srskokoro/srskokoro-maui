@@ -1,5 +1,6 @@
 namespace Kokoro;
 using Kokoro.Common.IO;
+using Kokoro.Common.Sqlite;
 using Microsoft.Data.Sqlite;
 
 partial class KokoroContext {
@@ -315,7 +316,7 @@ partial class KokoroContext {
 	private void Downgrade_v0w1_To_v0w0() {
 		FsUtils.DeleteDirectoryIfExists(Path.Join(DataPath, "ext"));
 		FsUtils.DeleteDirectoryIfExists(Path.Join(DataPath, "media"));
-		File.Delete(Path.Join(DataPath, "col.db"));
-		File.Delete(Path.Join(DataPath, "conf.db"));
+		SqliteUtils.DeleteSqliteDb(Path.Join(DataPath, "col.db"));
+		SqliteUtils.DeleteSqliteDb(Path.Join(DataPath, "conf.db"));
 	}
 }
