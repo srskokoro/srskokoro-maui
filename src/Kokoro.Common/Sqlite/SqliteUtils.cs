@@ -15,7 +15,7 @@ internal static class SqliteUtils {
 	/// <para>
 	/// See, “<see href="https://www.sqlite.org/howtocorrupt.html#_unlinking_or_renaming_a_database_file_while_in_use">2.4.
 	/// Unlinking or renaming a database file while in use | How To Corrupt An
-	/// SQLite Database File | SQLite</see>”
+	/// SQLite Database File | sqlite.org</see>”
 	/// </para>
 	/// </remarks>
 	public static void DeleteSqliteDb(string path) {
