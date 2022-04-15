@@ -63,6 +63,8 @@ public partial class KokoroContext : IDisposable {
 
 	private readonly SafeFileHandle _LockHandle;
 
+	#region Construction
+
 	[SkipLocalsInit]
 	public KokoroContext(string path, KokoroContextOpenMode mode = KokoroContextOpenMode.ReadWriteCreate) {
 		path = Path.GetFullPath(path);
@@ -191,6 +193,10 @@ public partial class KokoroContext : IDisposable {
 			$"{Environment.NewLine}Location: {verPath}", cause);
 	}
 
+	#endregion
+
+	#region Common Exceptions
+
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
 	private static void E_ReadOnlyAttr_RO(Exception? cause = null)
@@ -205,6 +211,8 @@ public partial class KokoroContext : IDisposable {
 	[DoesNotReturn]
 	private static void E_VersionNotOperable_NS()
 		=> throw new NotSupportedException($"Version is not operable. Please migrate to the current operable vesrion first.");
+
+	#endregion
 
 	// --
 
