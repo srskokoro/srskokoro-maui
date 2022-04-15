@@ -177,8 +177,8 @@ internal static class SqliteUtils {
 		// Get a reference to avoid unnecessary range checking
 		ref bool mapRef = ref MemoryMarshal.GetReference(UriFilenameTable);
 
-		while (i < buffer.Length) {
-			byte c = U.Add(ref b, i++);
+		for (; i < buffer.Length; i++) {
+			byte c = U.Add(ref b, i);
 
 			if (U.Add(ref mapRef, c)) {
 				U.Add(ref b, n++) = c;
