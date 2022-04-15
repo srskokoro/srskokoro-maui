@@ -1,7 +1,9 @@
 ﻿namespace Kokoro;
 using Kokoro.Common.IO;
 using Kokoro.Common.Pooling;
+using Kokoro.Common.Sqlite;
 using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
 using Microsoft.Win32.SafeHandles;
 
 public partial class KokoroContext : IDisposable {
@@ -141,6 +143,14 @@ public partial class KokoroContext : IDisposable {
 					E_UnexpectedHeaderFormat_InvDat(verPath, ex);
 				}
 
+				if (_Version.Operable) {
+					// May throw if the current data to be loaded is invalid
+					ForceLoadOperables();
+					// Even our migration mechanism assumes that if the version
+					// is correct (and not just operable), the data state should
+					// be valid. And so, throwing now should be okay.
+				}
+
 				goto DataVersionLoaded;
 			}
 
@@ -158,6 +168,7 @@ public partial class KokoroContext : IDisposable {
 				File.Move(verDraft, verPath, overwrite: true);
 
 				_Version = KokoroDataVersion.Zero;
+				Debug.Assert(!_Version.Operable, "Version zero shouldn't be operable");
 			}
 
 		DataVersionLoaded:
@@ -209,35 +220,104 @@ public partial class KokoroContext : IDisposable {
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static void E_VersionNotOperable_NS()
-		=> throw new NotSupportedException($"Version is not operable. Please migrate to the current operable vesrion first.");
+	private static void E_VersionNotOperable_NS(Exception? cause = null)
+		=> throw new NotSupportedException($"Version is not operable. Please migrate to the current operable vesrion first.", cause);
 
 	#endregion
 
 	// --
 
+	#region Operable Resources
+
 	#region Operable SQLite DB Access
 
-	// TODO Fill on demand while honoring read-only mode
-	private string? _OperableDbConnectionString;
-
+	private string _OperableDbConnectionString = "";
 	private DisposingObjectPool<KokoroSqliteDb>? _OperableDbPool;
 
 	internal KokoroSqliteDb ObtainOperableDb() {
-		Debug.Assert(UsageMarked_NV, "Shouldn't be called without first marking usage");
-		if (!Version.Operable) E_VersionNotOperable_NS();
-		if (!(_OperableDbPool!.TryTakeAggressively(out var db))) {
-			db = new(_OperableDbConnectionString);
-			db.Open();
+		DebugAssert_UsageMarked();
+
+		KokoroSqliteDb? db;
+		try {
+			if (_OperableDbPool!.TryTakeAggressively(out db)) {
+				return db;
+			}
+		} catch (NullReferenceException ex) {
+			if (!Version.Operable) E_VersionNotOperable_NS(ex);
+			throw;
 		}
+
+		db = new(_OperableDbConnectionString);
+		db.Open();
 		return db;
 	}
 
 	internal void RecycleOperableDb(KokoroSqliteDb db) {
-		Debug.Assert(UsageMarked_NV, "Shouldn't be called without first marking usage");
-		Debug.Assert(Version.Operable, "Version should be operable");
-		_OperableDbPool!.TryPool(db);
+		DebugAssert_UsageMarked();
+
+		try {
+			_OperableDbPool!.TryPool(db);
+		} catch (NullReferenceException ex) {
+			if (!Version.Operable) E_VersionNotOperable_NS(ex);
+			throw;
+		}
 	}
+
+	#endregion
+
+	internal void LoadOperables() {
+		DebugAssert_UsageMarkedExclusive();
+		// Load only when not already loaded
+		if (_OperableDbPool == null) ForceLoadOperables();
+	}
+
+	internal void UnloadOperables() {
+		DebugAssert_UsageMarkedExclusive();
+		// Unload only when not already unloaded
+		if (_OperableDbPool != null) ForceUnloadOperables();
+	}
+
+	internal void ForceLoadOperables() {
+		DebugAssert_UsageMarkedExclusive();
+		DebugAssert_VersionOperable();
+		Debug.Assert(_OperableDbPool == null, "Operables already loaded");
+
+		SqliteConnectionStringBuilder connStrBuilder = new SqliteConnectionStringBuilder() {
+			Pooling = false, // We do our own pooling
+			RecursiveTriggers = true,
+		};
+
+		string colDbPath = Path.Join(DataPath, "col.db", "main");
+		if (!IsReadOnly) {
+			connStrBuilder.DataSource = colDbPath;
+			connStrBuilder.Mode = SqliteOpenMode.ReadWrite;
+		} else {
+			connStrBuilder.DataSource = $"{SqliteUtils.ToUriFilename(colDbPath)}?immutable=1";
+			connStrBuilder.Mode = SqliteOpenMode.ReadOnly;
+		}
+		_OperableDbConnectionString = connStrBuilder.ToString(); // Maybe throws (just maybe)
+
+		// And so, we don't really load anything from the disk/DB -- at least,
+		// for now.
+		// --
+
+		_OperableDbPool = new(); // Finally, mark as loaded
+	}
+
+	internal void ForceUnloadOperables() {
+		DebugAssert_UsageMarkedExclusive();
+		DebugAssert_VersionOperable();
+		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
+
+		_OperableDbPool!.Dispose(); // May throw
+		_OperableDbConnectionString = "";
+
+		_OperableDbPool = null; // Finally, mark as unloaded
+	}
+
+	[Conditional("DEBUG")]
+	private void DebugAssert_VersionOperable()
+		=> Debug.Assert(Version.Operable, "Version should be operable");
 
 	#endregion
 
@@ -522,6 +602,7 @@ public partial class KokoroContext : IDisposable {
 			}
 			if (IsReadOnly) E_ReadOnly_NS();
 
+			UnloadOperables();
 			DataDirTransaction dataDirTransaction = new(this);
 			try {
 				var (actions, keys) = GetMigrations();
@@ -628,6 +709,7 @@ public partial class KokoroContext : IDisposable {
 			}
 			if (IsReadOnly) E_ReadOnly_NS();
 
+			UnloadOperables();
 			DataDirTransaction dataDirTransaction = new(this);
 			try {
 				var (actions, keys) = GetMigrations();
@@ -712,7 +794,14 @@ public partial class KokoroContext : IDisposable {
 		string verStr = $"{DataVersionFileHeader}{newVersion}";
 		verStream.Write(verStr.ToUTF8Bytes(stackalloc byte[verStr.GetUTF8ByteCount()]));
 
-		_Version = newVersion;
+		// May throw if the current data to be loaded is invalid
+		if (newVersion.Operable) ForceLoadOperables();
+		// If our migration is properly set up, the above shouldn't throw.
+		// Otherwise, the current migration mapping created an unloadable,
+		// invalid data when it shouldn't; thus, we'll just let our migration
+		// mechanism to catch the exception and rollback accordingly.
+
+		_Version = newVersion; // Success!
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
@@ -870,6 +959,18 @@ public partial class KokoroContext : IDisposable {
 		// Last usage unmarked. Dispose here then.
 		DisposingCore();
 	}
+
+	#region Debugging Convenience & Utilities
+
+	[Conditional("DEBUG")]
+	private void DebugAssert_UsageMarked()
+		=> Debug.Assert(UsageMarked_NV, "Shouldn't be called without first marking usage");
+
+	[Conditional("DEBUG")]
+	private void DebugAssert_UsageMarkedExclusive()
+		=> Debug.Assert(UsageMarkedExclusive_NV, "Shouldn't be called without first marking exclusive usage");
+
+	#endregion
 
 	#endregion
 
