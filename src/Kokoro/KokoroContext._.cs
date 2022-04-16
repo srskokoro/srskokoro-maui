@@ -526,8 +526,19 @@ public partial class KokoroContext : IDisposable {
 			// Done! The rest are just cleanup (that can throw)
 			MarkComplete();
 
-			// Clean up the new, stale rollback directory
-			FsUtils.DeleteDirectory(stalePath);
+			try {
+				// Clean up the new, stale rollback directory
+				FsUtils.DeleteDirectory(stalePath);
+			} catch (Exception ex) {
+				// Swallow
+				Trace.WriteLine(ex);
+				// ^ We shouldn't throw at this point. The act of removing the
+				// rollback directory itself marks the commit as successful. If
+				// we throw now, then the caller might assume that the commit
+				// failed and must rollback any associated in-memory state, only
+				// to unable to rollback the on-disk representation itself (as
+				// we've removed the rollback directory already).
+			}
 			return true;
 		}
 
@@ -660,10 +671,29 @@ public partial class KokoroContext : IDisposable {
 
 				} while (current < target);
 
-				// Done!
+				// Migration done! Now, wrap up everything.
 				FinalizeVersionFileForMigration(current);
-				dataDirTransaction.Commit();
-				// TODO-FIXME If the above throws, we will rollback when our `_Version` is already set, making the version inconsistent with the rolled back data
+
+				// May throw if the current data to be loaded is invalid
+				if (current.Operable) ForceLoadOperables();
+				// ^ If our migration is properly set up, the above shouldn't
+				// throw. Otherwise, the current migration mapping created an
+				// unloadable, invalid data when it shouldn't; thus, we'll just
+				// let our migration mechanism to catch the exception and
+				// rollback accordingly.
+
+				try {
+					dataDirTransaction.Commit();
+				} catch (Exception ex) {
+					// Commit failed. Thus, undo the loading done earlier.
+					try {
+						if (current.Operable) ForceUnloadOperables();
+					} catch (Exception ex2) {
+						throw new DisposeAggregateException(ex, ex2);
+					}
+					throw;
+				}
+				_Version = current; // Success!
 
 				return new(MigrationResultCode.Success, current);
 
@@ -769,10 +799,29 @@ public partial class KokoroContext : IDisposable {
 
 				} while (current > target);
 
-				// Done!
+				// Migration done! Now, wrap up everything.
 				FinalizeVersionFileForMigration(current);
-				dataDirTransaction.Commit();
-				// TODO-FIXME If the above throws, we will rollback when our `_Version` is already set, making the version inconsistent with the rolled back data
+
+				// May throw if the current data to be loaded is invalid
+				if (current.Operable) ForceLoadOperables();
+				// ^ If our migration is properly set up, the above shouldn't
+				// throw. Otherwise, the current migration mapping created an
+				// unloadable, invalid data when it shouldn't; thus, we'll just
+				// let our migration mechanism to catch the exception and
+				// rollback accordingly.
+
+				try {
+					dataDirTransaction.Commit();
+				} catch (Exception ex) {
+					// Commit failed. Thus, undo the loading done earlier.
+					try {
+						if (current.Operable) ForceUnloadOperables();
+					} catch (Exception ex2) {
+						throw new DisposeAggregateException(ex, ex2);
+					}
+					throw;
+				}
+				_Version = current; // Success!
 
 				return new(MigrationResultCode.Success, current);
 
@@ -809,15 +858,6 @@ public partial class KokoroContext : IDisposable {
 
 		string verStr = $"{DataVersionFileHeader}{newVersion}";
 		verStream.Write(verStr.ToUTF8Bytes(stackalloc byte[verStr.GetUTF8ByteCount()]));
-
-		// May throw if the current data to be loaded is invalid
-		if (newVersion.Operable) ForceLoadOperables();
-		// If our migration is properly set up, the above shouldn't throw.
-		// Otherwise, the current migration mapping created an unloadable,
-		// invalid data when it shouldn't; thus, we'll just let our migration
-		// mechanism to catch the exception and rollback accordingly.
-
-		_Version = newVersion; // Success!
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
