@@ -1,4 +1,6 @@
 ﻿namespace Kokoro;
+using Kokoro.Common.IO;
+using static KokoroContext;
 
 // This is a `ref struct` to ensure that it won't escape the current stack, so
 // that only the current thread can only ever use this object.
@@ -23,6 +25,22 @@ public readonly ref struct KokoroCollectionMaintenance {
 	public void Dispose() => _Collection.Dispose();
 
 	// --
+
+	public void CleanUpTrash() {
+		var context = _Collection._Context;
+		var dataPath = context.DataPath;
+
+		// Delete the rollback draft directory
+		// -- possibly existing due to a previous process crash
+		FsUtils.DeleteDirectoryIfExists($"{dataPath}{RollbackSuffix}{DraftSuffix}");
+
+		// Delete the stale rollback directory
+		// -- possibly existing due to a previous process crash
+		FsUtils.DeleteDirectoryIfExists($"{dataPath}{RollbackSuffix}{StaleSuffix}");
+
+		// Clean up and delete the trash directory
+		FsUtils.DeleteDirectoryIfExists(context.GetTrash());
+	}
 
 	public class CompressRowIdsProgress : IProgressLite {
 		private volatile string _TableBeingProcessed = "";
