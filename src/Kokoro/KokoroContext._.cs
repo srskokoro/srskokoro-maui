@@ -64,6 +64,7 @@ public partial class KokoroContext : IDisposable {
 	public KokoroDataVersion Version => _Version;
 
 	private readonly SafeFileHandle _LockHandle;
+	private bool IsConstructorDone => _LockHandle != null;
 
 	#region Construction
 
@@ -188,7 +189,7 @@ public partial class KokoroContext : IDisposable {
 			}
 			throw;
 		}
-		_LockHandle = lockHandle;
+		_LockHandle = lockHandle; // Mark as fully constructed
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
@@ -278,7 +279,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 	internal void ForceLoadOperables() {
-		DebugAssert_UsageMarkedExclusive();
+		DebugAssert_UsageMarkedExclusive_Or_UnderConstructor();
 		DebugAssert_VersionOperable();
 		Debug.Assert(_OperableDbPool == null, "Operables already loaded");
 
@@ -305,7 +306,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 	internal void ForceUnloadOperables() {
-		DebugAssert_UsageMarkedExclusive();
+		DebugAssert_UsageMarkedExclusive_Or_UnderConstructor();
 		DebugAssert_VersionOperable();
 		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
 
@@ -980,6 +981,10 @@ public partial class KokoroContext : IDisposable {
 	[Conditional("DEBUG")]
 	private void DebugAssert_UsageMarkedExclusive()
 		=> Debug.Assert(UsageMarkedExclusive_NV, "Shouldn't be called without first marking exclusive usage");
+
+	[Conditional("DEBUG")]
+	private void DebugAssert_UsageMarkedExclusive_Or_UnderConstructor()
+		=> Debug.Assert(UsageMarkedExclusive_NV || !IsConstructorDone, "Shouldn't be called without first marking exclusive usage");
 
 	#endregion
 
