@@ -36,6 +36,7 @@ partial class KokoroContext {
 		db.Exec($"PRAGMA application_id={SqliteDbAppId}");
 		db.Exec($"PRAGMA journal_mode=WAL");
 		db.Exec($"PRAGMA synchronous=NORMAL");
+		db.Exec($"PRAGMA temp_store=FILE");
 
 		using var transaction = db.BeginTransaction();
 

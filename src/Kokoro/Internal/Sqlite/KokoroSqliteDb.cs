@@ -20,5 +20,6 @@ internal class KokoroSqliteDb : SqliteConnection {
 
 		this.ExecuteNonQuery("PRAGMA ignore_check_constraints=1");
 #endif
+		this.ExecuteNonQuery("PRAGMA temp_store=FILE");
 	}
 }
