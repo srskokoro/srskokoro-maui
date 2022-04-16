@@ -496,7 +496,7 @@ public partial class KokoroContext : IDisposable {
 
 			// Now that the old, stale rollback directory is gone…
 			try {
-				// Atomically mark the rollback as stale
+				// Atomically mark the rollback as stale (preventing rollback)
 				Directory.Move(rollbackPath, stalePath);
 			} catch (DirectoryNotFoundException) {
 				if (!Directory.Exists(rollbackPath)) {
