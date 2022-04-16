@@ -380,6 +380,15 @@ public partial class KokoroContext : IDisposable {
 			// writing to the files we're about to copy, i.e., perhaps use at
 			// least `FileShare.Read` (instead of `FileShare.None`). See also,
 			// https://stackoverflow.com/q/876473
+			//
+			// --
+			// UPDATE: There's a hard limit to the number of files that can be
+			// opened simultaneously. See, https://stackoverflow.com/q/20289565
+			//
+			// Perhaps simply use a file system watcher, and try to detect for
+			// any changes to the underlying directory being copied. If after
+			// the copy operation, we found out that the file system watcher
+			// detected some changes, we abort the transaction creation.
 
 			try {
 				// Atomically mark the rollback draft as ready
