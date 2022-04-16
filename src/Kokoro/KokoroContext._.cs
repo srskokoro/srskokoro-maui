@@ -556,6 +556,11 @@ public partial class KokoroContext : IDisposable {
 	private static bool HasPendingRollback(string rollbackPath)
 		=> File.Exists(Path.Join(rollbackPath, DataVersionFile));
 
+	/// <remarks>
+	/// Note: A successful rollback won't revert <see cref="Version"/>. If the
+	/// data version file changes as a result of rollback, <see cref="Version"/>
+	/// must be updated manually.
+	/// </remarks>
 	private static bool TryPendingRollback(string rollbackPath, string dataPath) {
 		if (!HasPendingRollback(rollbackPath)) {
 			return false; // Nothing to rollback
