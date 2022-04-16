@@ -649,6 +649,7 @@ public partial class KokoroContext : IDisposable {
 				// Done!
 				FinalizeVersionFileForMigration(current);
 				dataDirTransaction.Commit();
+				// TODO-FIXME If the above throws, we will rollback when our `_Version` is already set, making the version inconsistent with the rolled back data
 
 				return new(MigrationResultCode.Success, current);
 
@@ -757,6 +758,7 @@ public partial class KokoroContext : IDisposable {
 				// Done!
 				FinalizeVersionFileForMigration(current);
 				dataDirTransaction.Commit();
+				// TODO-FIXME If the above throws, we will rollback when our `_Version` is already set, making the version inconsistent with the rolled back data
 
 				return new(MigrationResultCode.Success, current);
 
