@@ -14,9 +14,9 @@ public partial class KokoroContext : IDisposable {
 
 	private const string LockFile = ".kokoro.lock";
 
-	private const string RollbackSuffix = $".rollback";
-	private const string DraftSuffix = $"-draft";
-	private const string StaleSuffix = $"-stale";
+	internal const string RollbackSuffix = $".rollback";
+	internal const string DraftSuffix = $"-draft";
+	internal const string StaleSuffix = $"-stale";
 
 	private const string DataDir = $"data";
 
@@ -40,7 +40,7 @@ public partial class KokoroContext : IDisposable {
 	private const int DataVersionFileHeaderWithVersion_MaxBytes =
 		IOUtils.MaxBytesForBom + DataVersionFileHeaderWithVersion_MaxChars * IOUtils.MaxBytesPerChar;
 
-	private const string TrashDir = $"trash";
+	internal const string TrashDir = $"trash";
 
 	#endregion
 

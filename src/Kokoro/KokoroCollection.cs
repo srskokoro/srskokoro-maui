@@ -3,8 +3,8 @@ using Kokoro.Internal.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
 public class KokoroCollection : IDisposable {
-	private KokoroContext _Context;
-	private KokoroSqliteDb _Db;
+	internal KokoroContext _Context;
+	internal KokoroSqliteDb _Db;
 
 	public KokoroCollection(KokoroContext context) {
 		MarkUsage(context); // May throw on failure
