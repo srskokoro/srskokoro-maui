@@ -157,6 +157,9 @@ internal static class FsUtils {
 			} else {
 				throw;
 			}
+
+			// Now, try again
+			Directory.Move(path, deleteLater);
 		}
 
 		DeleteDirectory(deleteLater);
