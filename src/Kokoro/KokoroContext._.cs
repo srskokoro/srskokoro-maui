@@ -288,7 +288,7 @@ public partial class KokoroContext : IDisposable {
 		DebugAssert_UsageMarkedExclusive_Or_UnderConstructor();
 		Debug.Assert(_OperableDbPool == null, "Operables already loaded");
 
-		SqliteConnectionStringBuilder connStrBuilder = new SqliteConnectionStringBuilder() {
+		SqliteConnectionStringBuilder connStrBuilder = new() {
 			Pooling = false, // We do our own pooling
 			RecursiveTriggers = true,
 		};
