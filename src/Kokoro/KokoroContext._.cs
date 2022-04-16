@@ -269,18 +269,23 @@ public partial class KokoroContext : IDisposable {
 	internal void LoadOperables() {
 		DebugAssert_UsageMarkedExclusive();
 		// Load only when not already loaded
-		if (_OperableDbPool == null) ForceLoadOperables();
+		if (_OperableDbPool == null) {
+			DebugAssert_VersionOperable();
+			ForceLoadOperables();
+		}
 	}
 
 	internal void UnloadOperables() {
 		DebugAssert_UsageMarkedExclusive();
 		// Unload only when not already unloaded
-		if (_OperableDbPool != null) ForceUnloadOperables();
+		if (_OperableDbPool != null) {
+			DebugAssert_VersionOperable();
+			ForceUnloadOperables();
+		}
 	}
 
 	internal void ForceLoadOperables() {
 		DebugAssert_UsageMarkedExclusive_Or_UnderConstructor();
-		DebugAssert_VersionOperable();
 		Debug.Assert(_OperableDbPool == null, "Operables already loaded");
 
 		SqliteConnectionStringBuilder connStrBuilder = new SqliteConnectionStringBuilder() {
@@ -307,7 +312,6 @@ public partial class KokoroContext : IDisposable {
 
 	internal void ForceUnloadOperables() {
 		DebugAssert_UsageMarkedExclusive_Or_UnderConstructor();
-		DebugAssert_VersionOperable();
 		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
 
 		_OperableDbPool!.Dispose(); // May throw
