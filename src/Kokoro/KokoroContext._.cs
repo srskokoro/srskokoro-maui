@@ -424,7 +424,7 @@ public partial class KokoroContext : IDisposable {
 		public readonly bool IsComplete => _DataRollbackPath == null;
 
 		public void MarkComplete() {
-			_DataRollbackPath = null;
+			_DataRollbackPath = null; // Mark as no longer disposable
 #if DEBUG
 			_Context._DEBUG_PendingDataDirTransaction = false;
 #endif
