@@ -27,7 +27,7 @@ public readonly ref struct KokoroCollectionMaintenance {
 	// --
 
 	public void CleanUpTrash() {
-		var context = _Collection._Context;
+		var context = _Collection.Context;
 		var dataPath = context.DataPath;
 
 		// Delete the rollback draft directory
