@@ -244,7 +244,7 @@ public partial class KokoroContext : IDisposable {
 				return db;
 			}
 		} catch (NullReferenceException ex) {
-			if (!Version.Operable) E_VersionNotOperable_NS(ex);
+			if (!_Version.Operable) E_VersionNotOperable_NS(ex);
 			throw;
 		}
 
@@ -259,7 +259,7 @@ public partial class KokoroContext : IDisposable {
 		try {
 			_OperableDbPool!.TryPool(db);
 		} catch (NullReferenceException ex) {
-			if (!Version.Operable) E_VersionNotOperable_NS(ex);
+			if (!_Version.Operable) E_VersionNotOperable_NS(ex);
 			throw;
 		}
 	}
@@ -322,7 +322,7 @@ public partial class KokoroContext : IDisposable {
 
 	[Conditional("DEBUG")]
 	private void DebugAssert_VersionOperable()
-		=> Debug.Assert(Version.Operable, "Version should be operable");
+		=> Debug.Assert(_Version.Operable, "Version should be operable");
 
 	#endregion
 
@@ -557,8 +557,8 @@ public partial class KokoroContext : IDisposable {
 		=> File.Exists(Path.Join(rollbackPath, DataVersionFile));
 
 	/// <remarks>
-	/// Note: A successful rollback won't revert <see cref="Version"/>. If the
-	/// data version file changes as a result of rollback, <see cref="Version"/>
+	/// Note: A successful rollback won't revert <see cref="_Version"/>. If the
+	/// data version file changes as a result of rollback, <see cref="_Version"/>
 	/// must be updated manually.
 	/// </remarks>
 	private static bool TryPendingRollback(string rollbackPath, string dataPath) {
@@ -624,7 +624,7 @@ public partial class KokoroContext : IDisposable {
 
 		MarkUsageExclusive();
 		try {
-			var current = Version;
+			var current = _Version;
 			if (current >= target) {
 				return new(current > target
 					? MigrationResultCode.FailedWithCurrentGreaterThanTarget
@@ -751,7 +751,7 @@ public partial class KokoroContext : IDisposable {
 
 		MarkUsageExclusive();
 		try {
-			var current = Version;
+			var current = _Version;
 			if (current <= target) {
 				return new(current < target
 					? MigrationResultCode.FailedWithCurrentLessThanTarget
