@@ -536,8 +536,8 @@ public partial class KokoroContext : IDisposable {
 				// rollback directory itself marks the commit as successful. If
 				// we throw now, then the caller might assume that the commit
 				// failed and must rollback any associated in-memory state, only
-				// to unable to rollback the on-disk representation itself (as
-				// we've removed the rollback directory already).
+				// to be unable to rollback the on-disk representation itself
+				// (as we've removed the rollback directory already).
 			}
 			return true;
 		}
