@@ -17,8 +17,8 @@ internal class KokoroSqliteDb : SqliteConnection {
 			"We're supposedly doing our own pooling; thus, `Pooling` should be " +
 			"`False` in the connection string (yet it isn't).");
 
-		this.ExecuteNonQuery("PRAGMA ignore_check_constraints=1");
+		this.Exec("PRAGMA ignore_check_constraints=1");
 #endif
-		this.ExecuteNonQuery("PRAGMA temp_store=FILE");
+		this.Exec("PRAGMA temp_store=FILE");
 	}
 }

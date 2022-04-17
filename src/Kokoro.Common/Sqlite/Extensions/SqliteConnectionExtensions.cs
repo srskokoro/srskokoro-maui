@@ -24,6 +24,7 @@ internal static class SqliteConnectionExtensions {
 		return command;
 	}
 
+	// --
 
 	public static int ExecuteNonQuery(this SqliteConnection connection, string commandText) {
 		using var command = connection.CreateCommand(commandText);
@@ -64,4 +65,22 @@ internal static class SqliteConnectionExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int Exec(this SqliteConnection connection, string commandText, params SqliteParameter[] parameters)
 		=> connection.ExecuteNonQuery(commandText, parameters);
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T ExecScalar<T>(this SqliteConnection connection, string commandText)
+		=> (T)connection.ExecuteScalar(commandText)!;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T ExecScalar<T>(this SqliteConnection connection, string commandText, params SqliteParameter[] parameters)
+		=> (T)connection.ExecuteScalar(commandText, parameters)!;
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object? ExecScalar(this SqliteConnection connection, string commandText)
+		=> connection.ExecuteScalar(commandText);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object? ExecScalar(this SqliteConnection connection, string commandText, params SqliteParameter[] parameters)
+		=> connection.ExecuteScalar(commandText, parameters);
 }
