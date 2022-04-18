@@ -3,12 +3,12 @@ using Kokoro.Internal.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
 public class KokoroCollection : IDisposable {
-	private KokoroContext _Context;
-	private KokoroSqliteDb _Db;
+	private KokoroContext? _Context;
+	private KokoroSqliteDb? _Db;
 
-	public KokoroContext Context => _Context;
+	public KokoroContext Context => _Context ?? throw Ex_ODisposed();
 
-	internal KokoroSqliteDb Db => _Db;
+	internal KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
 
 	public KokoroCollection(KokoroContext context) {
 		MarkUsage(context); // May throw on failure
@@ -63,7 +63,7 @@ public class KokoroCollection : IDisposable {
 
 		var db = _Db;
 		if (db != null) {
-			_Db = null!;
+			_Db = null;
 			// ^ Prevents recycling when already recycled before. Also, we did
 			// that first in case the recycle op succeeds and yet it throws
 			// before it can return to us.
@@ -71,7 +71,7 @@ public class KokoroCollection : IDisposable {
 		}
 
 		UnMarkUsage(context);
-		_Context = null!; // Marks disposal as successful
+		_Context = null; // Marks disposal as successful
 	}
 
 	~KokoroCollection() => Dispose(disposing: false);
@@ -82,6 +82,9 @@ public class KokoroCollection : IDisposable {
 		// ^- Side-effect: `this` is kept alive 'til the method ends.
 		// - See, https://stackoverflow.com/q/816818
 	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(GetType());
 
 	#endregion
 }
