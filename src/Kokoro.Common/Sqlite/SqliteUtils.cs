@@ -121,7 +121,7 @@ internal static class SqliteUtils {
 		// character unnecessarily, even when the given path is already absolute
 		// and valid, when we don't even require that the given path be valid.
 		// (That's how `Path.GetFullPath()` works as of writing this.)
-		if (Path.IsPathFullyQualified(path)) path = Path.GetFullPath(path);
+		if (!Path.IsPathFullyQualified(path)) path = Path.GetFullPath(path);
 
 		const int FileSchemeLength = 5;
 		const int ExtraSlashes = 3;
