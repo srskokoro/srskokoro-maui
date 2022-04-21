@@ -212,7 +212,6 @@ partial class KokoroContext {
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			// - 0b11: Fat
 			"st INTEGER AS (index_st & 0x3)," +
 
 			// The field locality type:
