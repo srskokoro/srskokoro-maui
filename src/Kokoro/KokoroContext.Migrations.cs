@@ -49,6 +49,19 @@ partial class KokoroContext {
 		const string OnRowIdFkCascDel = " ON DELETE CASCADE" + " ON UPDATE CASCADE";
 		const string OnRowIdFkNullDel = " ON DELETE SET NULL" + " ON UPDATE CASCADE";
 
+		// --
+
+		const string Int32MinHex = "-0x80000000";
+		const string Int32MaxHex = "0x7FFFFFFF";
+
+		const string BetweenInt32Range = $"BETWEEN {Int32MinHex} AND {Int32MaxHex}";
+		const string BetweenInt32RangeGE0 = $"BETWEEN 0 AND {Int32MaxHex}";
+
+		const string Ordinal_Int32Nn = $"ordinal INTEGER NOT NULL CHECK(ordinal {BetweenInt32Range})";
+		const string Ordinal_Int64Nn = $"ordinal INTEGER NOT NULL";
+
+		// --
+
 		// A string interning table for field names.
 		db.Exec("CREATE TABLE FieldNames(" +
 
@@ -68,7 +81,7 @@ partial class KokoroContext {
 			"parent INTEGER REFERENCES Items" + OnRowIdFk + "," +
 
 			// The item ordinal.
-			"ordinal INTEGER NOT NULL," +
+			Ordinal_Int64Nn + "," +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
 
@@ -180,11 +193,11 @@ partial class KokoroContext {
 
 			// The expected number of modstamps in the schemable where the
 			// schema is applied.
-			"localModStampCount INTEGER NOT NULL CHECK(localModStampCount >= 0)," +
+			$"localModStampCount INTEGER NOT NULL CHECK(localModStampCount {BetweenInt32RangeGE0})," +
 
 			// The expected number of field data in the schemable where the
 			// schema is applied.
-			"localFieldCount INTEGER NOT NULL CHECK(localFieldCount >= 0)," +
+			$"localFieldCount INTEGER NOT NULL CHECK(localFieldCount {BetweenInt32RangeGE0})," +
 
 			// The blob comprising the list of shared modstamps and shared field
 			// data.
@@ -204,7 +217,7 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
-			"index_st INTEGER NOT NULL CHECK(index_st >= 0)," +
+			$"index_st INTEGER NOT NULL CHECK(index_st {BetweenInt32RangeGE0})," +
 
 			"index_loc INTEGER AS ((index_st >> 1) | (index_st & 0x1))," +
 
@@ -219,7 +232,7 @@ partial class KokoroContext {
 			// - 1: Local
 			"loc INTEGER AS (st != 0)," +
 
-			"modStampIndex INTEGER NOT NULL CHECK(modStampIndex >= 0)," +
+			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -246,11 +259,11 @@ partial class KokoroContext {
 			// - While a schema can never be modified upon creation, it can
 			// inherit the modstamps of an older schema it was based on and only
 			// differ on modstamp entries that really changed.
-			"sharedModStampIndex INTEGER CHECK(sharedModStampIndex >= 0)," +
+			$"sharedModStampIndex INTEGER CHECK(sharedModStampIndex {BetweenInt32RangeGE0})," +
 
 			// Quirks:
 			// - Null when not contributing any local fields.
-			"localModStampIndex INTEGER CHECK(localModStampIndex >= 0)," +
+			$"localModStampIndex INTEGER CHECK(localModStampIndex {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, type)," +
 
@@ -277,7 +290,7 @@ partial class KokoroContext {
 			"csum BLOB," +
 
 			// The schema type ordinal.
-			"ordinal INTEGER NOT NULL," +
+			Ordinal_Int32Nn + "," +
 
 			// TODO A trigger for when this column is nulled out: consider deleting the schema type as well
 			"src INTEGER REFERENCES Items" + OnRowIdFkNullDel + "," +
@@ -297,7 +310,7 @@ partial class KokoroContext {
 			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
 			// The field ordinal.
-			"ordinal INTEGER NOT NULL," +
+			Ordinal_Int32Nn + "," +
 
 			// The field store type:
 			// - 0b00: Shared
