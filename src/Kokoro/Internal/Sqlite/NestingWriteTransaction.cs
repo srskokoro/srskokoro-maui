@@ -3,15 +3,23 @@ using static SQLitePCL.raw;
 
 internal ref struct NestingWriteTransaction {
 	private KokoroSqliteDb? _Db;
-	private readonly int _IsOutermost;
+	private readonly string _CommitCommand;
+
+	private const string OutermostCommit = "END";
+	private bool IsOutermost {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => ReferenceEquals(_CommitCommand, OutermostCommit);
+	}
 
 	public NestingWriteTransaction(KokoroSqliteDb db) {
-		string cmd;
+		string init;
 		// NOTE: Auto-commit is set (non-zero) while no transaction is active.
-		if ((_IsOutermost = sqlite3_get_autocommit(db.Handle)) != 0) {
-			cmd = "BEGIN IMMEDIATE";
+		if (sqlite3_get_autocommit(db.Handle) != 0) {
+			// NOTE: We're also currently the outermost transaction.
+			init = "BEGIN IMMEDIATE";
+			_CommitCommand = OutermostCommit;
 		} else {
-			cmd = "SAVEPOINT _";
+			init = "SAVEPOINT _";
 			// ^ NOTE: The SQLite docs explicitly say that "transaction names
 			// need not be unique" and that only the *most recent* savepoint
 			// with a matching name is released or rolled back; in other words,
@@ -19,18 +27,18 @@ internal ref struct NestingWriteTransaction {
 			// already an outer savepoint using the same name. It also means
 			// that we can use any savepoint name with practically nothing to
 			// worry about. See, https://www.sqlite.org/lang_savepoint.html
+			_CommitCommand = "RELEASE _";
 		}
 
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
-		db.Exec(cmd);
+		db.Exec(init);
 		_Db = db;
 	}
 
 	public void Commit() {
-		string cmd = _IsOutermost != 0 ? "END" : "RELEASE _";
 		try {
 			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
-			_Db!.Exec(cmd);
+			_Db!.Exec(_CommitCommand);
 		} catch (NullReferenceException) when (_Db == null) {
 			throw Ex_AlreadyReleased_InvOp();
 		}
@@ -49,7 +57,7 @@ internal ref struct NestingWriteTransaction {
 		// NOTE: Auto-commit is unset (zero) while a transaction is active.
 		if (sqlite3_get_autocommit(db.Handle) == 0) {
 			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
-			db.Exec(_IsOutermost != 0 ? "ROLLBACK" : "ROLLBACK TO _; RELEASE _");
+			db.Exec(IsOutermost ? "ROLLBACK" : "ROLLBACK TO _; RELEASE _");
 		}
 		_Db = null;
 	}
