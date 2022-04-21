@@ -32,8 +32,8 @@ partial class KokoroContext {
 
 		db.Open();
 
-		// Eq: 469794951
-		const long SqliteDbAppId = 0x1c008087L; // Hint: It's an RGBA hex
+		// Hint: It's an RGBA hex
+		const long SqliteDbAppId = 0x1c008087; // 469794951
 
 		db.Exec($"PRAGMA application_id={SqliteDbAppId}");
 		db.Exec($"PRAGMA journal_mode=WAL");
