@@ -259,6 +259,7 @@ public partial class KokoroContext : IDisposable {
 		try {
 			_OperableDbPool!.TryPool(db);
 		} catch (NullReferenceException ex) {
+			db.DisposeSafely(ex);
 			if (!_Version.Operable) E_VersionNotOperable_NS(ex);
 			throw;
 		}
