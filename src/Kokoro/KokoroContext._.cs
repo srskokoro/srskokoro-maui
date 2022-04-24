@@ -240,8 +240,12 @@ public partial class KokoroContext : IDisposable {
 
 		KokoroSqliteDb? db;
 		try {
-			if (_OperableDbPool!.TryTakeAggressively(out db)) {
+			var pool = _OperableDbPool!;
+			if (pool.TryTakeAggressively(out db)) {
 				return db;
+			}
+			if (pool.IsDisposed) {
+				throw Ex_ODisposed();
 			}
 		} catch (NullReferenceException ex) {
 			if (!_Version.Operable) E_VersionNotOperable_NS(ex);

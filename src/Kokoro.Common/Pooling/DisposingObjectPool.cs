@@ -5,7 +5,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 	protected ref DisposeState DisposeState => ref _DisposeState;
 
-	protected bool IsDisposed => _DisposeState.IsDisposed();
+	public bool IsDisposed => _DisposeState.IsDisposed();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override bool TryPool(T poolable) {
