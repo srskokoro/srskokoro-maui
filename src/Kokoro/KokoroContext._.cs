@@ -306,22 +306,27 @@ public partial class KokoroContext : IDisposable {
 			connStrBuilder.DataSource = $"{SqliteUtils.ToUriFilename(colDbPath)}?immutable=1";
 			connStrBuilder.Mode = SqliteOpenMode.ReadOnly;
 		}
-		_OperableDbConnectionString = connStrBuilder.ToString(); // Maybe throws (just maybe)
+		string connStr = connStrBuilder.ToString(); // Maybe throws (just maybe)
+		KokoroSqliteDb db = new(connStr);
+		db.Open();
 
-		// And so, we don't really load anything from the disk/DB -- at least,
-		// for now.
-		// --
+		LoadNextRowIdsFrom(db);
 
-		_OperableDbPool = new(); // Finally, mark as loaded
+		DisposingObjectPool<KokoroSqliteDb> pool = new();
+		pool.TryPool(db);
+
+		_OperableDbConnectionString = connStr;
+		_OperableDbPool = pool; // Finally, mark as loaded
 	}
 
 	internal void ForceUnloadOperables() {
 		DebugAssert_UsageMarkedExclusive_Or_UnderConstructor();
 		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
+		// TODO Assert that all DB connections have already been disposed
 
 		_OperableDbPool!.Dispose(); // May throw
-		_OperableDbConnectionString = "";
 
+		_OperableDbConnectionString = "";
 		_OperableDbPool = null; // Finally, mark as unloaded
 	}
 
