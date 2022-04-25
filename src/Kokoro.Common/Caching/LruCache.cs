@@ -36,6 +36,8 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 
 	public int MaxSize => _MaxSize;
 
+	public int MapCount => _Map.Count;
+
 
 	public LruCache(int maxSize) : this(maxSize, 0) { }
 
@@ -43,6 +45,11 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		_MaxSize = maxSize;
 		_Map = new(capacity);
 	}
+
+
+	public void EnsureMapCapacity(int capacity) => _Map.EnsureCapacity(capacity);
+
+	public void TrimMapExcess() => _Map.TrimExcess();
 
 
 	protected virtual int SizeOf(TKey key, TValue value) => 1;
