@@ -227,7 +227,7 @@ partial class KokoroContext {
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INTEGER NOT NULL AS (index_st & 0x3)," +
+			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2) AS (index_st & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
