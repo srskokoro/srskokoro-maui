@@ -1044,12 +1044,16 @@ public partial class KokoroContext : IDisposable {
 	#region `IDisposable` implementation
 
 	private void DisposingCore() {
+		Debug.Assert(_MarkUsageState == MarkUsageState_DisposingFlag,
+			$"Shouldn't be called {(UsageMarked_NV ? "while usage is marked" : "when not marked exclusively for disposal")}");
+
 		// Dispose managed state (managed objects).
 		//
 		// NOTE: If we're here, then we're sure that the constructor completed
 		// successfully. Fields that aren't supposed to be null are guaranteed
 		// to be non-null.
 		// --
+
 		ICollection<Exception>? exc = null;
 		{
 			_OperableDbPool?.DisposeSafely(ref exc);
@@ -1058,7 +1062,16 @@ public partial class KokoroContext : IDisposable {
 			_LockHandle.DisposeSafely(ref exc);
 			// TODO ^- `DisposeSafely()` is unnecessary above
 		}
-		exc?.ReThrowFlatten();
+
+		if (exc != null) {
+			Debug.Assert(_MarkUsageState == MarkUsageState_DisposingFlag,
+				"Should still be marked exclusively for disposal at this point");
+
+			// Undo disposing flag, to allow redo of disposal
+			Volatile.Write(ref _MarkUsageState, 0);
+
+			exc.ReThrowFlatten();
+		}
 	}
 
 	protected virtual void Dispose(bool disposing) {
