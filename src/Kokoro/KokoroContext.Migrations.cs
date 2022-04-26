@@ -299,7 +299,7 @@ partial class KokoroContext {
 
 			// Quirks:
 			// - Null when unnamed.
-			"name TEXT COLLATE NOCASE," +
+			"name TEXT," +
 
 			"UNIQUE(src, name)" +
 
