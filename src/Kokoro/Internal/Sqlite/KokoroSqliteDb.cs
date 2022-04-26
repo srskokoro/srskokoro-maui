@@ -44,10 +44,16 @@ internal class KokoroSqliteDb : SqliteConnection {
 		var currentPragmaDataVersion = this.ExecScalar<long>("PRAGMA data_version");
 		if (currentPragmaDataVersion == _LastPragmaDataVersion) return false;
 
-		_LastPragmaDataVersion = currentPragmaDataVersion;
 		if (++_DataToken!.DataMark == DataToken.DataMarkExhausted) {
-			_DataToken = new(_CurrentOwner!);
+			try {
+				_DataToken = new(_CurrentOwner!); // May also throw due to OOM
+			} catch {
+				--_DataToken!.DataMark; // Revert the increment
+				throw;
+			}
 		}
+
+		_LastPragmaDataVersion = currentPragmaDataVersion;
 		return true;
 	}
 }
