@@ -41,10 +41,22 @@ internal class KokoroSqliteDb : SqliteConnection {
 	internal bool UpdateDataToken() {
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
 		// - See, for example, how SQLite did it for its FTS5 extension, https://github.com/sqlite/sqlite/blob/2d27d36cba01b9ceff2c36ad0cef9468db370024/ext/fts5/fts5_index.c#L1066
+		// - Once the above TODO is done, consider marking this method for
+		// aggressive inlining.
 		var currentPragmaDataVersion = this.ExecScalar<long>("PRAGMA data_version");
 		if (currentPragmaDataVersion == _LastPragmaDataVersion) return false;
 
-		if (++_DataToken!.DataMark == DataToken.DataMarkExhausted) {
+		if (++_DataToken!.DataMark == DataToken.DataMarkExhausted)
+			OnDataMarkExhausted();
+
+		_LastPragmaDataVersion = currentPragmaDataVersion;
+		return true;
+
+		// Placed on a separate function to reduce method size, since the
+		// following is for a very rare case anyway; and also, to allow the
+		// outer method to be inlined (since, as of writing this, methods
+		// containing try-catch blocks cannot be inlined).
+		void OnDataMarkExhausted() {
 			try {
 				_DataToken = new(_CurrentOwner!); // May also throw due to OOM
 			} catch {
@@ -52,8 +64,5 @@ internal class KokoroSqliteDb : SqliteConnection {
 				throw;
 			}
 		}
-
-		_LastPragmaDataVersion = currentPragmaDataVersion;
-		return true;
 	}
 }
