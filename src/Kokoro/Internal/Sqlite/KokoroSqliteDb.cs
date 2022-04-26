@@ -12,11 +12,10 @@ internal class KokoroSqliteDb : SqliteConnection {
 
 	public override void Open() {
 		base.Open();
-#if !DEBUG
 		Debug.Assert(!new SqliteConnectionStringBuilder(ConnectionString).Pooling,
 			"We're supposedly doing our own pooling; thus, `Pooling` should be " +
 			"`False` in the connection string (yet it isn't).");
-
+#if !DEBUG
 		this.Exec("PRAGMA ignore_check_constraints=1");
 #endif
 		this.Exec("PRAGMA temp_store=FILE");
