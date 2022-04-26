@@ -221,18 +221,18 @@ partial class KokoroContext {
 
 			$"index_st INTEGER NOT NULL CHECK(index_st {BetweenInt32RangeGE0})," +
 
-			"index_loc INTEGER AS ((index_st >> 1) | (index_st & 0x1))," +
+			"index_loc INTEGER NOT NULL AS ((index_st >> 1) | (index_st & 0x1))," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INTEGER AS (index_st & 0x3)," +
+			"st INTEGER NOT NULL AS (index_st & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
-			"loc INTEGER AS (st != 0)," +
+			"loc INTEGER NOT NULL AS (st != 0)," +
 
 			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
