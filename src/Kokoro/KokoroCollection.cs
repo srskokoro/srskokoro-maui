@@ -15,9 +15,7 @@ public class KokoroCollection : IDisposable {
 		try {
 			// Throws on incompatible schema version
 			(_Db = context.ObtainOperableDb()).CurrentOwner = this;
-
-			// Success!
-			_Context = context;
+			_Context = context; // Success!
 		} catch {
 			// Failed!
 			UnMarkUsage(context);
