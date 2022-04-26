@@ -14,7 +14,7 @@ public class KokoroCollection : IDisposable {
 		MarkUsage(context); // May throw on failure
 		try {
 			// Throws on incompatible schema version
-			_Db = context.ObtainOperableDb();
+			(_Db = context.ObtainOperableDb()).CurrentOwner = this;
 
 			// Success!
 			_Context = context;
@@ -63,6 +63,7 @@ public class KokoroCollection : IDisposable {
 
 		var db = _Db;
 		if (db != null) {
+			db.CurrentOwner = null;
 			_Db = null;
 			// ^ Prevents recycling when already recycled before. Also, we did
 			// that first in case the recycle op succeeds and yet it throws
