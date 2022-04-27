@@ -33,6 +33,8 @@ public class KokoroCollection : IDisposable {
 
 	#region `IDisposable` implementation
 
+	public bool IsDisposed => _Context == null;
+
 	protected virtual void Dispose(bool disposing) {
 		var context = _Context;
 		if (context == null) {

@@ -921,6 +921,13 @@ public partial class KokoroContext : IDisposable {
 	public bool UsageMarkedExclusive => (MarkUsageState_Volatile & MarkUsageState_ExclusiveFlag) != 0;
 	public bool UsageMarkedExclusive_NV => (_MarkUsageState & MarkUsageState_ExclusiveFlag) != 0;
 
+
+	public bool IsDisposed => (MarkUsageState_Volatile & MarkUsageState_DisposingFlag) != 0;
+	public bool IsDisposed_NV => (_MarkUsageState & MarkUsageState_DisposingFlag) != 0;
+
+	public bool IsDisposedFully => MarkUsageState_Volatile == MarkUsageState_DisposingFlag;
+	public bool IsDisposedFully_NV => _MarkUsageState == MarkUsageState_DisposingFlag;
+
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
