@@ -1060,29 +1060,21 @@ public partial class KokoroContext : IDisposable {
 		// to be non-null.
 		// --
 
-		ICollection<Exception>? exc = null;
-		{
-			_OperableDbPool?.DisposeSafely(ref exc);
+		try {
+			_OperableDbPool?.Dispose();
 
-			// Should be done last (as it'll release the lock)
-#if DEBUG
-			_LockHandle?.DisposeSafely(ref exc);
-			// ^- `DisposeSafely()` is unnecessary above, unless we're manually
-			// incrementing/decrementing the `SafeFileHandle` reference counter
-			// and not doing so properly.
-#else
+			// Should be done last, as it'll release the lock
 			_LockHandle?.Dispose();
-#endif
-		}
-
-		if (exc != null) {
+			// ^- Also, we shouldn't really release the lock while everything is
+			// still not yet completely disposed (due to an exception).
+		} catch {
 			Debug.Assert(_MarkUsageState == MarkUsageState_DisposingFlag,
 				"Should still be marked exclusively for disposal at this point");
 
 			// Undo disposing flag, to allow redo of disposal
 			Volatile.Write(ref _MarkUsageState, 0);
 
-			exc.ReThrowFlatten();
+			throw;
 		}
 	}
 
