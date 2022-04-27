@@ -176,8 +176,14 @@ public partial class KokoroContext : IDisposable {
 			; // Nothing (for now)
 
 		} catch (Exception ex) {
-			// TODO `DisposeSafely()` is unnecessary here
+#if DEBUG
 			lockHandle?.DisposeSafely(ex);
+			// ^- `DisposeSafely()` is unnecessary above, unless we're manually
+			// incrementing/decrementing the `SafeFileHandle` reference counter
+			// and not doing so properly.
+#else
+			lockHandle?.Dispose();
+#endif
 			// Check if the cause of the exception is a read-only attribute
 			if (ex is UnauthorizedAccessException
 				&& File.Exists(verPath)
@@ -1059,8 +1065,14 @@ public partial class KokoroContext : IDisposable {
 			_OperableDbPool?.DisposeSafely(ref exc);
 
 			// Should be done last (as it'll release the lock)
-			_LockHandle.DisposeSafely(ref exc);
-			// TODO ^- `DisposeSafely()` is unnecessary above
+#if DEBUG
+			_LockHandle?.DisposeSafely(ref exc);
+			// ^- `DisposeSafely()` is unnecessary above, unless we're manually
+			// incrementing/decrementing the `SafeFileHandle` reference counter
+			// and not doing so properly.
+#else
+			_LockHandle?.Dispose();
+#endif
 		}
 
 		if (exc != null) {
