@@ -1100,7 +1100,8 @@ public partial class KokoroContext : IDisposable {
 				$"Other exception:{Environment.NewLine}{ex}");
 
 			// Undo disposing flag, to allow redo of disposal
-			Volatile.Write(ref _MarkUsageState, 0);
+			//Volatile.Write(ref _MarkUsageState, 0);
+			// TODO-FIXME ^ Shouldn't undo flag when already partially disposed, but should still allow redo of disposal
 
 			throw;
 		}
