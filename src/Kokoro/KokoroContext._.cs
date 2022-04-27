@@ -1067,7 +1067,14 @@ public partial class KokoroContext : IDisposable {
 			_LockHandle?.Dispose();
 			// ^- Also, we shouldn't really release the lock while everything is
 			// still not yet completely disposed (due to an exception).
-		} catch {
+			// --
+		} catch when (
+			// Don't proceed below if the cause of the exception is disposal of
+			// the lock file handle. Normally, repeated calls to `SafeFileHandle.Dispose()`
+			// shouldn't throw, but that is only when `SafeFileHandle.DangerousRelease()`
+			// isn't used to dispose the file handle beforehand.
+			!_LockHandle.IsClosed
+		) {
 			Debug.Assert(_MarkUsageState == MarkUsageState_DisposingFlag,
 				"Should still be marked exclusively for disposal at this point");
 
