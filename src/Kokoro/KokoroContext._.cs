@@ -1102,9 +1102,12 @@ public partial class KokoroContext : IDisposable {
 			// still not yet completely disposed (due to an exception).
 			// --
 		} catch (Exception ex) when (
-			// Don't proceed below if disposal did succeed (as the code after
-			// may undo the disposing flag). Normally, repeated calls to `SafeFileHandle.Dispose()`
-			// shouldn't throw, but that is only when `SafeFileHandle.DangerousRelease()`
+			// Disposal is considered complete the moment the lock handle is
+			// released and closed. Therefore, don't proceed below if disposal
+			// did succeed (as the code after may undo the disposing flag).
+			//
+			// Normally, repeated calls to `SafeFileHandle.Dispose()` shouldn't
+			// throw, but that is only when `SafeFileHandle.DangerousRelease()`
 			// isn't used to dispose the file handle beforehand.
 			!_LockHandle.IsClosed
 		) {
