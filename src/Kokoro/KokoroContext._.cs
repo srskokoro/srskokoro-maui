@@ -1056,13 +1056,13 @@ public partial class KokoroContext : IDisposable {
 
 	[Conditional("DEBUG")]
 	private void DebugAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse()
-		=> Debug.Assert(UsageMarkedExclusive_NV || !IsConstructorDone || _MarkUsageState == MarkUsageState_DisposedFlag,
+		=> Debug.Assert(UsageMarkedExclusive_NV || !IsConstructorDone || IsDisposeHandled_NV,
 			"Shouldn't be called without first marking exclusive usage");
 
 	[Conditional("DEBUG")]
 	private void DebugAssert_UsageMarkedExclusivelyForDispose()
-		=> Debug.Assert(_MarkUsageState == MarkUsageState_DisposedFlag,
-			$"Shouldn't be called {(UsageMarked_NV ? "while usage is marked" : "when not marked exclusively for disposal")}");
+		=> Debug.Assert(IsDisposeHandled_NV, $"Shouldn't be called {(UsageMarked_NV
+			? "while usage is marked" : "when not marked exclusively for disposal")}");
 
 	#endregion
 
@@ -1095,7 +1095,7 @@ public partial class KokoroContext : IDisposable {
 			// isn't used to dispose the file handle beforehand.
 			!_LockHandle.IsClosed
 		) {
-			Debug.Assert(_MarkUsageState == MarkUsageState_DisposedFlag,
+			Debug.Assert(IsDisposeHandled_NV,
 				$"Should still be marked exclusively for disposal at this point; " +
 				$"Other exception:{Environment.NewLine}{ex}");
 
