@@ -33,7 +33,9 @@ public class KokoroCollection : IDisposable {
 
 	#region `IDisposable` implementation
 
-	public bool IsDisposed => _Context == null;
+	// NOTE: We can also be partially disposed, such as when `_DB` is now null,
+	// but having a null `_Context` means that we have been completely disposed.
+	public bool IsDisposedFully => _Context == null;
 
 	protected virtual void Dispose(bool disposing) {
 		var context = _Context;
