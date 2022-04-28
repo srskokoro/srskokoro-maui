@@ -12,6 +12,9 @@ indent_style = tab
 indent_size = tab
 tab_width = 4
 
+# New line preferences
+end_of_line = lf
+
 # Guidelines -- https://github.com/pharring/EditorGuidelines
 guidelines = 80 1px dotted CAFFC000, 120 1px solid 22FF0000
 
@@ -26,7 +29,7 @@ indent_style = space
 indent_size = 2
 
 # New line preferences
-end_of_line = crlf
+end_of_line = lf
 trim_trailing_whitespace = true
 
 # ---===--- ---===--- ---===---
@@ -36,7 +39,7 @@ trim_trailing_whitespace = true
 #### Core EditorConfig Options ####
 
 # New line preferences
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = false
 trim_trailing_whitespace = true
 
