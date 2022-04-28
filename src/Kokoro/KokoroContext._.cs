@@ -891,32 +891,28 @@ public partial class KokoroContext : IDisposable {
 
 	private uint _MarkUsageState;
 
-	private const uint MarkUsageState_DisposedFlag    = 0b_001;
-	private const uint MarkUsageState_ExclusiveFlag   = 0b_010;
-	private const uint MarkUsageState_SharedIncrement = 0b_100;
-	private const uint MarkUsageState_SharedDecrement =
-		unchecked((uint) -MarkUsageState_SharedIncrement);
+	private const uint MarkUsageState_DisposedFlag  = 0b_001;
+	private const uint MarkUsageState_ExclusiveFlag = 0b_010;
+	private const  int MarkUsageState_SharedCountShift = 2;
+	private const  int MarkUsageState_UsageMarkedShift = 1;
+
+	private const uint MarkUsageState_SharedIncrement = 1 << MarkUsageState_SharedCountShift;
+	private const uint MarkUsageState_SharedDecrement = unchecked((uint) -MarkUsageState_SharedIncrement);
 
 	private const uint MarkUsageState_DisposedWhileExclusive =
 		MarkUsageState_DisposedFlag | MarkUsageState_ExclusiveFlag;
 
-	private const uint MarkUsageState_SharedForbiddenMask =
-		MarkUsageState_DisposedFlag | MarkUsageState_ExclusiveFlag;
-
-	private const uint MarkUsageState_SharedCount_Mask = MarkUsageState_SharedDecrement;
-
-	private const uint MarkUsageState_UsageMarkedMask =
-		MarkUsageState_ExclusiveFlag | MarkUsageState_SharedCount_Mask;
+	private const uint MarkUsageState_SharedForbiddenMask = MarkUsageState_DisposedWhileExclusive;
 
 	// --
 
 	private uint MarkUsageState_Volatile => Volatile.Read(ref _MarkUsageState);
 
-	public bool UsageMarked => (MarkUsageState_Volatile & MarkUsageState_UsageMarkedMask) != 0;
-	public bool UsageMarked_NV => (_MarkUsageState & MarkUsageState_UsageMarkedMask) != 0;
+	public bool UsageMarked => (MarkUsageState_Volatile >> MarkUsageState_UsageMarkedShift) != 0;
+	public bool UsageMarked_NV => (_MarkUsageState >> MarkUsageState_UsageMarkedShift) != 0;
 
-	public bool UsageMarkedShared => (MarkUsageState_Volatile & MarkUsageState_SharedCount_Mask) != 0;
-	public bool UsageMarkedShared_NV => (_MarkUsageState & MarkUsageState_SharedCount_Mask) != 0;
+	public bool UsageMarkedShared => (MarkUsageState_Volatile >> MarkUsageState_SharedCountShift) != 0;
+	public bool UsageMarkedShared_NV => (_MarkUsageState >> MarkUsageState_SharedCountShift) != 0;
 
 	public bool UsageMarkedExclusive => (MarkUsageState_Volatile & MarkUsageState_ExclusiveFlag) != 0;
 	public bool UsageMarkedExclusive_NV => (_MarkUsageState & MarkUsageState_ExclusiveFlag) != 0;
@@ -975,14 +971,14 @@ public partial class KokoroContext : IDisposable {
 			$"successful call to `{nameof(MarkUsageShared)}()`";
 
 		// Assert that we won't decrement to a negative count (a volatile read isn't used to not disturb normal code)
-		Debug.Assert((_MarkUsageState & MarkUsageState_SharedCount_Mask) != 0
+		Debug.Assert((_MarkUsageState >> MarkUsageState_SharedCountShift) != 0
 			, AssertFailedMessage_UnMarkUsageShared_Unbalanced);
 
 		// Decrement the shared usage count (without checking for underflows)
 		uint newState = Interlocked.Add(ref _MarkUsageState, MarkUsageState_SharedDecrement);
 
 		// Assert that we didn't decrement to a negative count
-		Debug.Assert((newState & MarkUsageState_SharedCount_Mask) != MarkUsageState_SharedDecrement
+		Debug.Assert((unchecked((int)newState) >> MarkUsageState_SharedCountShift) != -1
 			, AssertFailedMessage_UnMarkUsageShared_Unbalanced);
 
 		if (newState == MarkUsageState_DisposedFlag) {
@@ -1009,7 +1005,7 @@ public partial class KokoroContext : IDisposable {
 		if ((lastMarkUsageState & MarkUsageState_ExclusiveFlag) != 0) {
 			throw new InvalidOperationException($"Already locked for exclusive use");
 		}
-		if ((lastMarkUsageState & MarkUsageState_SharedCount_Mask) != 0) {
+		if ((lastMarkUsageState >> MarkUsageState_SharedCountShift) != 0) {
 			throw new InvalidOperationException($"Couldn't lock for exclusive use, as it's already being used");
 		}
 		Trace.Fail("Unexpected exception path");
