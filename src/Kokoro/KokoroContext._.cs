@@ -892,17 +892,27 @@ public partial class KokoroContext : IDisposable {
 	private uint _MarkUsageState;
 
 	private const uint MarkUsageState_DisposedFlag  = 0b_001;
-	private const uint MarkUsageState_ExclusiveFlag = 0b_010;
-	private const  int MarkUsageState_SharedCountShift = 2;
-	private const  int MarkUsageState_UsageMarkedShift = 1;
+	private const uint MarkUsageState_DisposingFlag = 0b_010;
+	private const uint MarkUsageState_ExclusiveFlag = 0b_100;
+
+	private const  int MarkUsageState_SharedCountShift = 3;
+	private const  int MarkUsageState_UsageMarkedShift = 2;
+
+	private const  int MarkUsageState_DisposingOrUsageMarked_Shift = 1;
 
 	private const uint MarkUsageState_SharedIncrement = 1 << MarkUsageState_SharedCountShift;
 	private const uint MarkUsageState_SharedDecrement = unchecked((uint) -MarkUsageState_SharedIncrement);
 
-	private const uint MarkUsageState_DisposedWhileExclusive =
-		MarkUsageState_DisposedFlag | MarkUsageState_ExclusiveFlag;
+	private const uint MarkUsageState_SharedForbiddenMask = ~MarkUsageState_SharedDecrement;
 
-	private const uint MarkUsageState_SharedForbiddenMask = MarkUsageState_DisposedWhileExclusive;
+	private const uint MarkUsageState_Disposing =
+		MarkUsageState_DisposedFlag | MarkUsageState_DisposingFlag;
+
+	private const uint MarkUsageState_DisposedWhileExclusive =
+		MarkUsageState_Disposing | MarkUsageState_ExclusiveFlag;
+
+	private const uint MarkUsageState_DisposedWhileShared =
+		MarkUsageState_Disposing + MarkUsageState_SharedIncrement;
 
 	// --
 
@@ -921,8 +931,8 @@ public partial class KokoroContext : IDisposable {
 	public bool IsDisposed => (MarkUsageState_Volatile & MarkUsageState_DisposedFlag) != 0;
 	public bool IsDisposed_NV => (_MarkUsageState & MarkUsageState_DisposedFlag) != 0;
 
-	private bool IsDisposing => MarkUsageState_Volatile == MarkUsageState_DisposedFlag;
-	private bool IsDisposing_NV => _MarkUsageState == MarkUsageState_DisposedFlag;
+	private bool IsDisposing => MarkUsageState_Volatile == MarkUsageState_Disposing;
+	private bool IsDisposing_NV => _MarkUsageState == MarkUsageState_Disposing;
 
 	// --
 
@@ -954,7 +964,7 @@ public partial class KokoroContext : IDisposable {
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
 	private Exception MarkUsageShared__E_Fail_InvOp(uint lastMarkUsageState) {
-		if ((lastMarkUsageState & MarkUsageState_DisposedFlag) != 0) {
+		if ((lastMarkUsageState & MarkUsageState_Disposing) != 0) {
 			throw Ex_ODisposed();
 		}
 		if ((lastMarkUsageState & MarkUsageState_ExclusiveFlag) != 0) {
@@ -981,10 +991,17 @@ public partial class KokoroContext : IDisposable {
 		Debug.Assert((unchecked((int)newState) >> MarkUsageState_SharedCountShift) != -1
 			, AssertFailedMessage_UnMarkUsageShared_Unbalanced);
 
-		if (newState == MarkUsageState_DisposedFlag) {
+		if (newState == MarkUsageState_Disposing) {
+			const uint oldState = unchecked(MarkUsageState_Disposing - MarkUsageState_SharedDecrement);
+
 			// Last usage unmarked after a previous `Dispose(bool)` call
-			DisposingCore(); // Dispose here then.
+			DisposingCore(oldState); // Dispose here then.
+
+			return; // Skip code below
 		}
+
+		Debug.Assert((newState & MarkUsageState_SharedForbiddenMask) == 0
+			, $"Unexpected flags after `{nameof(UnMarkUsageShared)}()`: 0b_{Convert.ToString(newState, 2)}");
 	}
 
 
@@ -999,7 +1016,7 @@ public partial class KokoroContext : IDisposable {
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
 	private Exception MarkUsageExclusive__E_Fail_InvOp(uint lastMarkUsageState) {
-		if ((lastMarkUsageState & MarkUsageState_DisposedFlag) != 0) {
+		if ((lastMarkUsageState & MarkUsageState_Disposing) != 0) {
 			throw Ex_ODisposed();
 		}
 		if ((lastMarkUsageState & MarkUsageState_ExclusiveFlag) != 0) {
@@ -1029,7 +1046,7 @@ public partial class KokoroContext : IDisposable {
 			, AssertFailedMessage_UnMarkUsageExclusive_Unbalanced);
 
 		// Lazily unset the exclusive flag while preserving the dispose request
-		_MarkUsageState = MarkUsageState_DisposedFlag;
+		_MarkUsageState = MarkUsageState_Disposing;
 		// ^ A volatile write isn't needed here: we don't care if the store op
 		// gets reordered to happen either earlier (it won't get past the
 		// `Interlocked` barrier anyway) or later than expected. It will
@@ -1037,7 +1054,7 @@ public partial class KokoroContext : IDisposable {
 		// mark for further usage now, as we're ALREADY FLAGGED as DISPOSED.
 
 		// Last usage unmarked. Dispose here then.
-		DisposingCore();
+		DisposingCore(oldState);
 	}
 
 	#region Debugging Convenience & Utilities
@@ -1066,7 +1083,7 @@ public partial class KokoroContext : IDisposable {
 
 	#region `IDisposable` implementation
 
-	private void DisposingCore() {
+	private void DisposingCore(uint lastMarkUsageState) {
 		DebugAssert_UsageMarkedExclusivelyForDispose();
 
 		// Dispose managed state (managed objects).
@@ -1085,30 +1102,44 @@ public partial class KokoroContext : IDisposable {
 			// still not yet completely disposed (due to an exception).
 			// --
 		} catch (Exception ex) when (
-			// Don't proceed below if the cause of the exception is disposal of
-			// the lock file handle. Normally, repeated calls to `SafeFileHandle.Dispose()`
+			// Don't proceed below if disposal did succeed (as the code after
+			// may undo the disposing flag). Normally, repeated calls to `SafeFileHandle.Dispose()`
 			// shouldn't throw, but that is only when `SafeFileHandle.DangerousRelease()`
 			// isn't used to dispose the file handle beforehand.
 			!_LockHandle.IsClosed
 		) {
 			Debug.Assert(IsDisposing_NV,
-				$"Should still be marked exclusively for disposal at this point; " +
+				$"Should still be marked exclusively for disposal at this point.{Environment.NewLine}" +
 				$"Other exception:{Environment.NewLine}{ex}");
 
-			// Undo the dispose request flag, to allow redo of disposal
-			//Volatile.Write(ref _MarkUsageState, 0);
-			// TODO-FIXME ^ Shouldn't undo flag when already partially disposed, but should still allow redo of disposal
+			Debug.Assert((lastMarkUsageState & MarkUsageState_DisposedFlag) != 0,
+				$"State to revert into should be flagged as disposed (as we're" +
+				$" already partially disposed).{Environment.NewLine}" +
+				$"Other exception:{Environment.NewLine}{ex}");
+
+			// Revert into a state prior disposal that's expected to allow
+			// disposal to be restarted.
+			Volatile.Write(ref _MarkUsageState, lastMarkUsageState);
+			// ^ NOTE: If we're disposing, then no one else can change the usage
+			// state now, as we're ALREADY FLAGGED as DISPOSED.
 
 			throw;
 		}
 	}
 
 	protected virtual void Dispose(bool disposing) {
-		uint oldState = Interlocked.Or(ref _MarkUsageState, MarkUsageState_DisposedFlag);
+		uint oldState = Interlocked.Or(ref _MarkUsageState, MarkUsageState_Disposing);
 		if (disposing) {
-			if (oldState == 0) {
-				// No current usage. Directly handle disposal then.
-				DisposingCore();
+			if ((oldState >> MarkUsageState_DisposingOrUsageMarked_Shift) == 0) {
+				// No current usage or ongoing disposal op. Dispose here then.
+				DisposingCore(lastMarkUsageState: MarkUsageState_DisposedFlag);
+				// ^ NOTE: If disposal fails, we cannot just revert back to the
+				// old state. Instead, we must revert into a state where we're
+				// still FLAGGED as DISPOSED.
+				Debug.Assert(oldState is 0 or MarkUsageState_DisposedFlag,
+					$"Expected to simply revert into `{nameof(MarkUsageState_DisposedFlag)}`" +
+					$" without needing to bitwise-OR the old state:{Environment.NewLine}" +
+					$"    `{nameof(oldState)} == 0b_{Convert.ToString(oldState, 2)}`");
 			} else {
 				// Otherwise, the last usage will handle disposal.
 			}
