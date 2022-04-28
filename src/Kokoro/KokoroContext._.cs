@@ -934,6 +934,13 @@ public partial class KokoroContext : IDisposable {
 	private bool IsDisposing => MarkUsageState_Volatile == MarkUsageState_Disposing;
 	private bool IsDisposing_NV => _MarkUsageState == MarkUsageState_Disposing;
 
+	public bool IsDisposedFully {
+		get {
+			var h = _LockHandle;
+			return h == null || h.IsClosed;
+		}
+	}
+
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
