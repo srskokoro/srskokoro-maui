@@ -245,9 +245,10 @@ public partial class KokoroContext : IDisposable {
 			if (pool.IsDisposed) {
 				throw Ex_ODisposed();
 			}
-		} catch (NullReferenceException ex) when (_OperableDbPool == null) {
-			if (!_Version.Operable) throw Ex_VersionNotOperable_NS(ex);
-			throw;
+		} catch (NullReferenceException ex) when (
+			_OperableDbPool == null && !_Version.Operable
+		) {
+			throw Ex_VersionNotOperable_NS(ex);
 		}
 
 		db = new(_OperableDbConnectionString);
@@ -261,9 +262,17 @@ public partial class KokoroContext : IDisposable {
 		try {
 			_OperableDbPool!.TryPool(db);
 		} catch (NullReferenceException ex) when (_OperableDbPool == null) {
+			// Prevent leakage as `TryPool()` isn't able to dispose it for us
 			db.DisposeSafely(ex);
-			if (!_Version.Operable) throw Ex_VersionNotOperable_NS(ex);
-			throw;
+			// ^- `DisposeSafely()` might be unnecessary above as the code for
+			// `SqliteConnection.Dispose()` (from `Microsoft.Data.Sqlite`) seems
+			// to suggest that it would never throw. Still, we can afford safety
+			// at this point as we're in a `catch` block anyway.
+
+			if (!_Version.Operable)
+				throw Ex_VersionNotOperable_NS(ex);
+
+			throw; // It's some other exception
 		}
 	}
 
