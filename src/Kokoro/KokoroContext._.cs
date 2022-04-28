@@ -1036,9 +1036,9 @@ public partial class KokoroContext : IDisposable {
 		_MarkUsageState = MarkUsageState_DisposedFlag;
 		// ^ A volatile write isn't needed here: we don't care if the store op
 		// gets reordered to happen either earlier (it won't get past the
-		// `Interlocked` barrier anyway) or later than expected. It will be
-		// visible eventually to other threads anyway. Furthermore, no one can
-		// change the current state now, as we're ALREADY FLAGGED as DISPOSED.
+		// `Interlocked` barrier anyway) or later than expected. It will
+		// eventually be visible to other threads anyway. Moreover, no one can
+		// mark for further usage now, as we're ALREADY FLAGGED as DISPOSED.
 
 		// Last usage unmarked. Dispose here then.
 		DisposingCore();
