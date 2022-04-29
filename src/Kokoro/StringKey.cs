@@ -22,15 +22,18 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	public int CompareTo(StringKey? other) => Value.CompareTo(other?.Value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public override bool Equals(object? obj) => Equals(obj as StringKey);
+	public override bool Equals(object? obj) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return Equals(obj as StringKey) ? true : false;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public bool Equals(StringKey? other) {
 		if ((object)this != other) {
-			if (other is not null) {
-				return Value == other.Value;
+			if (other is null || Value != other.Value) {
+				return false;
 			}
-			return false;
 		}
 		return true;
 	}
@@ -38,10 +41,9 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool operator ==(StringKey? left, StringKey? right) {
 		if ((object?)left != right) {
-			if (left is not null && right is not null) {
-				return left.Value == right.Value;
+			if (left is null || right is null || left.Value != right.Value) {
+				return false;
 			}
-			return false;
 		}
 		return true;
 	}
@@ -49,10 +51,9 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool operator !=(StringKey? left, StringKey? right) {
 		if ((object?)left != right) {
-			if (left is not null && right is not null) {
-				return left.Value != right.Value;
+			if (left is null || right is null || left.Value != right.Value) {
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
