@@ -39,7 +39,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	public static bool operator ==(StringKey? left, StringKey? right) {
 		if ((object?)left != right) {
 			if (left is not null) {
-				return left.Value == right!.Value;
+				return left.Value == right?.Value;
 			}
 			return false;
 		}
