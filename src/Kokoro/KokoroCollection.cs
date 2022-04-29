@@ -48,10 +48,11 @@ public class KokoroCollection : IDisposable {
 			// Dispose managed state (managed objects).
 			//
 			// NOTE: If we're here, then we're sure that the constructor
-			// completed successfully. Fields that aren't supposed to be
-			// null are guaranteed to be non-null, unless we set fields to
-			// null only to be called again due to a previous failed
-			// dispose attempt.
+			// completed successfully. Fields that aren't supposed to be null
+			// are guaranteed to be non-null, unless we exposed `this` before
+			// construction could end (then called `Dispose()` on it after), or
+			// we set fields to null only to be called again due to a previous
+			// failed dispose attempt.
 			// --
 		}
 
