@@ -56,12 +56,12 @@ public class KokoroCollection : IDisposable {
 			// --
 		}
 
-		// Here we should free unmanaged resources (unmanaged objects),
-		// override finalizer, and set large fields to null.
+		// Here we should free unmanaged resources (unmanaged objects), override
+		// finalizer, and set large fields to null.
 		//
-		// NOTE: Make sure to check for null fields, for when the
-		// constructor fails to complete or even execute, and the finalizer
-		// calls us anyway. See also, https://stackoverflow.com/q/34447080
+		// NOTE: Make sure to check for null fields, for when the constructor
+		// fails to complete or even execute, and the finalizer calls us anyway.
+		// See also, https://stackoverflow.com/q/34447080
 		// --
 
 		var db = _Db;
