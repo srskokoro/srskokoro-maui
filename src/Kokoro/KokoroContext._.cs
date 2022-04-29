@@ -1113,7 +1113,7 @@ public partial class KokoroContext : IDisposable {
 			DisposeOperables(); // Allowed to throw
 
 			// Should be done last, as it'll release the lock
-			_LockHandle?.Dispose();
+			_LockHandle.Dispose();
 			// ^- Also, we shouldn't really release the lock while everything is
 			// still not yet completely disposed (due to an exception).
 			// --
