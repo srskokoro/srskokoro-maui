@@ -1007,17 +1007,16 @@ public partial class KokoroContext : IDisposable {
 		Debug.Assert((unchecked((int)newState) >> MarkUsageState_SharedCountShift) != -1
 			, AssertFailedMessage_UnMarkUsageShared_Unbalanced);
 
-		if (newState == MarkUsageState_Disposing) {
-			const uint oldState = unchecked(MarkUsageState_Disposing - MarkUsageState_SharedDecrement);
-
-			// Last usage unmarked after a previous `Dispose(bool)` call
-			DisposingCore(oldState); // Dispose here then.
+		if (newState != MarkUsageState_Disposing) {
+			Debug.Assert((newState & MarkUsageState_SharedForbiddenMask) == 0
+				, $"Unexpected flags after `{nameof(UnMarkUsageShared)}()`: 0b_{Convert.ToString(newState, 2)}");
 
 			return; // Skip code below
 		}
 
-		Debug.Assert((newState & MarkUsageState_SharedForbiddenMask) == 0
-			, $"Unexpected flags after `{nameof(UnMarkUsageShared)}()`: 0b_{Convert.ToString(newState, 2)}");
+		// Last usage unmarked after a previous `Dispose()` call.
+		const uint oldState = unchecked(MarkUsageState_Disposing - MarkUsageState_SharedDecrement);
+		DisposingCore(oldState); // Dispose here then.
 	}
 
 
