@@ -129,13 +129,16 @@ internal static class SqliteUtils {
 		int utf8Length = path.GetUTF8ByteCount();
 		int bufferMax = FileSchemeLength + ExtraSlashes + utf8Length * 3;
 
-		const int MaxStackalloc = 1024; // 1 KiB
+		// NOTE: Should be less than the smallest page size (typically 4 KiB) to
+		// avoid the extra asm code gen needed to fault in the stack memory.
+		// - https://github.com/dotnet/runtime/issues/24963#issuecomment-364191353
+		// - https://en.wikipedia.org/wiki/Page_(computer_memory)#Multiple_page_sizes
+		const int MaxStackalloc = 0x800; // 2 KiB
 
 		byte[]? rented = null;
-		// NOTE: See, https://github.com/dotnet/runtime/issues/7307
-		// - See also, https://github.com/dotnet/runtime/issues/24963
+		// NOTE: See also, https://github.com/dotnet/runtime/issues/7307
 		Span<byte> buffer = bufferMax <= MaxStackalloc && RuntimeHelpers.TryEnsureSufficientExecutionStack()
-			? stackalloc byte[bufferMax] : (rented = ArrayPool<byte>.Shared.Rent(bufferMax));
+			? stackalloc byte[MaxStackalloc] : (rented = ArrayPool<byte>.Shared.Rent(bufferMax));
 
 		// Get a reference to avoid unnecessary range checking
 		ref byte b = ref MemoryMarshal.GetReference(buffer);
