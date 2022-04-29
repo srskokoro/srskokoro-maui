@@ -47,7 +47,15 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool operator !=(StringKey? left, StringKey? right) => !(left == right);
+	public static bool operator !=(StringKey? left, StringKey? right) {
+		if ((object?)left != right) {
+			if (left is not null && right is not null) {
+				return left.Value != right.Value;
+			}
+			return true;
+		}
+		return false;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override int GetHashCode() => _HashCode;
