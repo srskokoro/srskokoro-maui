@@ -132,8 +132,10 @@ internal static class SqliteUtils {
 		const int MaxStackalloc = 1024; // 1 KiB
 
 		byte[]? rented = null;
-		Span<byte> buffer = bufferMax <= MaxStackalloc ? stackalloc byte[bufferMax]
-			: (rented = ArrayPool<byte>.Shared.Rent(bufferMax));
+		// NOTE: See, https://github.com/dotnet/runtime/issues/7307
+		// - See also, https://github.com/dotnet/runtime/issues/24963
+		Span<byte> buffer = bufferMax <= MaxStackalloc && RuntimeHelpers.TryEnsureSufficientExecutionStack()
+			? stackalloc byte[bufferMax] : (rented = ArrayPool<byte>.Shared.Rent(bufferMax));
 
 		// Get a reference to avoid unnecessary range checking
 		ref byte b = ref MemoryMarshal.GetReference(buffer);
