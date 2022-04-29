@@ -1007,6 +1007,7 @@ public partial class KokoroContext : IDisposable {
 		Debug.Assert((unchecked((int)newState) >> MarkUsageState_SharedCountShift) != -1
 			, AssertFailedMessage_UnMarkUsageShared_Unbalanced);
 
+		// If there wasn't a previous `Dispose()` call, then we're done.
 		if (newState != MarkUsageState_Disposing) {
 			Debug.Assert((newState & MarkUsageState_SharedForbiddenMask) == 0
 				, $"Unexpected flags after `{nameof(UnMarkUsageShared)}()`: 0b_{Convert.ToString(newState, 2)}");
@@ -1014,9 +1015,13 @@ public partial class KokoroContext : IDisposable {
 			return; // Skip code below
 		}
 
-		// Last usage unmarked after a previous `Dispose()` call.
+		// Last usage unmarked. Dispose here then.
 		const uint oldState = unchecked(MarkUsageState_Disposing - MarkUsageState_SharedDecrement);
-		DisposingCore(oldState); // Dispose here then.
+		DisposingCore(oldState);
+		// ^ NOTE: If the above throws, then the act of unmarking usage should
+		// be reverted automatically. That way, we'll appear atomic -- i.e., we
+		// either succeed completely or fail without any side-effect of actually
+		// unmarking usage.
 	}
 
 
@@ -1070,6 +1075,10 @@ public partial class KokoroContext : IDisposable {
 
 		// Last usage unmarked. Dispose here then.
 		DisposingCore(oldState);
+		// ^ NOTE: If the above throws, then the act of unmarking usage should
+		// be reverted automatically. That way, we'll appear atomic -- i.e., we
+		// either succeed completely or fail without any side-effect of actually
+		// unmarking usage.
 	}
 
 	#region Debugging Convenience & Utilities
@@ -1118,7 +1127,7 @@ public partial class KokoroContext : IDisposable {
 			// ^- Also, we shouldn't really release the lock while everything is
 			// still not yet completely disposed (due to an exception).
 			// --
-		} catch (Exception ex) when (
+		} catch (Exception ex) {
 			// Disposal is considered complete the moment the lock handle is
 			// released and closed. Therefore, don't proceed below if disposal
 			// did succeed (as the code after may undo the disposing flag).
@@ -1126,8 +1135,24 @@ public partial class KokoroContext : IDisposable {
 			// Normally, repeated calls to `SafeFileHandle.Dispose()` shouldn't
 			// throw, but that is only when `SafeFileHandle.DangerousRelease()`
 			// isn't used to dispose the file handle beforehand.
-			!_LockHandle.IsClosed
-		) {
+			//
+			if (_LockHandle.IsClosed) {
+				// On DEBUG builds, rather than simply returning, it's much
+				// better to fail and know that this is happening. Currently,
+				// we're not dealing with `SafeHandle` reference counters, but
+				// just in case we did in the future, here's a safeguard.
+				//
+				Debug.Fail($"Unexpected: `SafeFileHandle.Dispose()` threw! " +
+					$"Perhaps `SafeFileHandle.DangerousRelease()` was used to " +
+					$"dispose `{nameof(_LockHandle)}` beforehand.");
+
+				// ^- NOTE: Remove the above `Debug.Fail()` and simply return
+				// normally if using `SafeFileHandle.DangerousRelease()` is now
+				// intended.
+
+				return;
+			}
+
 			Debug.Assert(IsDisposing_NV,
 				$"Should still be marked exclusively for disposal at this point.{Environment.NewLine}" +
 				$"Other exception:{Environment.NewLine}{ex}");
