@@ -940,8 +940,8 @@ public partial class KokoroContext : IDisposable {
 	public bool IsDisposed => (MarkUsageState_Volatile & MarkUsageState_Disposing) != 0;
 	public bool IsDisposed_NV => (_MarkUsageState & MarkUsageState_Disposing) != 0;
 
-	private bool IsDisposing => MarkUsageState_Volatile == MarkUsageState_Disposing;
-	private bool IsDisposing_NV => _MarkUsageState == MarkUsageState_Disposing;
+	public bool IsDisposing => MarkUsageState_Volatile == MarkUsageState_Disposing;
+	public bool IsDisposing_NV => _MarkUsageState == MarkUsageState_Disposing;
 
 	public bool IsDisposedFully {
 		get {
