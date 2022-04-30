@@ -138,8 +138,11 @@ public static class ComprehensiveAssert {
 		int equalHash = equalInstance.GetHashCode();
 		int equalHash2 = equalInstance2.GetHashCode();
 
-		(testHash == equalHash).Should().BeTrue();
-		(testHash == equalHash2).Should().BeTrue();
+		{
+			const string reasons = "equal instances must give the same hash code";
+			(testHash == equalHash).Should().BeTrue(because: reasons);
+			(testHash == equalHash2).Should().BeTrue(because: reasons);
+		}
 
 		// Test: Consistency
 		{
