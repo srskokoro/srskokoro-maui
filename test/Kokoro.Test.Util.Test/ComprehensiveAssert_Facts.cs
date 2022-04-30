@@ -5,7 +5,45 @@ public class ComprehensiveAssert_Facts {
 
 	[TestFact]
 	[TLabel($"[m!] is implemented properly")]
-	public void T001_ProperlyImplements_Equals() {
+	public void T001_ProperlyImplements_IEquatable_Equals() {
+		/// NOTE: this method is mirrored by <see cref="T002_ProperlyImplements_Equals"/> below.
+		/// If you make any changes here, make sure to keep that version in sync as well.
+
+		Guid guid1 = Guid.NewGuid();
+		Guid guid2 = Guid.NewGuid();
+
+		Skip.If(guid1 == guid2, "Rare event: 2 values returned from `Guid.NewGuid()` are apparently equal!");
+
+		string str1 = guid1.ToString();
+		string str2 = guid1.ToString();
+		string str3 = guid1.ToString();
+		string str4 = guid2.ToString();
+
+		using (new AssertionCapture()) {
+			// First, make sure our assumptions are correct
+			str1.Should().NotBeSameAs(str2).And.NotBeSameAs(str3);
+			str2.Should().NotBeSameAs(str3);
+		}
+
+		// --
+
+		using var scope = new AssertionCapture();
+
+		new Action(() => {
+			ComprehensiveAssert.ProperlyImplements_IEquatable_Equals(str1, str2, str3, str4);
+		}).Should().NotThrow();
+
+		new Action(() => {
+			ComprehensiveAssert.ProperlyImplements_IEquatable_Equals(1, 2, 3, 1);
+		}).Should().Throw<XunitException>();
+	}
+
+	[TestFact]
+	[TLabel($"[m!] is implemented properly")]
+	public void T002_ProperlyImplements_Equals() {
+		/// NOTE: this method is mirrored by <see cref="T001_ProperlyImplements_IEquatable_Equals"/> above.
+		/// If you make any changes here, make sure to keep that version in sync as well.
+
 		Guid guid1 = Guid.NewGuid();
 		Guid guid2 = Guid.NewGuid();
 
@@ -37,7 +75,7 @@ public class ComprehensiveAssert_Facts {
 
 	[TestFact]
 	[TLabel($"[m!] is implemented properly")]
-	public void T002_ProperlyImplements_GetHashCode() {
+	public void T003_ProperlyImplements_GetHashCode() {
 		Guid guid1 = Guid.NewGuid();
 
 		object box1 = guid1;
