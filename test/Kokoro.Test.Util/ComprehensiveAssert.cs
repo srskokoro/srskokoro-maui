@@ -13,7 +13,7 @@ public static class ComprehensiveAssert {
 		throw new NotImplementedException("TODO");
 	}
 
-	public static void ProperlyImplements_Equals<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0) where T : notnull {
+	public static void ProperlyImplements_Equals(object testInstance, object equalInstance, object equalInstance2, object notEqualInstance, EqualityFlags flags = 0) {
 		using var scope = new AssertionCapture();
 
 		// NOTE: We're relying on the ability of `FluentAssertions` to
@@ -68,7 +68,7 @@ public static class ComprehensiveAssert {
 		scope.Strategy.ClearAndThrowIfAny();
 	}
 
-	public static void ProperlyImplements_GetHashCode<T>(T testInstance, T equalInstance, T equalInstance2) where T : notnull {
+	public static void ProperlyImplements_GetHashCode(object testInstance, object equalInstance, object equalInstance2) {
 		using var scope = new AssertionCapture();
 
 		// NOTE: We're relying on the ability of `FluentAssertions` to

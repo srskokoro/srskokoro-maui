@@ -31,7 +31,7 @@ public class ComprehensiveAssert_Facts {
 		}).Should().NotThrow();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_Equals<object>(1, 2, 3, 1);
+			ComprehensiveAssert.ProperlyImplements_Equals(1, 2, 3, 1);
 		}).Should().Throw<XunitException>();
 	}
 
@@ -59,7 +59,7 @@ public class ComprehensiveAssert_Facts {
 		}).Should().NotThrow();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_GetHashCode<object>(1, 2, 3);
+			ComprehensiveAssert.ProperlyImplements_GetHashCode(1, 2, 3);
 		}).Should().Throw<XunitException>();
 	}
 }
