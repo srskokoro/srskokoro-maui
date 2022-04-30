@@ -114,6 +114,10 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 
 		var ex = new XunitException(message);
 		ExceptionDispatchInfo.SetRemoteStackTrace(ex, stCur.ToString());
+		HandleFailure(ex);
+	}
+
+	public void HandleFailure(Exception ex) {
 		_Exceptions.Add(ex);
 	}
 

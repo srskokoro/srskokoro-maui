@@ -10,18 +10,32 @@ public sealed class AssertionCapture : IAssertionScope {
 	public readonly AssertionScope Scope;
 	public readonly AssertionCaptureStrategy Strategy;
 
-	public AssertionCapture() {
+	private AssertionCapture? _Parent;
+	public AssertionCapture? Parent => _Parent;
+
+	private static readonly AsyncLocal<AssertionCapture?> _Current = new();
+	public static AssertionCapture? Current => _Current.Value;
+
+	public AssertionCapture() : this(_Current.Value) { }
+
+	public AssertionCapture(AssertionCapture? parent) {
 		Scope = new AssertionScope(Strategy = new AssertionCaptureStrategy());
+		_Parent = parent;
+		_Current.Value = this;
 	}
 
-	public AssertionCapture(string? context) : this() {
+	public AssertionCapture(string? context) : this(context, _Current.Value) { }
+
+	public AssertionCapture(string? context, AssertionCapture? parent) : this(parent) {
 		if (!string.IsNullOrEmpty(context)) {
 			Scope.Context = new Lazy<string>(() => context);
 		}
 	}
 
-	public AssertionCapture(Lazy<string>? context)
-		: this() => Scope.Context = context;
+	public AssertionCapture(Lazy<string>? context) : this(context, _Current.Value) { }
+
+	public AssertionCapture(Lazy<string>? context, AssertionCapture? parent)
+		: this(parent) => Scope.Context = context;
 
 	// --
 
@@ -159,5 +173,26 @@ public sealed class AssertionCapture : IAssertionScope {
 	#endregion
 
 	[StackTraceHidden]
-	public void Dispose() => Scope.Dispose();
+	public void Dispose() {
+		Exception? ex = Strategy.ClearAndAggregateIfAny();
+
+		var parent = _Parent;
+		_Current.Value = parent;
+		_Parent = null;
+
+		try {
+			Scope.Dispose();
+		} catch (Exception ex2) {
+			ex = ex == null ? ex2
+				: new MinimalAggregateException(ex, ex2);
+		}
+
+		if (ex != null) {
+			if (parent == null) {
+				ExceptionDispatchInfo.Throw(ex);
+			} else {
+				parent.Strategy.HandleFailure(ex);
+			}
+		}
+	}
 }
