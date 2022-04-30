@@ -130,8 +130,8 @@ public static class ComprehensiveAssert {
 
 		// Test: Consistency
 		{
-			const string reasonsForTrue = "`Equals()` must be consistent (it already returned `true` beforehand)";
-			const string reasonsForFalse = "`Equals()` must be consistent (it already returned `false` beforehand)";
+			const string reasonsForTrue = "`Equals()` must be consistent";
+			const string reasonsForFalse = "`Equals()` must be consistent";
 
 			testInstance.Equals(equalInstance).Should().BeTrue(because: reasonsForTrue);
 			equalInstance.Equals(equalInstance2).Should().BeTrue(because: reasonsForTrue);
