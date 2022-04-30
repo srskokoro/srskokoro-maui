@@ -21,7 +21,7 @@ public static partial class TestUtil {
 
 	public static Span<char> InitAscii(this Random random, Span<char> chars) {
 		for (int i = 0; i < chars.Length; i++) {
-			chars[i] = (char)random.Next(32, 127);
+			chars[i] = random.NextAscii();
 		}
 		return chars;
 	}
@@ -32,6 +32,11 @@ public static partial class TestUtil {
 
 	public static string MakeAsciiStr(this Random random, int minLength, int maxLength) {
 		return random.MakeAsciiStr(random.Next(minLength, maxLength + 1));
+	}
+
+
+	public static char NextAscii(this Random random) {
+		return (char)random.Next(32, 127);
 	}
 
 	public static T NextItem<T>(this Random random, T[] array) {
