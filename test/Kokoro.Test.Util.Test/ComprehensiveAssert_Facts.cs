@@ -4,7 +4,7 @@ using Xunit.Sdk;
 public class ComprehensiveAssert_Facts {
 
 	[TestFact]
-	[TLabel($"[m] is implemented properly")]
+	[TLabel($"[m!] is implemented properly")]
 	public void T001_ProperlyImplements_Equals() {
 		Guid guid1 = Guid.NewGuid();
 		Guid guid2 = Guid.NewGuid();
@@ -36,7 +36,7 @@ public class ComprehensiveAssert_Facts {
 	}
 
 	[TestFact]
-	[TLabel($"[m] is implemented properly")]
+	[TLabel($"[m!] is implemented properly")]
 	public void T002_ProperlyImplements_GetHashCode() {
 		Guid guid1 = Guid.NewGuid();
 
