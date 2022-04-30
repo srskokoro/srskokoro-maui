@@ -54,7 +54,7 @@ public static class ComprehensiveAssert {
 		}
 
 		// Test: `null`
-		if (!flags.HasFlag(EqualityFlags.CanBeEqualsNull)) {
+		if ((flags & EqualityFlags.CanBeEqualsNull) == 0) {
 			const string reasons = "the object is nonnull and it supposedly shouldn't equal null";
 			testInstance.Equals(null).Should().BeFalse(because: reasons);
 			equalInstance.Equals(null).Should().BeFalse(because: reasons);
@@ -112,7 +112,7 @@ public static class ComprehensiveAssert {
 		}
 
 		// Test: `null`
-		if (!flags.HasFlag(EqualityFlags.CanBeEqualsNull)) {
+		if ((flags & EqualityFlags.CanBeEqualsNull) == 0) {
 			const string reasons = "the object is nonnull and it supposedly shouldn't equal null";
 			testInstance.Equals(null).Should().BeFalse(because: reasons);
 			equalInstance.Equals(null).Should().BeFalse(because: reasons);
