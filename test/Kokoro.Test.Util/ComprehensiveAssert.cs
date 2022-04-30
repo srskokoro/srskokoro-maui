@@ -8,7 +8,7 @@ public static class ComprehensiveAssert {
 		CanBeEqualsNull,
 	}
 
-	public static void ProperlyImplements_IEquatable_T<T>(T testInstance, T equalInstance, T lesserInstance, T greaterInstance, EqualityFlags flags = 0) where T : IEquatable<T> {
+	public static void ProperlyImplements_IEquatable_T<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0) where T : IEquatable<T> {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
