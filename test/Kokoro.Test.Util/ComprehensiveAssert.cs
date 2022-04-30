@@ -8,6 +8,31 @@ public static class ComprehensiveAssert {
 		CanBeEqualsNull,
 	}
 
+	public static void ProperlyImplements_IEquatable<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0, bool notScopedInParent = false) where T : IEquatable<T> {
+		using var scope = new AssertionCapture();
+
+		ProperlyImplements_IEquatable_Equals(testInstance, equalInstance, equalInstance2, notEqualInstance, flags);
+		ProperlyImplements_Equals(testInstance, equalInstance, equalInstance2, notEqualInstance, flags);
+		ProperlyImplements_GetHashCode(testInstance, equalInstance, equalInstance2);
+
+		if (notScopedInParent) {
+			// Force end current scope
+			scope.Strategy.ClearAndThrowIfAny();
+		}
+	}
+
+	public static void ProperlyImplements_Object_Equality(object testInstance, object equalInstance, object equalInstance2, object notEqualInstance, EqualityFlags flags = 0, bool notScopedInParent = false) {
+		using var scope = new AssertionCapture();
+
+		ProperlyImplements_Equals(testInstance, equalInstance, equalInstance2, notEqualInstance, flags);
+		ProperlyImplements_GetHashCode(testInstance, equalInstance, equalInstance2);
+
+		if (notScopedInParent) {
+			// Force end current scope
+			scope.Strategy.ClearAndThrowIfAny();
+		}
+	}
+
 	public static void ProperlyImplements_IEquatable_Equals<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0, bool notScopedInParent = false) where T : IEquatable<T> {
 		/// NOTE: this method is mirrored by <see cref="ProperlyImplements_Equals"/> below.
 		/// If you make any changes here, make sure to keep that version in sync as well.
