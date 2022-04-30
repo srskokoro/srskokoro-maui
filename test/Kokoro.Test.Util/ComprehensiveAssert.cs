@@ -138,8 +138,8 @@ public static class ComprehensiveAssert {
 		int equalHash = equalInstance.GetHashCode();
 		int equalHash2 = equalInstance2.GetHashCode();
 
-		(testHash == equalHash.GetHashCode()).Should().BeTrue();
-		(testHash == equalHash2.GetHashCode()).Should().BeTrue();
+		(testHash == equalHash).Should().BeTrue();
+		(testHash == equalHash2).Should().BeTrue();
 
 		// Test: Consistency
 		{
