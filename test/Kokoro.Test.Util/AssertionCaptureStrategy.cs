@@ -128,6 +128,12 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 	}
 
 	public void ThrowIfAny(IDictionary<string, object>? context = null) {
+		if (AggregateIfAny(context) is Exception ex) {
+			ExceptionDispatchInfo.Throw(ex);
+		}
+	}
+
+	public Exception? AggregateIfAny(IDictionary<string, object>? context = null) {
 		var exceptions = _Exceptions;
 		if (exceptions.Count > 0) {
 
@@ -148,16 +154,23 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 				mainMessage = sb.ToString();
 			}
 
-			Exception ex = exceptions.Count == 1 ? exceptions[0]
+			return exceptions.Count == 1 ? exceptions[0]
 				: new MinimalAggregateException(mainMessage, exceptions);
-
-			ExceptionDispatchInfo.Throw(ex);
 		}
+		return null;
 	}
 
 	public void ClearAndThrowIfAny(IDictionary<string, object>? context = null) {
 		try {
 			ThrowIfAny(context);
+		} finally {
+			ClearFailures();
+		}
+	}
+
+	public Exception? ClearAndAggregateIfAny(IDictionary<string, object>? context = null) {
+		try {
+			return AggregateIfAny(context);
 		} finally {
 			ClearFailures();
 		}
