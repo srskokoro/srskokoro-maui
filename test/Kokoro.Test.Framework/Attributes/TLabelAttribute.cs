@@ -41,7 +41,7 @@ public class TLabelAttribute : LabelAttribute {
 			// - '[x]' same as '[.]'
 			// - '[?]' same as '[.]'
 			//
-			// - '[_!]' means inline in backticks -- replace the '_' with the
+			// - '[_!]' means inline in backticks -- replace the '_' with a
 			// character from any of the above formats.
 
 			if (format == null) {
