@@ -8,7 +8,7 @@ public static class ComprehensiveAssert {
 		CanBeEqualsNull,
 	}
 
-	public static void ProperlyImplements_IEquatable_T<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0) where T : IEquatable<T> {
+	public static void ProperlyImplements_IEquatable_Equals<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0) where T : IEquatable<T> {
 		/// NOTE: this method is mirrored by <see cref="ProperlyImplements_Equals"/> below.
 		/// If you make any changes here, make sure to keep that version in sync as well.
 
@@ -67,7 +67,7 @@ public static class ComprehensiveAssert {
 	}
 
 	public static void ProperlyImplements_Equals(object testInstance, object equalInstance, object equalInstance2, object notEqualInstance, EqualityFlags flags = 0) {
-		/// NOTE: this method is mirrored by <see cref="ProperlyImplements_IEquatable_T"/> above.
+		/// NOTE: this method is mirrored by <see cref="ProperlyImplements_IEquatable_Equals"/> above.
 		/// If you make any changes here, make sure to keep that version in sync as well.
 
 		using var scope = new AssertionCapture();
