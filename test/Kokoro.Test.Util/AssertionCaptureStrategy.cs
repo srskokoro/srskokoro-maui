@@ -119,7 +119,7 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 
 	public IEnumerable<string> DiscardFailures() {
 		var discards = _Messages.ToArray();
-		_Exceptions.Clear();
+		ClearFailures();
 		return discards;
 	}
 
