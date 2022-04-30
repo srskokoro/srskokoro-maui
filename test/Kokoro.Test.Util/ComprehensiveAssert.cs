@@ -8,7 +8,7 @@ public static class ComprehensiveAssert {
 		CanBeEqualsNull,
 	}
 
-	public static void ProperlyImplements_IEquatable_Equals<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0) where T : IEquatable<T> {
+	public static void ProperlyImplements_IEquatable_Equals<T>(T testInstance, T equalInstance, T equalInstance2, T notEqualInstance, EqualityFlags flags = 0, bool notScopedInParent = false) where T : IEquatable<T> {
 		/// NOTE: this method is mirrored by <see cref="ProperlyImplements_Equals"/> below.
 		/// If you make any changes here, make sure to keep that version in sync as well.
 
@@ -62,11 +62,13 @@ public static class ComprehensiveAssert {
 			notEqualInstance.Equals(null).Should().BeFalse(because: reasons);
 		}
 
-		// Force end current scope
-		scope.Strategy.ClearAndThrowIfAny();
+		if (notScopedInParent) {
+			// Force end current scope
+			scope.Strategy.ClearAndThrowIfAny();
+		}
 	}
 
-	public static void ProperlyImplements_Equals(object testInstance, object equalInstance, object equalInstance2, object notEqualInstance, EqualityFlags flags = 0) {
+	public static void ProperlyImplements_Equals(object testInstance, object equalInstance, object equalInstance2, object notEqualInstance, EqualityFlags flags = 0, bool notScopedInParent = false) {
 		/// NOTE: this method is mirrored by <see cref="ProperlyImplements_IEquatable_Equals"/> above.
 		/// If you make any changes here, make sure to keep that version in sync as well.
 
@@ -120,11 +122,13 @@ public static class ComprehensiveAssert {
 			notEqualInstance.Equals(null).Should().BeFalse(because: reasons);
 		}
 
-		// Force end current scope
-		scope.Strategy.ClearAndThrowIfAny();
+		if (notScopedInParent) {
+			// Force end current scope
+			scope.Strategy.ClearAndThrowIfAny();
+		}
 	}
 
-	public static void ProperlyImplements_GetHashCode(object testInstance, object equalInstance, object equalInstance2) {
+	public static void ProperlyImplements_GetHashCode(object testInstance, object equalInstance, object equalInstance2, bool notScopedInParent = false) {
 		using var scope = new AssertionCapture();
 
 		// NOTE: We're relying on the ability of `FluentAssertions` to
@@ -145,16 +149,18 @@ public static class ComprehensiveAssert {
 			(equalHash2 == equalInstance2.GetHashCode()).Should().BeTrue(because: reasons);
 		}
 
-		// Force end current scope
-		scope.Strategy.ClearAndThrowIfAny();
+		if (notScopedInParent) {
+			// Force end current scope
+			scope.Strategy.ClearAndThrowIfAny();
+		}
 	}
 
-	public static void ProperlyImplements_IComparable<T>(T testInstance, T equalInstance, T lesserInstance, T greaterInstance) where T : IComparable {
+	public static void ProperlyImplements_IComparable<T>(T testInstance, T equalInstance, T lesserInstance, T greaterInstance, bool notScopedInParent = false) where T : IComparable {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
 
-	public static void ProperlyImplements_IComparable_T<T>(T testInstance, T equalInstance, T lesserInstance, T greaterInstance) where T : IComparable<T> {
+	public static void ProperlyImplements_IComparable_T<T>(T testInstance, T equalInstance, T lesserInstance, T greaterInstance, bool notScopedInParent = false) where T : IComparable<T> {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}

@@ -30,11 +30,11 @@ public class ComprehensiveAssert_Facts {
 		using var scope = new AssertionCapture();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_IEquatable_Equals(str1, str2, str3, str4);
+			ComprehensiveAssert.ProperlyImplements_IEquatable_Equals(str1, str2, str3, str4, notScopedInParent: true);
 		}).Should().NotThrow();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_IEquatable_Equals(1, 2, 3, 1);
+			ComprehensiveAssert.ProperlyImplements_IEquatable_Equals(1, 2, 3, 1, notScopedInParent: true);
 		}).Should().Throw<XunitException>();
 	}
 
@@ -65,11 +65,11 @@ public class ComprehensiveAssert_Facts {
 		using var scope = new AssertionCapture();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_Equals(box1, box2, box3, box4);
+			ComprehensiveAssert.ProperlyImplements_Equals(box1, box2, box3, box4, notScopedInParent: true);
 		}).Should().NotThrow();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_Equals(1, 2, 3, 1);
+			ComprehensiveAssert.ProperlyImplements_Equals(1, 2, 3, 1, notScopedInParent: true);
 		}).Should().Throw<XunitException>();
 	}
 
@@ -93,11 +93,11 @@ public class ComprehensiveAssert_Facts {
 		using var scope = new AssertionCapture();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_GetHashCode(box1, box2, box3);
+			ComprehensiveAssert.ProperlyImplements_GetHashCode(box1, box2, box3, notScopedInParent: true);
 		}).Should().NotThrow();
 
 		new Action(() => {
-			ComprehensiveAssert.ProperlyImplements_GetHashCode(1, 2, 3);
+			ComprehensiveAssert.ProperlyImplements_GetHashCode(1, 2, 3, notScopedInParent: true);
 		}).Should().Throw<XunitException>();
 	}
 }
