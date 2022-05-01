@@ -18,10 +18,10 @@ internal class KokoroSqliteDb : SqliteConnection {
 
 		base.Open();
 
+		this.Exec("PRAGMA temp_store=FILE");
 #if !DEBUG
 		this.Exec("PRAGMA ignore_check_constraints=1");
 #endif
-		this.Exec("PRAGMA temp_store=FILE");
 	}
 
 	// --
