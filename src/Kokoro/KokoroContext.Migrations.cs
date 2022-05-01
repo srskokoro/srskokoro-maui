@@ -242,17 +242,17 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// Each schema is a snapshot of the schema types it used to build
-		// itself. This table lists the schema types that was used.
-		db.Exec("CREATE TABLE SchemaToSchemaTypes(" +
+		// Each schema is a snapshot of the schema classes it used to build
+		// itself. This table lists the schema classes that was used.
+		db.Exec("CREATE TABLE SchemaToSchemaClasses(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"type INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
+			"type INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
 
-			// The cryptographic checksum of the schema type when the schema was
-			// created. Null if not available when the schema was created, even
-			// though it might now be available at the present moment --
+			// The cryptographic checksum of the schema class when the schema
+			// was created. Null if not available when the schema was created,
+			// even though it might now be available at the present moment --
 			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
@@ -276,25 +276,25 @@ partial class KokoroContext {
 		") WITHOUT ROWID");
 
 		// -
-		db.Exec("CREATE TABLE SchemaTypes(" +
+		db.Exec("CREATE TABLE SchemaClasses(" +
 
 			RowIdPk + "," +
 
 			UidUkCk + "," +
 
-			// The cryptographic checksum of the schema type's primary data,
-			// which includes other tables that comprises the schema type, but
+			// The cryptographic checksum of the schema class's primary data,
+			// which includes other tables that comprises the schema class, but
 			// excludes the `rowid`, `src` and `name`.
 			//
-			// Null if the schema type is runtime-bound. That is, the runtime is
-			// the one defining the schema type and the schema type definition
+			// Null if the schema class is runtime-bound, i.e., the runtime is
+			// the one defining the schema class and the schema class definition
 			// is never persisted to disk or DB.
 			"csum BLOB," +
 
-			// The schema type ordinal.
+			// The schema class ordinal.
 			Ordinal_Int32Nn + "," +
 
-			// TODO A trigger for when this column is nulled out: consider deleting the schema type as well
+			// TODO A trigger for when this column is nulled out: consider deleting the schema class as well
 			"src INTEGER REFERENCES Items" + OnRowIdFkNullDel + "," +
 
 			// Quirks:
@@ -305,9 +305,9 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE SchemaTypeToFields(" +
+		db.Exec("CREATE TABLE SchemaClassToFields(" +
 
-			"type INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
+			"type INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
@@ -324,13 +324,13 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		db.Exec("CREATE TABLE SchemaTypeToIncludes(" +
+		db.Exec("CREATE TABLE SchemaClassToIncludes(" +
 
-			// The including schema type.
-			"type INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFkCascDel + "," +
+			// The including schema class.
+			"type INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
 
-			// The included schema type.
-			"incl INTEGER NOT NULL REFERENCES SchemaTypes" + OnRowIdFk + "," +
+			// The included schema class.
+			"incl INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(type, incl)" +
 

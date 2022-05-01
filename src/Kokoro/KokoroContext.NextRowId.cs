@@ -19,7 +19,7 @@ partial class KokoroContext {
 			UNION ALL
 			SELECT ifnull(max(rowid), 0) FROM Schemas
 			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM SchemaTypes
+			SELECT ifnull(max(rowid), 0) FROM SchemaClasses
 			UNION ALL
 			SELECT ifnull(max(rowid), 0) FROM FieldNames
 			""");
@@ -27,18 +27,18 @@ partial class KokoroContext {
 		using var reader = cmd.ExecuteReader();
 		reader.Read(); _NextItemRowId = reader.GetInt64(0);
 		reader.Read(); _NextSchemaRowId = reader.GetInt64(0);
-		reader.Read(); _NextSchemaTypeRowId = reader.GetInt64(0);
+		reader.Read(); _NextSchemaClassRowId = reader.GetInt64(0);
 		reader.Read(); _NextFieldNameRowId = reader.GetInt64(0);
 	}
 
 	private long _NextItemRowId;
 	private long _NextSchemaRowId;
-	private long _NextSchemaTypeRowId;
+	private long _NextSchemaClassRowId;
 	private long _NextFieldNameRowId;
 
 	internal long NextItemRowId() => NextRowId(ref _NextItemRowId);
 	internal long NextSchemaRowId() => NextRowId(ref _NextSchemaRowId);
-	internal long NextSchemaTypeRowId() => NextRowId(ref _NextSchemaTypeRowId);
+	internal long NextSchemaClassRowId() => NextRowId(ref _NextSchemaClassRowId);
 	internal long NextFieldNameRowId() => NextRowId(ref _NextFieldNameRowId);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
