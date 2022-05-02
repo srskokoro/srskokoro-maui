@@ -7,7 +7,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 	public bool IsDisposed => _DisposeState.IsDisposed();
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public override bool TryPool(T poolable) {
 		int maxSize = MaxSize;
 		int oldSize = Volatile.Read(ref _Size);
