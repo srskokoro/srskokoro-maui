@@ -331,7 +331,7 @@ public partial class KokoroContext : IDisposable {
 		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
 		// TODO Assert that all DB connections have already been disposed
 
-		_OperableDbPool!.Dispose(); // May throw
+		_OperableDbPool!.Dispose(); // Allowed to throw
 
 		_OperableDbConnectionString = "";
 		_OperableDbPool = null; // Finally, mark as unloaded
