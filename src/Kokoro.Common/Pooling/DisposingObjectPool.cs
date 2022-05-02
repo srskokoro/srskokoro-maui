@@ -29,9 +29,9 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 						goto Reject;
 					}
 				} while (Interlocked.CompareExchange(ref _Size, oldSize + 1, oldSize) != oldSize);
-			} catch (ThreadInterruptedException ex) {
+			} catch (ThreadInterruptedException) {
 				// Prevent leakage of resource that might never get disposed
-				poolable.DisposeSafely(ex);
+				poolable.DisposeSafely();
 				throw;
 			}
 		}
@@ -45,9 +45,9 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			// returning an object shouldn't cause an allocation, since it's
 			// simply returning an already allocated resource back to the pool.
 			goto Reject;
-		} catch (ThreadInterruptedException ex) {
+		} catch (ThreadInterruptedException) {
 			// Prevent leakage of resource that might never get disposed
-			poolable.DisposeSafely(ex);
+			poolable.DisposeSafely();
 			throw;
 		}
 

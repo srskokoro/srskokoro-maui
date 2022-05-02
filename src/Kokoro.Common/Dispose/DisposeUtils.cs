@@ -30,6 +30,9 @@ internal static class DisposeUtils {
 		}
 	}
 
+	[Obsolete("Purpose and usage often misleading: it's not clear whether it " +
+		"would throw or swallow the exception on disposal failure, as the " +
+		"behavior depends on whether or not we're on a DEBUG build.")]
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void DisposeSafely<T>(this T disposable, Exception priorException) where T : IDisposable {
 #if !DEBUG

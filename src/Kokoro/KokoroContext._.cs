@@ -177,7 +177,7 @@ public partial class KokoroContext : IDisposable {
 
 		} catch (Exception ex) {
 #if DEBUG
-			lockHandle?.DisposeSafely(ex);
+			lockHandle?.DisposeSafely();
 			// ^- `DisposeSafely()` is unnecessary above, unless we're manually
 			// incrementing/decrementing the `SafeFileHandle` reference counter
 			// and not doing so properly.
@@ -263,7 +263,7 @@ public partial class KokoroContext : IDisposable {
 			_OperableDbPool!.TryPool(db);
 		} catch (NullReferenceException ex) when (_OperableDbPool == null) {
 			// Prevent leakage as `TryPool()` isn't able to dispose it for us
-			db.DisposeSafely(ex);
+			db.DisposeSafely();
 			// ^- `DisposeSafely()` might be unnecessary above as the code for
 			// `SqliteConnection.Dispose()` (from `Microsoft.Data.Sqlite`) seems
 			// to suggest that it would never throw. Still, we can afford safety
