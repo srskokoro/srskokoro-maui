@@ -134,6 +134,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 		// Successfully acquired an "exclusive" access to perform disposal.
 		try {
+			bool interrupted = false;
 			ICollection<Exception>? exc = null;
 
 			// All objects that are in the pool belongs to the pool. So we must
@@ -151,6 +152,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 					// then let the GC handle finalization of the disposable,
 					// given that we had freed it from the pool already.
 					(exc ??= DisposeUtils.CreateExceptionCollection()).Add(ex);
+					if (ex is ThreadInterruptedException) interrupted = true;
 				}
 			}
 
@@ -159,7 +161,13 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 			// Re-throw any pending exception, especially
 			// `ThreadInterruptedException`
-			exc?.ReThrow();
+			if (exc != null) {
+				Exception? ex = exc.ConsolidateException();
+				if (interrupted && ex is not ThreadInterruptedException) {
+					ex = new ThreadInterruptedException(null, ex);
+				}
+				ex?.ReThrow();
+			}
 
 		} catch {
 			// Failed to dispose everything. Let the next caller of this method

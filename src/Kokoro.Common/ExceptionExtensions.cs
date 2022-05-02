@@ -34,6 +34,19 @@ internal static class ExceptionExtensions {
 	}
 
 	/// <summary>
+	/// Combines the exceptions into a single <see cref="AggregateException"/>.
+	/// If there's only one exception, that exception is returned instead. If
+	/// there's no exception, null is returned.
+	/// </summary>
+	public static Exception? ConsolidateException(this IEnumerable<Exception> exceptions) {
+		if (!exceptions.TryGetNonEnumeratedCount(out int count)) {
+			count = exceptions.Count();
+		}
+		return count == 0 ? null : (count == 1 ? exceptions.Single()
+			: new AggregateException(exceptions));
+	}
+
+	/// <summary>
 	/// Combines the exceptions into a single <see cref="AggregateException"/>,
 	/// then throws. If there's only one exception, that exception is throw
 	/// instead, preserving the original stack trace. If there's no exception,
