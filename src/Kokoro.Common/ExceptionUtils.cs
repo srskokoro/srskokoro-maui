@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Common;
 
-internal static class ExceptionExtensions {
+internal static class ExceptionUtils {
 
 	/// <summary>
 	/// Throws the exception with the original stack trace preserved.
@@ -98,4 +98,17 @@ internal static class ExceptionExtensions {
 
 	public static AggregateException FlattenIfNeeded(this AggregateException aggregateException)
 		=> aggregateException.ShouldFlatten() ? aggregateException.Flatten() : aggregateException;
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ICollection<Exception> Collect() => new LinkedList<Exception>();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void Collect(ref ICollection<Exception>? exceptions) => exceptions ??= Collect();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void Collect(ref ICollection<Exception>? priorExceptions, Exception currentException) {
+		(priorExceptions ??= Collect()).Add(currentException);
+	}
 }

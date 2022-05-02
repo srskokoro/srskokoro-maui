@@ -56,12 +56,9 @@ internal static class DisposeUtils {
 			disposable.Dispose();
 		} catch (Exception ex) {
 			// TODO Use an even more lighter alternative: a simpler linked-list node.
-			(priorExceptions ??= CreateExceptionCollection()).Add(ex);
+			ExceptionUtils.Collect(ref priorExceptions, ex);
 		}
 	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static LinkedList<Exception> CreateExceptionCollection() => new();
 }
 
 public class DisposeAggregateException : AggregateException {

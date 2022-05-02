@@ -150,8 +150,10 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 				// `Dispose()` did throw, we collect the exception, then let the
 				// GC handle finalization of the disposable, given that we had
 				// freed it from the pool already.
-				(exc ??= DisposeUtils.CreateExceptionCollection()).Add(ex);
-				if (ex is ThreadInterruptedException) interrupted = true;
+				ExceptionUtils.Collect(ref exc, ex);
+				if (ex is ThreadInterruptedException) {
+					interrupted = true;
+				}
 			}
 		}
 
