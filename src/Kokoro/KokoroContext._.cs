@@ -331,10 +331,17 @@ public partial class KokoroContext : IDisposable {
 		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
 		// TODO Assert that all DB connections have already been disposed
 
-		_OperableDbPool!.Dispose(); // Allowed to throw
+		try {
+			_OperableDbPool!.Dispose(); // Allowed to throw
 
-		_OperableDbConnectionString = "";
-		_OperableDbPool = null; // Finally, mark as unloaded
+			// NOTE: If in the future, more code is added that throws, then the
+			// exceptions should be aggregated, the fields involved nulled or
+			// cleared (so that the GC may finalize them instead), and the
+			// aggregated exception thrown in the end.
+		} finally {
+			_OperableDbConnectionString = "";
+			_OperableDbPool = null; // Finally, mark as unloaded
+		}
 	}
 
 	internal void DisposeOperables() {
