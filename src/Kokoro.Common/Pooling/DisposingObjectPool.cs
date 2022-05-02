@@ -137,26 +137,25 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 		ICollection<Exception>? exc = null;
 
 		// All objects that are in the pool belongs to the pool. So we must
-		// first take them out of the pool before we can do whatever we
-		// want with them (i.e., before we can dispose them).
+		// first take them out of the pool before we can do whatever we want
+		// with them (i.e., before we can dispose them).
 		for (; ; ) {
 			try {
 				if (!base.TryTake(out var poolable)) break;
 				// This poolable now only belongs to us, thus we can proceed.
 				poolable.DisposeSafely(ref exc);
 			} catch (Exception ex) {
-				// This block is meant to catch `ThreadInterruptedException`
-				// and `Dispose()` shouldn't normally throw. However, just
-				// in case `Dispose()` did throw, we collect the exception,
-				// then let the GC handle finalization of the disposable,
-				// given that we had freed it from the pool already.
+				// This block is meant to catch `ThreadInterruptedException` and
+				// `Dispose()` shouldn't normally throw. However, just in case
+				// `Dispose()` did throw, we collect the exception, then let the
+				// GC handle finalization of the disposable, given that we had
+				// freed it from the pool already.
 				(exc ??= DisposeUtils.CreateExceptionCollection()).Add(ex);
 				if (ex is ThreadInterruptedException) interrupted = true;
 			}
 		}
 
-		// Re-throw any pending exception, especially
-		// `ThreadInterruptedException`
+		// Re-throw any pending exception, especially `ThreadInterruptedException`
 		if (exc != null) {
 			Exception? ex = exc.ConsolidateException();
 			if (interrupted && ex is not ThreadInterruptedException) {
