@@ -54,6 +54,16 @@ public class KokoroCollection : IDisposable {
 			// we set fields to null only to be called again due to a previous
 			// failed dispose attempt.
 			// --
+
+			var db = _Db;
+			if (db != null) {
+				db.CurrentOwner = null;
+				_Db = null;
+				// ^ Prevents recycling when already recycled before. Also, we
+				// did that first in case the recycle op succeeds and yet it
+				// throws before it can return to us.
+				context.RecycleOperableDb(db);
+			}
 		}
 
 		// Here we should free unmanaged resources (unmanaged objects), override
@@ -63,16 +73,6 @@ public class KokoroCollection : IDisposable {
 		// fails to complete or even execute, and the finalizer calls us anyway.
 		// See also, https://stackoverflow.com/q/34447080
 		// --
-
-		var db = _Db;
-		if (db != null) {
-			db.CurrentOwner = null;
-			_Db = null;
-			// ^ Prevents recycling when already recycled before. Also, we did
-			// that first in case the recycle op succeeds and yet it throws
-			// before it can return to us.
-			context.RecycleOperableDb(db);
-		}
 
 		UnMarkUsage(context);
 		_Context = null; // Marks disposal as successful
