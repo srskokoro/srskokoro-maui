@@ -8,6 +8,8 @@
 
     <Using Include="System.Text" />
 
+    <Using Include="CommunityToolkit.HighPerformance" />
+
     <Using Include="Kokoro.Common" />
     <Using Include="Kokoro.Common.Dispose" />
     <Using Include="Kokoro.Common.Sqlite.Extensions" />
