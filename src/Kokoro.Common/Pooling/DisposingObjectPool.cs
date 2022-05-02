@@ -131,8 +131,8 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			// Someone is already disposing or has already disposed us.
 			return;
 		}
-
 		// Successfully acquired an "exclusive" access to perform disposal.
+
 		bool interrupted = false;
 		ICollection<Exception>? exc = null;
 
