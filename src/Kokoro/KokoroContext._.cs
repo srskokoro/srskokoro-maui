@@ -1188,6 +1188,11 @@ public partial class KokoroContext : IDisposable {
 			} else {
 				// Otherwise, the last usage will handle disposal.
 			}
+		} else {
+			// Either there're no more references to this object (i.e., we're
+			// being disposed by the finalizer), or we were manually called with
+			// `disposing == false` to free only unmanaged resources, which we
+			// don't have (for now).
 		}
 	}
 
