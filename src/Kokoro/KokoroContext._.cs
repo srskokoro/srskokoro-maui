@@ -748,6 +748,8 @@ public partial class KokoroContext : IDisposable {
 					// Unless we can rollback successfully, we're currently in
 					// an unusable state. So let that state materialize then.
 					Dispose();
+					// ^ NOTE: The above can't throw, as we're currently marked
+					// for exclusive usage.
 
 					throw new DisposeAggregateException(ex, ex2);
 				}
@@ -755,6 +757,9 @@ public partial class KokoroContext : IDisposable {
 			}
 		} finally {
 			UnMarkUsageExclusive();
+			// ^ NOTE: If the above throws, usage unmarking will be reverted.
+			// - Though, that can only happen once marked for disposal, so it
+			// may not be a problem after all.
 		}
 	}
 
@@ -876,6 +881,8 @@ public partial class KokoroContext : IDisposable {
 					// Unless we can rollback successfully, we're currently in
 					// an unusable state. So let that state materialize then.
 					Dispose();
+					// ^ NOTE: The above can't throw, as we're currently marked
+					// for exclusive usage.
 
 					throw new DisposeAggregateException(ex, ex2);
 				}
@@ -883,6 +890,9 @@ public partial class KokoroContext : IDisposable {
 			}
 		} finally {
 			UnMarkUsageExclusive();
+			// ^ NOTE: If the above throws, usage unmarking will be reverted.
+			// - Though, that can only happen once marked for disposal, so it
+			// may not be a problem after all.
 		}
 	}
 
