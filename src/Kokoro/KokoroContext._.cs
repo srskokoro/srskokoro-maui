@@ -1121,7 +1121,7 @@ public partial class KokoroContext : IDisposable {
 
 	#region `IDisposable` implementation
 
-	private void DisposeActual(bool disposing) {
+	protected virtual void DisposeActual(bool disposing) {
 		DebugAssert_UsageMarkedExclusivelyForDispose();
 
 		if (!disposing) {
