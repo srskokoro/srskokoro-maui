@@ -21,4 +21,10 @@ internal class DataToken {
 		Context = collection.Context;
 		Collection = collection;
 	}
+
+	public DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection collection) {
+		Db = db;
+		Context = context;
+		Collection = collection;
+	}
 }

@@ -26,17 +26,12 @@ internal class KokoroSqliteDb : SqliteConnection {
 
 	// --
 
-	private KokoroCollection? _CurrentOwner;
-	internal KokoroCollection? CurrentOwner {
-		get => _CurrentOwner;
-		set {
-			_CurrentOwner = value;
-			_DataToken = value != null ? new(value) : null;
-		}
-	}
-
 	private long _LastPragmaDataVersion;
 	internal DataToken? _DataToken;
+
+	internal void SetUpDataToken(KokoroContext context, KokoroCollection collection) => _DataToken = new(this, context, collection);
+
+	internal void ClearDataToken() => _DataToken = null;
 
 	internal bool UpdateDataToken() {
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
@@ -58,7 +53,8 @@ internal class KokoroSqliteDb : SqliteConnection {
 		// containing try-catch blocks cannot be inlined).
 		void OnDataMarkExhausted() {
 			try {
-				_DataToken = new(_CurrentOwner!); // May also throw due to OOM
+				var old = _DataToken;
+				_DataToken = new(this, old.Context, old.Collection); // May also throw due to OOM
 			} catch {
 				--_DataToken!.DataMark; // Revert the increment
 				throw;

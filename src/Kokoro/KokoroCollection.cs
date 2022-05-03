@@ -14,7 +14,9 @@ public class KokoroCollection : IDisposable {
 		MarkUsage(context); // May throw on failure
 		try {
 			// Throws on incompatible schema version
-			(_Db = context.ObtainOperableDb()).CurrentOwner = this;
+			var db = context.ObtainOperableDb();
+			db.SetUpDataToken(context, this);
+			_Db = db;
 			_Context = context; // Success!
 		} catch (Exception ex) {
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
@@ -58,7 +60,7 @@ public class KokoroCollection : IDisposable {
 
 			var db = _Db;
 			if (db != null) {
-				db.CurrentOwner = null;
+				db.ClearDataToken();
 				_Db = null;
 				// ^ Prevents recycling when already recycled before. Also, we
 				// did that first in case the recycle op succeeds and yet it
