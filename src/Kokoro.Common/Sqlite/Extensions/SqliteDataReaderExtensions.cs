@@ -8,4 +8,9 @@ internal static class SqliteDataReaderExtensions {
 		string actualName = reader.GetName(ordinal);
 		Debug.Assert(actualName == name, $"Column {ordinal}; Expected name: {name}; Actual name: {actualName}");
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[Conditional("DEBUG")]
+	public static void DAssert_Name(this SqliteDataReader reader, int ordinal, string name)
+		=> reader.DebugAssert_Name(ordinal, name);
 }
