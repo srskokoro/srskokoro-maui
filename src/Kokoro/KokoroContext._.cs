@@ -965,8 +965,8 @@ public partial class KokoroContext : IDisposable {
 	public bool IsDisposed => (MarkUsageState_Volatile & MarkUsageState_DisposedFlag) != 0;
 	public bool IsDisposed_NV => (_MarkUsageState & MarkUsageState_DisposedFlag) != 0;
 
-	private bool IsDisposing => MarkUsageState_Volatile == MarkUsageState_DisposedFlag;
-	private bool IsDisposing_NV => _MarkUsageState == MarkUsageState_DisposedFlag;
+	private bool IsDisposeRequestHandled => MarkUsageState_Volatile == MarkUsageState_DisposedFlag;
+	private bool IsDisposeRequestHandled_NV => _MarkUsageState == MarkUsageState_DisposedFlag;
 
 	public bool IsDisposedFully {
 		get {
@@ -1107,12 +1107,12 @@ public partial class KokoroContext : IDisposable {
 
 	[Conditional("DEBUG")]
 	private void DebugAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse()
-		=> Debug.Assert(UsageMarkedExclusive_NV || !IsFullyConstructed || IsDisposing_NV,
+		=> Debug.Assert(UsageMarkedExclusive_NV || !IsFullyConstructed || IsDisposeRequestHandled_NV,
 			"Shouldn't be called without first marking exclusive usage");
 
 	[Conditional("DEBUG")]
 	private void DebugAssert_UsageMarkedExclusivelyForDispose()
-		=> Debug.Assert(IsDisposing_NV, $"Shouldn't be called {(UsageMarked_NV
+		=> Debug.Assert(IsDisposeRequestHandled_NV, $"Shouldn't be called {(UsageMarked_NV
 			? "while usage is marked" : "when not marked exclusively for disposal")}");
 
 	#endregion
