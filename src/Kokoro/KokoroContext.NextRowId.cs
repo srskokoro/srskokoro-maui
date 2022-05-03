@@ -47,11 +47,12 @@ partial class KokoroContext {
 		// threads, either in parallel or with threads suspended at unfortunate
 		// moments. That should be deemed impossible due to resource limits, but
 		// who knows? Perhaps some high-tech futuristic civilization knows… :P
-		if (Interlocked.Increment(ref nextRowIdFieldRef) < 0) {
+		long nextRowId = Interlocked.Increment(ref nextRowIdFieldRef);
+		if (nextRowId < 0) {
 			Interlocked.Decrement(ref nextRowIdFieldRef);
 			throw Ex_Full_InvOp();
 		}
-		return nextRowIdFieldRef;
+		return nextRowId;
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static InvalidOperationException Ex_Full_InvOp() => new("Database full: max rowid reached");
