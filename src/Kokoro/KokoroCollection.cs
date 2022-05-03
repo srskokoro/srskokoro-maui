@@ -18,7 +18,7 @@ public class KokoroCollection : IDisposable {
 			_Context = context; // Success!
 		} catch {
 			// Failed!
-			UnMarkUsage(context);
+			UnMarkUsage(context, disposing: false);
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
@@ -29,7 +29,7 @@ public class KokoroCollection : IDisposable {
 	}
 
 	private protected virtual void MarkUsage(KokoroContext context) => context.MarkUsageShared();
-	private protected virtual void UnMarkUsage(KokoroContext context) => context.UnMarkUsageShared();
+	private protected virtual void UnMarkUsage(KokoroContext context, bool disposing) => context.UnMarkUsageShared(disposing);
 
 	#region `IDisposable` implementation
 
@@ -74,8 +74,10 @@ public class KokoroCollection : IDisposable {
 		// See also, https://stackoverflow.com/q/34447080
 		// --
 
-		UnMarkUsage(context);
 		_Context = null; // Marks disposal as successful
+		UnMarkUsage(context, disposing);
+		// ^ Done last as it's allowed to throw when disposing.
+		// ^ Note however that, it shouldn't throw when simply unmarking usage.
 	}
 
 	~KokoroCollection() => Dispose(disposing: false);
