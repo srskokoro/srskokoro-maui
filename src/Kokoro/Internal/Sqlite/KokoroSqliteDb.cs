@@ -27,11 +27,11 @@ internal class KokoroSqliteDb : SqliteConnection {
 	// --
 
 	private long _LastPragmaDataVersion;
-	internal DataToken? _DataToken;
+	internal DataToken? DataToken;
 
-	internal void SetUpDataToken(KokoroContext context, KokoroCollection collection) => _DataToken = new(this, context, collection);
+	internal void SetUpDataToken(KokoroContext context, KokoroCollection collection) => DataToken = new(this, context, collection);
 
-	internal void ClearDataToken() => _DataToken = null;
+	internal void ClearDataToken() => DataToken = null;
 
 	internal bool UpdateDataToken() {
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
@@ -41,7 +41,7 @@ internal class KokoroSqliteDb : SqliteConnection {
 		var currentPragmaDataVersion = this.ExecScalar<long>("PRAGMA data_version");
 		if (currentPragmaDataVersion == _LastPragmaDataVersion) return false;
 
-		if (++_DataToken!.DataMark == DataToken.DataMarkExhausted)
+		if (++DataToken!.DataMark == DataToken.DataMarkExhausted)
 			OnDataMarkExhausted();
 
 		_LastPragmaDataVersion = currentPragmaDataVersion;
@@ -53,10 +53,10 @@ internal class KokoroSqliteDb : SqliteConnection {
 		// containing try-catch blocks cannot be inlined).
 		void OnDataMarkExhausted() {
 			try {
-				var old = _DataToken;
-				_DataToken = new(this, old.Context, old.Collection); // May also throw due to OOM
+				var old = DataToken;
+				DataToken = new(this, old.Context, old.Collection); // May also throw due to OOM
 			} catch {
-				--_DataToken!.DataMark; // Revert the increment
+				--DataToken!.DataMark; // Revert the increment
 				throw;
 			}
 		}
