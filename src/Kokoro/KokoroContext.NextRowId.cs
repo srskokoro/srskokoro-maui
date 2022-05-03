@@ -41,6 +41,11 @@ partial class KokoroContext {
 	internal long NextSchemaClassRowId() => NextRowId(ref _NextSchemaClassRowId);
 	internal long NextFieldNameRowId() => NextRowId(ref _NextFieldNameRowId);
 
+	internal void UndoItemRowId(long rowidToUndo) => UndoRowId(ref _NextItemRowId, rowidToUndo);
+	internal void UndoSchemaRowId(long rowidToUndo) => UndoRowId(ref _NextSchemaRowId, rowidToUndo);
+	internal void UndoSchemaClassRowId(long rowidToUndo) => UndoRowId(ref _NextSchemaClassRowId, rowidToUndo);
+	internal void UndoFieldNameRowId(long rowidToUndo) => UndoRowId(ref _NextFieldNameRowId, rowidToUndo);
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	private static long NextRowId(ref long nextRowIdFieldRef) {
 		// The following trick won't work if the user somehow ran this with 2^63
@@ -57,6 +62,10 @@ partial class KokoroContext {
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static InvalidOperationException Ex_Full_InvOp() => new("Database full: max rowid reached");
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void UndoRowId(ref long nextRowIdFieldRef, long rowidToUndo)
+		=> Interlocked.CompareExchange(ref nextRowIdFieldRef, rowidToUndo - 1, rowidToUndo);
 
 	#endregion
 
