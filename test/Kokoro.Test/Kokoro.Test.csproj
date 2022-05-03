@@ -48,10 +48,9 @@
     <ProjectReference Include="..\..\src\Kokoro\Kokoro.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\src\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <Import Project="..\..\src\Kokoro\Kokoro.Usings.targets" />
 
   <ItemGroup>
-    <Using Include="Kokoro" />
     <Using Include="Kokoro.Common.Util" />
 
     <Using Include="Xunit" />

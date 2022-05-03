@@ -1,0 +1,6 @@
+﻿<Project>
+  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <ItemGroup>
+    <Using Include="Kokoro" />
+  </ItemGroup>
+</Project>

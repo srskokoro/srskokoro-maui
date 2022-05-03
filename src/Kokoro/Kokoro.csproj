@@ -27,6 +27,6 @@
     <InternalsVisibleTo Include="$(AssemblyName).Experiment.Benchmark" />
   </ItemGroup>
 
-  <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
+  <Import Project="..\Kokoro\Kokoro.Usings.targets" />
 
 </Project>
