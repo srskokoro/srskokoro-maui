@@ -16,14 +16,15 @@ public class KokoroCollection : IDisposable {
 			// Throws on incompatible schema version
 			(_Db = context.ObtainOperableDb()).CurrentOwner = this;
 			_Context = context; // Success!
-		} catch {
-			// Failed!
-			UnMarkUsage(context, disposing: false);
-
+		} catch (Exception ex) {
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
 #pragma warning restore CA1816
-
+			try {
+				UnMarkUsage(context, disposing: true);
+			} catch (Exception ex2) {
+				throw new DisposeAggregateException(ex, ex2);
+			}
 			throw;
 		}
 	}

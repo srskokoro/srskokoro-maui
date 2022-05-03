@@ -655,12 +655,14 @@ public partial class KokoroContext : IDisposable {
 		// overload call onto this original overload.
 
 		MarkUsageExclusive();
+		MigrationResult result;
 		try {
 			var current = _Version;
 			if (current >= target) {
-				return new(current > target
+				result = new(current > target
 					? MigrationResultCode.FailedWithCurrentGreaterThanTarget
 					: MigrationResultCode.FailedWithCurrentEqualsTarget, current);
+				goto End;
 			}
 			if (IsReadOnly) throw Ex_ReadOnly_NS();
 
@@ -732,7 +734,7 @@ public partial class KokoroContext : IDisposable {
 				}
 				_Version = current; // Success!
 
-				return new(MigrationResultCode.Success, current);
+				result = new(MigrationResultCode.Success, current);
 
 			} catch (Exception ex) {
 				try {
@@ -755,9 +757,17 @@ public partial class KokoroContext : IDisposable {
 				}
 				throw; // Rollback successful so throw the original
 			}
-		} finally {
-			UnMarkUsageExclusive();
+		} catch (Exception ex) {
+			try {
+				UnMarkUsageExclusive();
+			} catch (Exception ex2) {
+				throw new DisposeAggregateException(ex, ex2);
+			}
+			throw;
 		}
+	End:
+		UnMarkUsageExclusive();
+		return result;
 	}
 
 	/// <returns>
@@ -784,12 +794,14 @@ public partial class KokoroContext : IDisposable {
 		// overload call onto this original overload.
 
 		MarkUsageExclusive();
+		MigrationResult result;
 		try {
 			var current = _Version;
 			if (current <= target) {
-				return new(current < target
+				result = new(current < target
 					? MigrationResultCode.FailedWithCurrentLessThanTarget
 					: MigrationResultCode.FailedWithCurrentEqualsTarget, current);
+				goto End;
 			}
 			if (IsReadOnly) throw Ex_ReadOnly_NS();
 
@@ -862,7 +874,7 @@ public partial class KokoroContext : IDisposable {
 				}
 				_Version = current; // Success!
 
-				return new(MigrationResultCode.Success, current);
+				result = new(MigrationResultCode.Success, current);
 
 			} catch (Exception ex) {
 				try {
@@ -885,9 +897,17 @@ public partial class KokoroContext : IDisposable {
 				}
 				throw; // Rollback successful so throw the original
 			}
-		} finally {
-			UnMarkUsageExclusive();
+		} catch (Exception ex) {
+			try {
+				UnMarkUsageExclusive();
+			} catch (Exception ex2) {
+				throw new DisposeAggregateException(ex, ex2);
+			}
+			throw;
 		}
+	End:
+		UnMarkUsageExclusive();
+		return result;
 	}
 
 	[SkipLocalsInit]
