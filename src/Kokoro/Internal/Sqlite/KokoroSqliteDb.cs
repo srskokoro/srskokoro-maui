@@ -52,11 +52,11 @@ internal class KokoroSqliteDb : SqliteConnection {
 		// outer method to be inlined (since, as of writing this, methods
 		// containing try-catch blocks cannot be inlined).
 		void OnDataMarkExhausted() {
+			var old = DataToken;
 			try {
-				var old = DataToken;
 				DataToken = new(this, old.Context, old.Collection); // May throw due to OOM
 			} catch {
-				--DataToken!.DataMark; // Revert the increment
+				--old!.DataMark; // Revert the increment
 				throw;
 			}
 		}
