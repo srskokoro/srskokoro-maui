@@ -52,7 +52,6 @@
   <Import Project="..\..\src\Kokoro.Common\Kokoro.Common.Usings.targets" />
 
   <ItemGroup>
-    <Using Include="Kokoro.Common" />
     <Using Include="Kokoro.Common.Util" />
 
     <Using Include="Xunit" />

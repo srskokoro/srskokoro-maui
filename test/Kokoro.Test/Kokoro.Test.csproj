@@ -52,7 +52,6 @@
 
   <ItemGroup>
     <Using Include="Kokoro" />
-    <Using Include="Kokoro.Common" />
     <Using Include="Kokoro.Common.Util" />
 
     <Using Include="Xunit" />
