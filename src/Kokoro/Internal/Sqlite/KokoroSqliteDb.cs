@@ -54,7 +54,7 @@ internal class KokoroSqliteDb : SqliteConnection {
 		void OnDataMarkExhausted() {
 			try {
 				var old = DataToken;
-				DataToken = new(this, old.Context, old.Collection); // May also throw due to OOM
+				DataToken = new(this, old.Context, old.Collection); // May throw due to OOM
 			} catch {
 				--DataToken!.DataMark; // Revert the increment
 				throw;
