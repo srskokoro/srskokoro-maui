@@ -24,14 +24,14 @@ internal sealed class DataToken : IDisposable {
 		Next = this;
 	}
 
-	public DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection collection) {
+	internal DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection collection) {
 		Db = db;
 		Context = context;
 		Collection = collection;
 		Next = this;
 	}
 
-	public void DisplacedBy(DataToken? next) {
+	internal void DisplacedBy(DataToken? next) {
 		DataMark = DataMarkDisposed;
 		Db = null;
 		Context = null;
