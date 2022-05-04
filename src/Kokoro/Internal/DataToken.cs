@@ -18,13 +18,18 @@ internal sealed class DataToken : IDisposable {
 
 	private DataToken? _Next;
 
-	internal KokoroSqliteDb Db => _Db ?? Latest._Db ?? throw Ex_ODisposed();
-	internal KokoroContext Context => _Context ?? Latest._Context ?? throw Ex_ODisposed();
-	internal KokoroCollection Collection => _Collection ?? Latest._Collection ?? throw Ex_ODisposed();
+	internal KokoroSqliteDb Db => _Db ?? ResolveDb();
+	internal KokoroContext Context => _Context ?? ResolveContext();
+	internal KokoroCollection Collection => _Collection ?? ResolveCollection();
+
+	#region Fallback Mechanisms
+
+	// Not inlined, as these are meant to be used much rarely
+	[MethodImpl(MethodImplOptions.NoInlining)] internal KokoroSqliteDb ResolveDb() => Latest._Db ?? throw Ex_ODisposed();
+	[MethodImpl(MethodImplOptions.NoInlining)] internal KokoroContext ResolveContext() => Latest._Context ?? throw Ex_ODisposed();
+	[MethodImpl(MethodImplOptions.NoInlining)] internal KokoroCollection ResolveCollection() => Latest._Collection ?? throw Ex_ODisposed();
 
 	internal DataToken Latest {
-		// Don't inline, as this is used only for rare cases
-		[MethodImpl(MethodImplOptions.NoInlining)]
 		get {
 			DataToken cur = this;
 			while (cur._Next != null) {
@@ -33,6 +38,8 @@ internal sealed class DataToken : IDisposable {
 			return cur;
 		}
 	}
+
+	#endregion
 
 	public DataToken(KokoroCollection collection)
 		: this(collection.Db, collection.Context, collection) { }
