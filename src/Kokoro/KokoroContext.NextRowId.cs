@@ -64,8 +64,11 @@ partial class KokoroContext {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void UndoRowId(ref long nextRowIdFieldRef, long rowidToUndo)
-		=> Interlocked.CompareExchange(ref nextRowIdFieldRef, rowidToUndo - 1, rowidToUndo);
+	private static void UndoRowId(ref long nextRowIdFieldRef, long rowidToUndo) {
+		if (rowidToUndo > 0) {
+			Interlocked.CompareExchange(ref nextRowIdFieldRef, rowidToUndo - 1, rowidToUndo);
+		}
+	}
 
 	#endregion
 
