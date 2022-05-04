@@ -32,8 +32,9 @@ internal sealed class DataToken : IDisposable {
 	internal DataToken Latest {
 		get {
 			DataToken cur = this;
-			while (cur._Next != null) {
-				cur = cur._Next;
+			DataToken? next;
+			while ((next = cur._Next) != null) {
+				cur = next;
 			}
 			return cur;
 		}
