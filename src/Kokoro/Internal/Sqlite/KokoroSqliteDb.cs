@@ -31,7 +31,11 @@ internal class KokoroSqliteDb : SqliteConnection {
 
 	internal void SetUpDataToken(KokoroContext context, KokoroCollection collection) => DataToken = new(this, context, collection);
 
-	internal void ClearDataToken() => DataToken = null;
+	internal void ClearDataToken() {
+		Debug.Assert(DataToken != null);
+		DataToken.Dispose();
+		DataToken = null;
+	}
 
 	internal bool UpdateDataToken() {
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
@@ -41,7 +45,7 @@ internal class KokoroSqliteDb : SqliteConnection {
 		var currentPragmaDataVersion = this.ExecScalar<long>("PRAGMA data_version");
 		if (currentPragmaDataVersion == _LastPragmaDataVersion) return false;
 
-		if (++DataToken!.DataMark == DataToken.DataMarkExhausted)
+		if (++DataToken!.DataMark == DataToken.DataMarkDisposed)
 			OnDataMarkExhausted();
 
 		_LastPragmaDataVersion = currentPragmaDataVersion;
@@ -54,12 +58,13 @@ internal class KokoroSqliteDb : SqliteConnection {
 		void OnDataMarkExhausted() {
 			DataToken prev = DataToken!, next;
 			try {
-				next = new(this, prev.Context, prev.Collection); // May throw due to OOM
+				next = new(this, prev._Context!, prev._Collection!); // May throw due to OOM
 			} catch {
 				--prev.DataMark; // Revert the increment
 				throw;
 			}
 			DataToken = next;
+			prev.Dispose();
 		}
 	}
 }
