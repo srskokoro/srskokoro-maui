@@ -16,9 +16,9 @@ internal class DataToken : IDisposable {
 	internal KokoroContext? _Context;
 	internal KokoroCollection? _Collection;
 
-	internal KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
-	internal KokoroContext Context => _Context ?? throw Ex_ODisposed();
-	internal KokoroCollection Collection => _Collection ?? throw Ex_ODisposed();
+	public KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
+	public KokoroContext Context => _Context ?? throw Ex_ODisposed();
+	public KokoroCollection Collection => _Collection ?? throw Ex_ODisposed();
 
 	public DataToken(KokoroCollection collection) {
 		_Db = collection.Db;
