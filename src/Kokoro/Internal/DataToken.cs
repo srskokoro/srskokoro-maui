@@ -17,12 +17,8 @@ internal sealed class DataToken : IDisposable {
 	internal KokoroCollection? Collection;
 	internal DataToken? Next;
 
-	public DataToken(KokoroCollection collection) {
-		Db = collection.Db;
-		Context = collection.Context;
-		Collection = collection;
-		Next = this;
-	}
+	public DataToken(KokoroCollection collection)
+		: this(collection.Db, collection.Context, collection) { }
 
 	internal DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection collection) {
 		Db = db;
