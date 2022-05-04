@@ -60,5 +60,5 @@ internal sealed class DataToken : IDisposable {
 	public void Dispose() => DisplacedBy(null);
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(typeof(DataToken));
+	internal static ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(typeof(DataToken));
 }
