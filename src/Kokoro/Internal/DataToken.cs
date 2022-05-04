@@ -12,40 +12,35 @@ internal sealed class DataToken : IDisposable {
 	/// </summary>
 	internal nuint DataMark = DataMarkInit;
 
-	internal KokoroSqliteDb? _Db;
-	internal KokoroContext? _Context;
-	internal KokoroCollection? _Collection;
-	internal DataToken? _Next;
-
-	public KokoroSqliteDb Db => _Db ?? Next._Db!;
-	public KokoroContext Context => _Context ?? Next._Context!;
-	public KokoroCollection Collection => _Collection ?? Next._Collection!;
-	public DataToken Next => _Next ?? throw Ex_ODisposed();
+	internal KokoroSqliteDb? Db;
+	internal KokoroContext? Context;
+	internal KokoroCollection? Collection;
+	internal DataToken? Next;
 
 	public DataToken(KokoroCollection collection) {
-		_Db = collection.Db;
-		_Context = collection.Context;
-		_Collection = collection;
-		_Next = this;
+		Db = collection.Db;
+		Context = collection.Context;
+		Collection = collection;
+		Next = this;
 	}
 
 	public DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection collection) {
-		_Db = db;
-		_Context = context;
-		_Collection = collection;
-		_Next = this;
+		Db = db;
+		Context = context;
+		Collection = collection;
+		Next = this;
 	}
 
 	public void DisplacedBy(DataToken? next) {
 		DataMark = DataMarkDisposed;
-		_Db = null;
-		_Context = null;
-		_Collection = null;
-		_Next = next;
+		Db = null;
+		Context = null;
+		Collection = null;
+		Next = next;
 	}
 
 	public void Dispose() => DisplacedBy(null);
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(typeof(DataToken));
+	internal static ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(typeof(DataToken));
 }
