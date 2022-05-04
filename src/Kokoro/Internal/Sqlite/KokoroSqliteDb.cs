@@ -65,7 +65,7 @@ internal class KokoroSqliteDb : SqliteConnection {
 				throw;
 			}
 			DataToken = next;
-			prev.Dispose();
+			prev.DisplacedBy(next);
 		}
 	}
 }
