@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 
-internal class DataToken : IDisposable {
+internal sealed class DataToken : IDisposable {
 	internal const nuint DataMarkDisposed = 0;
 	internal const nuint DataMarkInit = 1;
 
@@ -40,5 +40,5 @@ internal class DataToken : IDisposable {
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(GetType());
+	private static ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(typeof(DataToken));
 }
