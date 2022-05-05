@@ -203,6 +203,43 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 
+	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
+		var context = host.Context;
+		long newRowId = context.NextSchemaClassRowId();
+		return AlterRowId(host.Db, oldRowId, newRowId);
+	}
+
+	/// <summary>
+	/// Alias for <see cref="RenewRowId(KokoroCollection, long)"/>
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool AlterRowId(KokoroCollection host, long oldRowId)
+			=> RenewRowId(host, oldRowId);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId)
+		=> AlterRowId(host.Db, oldRowId, newRowId);
+
+	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
+		int updated;
+		try {
+			updated = db.Exec(
+				"UPDATE SchemaClasses SET rowid=$newRowId WHERE rowid=$oldRowId"
+				, new SqliteParameter("$oldRowId", oldRowId)
+				, new SqliteParameter("$newRowId", newRowId)
+			);
+		} catch (Exception ex) when (
+			ex is not SqliteException sqlex ||
+			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
+		) {
+			var context = db.DataToken?.OwnerContextOrNull;
+			context?.UndoSchemaClassRowId(newRowId);
+			throw;
+		}
+		return updated > 0;
+	}
+
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool Delete() => DeleteFrom(DataToken.OwnerDb, _RowId);
 
