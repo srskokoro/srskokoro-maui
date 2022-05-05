@@ -7,6 +7,8 @@ public class KokoroCollection : IDisposable {
 	private KokoroContext? _Context;
 	private KokoroSqliteDb? _Db;
 
+	#region Primary Properties
+
 	public KokoroContext Context => _Context ?? throw Ex_ODisposed();
 	internal KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
 
@@ -17,6 +19,17 @@ public class KokoroCollection : IDisposable {
 			return token;
 		}
 	}
+
+	#region Nullable Access
+
+	public KokoroContext? ContextOrNull => _Context;
+	internal KokoroSqliteDb? DbOrNull => _Db;
+
+	internal DataToken? DataTokenOrNull => _Db?.DataToken;
+
+	#endregion
+
+	#endregion
 
 	public KokoroCollection(KokoroContext context) {
 		MarkUsage(context); // May throw on failure

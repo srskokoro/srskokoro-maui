@@ -29,13 +29,17 @@ internal sealed class DataToken : IDisposable {
 	internal KokoroContext? Context => _Context;
 
 	internal KokoroSqliteDb OwnerDb => _Db ?? _Owner.Db;
+	internal KokoroSqliteDb? OwnerDbOrNull => _Db ?? _Owner.DbOrNull;
+
 	internal KokoroContext OwnerContext => _Context ?? _Owner.Context;
+	internal KokoroContext? OwnerContextOrNull => _Context ?? _Owner.ContextOrNull;
 
 	private readonly KokoroCollection _Owner;
 	internal KokoroCollection Owner => _Owner;
 
 	private DataToken? _Latest;
 	internal DataToken Latest => _Latest ?? _Owner.DataToken;
+	internal DataToken? LatestOrNull => _Latest ?? _Owner.DataTokenOrNull;
 
 	internal DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection owner) {
 		_Db = db;
