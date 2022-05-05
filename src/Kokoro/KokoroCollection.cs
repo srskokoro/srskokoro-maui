@@ -17,7 +17,7 @@ public class KokoroCollection : IDisposable {
 		try {
 			// Throws on incompatible schema version
 			var db = context.ObtainOperableDb();
-			db.SetUpDataToken(context, this);
+			db.SetUpWith(context, this);
 			_Db = db;
 			_Context = context; // Success!
 		} catch (Exception ex) {
@@ -62,7 +62,7 @@ public class KokoroCollection : IDisposable {
 
 			var db = _Db;
 			if (db != null) {
-				db.ClearDataToken();
+				db.TearDown();
 				_Db = null;
 				// ^ Prevents recycling when already recycled before. Also, we
 				// did that first in case the recycle op succeeds and yet it
