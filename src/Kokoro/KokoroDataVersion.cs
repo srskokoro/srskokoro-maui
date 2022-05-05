@@ -105,7 +105,7 @@ public readonly struct KokoroDataVersion : IEquatable<KokoroDataVersion>, ICompa
 	}
 
 	[DoesNotReturn]
-	private void CompareTo__E_IncompatibleType_Arg()
+	private static void CompareTo__E_IncompatibleType_Arg()
 		=> throw new ArgumentException($"Object must be of type {nameof(KokoroDataVersion)}.");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
