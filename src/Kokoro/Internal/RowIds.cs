@@ -3,7 +3,7 @@
 internal static class RowIds {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static object? Box(long rowid) {
+	public static Box<long>? Box(long rowid) {
 		if (rowid != 0)
 			return rowid;
 		return null;
