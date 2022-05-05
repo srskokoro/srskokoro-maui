@@ -10,7 +10,13 @@ public class KokoroCollection : IDisposable {
 	public KokoroContext Context => _Context ?? throw Ex_ODisposed();
 	internal KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
 
-	internal DataToken DataToken => Db.DataToken!;
+	internal DataToken DataToken {
+		get {
+			var token = Db.DataToken!;
+			Debug.Assert(token != null);
+			return token;
+		}
+	}
 
 	public KokoroCollection(KokoroContext context) {
 		MarkUsage(context); // May throw on failure
