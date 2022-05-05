@@ -29,8 +29,8 @@ internal class KokoroSqliteDb : SqliteConnection {
 	private long _LastPragmaDataVersion;
 	internal DataToken? DataToken;
 
-	internal void SetUpWith(KokoroContext context, KokoroCollection collection)
-		=> DataToken = new(this, context, collection);
+	internal void SetUpWith(KokoroContext context, KokoroCollection owner)
+		=> DataToken = new(this, context, owner);
 
 	internal void TearDown() {
 		Debug.Assert(DataToken != null);

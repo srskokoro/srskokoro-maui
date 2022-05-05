@@ -5,8 +5,8 @@ public abstract class DataEntity {
 	internal nuint DataMark = DataToken.DataMarkInit;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	private protected DataEntity(KokoroCollection collection) {
-		DataToken = collection.DataToken;
+	private protected DataEntity(KokoroCollection host) {
+		DataToken = host.DataToken;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
