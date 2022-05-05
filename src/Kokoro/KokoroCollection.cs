@@ -1,4 +1,5 @@
 ﻿namespace Kokoro;
+using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
@@ -7,8 +8,9 @@ public class KokoroCollection : IDisposable {
 	private KokoroSqliteDb? _Db;
 
 	public KokoroContext Context => _Context ?? throw Ex_ODisposed();
-
 	internal KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
+
+	internal DataToken DataToken => Db.DataToken!;
 
 	public KokoroCollection(KokoroContext context) {
 		MarkUsage(context); // May throw on failure

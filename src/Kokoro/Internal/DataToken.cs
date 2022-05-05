@@ -1,8 +1,18 @@
 ﻿namespace Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 
+/// <summary>
+/// A lightweight handle to the collection data that also keeps track of a
+/// certain "<see cref="DataMark">data mark</see>" useful for detecting changes
+/// to the underlying collection data.
+/// <para>
+/// This object is always directly tied to a <see cref="KokoroCollection"/>
+/// object, with disposal of the latter object meant to cause disposal of this
+/// object as well.
+/// </para>
+/// </summary>
 internal sealed class DataToken : IDisposable {
-	internal const nuint DataMarkDisposed = 0;
+	internal const nuint DataMarkExhausted = 0;
 	internal const nuint DataMarkInit = 1;
 
 	/// <summary>
@@ -12,53 +22,32 @@ internal sealed class DataToken : IDisposable {
 	/// </summary>
 	internal nuint DataMark = DataMarkInit;
 
-	internal KokoroSqliteDb? _Db;
-	internal KokoroContext? _Context;
-	internal KokoroCollection? _Collection;
+	private KokoroSqliteDb? _Db;
+	private KokoroContext? _Context;
 
-	private DataToken? _Next;
+	internal KokoroSqliteDb? Db => _Db;
+	internal KokoroContext? Context => _Context;
 
-	internal KokoroSqliteDb Db => _Db ?? ResolveDb();
-	internal KokoroContext Context => _Context ?? ResolveContext();
-	internal KokoroCollection Collection => _Collection ?? ResolveCollection();
+	internal KokoroSqliteDb OwnerDb => _Db ?? _Owner.Db;
+	internal KokoroContext OwnerContext => _Context ?? _Owner.Context;
 
-	#region Fallback Mechanisms
+	private readonly KokoroCollection _Owner;
+	internal KokoroCollection Owner => _Owner;
 
-	// Not inlined, as these are meant to be used much rarely
-	[MethodImpl(MethodImplOptions.NoInlining)] internal KokoroSqliteDb ResolveDb() => Latest._Db ?? throw Ex_ODisposed();
-	[MethodImpl(MethodImplOptions.NoInlining)] internal KokoroContext ResolveContext() => Latest._Context ?? throw Ex_ODisposed();
-	[MethodImpl(MethodImplOptions.NoInlining)] internal KokoroCollection ResolveCollection() => Latest._Collection ?? throw Ex_ODisposed();
+	private DataToken? _Latest;
+	internal DataToken Latest => _Latest ?? _Owner.DataToken;
 
-	internal DataToken Latest {
-		get {
-			DataToken cur = this;
-			DataToken? next;
-			while ((next = cur._Next) != null) cur = next;
-			return cur;
-		}
-	}
-
-	#endregion
-
-	public DataToken(KokoroCollection collection)
-		: this(collection.Db, collection.Context, collection) { }
-
-	internal DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection collection) {
+	internal DataToken(KokoroSqliteDb db, KokoroContext context, KokoroCollection owner) {
 		_Db = db;
 		_Context = context;
-		_Collection = collection;
+		_Owner = owner;
+		_Latest = this;
 	}
 
-	internal void DisplacedBy(DataToken? next) {
-		DataMark = DataMarkDisposed;
+	public void Dispose() {
+		DataMark = DataMarkExhausted;
 		_Db = null;
 		_Context = null;
-		_Collection = null;
-		_Next = next;
+		_Latest = null;
 	}
-
-	public void Dispose() => DisplacedBy(null);
-
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	internal static ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(typeof(DataToken));
 }

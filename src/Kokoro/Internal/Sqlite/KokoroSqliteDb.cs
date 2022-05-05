@@ -46,7 +46,7 @@ internal class KokoroSqliteDb : SqliteConnection {
 		var currentPragmaDataVersion = this.ExecScalar<long>("PRAGMA data_version");
 		if (currentPragmaDataVersion == _LastPragmaDataVersion) return false;
 
-		if (++DataToken!.DataMark == DataToken.DataMarkDisposed)
+		if (++DataToken!.DataMark == DataToken.DataMarkExhausted)
 			OnDataMarkExhausted();
 
 		_LastPragmaDataVersion = currentPragmaDataVersion;
@@ -59,13 +59,13 @@ internal class KokoroSqliteDb : SqliteConnection {
 		void OnDataMarkExhausted() {
 			DataToken prev = DataToken!, next;
 			try {
-				next = new(this, prev._Context!, prev._Collection!); // May throw due to OOM
+				next = new(this, prev.Context!, prev.Owner); // May throw due to OOM
 			} catch {
 				--prev.DataMark; // Revert the increment
 				throw;
 			}
 			DataToken = next;
-			prev.DisplacedBy(next);
+			prev.Dispose();
 		}
 	}
 }
