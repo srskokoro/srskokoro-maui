@@ -166,6 +166,7 @@ public sealed class SchemaClass : DataEntity {
 			latest.Context!.NextSchemaClassRowId(), uid);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void SaveAsNew(long rowid, UniqueId uid)
 		=> SaveAsNew(DataToken.OwnerDb, rowid, uid);
 
