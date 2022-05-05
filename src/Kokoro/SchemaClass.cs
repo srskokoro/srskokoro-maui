@@ -236,7 +236,9 @@ public sealed class SchemaClass : DataEntity {
 			context?.UndoSchemaClassRowId(newRowId);
 			throw;
 		}
-		return updated > 0;
+
+		Debug.Assert(updated is 1 or 0);
+		return ((byte)updated).ToUnsafeBool();
 	}
 
 
@@ -247,11 +249,21 @@ public sealed class SchemaClass : DataEntity {
 	public static bool DeleteFrom(KokoroCollection host, long rowid)
 		=> DeleteFrom(host.Db, rowid);
 
-	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) => db.Exec(
-		"DELETE FROM SchemaClasses WHERE rowid=$rowid"
-		, new SqliteParameter("$rowid", rowid)) > 0;
+	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
+		int deleted = db.Exec(
+			"DELETE FROM SchemaClasses WHERE rowid=$rowid"
+			, new SqliteParameter("$rowid", rowid));
 
-	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) => host.Db.Exec(
-		"DELETE FROM SchemaClasses WHERE uid=$uid"
-		, new SqliteParameter("$uid", uid)) > 0;
+		Debug.Assert(deleted is 1 or 0);
+		return ((byte)deleted).ToUnsafeBool();
+	}
+
+	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
+		int deleted = host.Db.Exec(
+			"DELETE FROM SchemaClasses WHERE uid=$uid"
+			, new SqliteParameter("$uid", uid));
+
+		Debug.Assert(deleted is 1 or 0);
+		return ((byte)deleted).ToUnsafeBool();
+	}
 }
