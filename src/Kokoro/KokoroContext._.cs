@@ -976,7 +976,7 @@ public partial class KokoroContext : IDisposable {
 
 	// --
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	internal void MarkUsageShared() {
 		// A `SpinWait` would be overkill for this particular case.
 		// - Think of `Interlocked.Increment()` but with a few extra conditions.
@@ -1013,7 +1013,7 @@ public partial class KokoroContext : IDisposable {
 		throw new InvalidOperationException("NA");
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	internal void UnMarkUsageShared(bool disposing = true) {
 		const string AssertFailedMessage_UnMarkUsageShared_Unbalanced =
 			$"`{nameof(UnMarkUsageShared)}()` should only be called after a " +
@@ -1041,7 +1041,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	internal void MarkUsageExclusive() {
 		uint state = Interlocked.CompareExchange(ref _MarkUsageState, MarkUsageState_ExclusiveFlag, 0);
 		if (state != 0) {
@@ -1064,7 +1064,7 @@ public partial class KokoroContext : IDisposable {
 		throw new InvalidOperationException("NA");
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	internal void UnMarkUsageExclusive(bool disposing = true) {
 		const string AssertFailedMessage_UnMarkUsageExclusive_Unbalanced =
 			$"`{nameof(UnMarkUsageExclusive)}()` should only be called after a " +
