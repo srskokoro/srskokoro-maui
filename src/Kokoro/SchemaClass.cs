@@ -185,8 +185,8 @@ public sealed class SchemaClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			var context = DataToken.OwnerContext;
-			context.UndoSchemaClassRowId(rowid);
+			var context = DataToken.OwnerContextOrNull;
+			context?.UndoSchemaClassRowId(rowid);
 			throw;
 		}
 
