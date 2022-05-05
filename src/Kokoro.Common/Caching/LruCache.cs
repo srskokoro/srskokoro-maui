@@ -57,13 +57,12 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private int SafeSizeOf(TKey key, TValue value) {
 		int size = SizeOf(key, value);
-		if (size < 1) throw SizeOf__E_CannotBeLT1_InvOp(key, value, size);
+		if (size < 1) SizeOf__E_CannotBeLT1_InvOp(key, value, size);
 		return size;
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static InvalidOperationException SizeOf__E_CannotBeLT1_InvOp(TKey key, TValue value, int resultSize)
+	private static void SizeOf__E_CannotBeLT1_InvOp(TKey key, TValue value, int resultSize)
 		=> throw new InvalidOperationException($"Size less than 1 ({resultSize}): [{key}]={value}");
 
 

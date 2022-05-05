@@ -28,7 +28,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public byte this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) throw Ex_IOOR();
+				if ((uint)index >= _Length) E_IOOR();
 				return UnsafeElementRef<ByteData, byte>(in this, _End-index);
 			}
 		}
@@ -70,7 +70,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public uint this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) throw Ex_IOOR();
+				if ((uint)index >= _Length) E_IOOR();
 				uint element = UnsafeElementRef<UInt32Data, uint>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -129,7 +129,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public ulong this[int index] {
 			[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 			get {
-				if ((uint)index >= _Length) throw Ex_IOOR();
+				if ((uint)index >= _Length) E_IOOR();
 				ulong element = UnsafeElementRef<UInt64Data, ulong>(in this, _End-index);
 				return BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(element) : element;
 			}
@@ -180,8 +180,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[StackTraceHidden]
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static IndexOutOfRangeException Ex_IOOR() => new();
+	[DoesNotReturn]
+	private static void E_IOOR() => throw new IndexOutOfRangeException();
 
 	#endregion
 
@@ -456,14 +456,13 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteBase58Chars(Span<char> destination) {
 		if (_Base58Size > destination.Length) {
-			throw WriteBase58Chars__E_DestinationTooShort_AOOR(nameof(destination));
+			WriteBase58Chars__E_DestinationTooShort_AOOR(nameof(destination));
 		}
 		UnsafeWriteBase58Chars(destination);
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static ArgumentOutOfRangeException WriteBase58Chars__E_DestinationTooShort_AOOR(string? paramName)
+	private static void WriteBase58Chars__E_DestinationTooShort_AOOR(string? paramName)
 		=> throw new ArgumentOutOfRangeException(paramName, "Destination is too short.");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -586,35 +585,32 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public static UniqueId Parse(ReadOnlySpan<char> input) {
 		if (!TryParse(input, out var result)) {
-			throw Parse__E_Fail();
+			Parse__E_Fail();
 		}
 		return result;
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static Exception Parse__E_Fail() => throw ParseFail.ConsumeException();
+	private static void Parse__E_Fail() => throw ParseFail.ConsumeException();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
 		if (_Base58Size != input.Length) {
-			throw ParseExact__E_LengthNotExact_AOOR(nameof(input));
+			ParseExact__E_LengthNotExact_AOOR(nameof(input));
 		}
 		if (!TryParse(input, out var result)) {
-			throw ParseExact__E_Fail();
+			ParseExact__E_Fail();
 		}
 		return result;
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static ArgumentOutOfRangeException ParseExact__E_LengthNotExact_AOOR(string? paramName)
+	private static void ParseExact__E_LengthNotExact_AOOR(string? paramName)
 		=> throw new ArgumentOutOfRangeException(paramName, $"Input span needs to be exactly {_Base58Size} in length.");
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private static Exception ParseExact__E_Fail() => throw ParseFail.ConsumeException();
+	private static void ParseExact__E_Fail() => throw ParseFail.ConsumeException();
 
 	#endregion
 
@@ -651,13 +647,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public int CompareTo(object? obj) {
 		if (obj is UniqueId uid) return CompareTo(uid);
-		if (obj != null) throw CompareTo__E_IncompatibleType_Arg();
+		if (obj != null) CompareTo__E_IncompatibleType_Arg();
 		return 1;
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private ArgumentException CompareTo__E_IncompatibleType_Arg()
+	private void CompareTo__E_IncompatibleType_Arg()
 		=> throw new ArgumentException($"Object must be of type {nameof(UniqueId)}.");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

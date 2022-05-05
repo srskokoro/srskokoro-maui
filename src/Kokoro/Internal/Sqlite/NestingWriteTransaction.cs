@@ -40,7 +40,7 @@ internal ref struct NestingWriteTransaction {
 			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
 			_Db!.Exec(_CommitCommand);
 		} catch (NullReferenceException) when (_Db == null) {
-			throw Ex_AlreadyReleased_InvOp();
+			E_AlreadyReleased_InvOp();
 		}
 		_Db = null;
 	}
@@ -62,7 +62,7 @@ internal ref struct NestingWriteTransaction {
 		_Db = null;
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static InvalidOperationException Ex_AlreadyReleased_InvOp()
-		=> new($"Transaction already complete; it's no longer usable.");
+	[DoesNotReturn]
+	private static void E_AlreadyReleased_InvOp()
+		=> throw new InvalidOperationException($"Transaction already complete; it's no longer usable.");
 }

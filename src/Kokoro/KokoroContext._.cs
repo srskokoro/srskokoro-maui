@@ -111,7 +111,7 @@ public partial class KokoroContext : IDisposable {
 				}
 			} else if (HasPendingRollback(rollbackPath)) {
 				// Can't perform recovery in read-only mode
-				throw Ex_RollbackPendingButReadOnly_NS();
+				E_RollbackPendingButReadOnly_NS();
 			}
 
 			// Parse the existing version file
@@ -122,7 +122,7 @@ public partial class KokoroContext : IDisposable {
 					if (mode != KokoroContextOpenMode.ReadOnly) {
 						goto DataVersionZeroInit;
 					}
-					throw Ex_UnexpectedHeaderFormat_InvDat(verPath);
+					E_UnexpectedHeaderFormat_InvDat(verPath);
 				}
 
 				verBytes = verBytes[..verBytesRead];
@@ -132,7 +132,7 @@ public partial class KokoroContext : IDisposable {
 				verEnc.GetChars(verBytes, verChars);
 
 				if (!verChars.StartsWith(DataVersionFileHeader))
-					throw Ex_UnexpectedHeaderFormat_InvDat(verPath);
+					E_UnexpectedHeaderFormat_InvDat(verPath);
 
 				var verNums = verChars[DataVersionFileHeader.Length..];
 				int verNumsEnd = verNums.IndexOfAny('\r', '\n');
@@ -141,7 +141,7 @@ public partial class KokoroContext : IDisposable {
 				try {
 					_Version = KokoroDataVersion.Parse(verNums);
 				} catch (FormatException ex) {
-					throw Ex_UnexpectedHeaderFormat_InvDat(verPath, ex);
+					E_UnexpectedHeaderFormat_InvDat(verPath, ex);
 				}
 
 				if (_Version.Operable) {
@@ -191,36 +191,36 @@ public partial class KokoroContext : IDisposable {
 			) {
 				// Throw a more meaningful exception than the framework-default
 				// `UnauthorizedAccessException` that only says 'access denied'
-				throw Ex_ReadOnlyAttr_RO(ex);
+				E_ReadOnlyAttr_RO(ex);
 			}
 			throw;
 		}
 		_LockHandle = lockHandle; // Mark as fully constructed
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static NotSupportedException Ex_RollbackPendingButReadOnly_NS()
-		=> new($"Rollback pending, but can't rollback while opened in read-only mode");
+	[DoesNotReturn]
+	private static void E_RollbackPendingButReadOnly_NS() => throw new NotSupportedException(
+		$"Rollback pending, but can't rollback while opened in read-only mode");
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static InvalidDataException Ex_UnexpectedHeaderFormat_InvDat(string verPath, Exception? cause = null)
-		=> new($"Unexpected header format for `{DataDir}/{DataVersionFile}` file." +
+	[DoesNotReturn]
+	private static void E_UnexpectedHeaderFormat_InvDat(string verPath, Exception? cause = null)
+		=> throw new InvalidDataException($"Unexpected header format for `{DataDir}/{DataVersionFile}` file." +
 			$"{Environment.NewLine}Location: {verPath}", cause);
 
 	#endregion
 
 	#region Common Exceptions
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static ReadOnlyException Ex_ReadOnlyAttr_RO(Exception? cause = null)
-		=> new("Read-only file attribute set, denying access", cause);
+	[DoesNotReturn]
+	private static void E_ReadOnlyAttr_RO(Exception? cause = null)
+		=> throw new ReadOnlyException("Read-only file attribute set, denying access", cause);
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static NotSupportedException Ex_ReadOnly_NS() => new($"Read-only");
+	[DoesNotReturn]
+	private static void E_ReadOnly_NS() => throw new NotSupportedException($"Read-only");
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static NotSupportedException Ex_VersionNotOperable_NS(Exception? cause = null)
-		=> new($"Version is not operable. Please migrate to the current operable vesrion first.", cause);
+	[DoesNotReturn]
+	private static void E_VersionNotOperable_NS(Exception? cause = null) => throw new NotSupportedException(
+		$"Version is not operable. Please migrate to the current operable vesrion first.", cause);
 
 	#endregion
 
@@ -243,12 +243,12 @@ public partial class KokoroContext : IDisposable {
 				return db;
 			}
 			if (pool.IsDisposed) {
-				throw Ex_ODisposed();
+				E_ODisposed();
 			}
 		} catch (NullReferenceException ex) when (
 			_OperableDbPool == null && !_Version.Operable
 		) {
-			throw Ex_VersionNotOperable_NS(ex);
+			E_VersionNotOperable_NS(ex);
 		}
 
 		db = new(_OperableDbConnectionString);
@@ -270,7 +270,7 @@ public partial class KokoroContext : IDisposable {
 			// at this point as we're in a `catch` block anyway.
 
 			if (!_Version.Operable)
-				throw Ex_VersionNotOperable_NS(ex);
+				E_VersionNotOperable_NS(ex);
 
 			throw; // It's some other exception
 		}
@@ -505,19 +505,17 @@ public partial class KokoroContext : IDisposable {
 				// Throw an appropriate exception
 				if (Directory.Exists(rollbackPath)) {
 					// The rollback directory exists but is invalid
-					throw Rollback__E_RollbackVerMissing(rollbackPath);
+					Rollback__E_RollbackVerMissing(rollbackPath);
 				}
 			}
-			throw Rollback__E_AlreadyComplete();
+			Rollback__E_AlreadyComplete();
 		}
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
 		[DoesNotReturn]
-		private static Exception Rollback__E_AlreadyComplete() => throw Ex_AlreadyComplete();
+		private static void Rollback__E_AlreadyComplete() => throw Ex_AlreadyComplete();
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
 		[DoesNotReturn]
-		private static Exception Rollback__E_RollbackVerMissing(string rollbackPath) {
+		private static void Rollback__E_RollbackVerMissing(string rollbackPath) {
 			string rollbackVerPath = Path.Join(rollbackPath, DataVersionFile);
 			Debug.Assert(!File.Exists(rollbackVerPath), $"Expected not to exist at this point: {rollbackVerPath}");
 
@@ -577,12 +575,11 @@ public partial class KokoroContext : IDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Commit() {
 			if (!TryCommit())
-				throw Commit__E_AlreadyComplete();
+				Commit__E_AlreadyComplete();
 		}
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
 		[DoesNotReturn]
-		private static Exception Commit__E_AlreadyComplete() => throw Ex_AlreadyComplete();
+		private static void Commit__E_AlreadyComplete() => throw Ex_AlreadyComplete();
 	}
 
 	private static bool HasPendingRollback(string rollbackPath)
@@ -664,7 +661,7 @@ public partial class KokoroContext : IDisposable {
 					: MigrationResultCode.FailedWithCurrentEqualsTarget, current);
 				goto End;
 			}
-			if (IsReadOnly) throw Ex_ReadOnly_NS();
+			if (IsReadOnly) E_ReadOnly_NS();
 
 			UnloadOperables();
 			DataDirTransaction dataDirTransaction = new(this);
@@ -698,7 +695,8 @@ public partial class KokoroContext : IDisposable {
 							$"while migrating the current version {current} via the mapping '{from} to {to}'");
 
 					Fail_MigrationMissing:
-						throw Ex_ExpectedMigration_NI(current, target);
+						E_ExpectedMigration_NI(current, target);
+						throw null;
 
 					} else {
 						(_, to) = keys[i];
@@ -803,7 +801,7 @@ public partial class KokoroContext : IDisposable {
 					: MigrationResultCode.FailedWithCurrentEqualsTarget, current);
 				goto End;
 			}
-			if (IsReadOnly) throw Ex_ReadOnly_NS();
+			if (IsReadOnly) E_ReadOnly_NS();
 
 			UnloadOperables();
 			DataDirTransaction dataDirTransaction = new(this);
@@ -838,7 +836,8 @@ public partial class KokoroContext : IDisposable {
 							$"while migrating the current version {current} via the mapping '{from} to {to}'");
 
 					Fail_MigrationMissing:
-						throw Ex_ExpectedMigration_NI(current, target);
+						E_ExpectedMigration_NI(current, target);
+						throw null;
 
 					} else {
 						(_, to) = keys[i];
@@ -921,9 +920,9 @@ public partial class KokoroContext : IDisposable {
 		verStream.Write(verStr.ToUTF8Bytes(stackalloc byte[verStr.GetUTF8ByteCount()]));
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static NotImplementedException Ex_ExpectedMigration_NI(KokoroDataVersion fromVersion, KokoroDataVersion toVersion)
-		=> new($"Expected migration from {fromVersion} to {toVersion} is apparently not implemented");
+	[DoesNotReturn]
+	private static void E_ExpectedMigration_NI(KokoroDataVersion fromVersion, KokoroDataVersion toVersion)
+		=> throw new NotImplementedException($"Expected migration from {fromVersion} to {toVersion} is apparently not implemented");
 
 	#endregion
 
@@ -993,7 +992,7 @@ public partial class KokoroContext : IDisposable {
 			// according to the current C# spec).
 			uint state = _MarkUsageState;
 			if ((state & MarkUsageState_SharedForbiddenMask) != 0) {
-				throw MarkUsageShared__E_Fail_InvOp(state);
+				MarkUsageShared__E_Fail_InvOp(state);
 			}
 			// Increment the shared usage count (while checking for overflows)
 			if (Interlocked.CompareExchange(ref _MarkUsageState
@@ -1002,9 +1001,8 @@ public partial class KokoroContext : IDisposable {
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private Exception MarkUsageShared__E_Fail_InvOp(uint lastMarkUsageState) {
+	private void MarkUsageShared__E_Fail_InvOp(uint lastMarkUsageState) {
 		if ((lastMarkUsageState & MarkUsageState_DisposedFlag) != 0) {
 			throw Ex_ODisposed();
 		}
@@ -1047,13 +1045,12 @@ public partial class KokoroContext : IDisposable {
 	internal void MarkUsageExclusive() {
 		uint state = Interlocked.CompareExchange(ref _MarkUsageState, MarkUsageState_ExclusiveFlag, 0);
 		if (state != 0) {
-			throw MarkUsageExclusive__E_Fail_InvOp(state);
+			MarkUsageExclusive__E_Fail_InvOp(state);
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
-	private Exception MarkUsageExclusive__E_Fail_InvOp(uint lastMarkUsageState) {
+	private void MarkUsageExclusive__E_Fail_InvOp(uint lastMarkUsageState) {
 		if ((lastMarkUsageState & MarkUsageState_DisposedFlag) != 0) {
 			throw Ex_ODisposed();
 		}
@@ -1221,7 +1218,6 @@ public partial class KokoroContext : IDisposable {
 		// - See, https://stackoverflow.com/q/816818
 	}
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
 	[DoesNotReturn]
 	private void E_ODisposed() => throw Ex_ODisposed();
 

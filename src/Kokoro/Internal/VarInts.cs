@@ -139,11 +139,12 @@ internal static class VarInts {
 		return 9;
 
 	Fail:
-		throw Ex_DestinationTooShort_AOOR();
+		E_DestinationTooShort_AOOR();
+		return 0;
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR()
-			=> new(nameof(dest), "Destination span must be at least 9 bytes to accommodate the largest possible varint.");
+		[DoesNotReturn]
+		static void E_DestinationTooShort_AOOR() => throw new ArgumentOutOfRangeException(nameof(dest),
+			"Destination span must be at least 9 bytes to accommodate the largest possible varint.");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
@@ -182,10 +183,11 @@ internal static class VarInts {
 		return 5;
 
 	Fail:
-		throw Ex_DestinationTooShort_AOOR();
+		E_DestinationTooShort_AOOR();
+		return 0;
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR()
-			=> new(nameof(dest), "Destination span must be at least 5 bytes to accommodate the largest possible varint.");
+		[DoesNotReturn]
+		static void E_DestinationTooShort_AOOR() => throw new ArgumentOutOfRangeException(nameof(dest),
+			"Destination span must be at least 5 bytes to accommodate the largest possible varint.");
 	}
 }

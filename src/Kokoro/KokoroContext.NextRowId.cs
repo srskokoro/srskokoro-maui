@@ -55,12 +55,12 @@ partial class KokoroContext {
 		long nextRowId = Interlocked.Increment(ref nextRowIdFieldRef);
 		if (nextRowId < 0) {
 			Interlocked.Decrement(ref nextRowIdFieldRef);
-			throw Ex_Full_InvOp();
+			E_Full_InvOp();
 		}
 		return nextRowId;
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		static InvalidOperationException Ex_Full_InvOp() => new("Database full: max rowid reached");
+		[DoesNotReturn]
+		static void E_Full_InvOp() => throw new InvalidOperationException("Database full: max rowid reached");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
