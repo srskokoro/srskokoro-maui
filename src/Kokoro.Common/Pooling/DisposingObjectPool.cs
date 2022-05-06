@@ -143,7 +143,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 			try {
 				if (!base.TryTake(out var poolable)) break;
 				// This poolable now only belongs to us, thus we can proceed.
-				poolable.DisposeSafely(ref exc);
+				poolable.Dispose();
 			} catch (Exception ex) {
 				// This block is meant to catch `ThreadInterruptedException` and
 				// `Dispose()` shouldn't normally throw. However, just in case
