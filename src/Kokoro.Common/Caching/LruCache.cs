@@ -47,7 +47,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	}
 
 
-	public void EnsureMapCapacity(int capacity) => _Map.EnsureCapacity(capacity);
+	public int EnsureMapCapacity(int capacity) => _Map.EnsureCapacity(capacity);
 
 	public void TrimMapExcess() => _Map.TrimExcess();
 
