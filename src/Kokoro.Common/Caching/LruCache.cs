@@ -1,5 +1,6 @@
 ﻿namespace Kokoro.Common.Caching;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 internal class LruCache<TKey, TValue> where TKey : notnull {
 	private readonly Dictionary<TKey, Node> _Map;
@@ -14,16 +15,10 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		internal Node? Next;
 		internal Node? Prev;
 
-		internal TKey Key;
-		internal TValue Value;
+		internal TKey Key = default!;
+		internal TValue Value = default!;
 
 		internal int Size;
-
-		public Node(TKey key, TValue value, int size) {
-			Key = key;
-			Value = value;
-			Size = size;
-		}
 	}
 
 	private int _Size;
@@ -114,7 +109,18 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		int entrySize = SafeSizeOf(key, value);
 		int size = _Size + entrySize;
 		int maxSize = _MaxSize;
+
 		var map = _Map;
+		ref var node = ref CollectionsMarshal.GetValueRefOrAddDefault(map, key, out bool exists)!;
+
+		if (!exists) {
+			node = new();
+		} else {
+			DetachNode(node);
+		}
+		node.Key = key;
+		node.Value = value;
+		node.Size = entrySize;
 
 		// Trim to max size
 		if (size > maxSize) {
@@ -130,8 +136,13 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 
 					if (size > maxSize) goto Loop;
 				}
-			} catch {
+			} catch (Exception ex) {
 				size -= entrySize;
+				try {
+					map.Remove(key); // May throw on hash code calc or key comparison
+				} catch (Exception ex2) {
+					throw new AggregateException(ex, ex2);
+				}
 				throw;
 			} finally {
 				if (prev != null) {
@@ -148,15 +159,6 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 			}
 		} else {
 			_Size = size;
-		}
-
-		Node node;
-		try {
-			node = new(key, value, entrySize); // May throw OOM
-			map.Add(key, node); // TODO Allow replacement of existing entry (instead of throwing)
-		} catch {
-			_Size -= entrySize;
-			throw;
 		}
 
 		// Attach new node (as the new head)
@@ -176,42 +178,44 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool Remove(TKey key) {
 		if (_Map.Remove(key, out var node)) {
-			_Size -= node.Size;
-
-			// Detach node
-			var prev = node.Prev;
-			if (prev != null) {
-				var next = node.Next;
-				prev.Next = next;
-
-				if (next != null) {
-					next.Prev = prev;
-				} else {
-					// NOTE: The node was the tail, since only the tail can have
-					// a null next node.
-					_Tail = prev;
-				}
-			} else {
-				// NOTE: The node was the head, since only the head can have a
-				// null previous node.
-				var next = node.Next;
-				_Head = next;
-
-				if (next != null) {
-					next.Prev = null;
-				} else {
-					// NOTE: The node was also the tail, since only the tail can
-					// have a null next node.
-					_Tail = null;
-				}
-			}
-
+			DetachNode(node);
 			return true;
 		}
 		return false;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	private void DetachNode(Node node) {
+		_Size -= node.Size;
+		var prev = node.Prev;
+		if (prev != null) {
+			var next = node.Next;
+			prev.Next = next;
+
+			if (next != null) {
+				next.Prev = prev;
+			} else {
+				// NOTE: The node was the tail, since only the tail can have
+				// a null next node.
+				_Tail = prev;
+			}
+		} else {
+			// NOTE: The node was the head, since only the head can have a
+			// null previous node.
+			var next = node.Next;
+			_Head = next;
+
+			if (next != null) {
+				next.Prev = null;
+			} else {
+				// NOTE: The node was also the tail, since only the tail can
+				// have a null next node.
+				_Tail = null;
+			}
+		}
 	}
 
 	public void Clear() {
