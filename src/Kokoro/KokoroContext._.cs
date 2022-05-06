@@ -463,7 +463,7 @@ public partial class KokoroContext : IDisposable {
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private static InvalidOperationException Ex_AlreadyComplete()
+		private static InvalidOperationException Ex_AlreadyComplete_InvOp()
 			=> new("This transaction has already completed; it is no longer usable.");
 
 		// --
@@ -508,11 +508,11 @@ public partial class KokoroContext : IDisposable {
 					Rollback__E_RollbackVerMissing(rollbackPath);
 				}
 			}
-			Rollback__E_AlreadyComplete();
+			Rollback__E_AlreadyComplete_InvOp();
 		}
 
 		[DoesNotReturn]
-		private static void Rollback__E_AlreadyComplete() => throw Ex_AlreadyComplete();
+		private static void Rollback__E_AlreadyComplete_InvOp() => throw Ex_AlreadyComplete_InvOp();
 
 		[DoesNotReturn]
 		private static void Rollback__E_RollbackVerMissing(string rollbackPath) {
@@ -575,11 +575,11 @@ public partial class KokoroContext : IDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Commit() {
 			if (!TryCommit())
-				Commit__E_AlreadyComplete();
+				Commit__E_AlreadyComplete_InvOp();
 		}
 
 		[DoesNotReturn]
-		private static void Commit__E_AlreadyComplete() => throw Ex_AlreadyComplete();
+		private static void Commit__E_AlreadyComplete_InvOp() => throw Ex_AlreadyComplete_InvOp();
 	}
 
 	private static bool HasPendingRollback(string rollbackPath)
