@@ -10,7 +10,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	// TODO Can be optimized by using a struct for the nodes, and an array of
 	// such structs, where the next and previous pointers are 32-bit integers,
 	// and perhaps -1 represents the null pointer.
-	internal sealed class Node {
+	private sealed class Node {
 		internal Node? Next;
 		internal Node? Prev;
 
