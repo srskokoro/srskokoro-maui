@@ -9,8 +9,25 @@ public class KokoroCollection : IDisposable {
 
 	#region Primary Properties
 
-	public KokoroContext Context => _Context ?? throw Ex_ODisposed();
-	internal KokoroSqliteDb Db => _Db ?? throw Ex_ODisposed();
+	public KokoroContext Context {
+		get {
+			var _ = _Context;
+			if (_ != null)
+				return _;
+			E_ODisposed();
+			throw null;
+		}
+	}
+
+	internal KokoroSqliteDb Db {
+		get {
+			var _ = _Db;
+			if (_ != null)
+				return _;
+			E_ODisposed();
+			throw null;
+		}
+	}
 
 	internal DataToken DataToken {
 		get {
@@ -112,6 +129,9 @@ public class KokoroCollection : IDisposable {
 		// ^- Side-effect: `this` is kept alive 'til the method ends.
 		// - See, https://stackoverflow.com/q/816818
 	}
+
+	[DoesNotReturn]
+	private void E_ODisposed() => throw Ex_ODisposed();
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	private ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(GetType());
