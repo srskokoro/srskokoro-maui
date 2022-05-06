@@ -110,5 +110,8 @@ internal static class ExceptionUtils {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void Collect(ref ICollection<Exception>? priorExceptions, Exception currentException) {
 		(priorExceptions ??= Collect()).Add(currentException);
+		// TODO-FIXME ^- Not sure how to deal with OOM caused by the code above
+		// - Perhaps provide an API that utilizes either `GC.TryStartNoGCRegion`
+		// or `MemoryFailPoint`, that must be called beforehand.
 	}
 }
