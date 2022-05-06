@@ -112,41 +112,51 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public void Add(TKey key, TValue value) {
 		int entrySize = SafeSizeOf(key, value);
-		Node node = new(key, value, entrySize);
-
-		var map = _Map;
-		map.Add(key, node); // TODO Allow replacement of existing entry (instead of throwing)
-
-		int size = _Size += entrySize;
+		int size = _Size + entrySize;
 		int maxSize = _MaxSize;
+		var map = _Map;
 
 		// Trim to max size
-		if (size > maxSize && size > entrySize) {
+		if (size > maxSize) {
 			var prev = _Tail;
-			Debug.Assert(prev != null, "Size isn't zero but the tail node is null");
-			for (; ; ) {
-				if (!map.Remove(prev.Key)) Debug.Fail($"Linked node apparently not in map: [{prev.Key}]={prev.Value}");
-				size -= prev.Size;
-				prev = prev.Prev;
-
+			try {
+			Loop:
 				if (prev != null) {
-					if (size > maxSize) {
-						continue;
-					}
-					// Done! Size is now under maximum.
+					if (!map.Remove(prev.Key)) // May throw on hash code calc or key comparison
+						Debug.Fail($"Linked node apparently not in map: [{prev.Key}]={prev.Value}");
+
+					size -= prev.Size;
+					prev = prev.Prev;
+
+					if (size > maxSize) goto Loop;
+				}
+			} catch {
+				size -= entrySize;
+				throw;
+			} finally {
+				if (prev != null) {
 					prev.Next = null; // Cut the link to the removed nodes
-					_Tail = prev; // This node is now the oldest node
-					break;
 				} else {
 					// Head node reached! We're now completely empty.
 					_Head = null;
 					// ^ Signals that we're now completely empty and that the
 					// new node will be the first entry. The new node will also
 					// be the tail, which we'll set later below.
-					break;
 				}
+				_Tail = prev; // This node is now the oldest node
+				_Size = size;
 			}
+		} else {
 			_Size = size;
+		}
+
+		Node node;
+		try {
+			node = new(key, value, entrySize); // May throw OOM
+			map.Add(key, node); // TODO Allow replacement of existing entry (instead of throwing)
+		} catch {
+			_Size -= entrySize;
+			throw;
 		}
 
 		// Attach new node (as the new head)
