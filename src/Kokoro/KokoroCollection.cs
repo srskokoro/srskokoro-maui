@@ -54,8 +54,14 @@ public class KokoroCollection : IDisposable {
 			// Throws on incompatible schema version
 			var db = context.ObtainOperableDb();
 			db.SetUpWith(context, this);
-			_Db = db;
-			_Context = context; // Success!
+
+			// Success!
+			{
+				_Db = db;
+				_Context = context;
+				// ^- Done last as all resources above shouldn't be null if this
+				// isn't.
+			}
 		} catch (Exception ex) {
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
@@ -85,6 +91,19 @@ public class KokoroCollection : IDisposable {
 			return;
 		}
 
+		// ====================================================================
+		// Non-throwing region prior disposal
+
+		_Context = null; // Marks disposal (prevents being called again)
+
+		var db = _Db; Debug.Assert(db != null);
+		_Db = null;
+
+		ICollection<Exception>? exc = null;
+
+		// End of non-throwing region
+		// ====================================================================
+
 		if (disposing) {
 			// Dispose managed state (managed objects).
 			//
@@ -96,14 +115,13 @@ public class KokoroCollection : IDisposable {
 			// failed dispose attempt.
 			// --
 
-			var db = _Db;
-			if (db != null) {
+			try {
 				db.TearDown();
-				_Db = null;
-				// ^ Prevents recycling when already recycled before. Also, we
-				// did that first in case the recycle op succeeds and yet it
-				// throws before it can return to us.
 				context.RecycleOperableDb(db);
+				// ^ NOTE: The recycle op is allowed to succeed and yet still
+				// throw before it can return to us.
+			} catch (Exception ex) {
+				ExceptionUtils.Collect(ref exc, ex);
 			}
 		}
 
@@ -115,10 +133,16 @@ public class KokoroCollection : IDisposable {
 		// See also, https://stackoverflow.com/q/34447080
 		// --
 
-		_Context = null; // Marks disposal as successful
-		UnMarkUsage(context, disposing);
-		// ^ Done last as it's allowed to throw when disposing.
-		// ^ Note however that, it shouldn't throw when simply unmarking usage.
+		try {
+			// NOTE: Allowed to throw when "disposing" -- note however that, it
+			// shouldn't throw when simply unmarking usage.
+			UnMarkUsage(context, disposing);
+		} catch (Exception ex) {
+			ExceptionUtils.Collect(ref exc, ex);
+		}
+
+		Debug.Assert(exc == null || disposing, $"Shouldn't throw while `{nameof(disposing)} == false`");
+		exc?.ReThrowFlatten();
 	}
 
 	~KokoroCollection() => Dispose(disposing: false);
