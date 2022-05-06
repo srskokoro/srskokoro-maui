@@ -121,9 +121,9 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		int maxSize = _MaxSize;
 
 		// Trim to max size
-		if (size > maxSize) {
+		if (size > maxSize && size > entrySize) {
 			var prev = _Tail;
-			Debug.Assert(prev != null, "Size exceeds maximum but the tail node is null");
+			Debug.Assert(prev != null, "Size isn't zero but the tail node is null");
 			for (; ; ) {
 				if (!map.Remove(prev.Key)) Debug.Fail($"Linked node apparently not in map: [{prev.Key}]={prev.Value}");
 				size -= prev.Size;
