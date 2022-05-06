@@ -179,8 +179,9 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public bool Remove(TKey key) {
 		if (_Map.Remove(key, out var node)) {
-			// Detach node
+			_Size -= node.Size;
 
+			// Detach node
 			var prev = node.Prev;
 			if (prev != null) {
 				var next = node.Next;
