@@ -159,7 +159,7 @@ internal class DisposingObjectPool<T> : ObjectPool<T>, IDisposable where T : IDi
 
 		// Re-throw any pending exception, especially `ThreadInterruptedException`
 		if (exc != null) {
-			Exception? ex = exc.ConsolidateException();
+			Exception? ex = exc.Consolidate();
 			// Let callers catch `ThreadInterruptedException` in a
 			// straightforward manner.
 			if (interrupted && ex is not ThreadInterruptedException) {

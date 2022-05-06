@@ -38,7 +38,7 @@ internal static class ExceptionUtils {
 	/// If there's only one exception, that exception is returned instead. If
 	/// there's no exception, null is returned.
 	/// </summary>
-	public static Exception? ConsolidateException(this IEnumerable<Exception> exceptions) {
+	public static Exception? Consolidate(this IEnumerable<Exception> exceptions) {
 		if (!exceptions.TryGetNonEnumeratedCount(out int count)) {
 			count = exceptions.Count();
 		}
