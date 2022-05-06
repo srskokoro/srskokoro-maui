@@ -105,15 +105,16 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public void Add(TKey key, TValue value) {
 		int entrySize = SafeSizeOf(key, value);
 		int size = _Size + entrySize;
 		int maxSize = _MaxSize;
 
 		var map = _Map;
-		ref var node = ref CollectionsMarshal.GetValueRefOrAddDefault(map, key, out bool exists)!;
+		ref var node = ref CollectionsMarshal.GetValueRefOrAddDefault(map, key, out _);
 
-		if (!exists) {
+		if (node == null) {
 			node = new();
 		} else {
 			DetachNode(node);
@@ -138,12 +139,18 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 				}
 			} catch (Exception ex) {
 				size -= entrySize;
-				try {
-					map.Remove(key); // May throw on hash code calc or key comparison
-				} catch (Exception ex2) {
-					throw new AggregateException(ex, ex2);
-				}
+				UndoMapOrFail(map, key, ex);
 				throw;
+
+				[StackTraceHidden]
+				[MethodImpl(MethodImplOptions.NoInlining)] // NOTE: It won't get inlined anyway, but just in case…
+				static void UndoMapOrFail(Dictionary<TKey, Node> map, TKey key, Exception ex) {
+					try {
+						map.Remove(key); // May throw on hash code calc or key comparison
+					} catch (Exception ex2) {
+						throw new AggregateException(ex, ex2);
+					}
+				}
 			} finally {
 				if (prev != null) {
 					prev.Next = null; // Cut the link to the removed nodes
