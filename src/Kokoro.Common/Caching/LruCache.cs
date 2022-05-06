@@ -62,7 +62,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) {
+	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value) {
 		if (!_Map.TryGetValue(key, out var node)) {
 			value = default;
 			return false;
@@ -106,7 +106,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public void Add(TKey key, TValue value) {
+	public void Put(TKey key, TValue value) {
 		int entrySize = SafeSizeOf(key, value);
 		int size = _Size + entrySize;
 		int maxSize = _MaxSize;
@@ -117,7 +117,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		if (node == null) {
 			node = new();
 		} else {
-			DetachNode(node);
+			Detach(node);
 		}
 		node.Key = key;
 		node.Value = value;
@@ -188,14 +188,14 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool Remove(TKey key) {
 		if (_Map.Remove(key, out var node)) {
-			DetachNode(node);
+			Detach(node);
 			return true;
 		}
 		return false;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	private void DetachNode(Node node) {
+	private void Detach(Node node) {
 		_Size -= node.Size;
 		var prev = node.Prev;
 		if (prev != null) {
