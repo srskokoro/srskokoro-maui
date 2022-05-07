@@ -29,11 +29,11 @@ public class KokoroCollection : IDisposable {
 		}
 	}
 
-	internal DataToken DataToken {
+	internal InvalidationSource InvSrc {
 		get {
-			var token = Db.DataToken!;
-			Debug.Assert(token != null);
-			return token;
+			var invsrc = Db.InvSrc!;
+			Debug.Assert(invsrc != null);
+			return invsrc;
 		}
 	}
 
@@ -42,7 +42,7 @@ public class KokoroCollection : IDisposable {
 	public KokoroContext? ContextOrNull => _Context;
 	internal KokoroSqliteDb? DbOrNull => _Db;
 
-	internal DataToken? DataTokenOrNull => _Db?.DataToken;
+	internal InvalidationSource? InvSrcOrNull => _Db?.InvSrc;
 
 	#endregion
 

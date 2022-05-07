@@ -85,8 +85,8 @@ public sealed class SchemaClass : DataEntity {
 			, new SqliteParameter("$uid", uid.ToByteArray()));
 
 
-	public sealed override void Load() {
-		var db = DataToken.OwnerDb;
+	public void Load() {
+		var db = Host.Db;
 		_State = default; // Pending changes will be discarded
 
 		using var cmd = db.CreateCommand(
@@ -96,7 +96,7 @@ public sealed class SchemaClass : DataEntity {
 			"""
 			, new SqliteParameter("$rowid", _RowId));
 
-		using (new OptionalReadTransaction(db)) {
+		{
 			using var r = cmd.ExecuteReader();
 			if (!r.Read()) goto NotFound;
 
@@ -112,29 +112,14 @@ public sealed class SchemaClass : DataEntity {
 			r.DAssert_Name(4, "name");
 			_Name = r.GetString(4);
 
-			if (db.UpdateDataToken()) {
-				/// NOTE: <see cref="DataEntity.DataToken"/> may already be
-				/// disposed at this point.
-				goto Invalidated;
-			}
-		}
-
-		if (IsQuiteFresh) {
 			return; // Early exit
-		} else {
-			goto Invalidated;
 		}
 
-	NotFound:
-		// Otherwise, record not found: either deleted or never existed.
-		UnloadOnlyCore(); // Let that state materialize here then.
-
-	Invalidated:
-		UnloadOnlyNonCore();
-		RefreshDataMark();
+	NotFound: // -- either deleted or never existed
+		Unload(); // Let that state materialize here then
 	}
 
-	public sealed override void Unload() {
+	public void Unload() {
 		UnloadOnlyCore();
 		UnloadOnlyNonCore();
 	}
@@ -151,24 +136,21 @@ public sealed class SchemaClass : DataEntity {
 		// Nothing (for now)
 	}
 
-	public sealed override void Reload() {
-		Load();
-		UnloadOnlyNonCore();
-	}
-
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void SaveAsNew() => SaveAsNew(UniqueId.Create());
 
 	public void SaveAsNew(UniqueId uid) {
-		var latest = DataToken.Latest; // Throws if collection already disposed
-		SaveAsNew(latest.Db!, // Not null if didn't throw above
-			latest.Context!.NextSchemaClassRowId(), uid);
+		var host = Host;
+		var db = host.Db; // Throws if host is already disposed
+		var context = host.ContextOrNull; // Not null if didn't throw above
+		Debug.Assert(context != null);
+		SaveAsNew(db, context.NextSchemaClassRowId(), uid);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void SaveAsNew(long rowid, UniqueId uid)
-		=> SaveAsNew(DataToken.OwnerDb, rowid, uid);
+		=> SaveAsNew(Host.Db, rowid, uid);
 
 	private void SaveAsNew(KokoroSqliteDb db, long rowid, UniqueId uid) {
 		try {
@@ -186,8 +168,7 @@ public sealed class SchemaClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			var context = DataToken.OwnerContextOrNull;
-			context?.UndoSchemaClassRowId(rowid);
+			db.Context?.UndoSchemaClassRowId(rowid);
 			throw;
 		}
 
@@ -232,8 +213,7 @@ public sealed class SchemaClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			var context = db.DataToken?.OwnerContextOrNull;
-			context?.UndoSchemaClassRowId(newRowId);
+			db.Context?.UndoSchemaClassRowId(newRowId);
 			throw;
 		}
 
@@ -243,7 +223,7 @@ public sealed class SchemaClass : DataEntity {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public bool Delete() => DeleteFrom(DataToken.OwnerDb, _RowId);
+	public bool Delete() => DeleteFrom(Host.Db, _RowId);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool DeleteFrom(KokoroCollection host, long rowid)
