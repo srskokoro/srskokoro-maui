@@ -48,7 +48,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		return true;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool operator !=(StringKey? left, StringKey? right) {
 		if ((object?)left != right) {
 			if (left is null || right is null || left.Value != right.Value) {
