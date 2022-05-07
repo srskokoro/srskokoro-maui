@@ -21,41 +21,107 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public int CompareTo(StringKey? other) => Value.CompareTo(other?.Value);
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override bool Equals(object? obj) {
-		// Ternary operator returning true/false prevents redundant asm generation:
-		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		return Equals(obj as StringKey) ? true : false;
+		// The following arrangement allows `string.Equals()` to be inlined,
+		// while also producing a decent asm output.
+
+		if ((object)this != obj) {
+			goto CmpStr; // This becomes a conditional jump
+		}
+	EQ:
+		return true;
+	NE:
+		return false;
+
+	CmpStr:
+		// NOTE: The longest execution is when the sequence is equal. So we
+		// favor that instead of the early outs leading to the not-equals case.
+
+		if (obj is not StringKey other) goto NE; // A conditional jump to not favor it
+		if (other is null) goto NE; // A conditional jump to not favor it
+
+		if (string.Equals(Value, other.Value)) {
+			goto EQ; // This becomes an unconditional jump
+		} else
+			goto NE; // This becomes a conditional jump to not favor it
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public bool Equals(StringKey? other) {
+		// The following arrangement allows `string.Equals()` to be inlined,
+		// while also producing a decent asm output.
+
 		if ((object)this != other) {
-			if (other is null || Value != other.Value) {
-				return false;
-			}
+			goto CmpStr; // This becomes a conditional jump
 		}
+	EQ:
 		return true;
+	NE:
+		return false;
+
+	CmpStr:
+		// NOTE: The longest execution is when the sequence is equal. So we
+		// favor that instead of the early outs leading to the not-equals case.
+
+		if (other is null) goto NE; // A conditional jump to not favor it
+
+		if (string.Equals(Value, other.Value)) {
+			goto EQ; // This becomes an unconditional jump
+		} else
+			goto NE; // This becomes a conditional jump to not favor it
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool operator ==(StringKey? left, StringKey? right) {
+		// The following arrangement allows `string.Equals()` to be inlined,
+		// while also producing a decent asm output.
+
 		if ((object?)left != right) {
-			if (left is null || right is null || left.Value != right.Value) {
-				return false;
-			}
+			goto CmpStr; // This becomes a conditional jump
 		}
+	EQ:
 		return true;
+	NE:
+		return false;
+
+	CmpStr:
+		// NOTE: The longest execution is when the sequence is equal. So we
+		// favor that instead of the early outs leading to the not-equals case.
+
+		if (left is null) goto NE; // A conditional jump to not favor it
+		if (right is null) goto NE; // ^
+
+		if (string.Equals(left.Value, right.Value)) {
+			goto EQ; // This becomes an unconditional jump
+		} else
+			goto NE; // This becomes a conditional jump to not favor it
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool operator !=(StringKey? left, StringKey? right) {
+		// The following arrangement allows `string.Equals()` to be inlined,
+		// while also producing a decent asm output.
+
 		if ((object?)left != right) {
-			if (left is null || right is null || left.Value != right.Value) {
-				return true;
-			}
+			goto CmpStr; // This becomes a conditional jump
 		}
+	EQ:
 		return false;
+	NE:
+		return true;
+
+	CmpStr:
+		// NOTE: The longest execution is when the sequence is equal. So we
+		// favor that instead of the early outs leading to the not-equals case.
+
+		if (left is null) goto NE; // A conditional jump to not favor it
+		if (right is null) goto NE; // ^
+
+		if (string.Equals(left.Value, right.Value)) {
+			goto EQ; // This becomes an unconditional jump
+		} else
+			goto NE; // This becomes a conditional jump to not favor it
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
