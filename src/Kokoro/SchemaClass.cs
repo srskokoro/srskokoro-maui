@@ -12,6 +12,7 @@ public sealed class SchemaClass : DataEntity {
 	private long _SrcRowId;
 	private string? _Name;
 
+	// TODO Provide a way to check if the core state has been loaded
 	private StateFlags _State;
 
 	[Flags]
