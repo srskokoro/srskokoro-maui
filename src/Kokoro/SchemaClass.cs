@@ -31,12 +31,6 @@ public sealed class SchemaClass : DataEntity {
 		: this(host) => _RowId = rowid;
 
 
-	public void SetCachedUid(UniqueId uid) => _Uid = uid;
-	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
-	public void SetCachedSrcRowId(long srcRowId) => _SrcRowId = srcRowId;
-	public void SetCachedName(string? name) => _Name = name;
-
-
 	public long RowId {
 		get => _RowId;
 		set => _RowId = value;
@@ -50,6 +44,8 @@ public sealed class SchemaClass : DataEntity {
 		}
 	}
 
+	public void SetCachedUid(UniqueId uid) => _Uid = uid;
+
 	public int Ordinal {
 		get => _Ordinal;
 		set {
@@ -57,6 +53,8 @@ public sealed class SchemaClass : DataEntity {
 			_Ordinal = value;
 		}
 	}
+
+	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
 
 	public long SrcRowId {
 		get => _SrcRowId;
@@ -66,6 +64,8 @@ public sealed class SchemaClass : DataEntity {
 		}
 	}
 
+	public void SetCachedSrcRowId(long srcRowId) => _SrcRowId = srcRowId;
+
 	public string? Name {
 		get => _Name;
 		set {
@@ -73,6 +73,8 @@ public sealed class SchemaClass : DataEntity {
 			_Name = value;
 		}
 	}
+
+	public void SetCachedName(string? name) => _Name = name;
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
