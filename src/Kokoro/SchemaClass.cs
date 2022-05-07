@@ -16,7 +16,7 @@ public sealed class SchemaClass : DataEntity {
 
 	[Flags]
 	private enum StateFlags {
-		None = 0,
+		NoChanges = 0,
 
 		Change_Uid      = 1 << 0,
 		Change_Ordinal  = 1 << 1,
@@ -87,7 +87,7 @@ public sealed class SchemaClass : DataEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		_State = default; // Pending changes will be discarded
+		_State = StateFlags.NoChanges; // Pending changes will be discarded
 
 		using var cmd = db.CreateCommand(
 			"""
@@ -172,7 +172,7 @@ public sealed class SchemaClass : DataEntity {
 			throw;
 		}
 
-		_State = default; // Pending changes are now saved
+		_State = StateFlags.NoChanges; // Pending changes are now saved
 
 		_RowId = rowid;
 		_Uid = uid;
