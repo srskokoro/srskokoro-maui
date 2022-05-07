@@ -21,7 +21,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public int CompareTo(StringKey? other) => Value.CompareTo(other?.Value);
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public override bool Equals(object? obj) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
@@ -47,7 +47,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 			goto NE; // This becomes a conditional jump to not favor it
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public bool Equals(StringKey? other) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
@@ -72,7 +72,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 			goto NE; // This becomes a conditional jump to not favor it
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static bool operator ==(StringKey? left, StringKey? right) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
@@ -98,7 +98,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 			goto NE; // This becomes a conditional jump to not favor it
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public static bool operator !=(StringKey? left, StringKey? right) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
