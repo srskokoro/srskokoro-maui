@@ -440,7 +440,7 @@ public sealed class SchemaClass : DataEntity {
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool AlterRowId(KokoroCollection host, long oldRowId)
-			=> RenewRowId(host, oldRowId);
+		=> RenewRowId(host, oldRowId);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId)
