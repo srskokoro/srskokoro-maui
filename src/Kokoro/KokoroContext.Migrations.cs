@@ -248,7 +248,7 @@ partial class KokoroContext {
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"type INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the schema class when the schema
 			// was created. Null if not available when the schema was created,
@@ -267,7 +267,7 @@ partial class KokoroContext {
 			// - Null when not contributing any local fields.
 			$"localModStampIndex INTEGER CHECK(localModStampIndex {BetweenInt32RangeGE0})," +
 
-			"PRIMARY KEY(schema, type)," +
+			"PRIMARY KEY(schema, cls)," +
 
 			"UNIQUE(schema, sharedModStampIndex)," +
 
@@ -307,7 +307,7 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE SchemaClassToFields(" +
 
-			"type INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
@@ -320,19 +320,19 @@ partial class KokoroContext {
 			// - 0b10: Cold
 			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2)," +
 
-			"PRIMARY KEY(type, fld)" +
+			"PRIMARY KEY(cls, fld)" +
 
 		") WITHOUT ROWID");
 
 		db.Exec("CREATE TABLE SchemaClassToIncludes(" +
 
 			// The including schema class.
-			"type INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
 
 			// The included schema class.
 			"incl INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
 
-			"PRIMARY KEY(type, incl)" +
+			"PRIMARY KEY(cls, incl)" +
 
 		") WITHOUT ROWID");
 
