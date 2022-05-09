@@ -358,6 +358,9 @@ public sealed class SchemaClass : DataEntity {
 				info.StorageType = (FieldStorageType)r.GetInt32(1);
 				info.StorageType.DAssert_Defined();
 
+				// Pending changes will be discarded
+				_FieldInfosChanged?.Remove(fieldName);
+
 				SetCachedFieldInfo(fieldName, info);
 			}
 		}
