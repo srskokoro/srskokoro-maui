@@ -48,7 +48,7 @@ public static partial class TestUtil {
 	}
 
 	private static class NextEnums<TEnum> where TEnum : struct, Enum {
-		internal static TEnum[] Values = Enum.GetValues<TEnum>();
+		internal static readonly TEnum[] Values = Enum.GetValues<TEnum>();
 	}
 
 
