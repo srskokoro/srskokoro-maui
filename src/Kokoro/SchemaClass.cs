@@ -169,8 +169,6 @@ public sealed class SchemaClass : DataEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		_State = StateFlags.NoChanges; // Pending changes will be discarded
-
 		using var cmd = db.CreateCommand(
 			"""
 			SELECT uid,ordinal,src,name
@@ -181,6 +179,9 @@ public sealed class SchemaClass : DataEntity {
 		{
 			using var r = cmd.ExecuteReader();
 			if (!r.Read()) goto NotFound;
+
+			// Pending changes will be discarded
+			_State = StateFlags.NoChanges;
 
 			r.DAssert_Name(1, "uid");
 			_Uid = r.GetUniqueId(1);
