@@ -178,27 +178,27 @@ public sealed class SchemaClass : DataEntity {
 
 		{
 			using var r = cmd.ExecuteReader();
-			if (!r.Read()) goto NotFound;
+			if (r.Read()) {
+				// Pending changes will be discarded
+				_State = StateFlags.NoChanges;
 
-			// Pending changes will be discarded
-			_State = StateFlags.NoChanges;
+				r.DAssert_Name(0, "uid");
+				_Uid = r.GetUniqueId(0);
 
-			r.DAssert_Name(0, "uid");
-			_Uid = r.GetUniqueId(0);
+				r.DAssert_Name(1, "ordinal");
+				_Ordinal = r.GetInt32(1);
 
-			r.DAssert_Name(1, "ordinal");
-			_Ordinal = r.GetInt32(1);
+				r.DAssert_Name(2, "src");
+				_SrcRowId = r.GetInt64(2);
 
-			r.DAssert_Name(2, "src");
-			_SrcRowId = r.GetInt64(2);
+				r.DAssert_Name(3, "name");
+				_Name = r.GetString(3);
 
-			r.DAssert_Name(3, "name");
-			_Name = r.GetString(3);
-
-			return; // Early exit
+				return; // Early exit
+			}
 		}
 
-	NotFound: // -- either deleted or never existed
+		// Otherwise, either deleted or never existed
 		Unload(); // Let that state materialize here then
 		_State = StateFlags.NotExists;
 	}
@@ -334,8 +334,8 @@ public sealed class SchemaClass : DataEntity {
 			, new SqliteParameter("$name", name.Value))
 		) {
 			using var r = cmd.ExecuteReader();
-			if (!r.Read()) return;
-			fld = r.GetInt64(0);
+			if (r.Read()) fld = r.GetInt64(0);
+			else return;
 			// TODO Cache and load from cache
 		}
 
@@ -348,18 +348,18 @@ public sealed class SchemaClass : DataEntity {
 			, new SqliteParameter("$fld", fld))
 		) {
 			using var r = cmd.ExecuteReader();
-			if (!r.Read()) return;
+			if (r.Read()) {
+				U.SkipInit(out FieldInfo info);
 
-			U.SkipInit(out FieldInfo info);
+				r.DAssert_Name(0, "ordinal");
+				info.Ordinal = r.GetInt32(0);
 
-			r.DAssert_Name(0, "ordinal");
-			info.Ordinal = r.GetInt32(0);
+				r.DAssert_Name(1, "st");
+				info.StorageType = (FieldStorageType)r.GetInt32(1);
+				info.StorageType.DAssert_Defined();
 
-			r.DAssert_Name(1, "st");
-			info.StorageType = (FieldStorageType)r.GetInt32(1);
-			info.StorageType.DAssert_Defined();
-
-			SetCachedFieldInfo(name, info);
+				SetCachedFieldInfo(name, info);
+			}
 		}
 	}
 
