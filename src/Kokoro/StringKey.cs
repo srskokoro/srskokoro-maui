@@ -22,7 +22,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	public int CompareTo(StringKey? other) => Value.CompareTo(other?.Value);
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public override bool Equals(object? obj) {
+	public override bool Equals([NotNullWhen(true)] object? obj) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
 
@@ -48,7 +48,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public bool Equals(StringKey? other) {
+	public bool Equals([NotNullWhen(true)] StringKey? other) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
 
