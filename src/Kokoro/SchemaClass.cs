@@ -176,26 +176,24 @@ public sealed class SchemaClass : DataEntity {
 			"""
 			, new SqliteParameter("$rowid", _RowId));
 
-		{
-			using var r = cmd.ExecuteReader();
-			if (r.Read()) {
-				// Pending changes will be discarded
-				_State = StateFlags.NoChanges;
+		using var r = cmd.ExecuteReader();
+		if (r.Read()) {
+			// Pending changes will be discarded
+			_State = StateFlags.NoChanges;
 
-				r.DAssert_Name(0, "uid");
-				_Uid = r.GetUniqueId(0);
+			r.DAssert_Name(0, "uid");
+			_Uid = r.GetUniqueId(0);
 
-				r.DAssert_Name(1, "ordinal");
-				_Ordinal = r.GetInt32(1);
+			r.DAssert_Name(1, "ordinal");
+			_Ordinal = r.GetInt32(1);
 
-				r.DAssert_Name(2, "src");
-				_SrcRowId = r.GetInt64(2);
+			r.DAssert_Name(2, "src");
+			_SrcRowId = r.GetInt64(2);
 
-				r.DAssert_Name(3, "name");
-				_Name = r.GetString(3);
+			r.DAssert_Name(3, "name");
+			_Name = r.GetString(3);
 
-				return; // Early exit
-			}
+			return; // Early exit
 		}
 
 		// Otherwise, either deleted or never existed
