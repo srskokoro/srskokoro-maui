@@ -171,7 +171,7 @@ public sealed class SchemaClass : DataEntity {
 		var db = Host.Db;
 		using var cmd = db.CreateCommand(
 			"""
-			SELECT uid,ordinal,src,name
+			SELECT uid,ordinal,src,name FROM SchemaClasses
 			WHERE rowid=$rowid
 			"""
 			, new SqliteParameter("$rowid", _RowId));
