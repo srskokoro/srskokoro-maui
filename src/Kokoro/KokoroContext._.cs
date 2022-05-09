@@ -234,7 +234,7 @@ public partial class KokoroContext : IDisposable {
 	private DisposingObjectPool<KokoroSqliteDb>? _OperableDbPool;
 
 	internal KokoroSqliteDb ObtainOperableDb() {
-		DebugAssert_UsageMarked();
+		DAssert_UsageMarked();
 
 		KokoroSqliteDb? db;
 		try {
@@ -257,7 +257,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 	internal void RecycleOperableDb(KokoroSqliteDb db) {
-		DebugAssert_UsageMarked();
+		DAssert_UsageMarked();
 
 		try {
 			_OperableDbPool!.TryPool(db);
@@ -279,25 +279,25 @@ public partial class KokoroContext : IDisposable {
 	#endregion
 
 	internal void LoadOperables() {
-		DebugAssert_UsageMarkedExclusive();
+		DAssert_UsageMarkedExclusive();
 		// Load only when not already loaded
 		if (_OperableDbPool == null) {
-			DebugAssert_VersionOperable();
+			DAssert_VersionOperable();
 			ForceLoadOperables();
 		}
 	}
 
 	internal void UnloadOperables() {
-		DebugAssert_UsageMarkedExclusive();
+		DAssert_UsageMarkedExclusive();
 		// Unload only when not already unloaded
 		if (_OperableDbPool != null) {
-			DebugAssert_VersionOperable();
+			DAssert_VersionOperable();
 			ForceUnloadOperables();
 		}
 	}
 
 	internal void ForceLoadOperables() {
-		DebugAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse();
+		DAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse();
 		Debug.Assert(_OperableDbPool == null, "Operables already loaded");
 
 		SqliteConnectionStringBuilder connStrBuilder = new() {
@@ -327,7 +327,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 	internal void ForceUnloadOperables() {
-		DebugAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse();
+		DAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse();
 		Debug.Assert(_OperableDbPool != null, "Operables already unloaded");
 		// TODO Assert that all DB connections have already been disposed
 
@@ -345,7 +345,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 	internal void DisposeOperables() {
-		DebugAssert_UsageMarkedExclusivelyForDispose();
+		DAssert_UsageMarkedExclusivelyForDispose();
 		// Unload only when not already unloaded
 		if (_OperableDbPool != null) {
 			ForceUnloadOperables();
@@ -353,7 +353,7 @@ public partial class KokoroContext : IDisposable {
 	}
 
 	[Conditional("DEBUG")]
-	private void DebugAssert_VersionOperable()
+	private void DAssert_VersionOperable()
 		=> Debug.Assert(_Version.Operable, "Version should be operable");
 
 	#endregion
@@ -1095,20 +1095,20 @@ public partial class KokoroContext : IDisposable {
 	#region Debugging Convenience & Utilities
 
 	[Conditional("DEBUG")]
-	private void DebugAssert_UsageMarked()
+	private void DAssert_UsageMarked()
 		=> Debug.Assert(UsageMarked_NV, "Shouldn't be called without first marking usage");
 
 	[Conditional("DEBUG")]
-	private void DebugAssert_UsageMarkedExclusive()
+	private void DAssert_UsageMarkedExclusive()
 		=> Debug.Assert(UsageMarkedExclusive_NV, "Shouldn't be called without first marking exclusive usage");
 
 	[Conditional("DEBUG")]
-	private void DebugAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse()
+	private void DAssert_UsageMarkedExclusive_Or_GuaranteedExclusiveUse()
 		=> Debug.Assert(UsageMarkedExclusive_NV || !IsFullyConstructed || IsDisposeRequestHandled_NV,
 			"Shouldn't be called without first marking exclusive usage");
 
 	[Conditional("DEBUG")]
-	private void DebugAssert_UsageMarkedExclusivelyForDispose()
+	private void DAssert_UsageMarkedExclusivelyForDispose()
 		=> Debug.Assert(IsDisposeRequestHandled_NV, $"Shouldn't be called {(UsageMarked_NV
 			? "while usage is marked" : "when not marked exclusively for disposal")}");
 
@@ -1119,7 +1119,7 @@ public partial class KokoroContext : IDisposable {
 	#region `IDisposable` implementation
 
 	protected virtual void DisposeActual(bool disposing) {
-		DebugAssert_UsageMarkedExclusivelyForDispose();
+		DAssert_UsageMarkedExclusivelyForDispose();
 
 		if (!disposing) {
 			// Either there're no more references to this object, i.e., we're
