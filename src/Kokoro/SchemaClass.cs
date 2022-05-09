@@ -327,11 +327,11 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 	[SkipLocalsInit]
-	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey name) {
+	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey fieldName) {
 		long fld;
 		using (var cmd = db.CreateCommand(
 			"SELECT rowid FROM FieldNames WHERE name=$name"
-			, new SqliteParameter("$name", name.Value))
+			, new SqliteParameter("$name", fieldName.Value))
 		) {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) fld = r.GetInt64(0);
@@ -358,7 +358,7 @@ public sealed class SchemaClass : DataEntity {
 				info.StorageType = (FieldStorageType)r.GetInt32(1);
 				info.StorageType.DAssert_Defined();
 
-				SetCachedFieldInfo(name, info);
+				SetCachedFieldInfo(fieldName, info);
 			}
 		}
 	}
