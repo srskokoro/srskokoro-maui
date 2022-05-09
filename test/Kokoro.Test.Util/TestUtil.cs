@@ -44,11 +44,7 @@ public static partial class TestUtil {
 	}
 
 	public static TEnum NextEnum<TEnum>(this Random random) where TEnum : struct, Enum {
-		return random.NextItem(NextEnums<TEnum>.Values);
-	}
-
-	private static class NextEnums<TEnum> where TEnum : struct, Enum {
-		internal static readonly TEnum[] Values = Enum.GetValues<TEnum>();
+		return random.NextItem(EnumUtils.EnumVals<TEnum>.Values);
 	}
 
 
