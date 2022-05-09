@@ -203,6 +203,167 @@ public sealed class SchemaClass : DataEntity {
 		_State = StateFlags.NotExists;
 	}
 
+	public void Load(bool core) {
+		if (core) Load();
+	}
+
+	public void Load(bool core, StringKey fieldName1) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2, StringKey fieldName3) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+			InternalLoadFieldInfo(db, fieldName3);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+			InternalLoadFieldInfo(db, fieldName3);
+			InternalLoadFieldInfo(db, fieldName4);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+			InternalLoadFieldInfo(db, fieldName3);
+			InternalLoadFieldInfo(db, fieldName4);
+			InternalLoadFieldInfo(db, fieldName5);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+			InternalLoadFieldInfo(db, fieldName3);
+			InternalLoadFieldInfo(db, fieldName4);
+			InternalLoadFieldInfo(db, fieldName5);
+			InternalLoadFieldInfo(db, fieldName6);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+			InternalLoadFieldInfo(db, fieldName3);
+			InternalLoadFieldInfo(db, fieldName4);
+			InternalLoadFieldInfo(db, fieldName5);
+			InternalLoadFieldInfo(db, fieldName6);
+			InternalLoadFieldInfo(db, fieldName7);
+		}
+	}
+
+	public void Load(bool core, StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7, StringKey fieldName8) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+			InternalLoadFieldInfo(db, fieldName1);
+			InternalLoadFieldInfo(db, fieldName2);
+			InternalLoadFieldInfo(db, fieldName3);
+			InternalLoadFieldInfo(db, fieldName4);
+			InternalLoadFieldInfo(db, fieldName5);
+			InternalLoadFieldInfo(db, fieldName6);
+			InternalLoadFieldInfo(db, fieldName7);
+			InternalLoadFieldInfo(db, fieldName8);
+			// TODO A counterpart that loads up to 15 field infos
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void Load(bool core, params StringKey[] fieldNames)
+		=> Load(core, fieldNames.AsSpan());
+
+	public void Load(bool core, ReadOnlySpan<StringKey> fieldNames) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+
+			// TODO Unroll?
+			foreach (var fieldName in fieldNames)
+				InternalLoadFieldInfo(db, fieldName);
+		}
+	}
+
+	public void Load(bool core, IEnumerable<StringKey> fieldNames) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (core) Load();
+
+			// TODO Unroll?
+			foreach (var fieldName in fieldNames)
+				InternalLoadFieldInfo(db, fieldName);
+		}
+	}
+
+	[SkipLocalsInit]
+	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey name) {
+		long fld;
+		using (var cmd = db.CreateCommand(
+			"SELECT rowid FROM FieldNames WHERE name=$name"
+			, new SqliteParameter("$name", name.Value))
+		) {
+			using var r = cmd.ExecuteReader();
+			if (!r.Read()) return;
+			fld = r.GetInt64(0);
+			// TODO Cache and load from cache
+		}
+
+		using (var cmd = db.CreateCommand(
+			"""
+			SELECT ordinal,st FROM SchemaClassToFields
+			WHERE cls=$cls AND fld=$fld
+			"""
+			, new SqliteParameter("$cls", _RowId)
+			, new SqliteParameter("$fld", fld))
+		) {
+			using var r = cmd.ExecuteReader();
+			if (!r.Read()) return;
+
+			U.SkipInit(out FieldInfo info);
+
+			r.DAssert_Name(0, "ordinal");
+			info.Ordinal = r.GetInt32(0);
+
+			r.DAssert_Name(1, "st");
+			info.StorageType = (FieldStorageType)r.GetInt32(1);
+			info.StorageType.DAssert_Defined();
+
+			SetCachedFieldInfo(name, info);
+		}
+	}
+
+
 	public void Unload() {
 		UnloadOnlyCore();
 		UnloadOnlyNonCore();
