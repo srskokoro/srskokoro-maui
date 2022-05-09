@@ -2,6 +2,7 @@
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.Runtime.InteropServices;
 
 public sealed class SchemaClass : DataEntity {
 
@@ -23,6 +24,25 @@ public sealed class SchemaClass : DataEntity {
 		Change_Ordinal  = 1 << 1,
 		Change_SrcRowId = 1 << 2,
 		Change_Name     = 1 << 3,
+	}
+
+	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
+	private HashSet<StringKey>? _FieldInfosChanged;
+
+	[StructLayout(LayoutKind.Auto)]
+	public struct FieldInfo {
+		private int _Ordinal;
+		private FieldStorageType _StorageType;
+
+		public int Ordinal {
+			get => _Ordinal;
+			set => _Ordinal = value;
+		}
+
+		public FieldStorageType StorageType {
+			get => _StorageType;
+			set => _StorageType = value;
+		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,6 +96,57 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 	public void SetCachedName(string? name) => _Name = name;
+
+
+	public bool TryGetFieldInfo(StringKey name, [MaybeNullWhen(false)] out FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos != null && infos.TryGetValue(name, out info)) {
+			return true;
+		}
+		U.SkipInit(out info);
+		return false;
+	}
+
+	public void SetFieldInfo(StringKey name, FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+		var changed = _FieldInfosChanged;
+		if (changed == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto InitChanged;
+		}
+
+	Set:
+		infos[name] = info;
+		changed.Add(name);
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+	InitChanged:
+		_FieldInfosChanged = changed = new();
+		goto Set;
+	}
+
+	public void SetCachedFieldInfo(StringKey name, FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+	Set:
+		infos[name] = info;
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+		goto Set;
+	}
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
