@@ -73,11 +73,11 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static bool operator ==(StringKey? left, StringKey? right) {
+	public static bool operator ==(StringKey? a, StringKey? b) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
 
-		if ((object?)left != right) {
+		if ((object?)a != b) {
 			goto CmpStr; // This becomes a conditional jump
 		}
 	EQ:
@@ -89,21 +89,21 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: The longest execution is when the sequence is equal. So we
 		// favor that instead of the early outs leading to the not-equals case.
 
-		if (left is null) goto NE; // A conditional jump to not favor it
-		if (right is null) goto NE; // ^
+		if (a is null) goto NE; // A conditional jump to not favor it
+		if (b is null) goto NE; // ^
 
-		if (string.Equals(left.Value, right.Value)) {
+		if (string.Equals(a.Value, b.Value)) {
 			goto EQ; // This becomes an unconditional jump
 		} else
 			goto NE; // This becomes a conditional jump to not favor it
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-	public static bool operator !=(StringKey? left, StringKey? right) {
+	public static bool operator !=(StringKey? a, StringKey? b) {
 		// The following arrangement allows `string.Equals()` to be inlined,
 		// while also producing a decent asm output.
 
-		if ((object?)left != right) {
+		if ((object?)a != b) {
 			goto CmpStr; // This becomes a conditional jump
 		}
 	EQ:
@@ -115,10 +115,10 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: The longest execution is when the sequence is equal. So we
 		// favor that instead of the early outs leading to the not-equals case.
 
-		if (left is null) goto NE; // A conditional jump to not favor it
-		if (right is null) goto NE; // ^
+		if (a is null) goto NE; // A conditional jump to not favor it
+		if (b is null) goto NE; // ^
 
-		if (string.Equals(left.Value, right.Value)) {
+		if (string.Equals(a.Value, b.Value)) {
 			goto EQ; // This becomes an unconditional jump
 		} else
 			goto NE; // This becomes a conditional jump to not favor it
