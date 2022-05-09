@@ -10,7 +10,7 @@ internal static class EnumUtils {
 		internal static readonly HashSet<TEnum> Set = new(EnumVals<TEnum>.Values);
 	}
 
-	public static bool IsDefined<TEnum>(TEnum enumValue) where TEnum : struct, Enum {
+	public static bool IsDefined<TEnum>(this TEnum enumValue) where TEnum : struct, Enum {
 		// See also,
 		// - https://stackoverflow.com/a/55028274
 		// - https://stackoverflow.com/a/13635
@@ -20,7 +20,7 @@ internal static class EnumUtils {
 	}
 
 	[Conditional("DEBUG")]
-	public static void DAssert_Defined<TEnum>(TEnum enumValue) where TEnum : struct, Enum {
+	public static void DAssert_Defined<TEnum>(this TEnum enumValue) where TEnum : struct, Enum {
 		Debug.Assert(IsDefined(enumValue), $"Undefined enum (for `{typeof(TEnum)}`): {enumValue}");
 	}
 }
