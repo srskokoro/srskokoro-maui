@@ -378,7 +378,11 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 	private void UnloadOnlyNonCore() {
-		// Nothing (for now)
+		var infos = _FieldInfos;
+		if (infos != null) {
+			infos.Clear();
+			_FieldInfosChanged?.Clear();
+		}
 	}
 
 
