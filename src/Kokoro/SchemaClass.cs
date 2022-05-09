@@ -68,8 +68,8 @@ public sealed class SchemaClass : DataEntity {
 	public UniqueId Uid {
 		get => _Uid;
 		set {
-			_State = StateFlags.Change_Uid;
 			_Uid = value;
+			_State = StateFlags.Change_Uid;
 		}
 	}
 
@@ -78,8 +78,8 @@ public sealed class SchemaClass : DataEntity {
 	public int Ordinal {
 		get => _Ordinal;
 		set {
-			_State = StateFlags.Change_Ordinal;
 			_Ordinal = value;
+			_State = StateFlags.Change_Ordinal;
 		}
 	}
 
@@ -88,8 +88,8 @@ public sealed class SchemaClass : DataEntity {
 	public long SrcRowId {
 		get => _SrcRowId;
 		set {
-			_State = StateFlags.Change_SrcRowId;
 			_SrcRowId = value;
+			_State = StateFlags.Change_SrcRowId;
 		}
 	}
 
@@ -98,8 +98,8 @@ public sealed class SchemaClass : DataEntity {
 	public string? Name {
 		get => _Name;
 		set {
-			_State = StateFlags.Change_Name;
 			_Name = value;
+			_State = StateFlags.Change_Name;
 		}
 	}
 
