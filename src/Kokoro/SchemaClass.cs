@@ -183,17 +183,17 @@ public sealed class SchemaClass : DataEntity {
 			// Pending changes will be discarded
 			_State = StateFlags.NoChanges;
 
-			r.DAssert_Name(1, "uid");
-			_Uid = r.GetUniqueId(1);
+			r.DAssert_Name(0, "uid");
+			_Uid = r.GetUniqueId(0);
 
-			r.DAssert_Name(2, "ordinal");
-			_Ordinal = r.GetInt32(2);
+			r.DAssert_Name(1, "ordinal");
+			_Ordinal = r.GetInt32(1);
 
-			r.DAssert_Name(3, "src");
-			_SrcRowId = r.GetInt64(3);
+			r.DAssert_Name(2, "src");
+			_SrcRowId = r.GetInt64(2);
 
-			r.DAssert_Name(4, "name");
-			_Name = r.GetString(4);
+			r.DAssert_Name(3, "name");
+			_Name = r.GetString(3);
 
 			return; // Early exit
 		}
