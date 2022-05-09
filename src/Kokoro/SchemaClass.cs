@@ -169,8 +169,7 @@ public sealed class SchemaClass : DataEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.CreateCommand(
-			"""
+		using var cmd = db.CreateCommand("""
 			SELECT uid,ordinal,src,name FROM SchemaClasses
 			WHERE rowid=$rowid
 			"""
