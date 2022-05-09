@@ -17,13 +17,15 @@ public sealed class SchemaClass : DataEntity {
 	private StateFlags _State;
 
 	[Flags]
-	private enum StateFlags {
+	private enum StateFlags : int {
 		NoChanges = 0,
 
 		Change_Uid      = 1 << 0,
 		Change_Ordinal  = 1 << 1,
 		Change_SrcRowId = 1 << 2,
 		Change_Name     = 1 << 3,
+
+		NotExists       = 1 << 31,
 	}
 
 	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
@@ -51,6 +53,13 @@ public sealed class SchemaClass : DataEntity {
 	public SchemaClass(KokoroCollection host, long rowid)
 		: this(host) => _RowId = rowid;
 
+
+	public bool Exists {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		get => _State < 0 ? false : true;
+	}
 
 	public long RowId {
 		get => _RowId;
@@ -191,6 +200,7 @@ public sealed class SchemaClass : DataEntity {
 
 	NotFound: // -- either deleted or never existed
 		Unload(); // Let that state materialize here then
+		_State = StateFlags.NotExists;
 	}
 
 	public void Unload() {
