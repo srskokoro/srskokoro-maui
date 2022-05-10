@@ -20,6 +20,46 @@ internal static class SqliteCommandExtensions {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int ExecuteNonQuery(this SqliteCommand command, params SqliteParameter[] parameters)
+		=> command.Set(parameters).ExecuteNonQuery();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T ExecuteScalar<T>(this SqliteCommand command)
 		=> (T)command.ExecuteScalar()!;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T ExecuteScalar<T>(this SqliteCommand command, params SqliteParameter[] parameters)
+		=> (T)command.Set(parameters).ExecuteScalar()!;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object? ExecuteScalar(this SqliteCommand command, params SqliteParameter[] parameters)
+		=> command.Set(parameters).ExecuteScalar();
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int Exec(this SqliteCommand command)
+		=> command.ExecuteNonQuery();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int Exec(this SqliteCommand command, params SqliteParameter[] parameters)
+		=> command.ExecuteNonQuery(parameters);
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T ExecScalar<T>(this SqliteCommand command)
+		=> command.ExecuteScalar<T>();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T ExecScalar<T>(this SqliteCommand command, params SqliteParameter[] parameters)
+		=> command.ExecuteScalar<T>(parameters)!;
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object? ExecScalar(this SqliteCommand command)
+		=> command.ExecuteScalar();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object? ExecScalar(this SqliteCommand command, params SqliteParameter[] parameters)
+		=> command.ExecuteScalar(parameters);
 }
