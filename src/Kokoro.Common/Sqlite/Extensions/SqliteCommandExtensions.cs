@@ -18,6 +18,16 @@ internal static class SqliteCommandExtensions {
 		return command;
 	}
 
+	public static SqliteCommand Set(this SqliteCommand command, string commandText, params SqliteParameter[] parameters) {
+		command.CommandText = commandText;
+		var paramsCol = command.Parameters;
+		if (paramsCol.Count > 0) {
+			paramsCol.Clear();
+		}
+		paramsCol.AddRange(parameters);
+		return command;
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int ExecuteNonQuery(this SqliteCommand command, params SqliteParameter[] parameters)
