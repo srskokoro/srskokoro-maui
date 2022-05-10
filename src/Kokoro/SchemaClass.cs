@@ -172,8 +172,8 @@ public sealed class SchemaClass : DataEntity {
 		using var cmd = db.CreateCommand("""
 			SELECT uid,ordinal,src,name FROM SchemaClasses
 			WHERE rowid=$rowid
-			"""
-			, new SqliteParameter("$rowid", _RowId));
+			""");
+		cmd.Parameters.Add(new SqliteParameter("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
@@ -325,25 +325,31 @@ public sealed class SchemaClass : DataEntity {
 
 	[SkipLocalsInit]
 	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey fieldName) {
+		using var cmd = db.CreateCommand();
+		var cmdParams = cmd.Parameters;
+
 		long fld;
-		using (var cmd = db.CreateCommand(
-			"SELECT rowid FROM FieldNames WHERE name=$name"
-			, new SqliteParameter("$name", fieldName.Value))
-		) {
+		{
+			cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
+			cmdParams.Add(new SqliteParameter("$name", fieldName.Value));
+
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) fld = r.GetInt64(0);
 			else return;
 			// TODO Cache and load from cache
 		}
 
-		using (var cmd = db.CreateCommand(
-			"""
-			SELECT ordinal,st FROM SchemaClassToFields
-			WHERE cls=$cls AND fld=$fld
-			"""
-			, new SqliteParameter("$cls", _RowId)
-			, new SqliteParameter("$fld", fld))
-		) {
+		cmdParams.Clear();
+
+		// Load field info
+		{
+			cmd.CommandText = """
+				SELECT ordinal,st FROM SchemaClassToFields
+				WHERE cls=$cls AND fld=$fld
+				""";
+			cmdParams.Add(new SqliteParameter("$cls", _RowId));
+			cmdParams.Add(new SqliteParameter("$fld", fld));
+
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				U.SkipInit(out FieldInfo info);
