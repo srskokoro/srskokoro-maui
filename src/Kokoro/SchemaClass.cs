@@ -28,7 +28,7 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
-	private Dictionary<StringKey, FieldInfo>? _FieldInfosChanged;
+	private Dictionary<StringKey, FieldInfo>? _FieldInfoChanges;
 
 	[StructLayout(LayoutKind.Auto)]
 	public struct FieldInfo {
@@ -122,21 +122,21 @@ public sealed class SchemaClass : DataEntity {
 			goto Init;
 		}
 
-		var changed = _FieldInfosChanged;
-		if (changed == null) {
+		var changes = _FieldInfoChanges;
+		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanged;
 		}
 
 	Set:
 		infos[name] = info;
-		changed[name] = info;
+		changes[name] = info;
 		return;
 
 	Init:
 		_FieldInfos = infos = new();
 	InitChanged:
-		_FieldInfosChanged = changed = new();
+		_FieldInfoChanges = changes = new();
 		goto Set;
 	}
 
@@ -362,7 +362,7 @@ public sealed class SchemaClass : DataEntity {
 				info.StorageType.DAssert_Defined();
 
 				// Pending changes will be discarded
-				_FieldInfosChanged?.Remove(fieldName);
+				_FieldInfoChanges?.Remove(fieldName);
 
 				SetCachedFieldInfo(fieldName, info);
 			}
@@ -387,7 +387,7 @@ public sealed class SchemaClass : DataEntity {
 		var infos = _FieldInfos;
 		if (infos != null) {
 			infos.Clear();
-			_FieldInfosChanged?.Clear();
+			_FieldInfoChanges?.Clear();
 		}
 	}
 
