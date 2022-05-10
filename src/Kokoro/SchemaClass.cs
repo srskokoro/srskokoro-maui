@@ -36,12 +36,12 @@ public sealed class SchemaClass : DataEntity {
 		private FieldStorageType _StorageType;
 
 		public int Ordinal {
-			get => _Ordinal;
+			readonly get => _Ordinal;
 			set => _Ordinal = value;
 		}
 
 		public FieldStorageType StorageType {
-			get => _StorageType;
+			readonly get => _StorageType;
 			set => _StorageType = value;
 		}
 	}
