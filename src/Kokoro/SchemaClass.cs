@@ -334,8 +334,11 @@ public sealed class SchemaClass : DataEntity {
 			cmdParams.Add(new SqliteParameter("$name", fieldName.Value));
 
 			using var r = cmd.ExecuteReader();
-			if (r.Read()) fld = r.GetInt64(0);
-			else return;
+			if (r.Read()) {
+				fld = r.GetInt64(0);
+			} else {
+				return;
+			}
 			// TODO Cache and load from cache
 		}
 
