@@ -10,11 +10,11 @@ internal static class SqliteCommandExtensions {
 	}
 
 	public static SqliteCommand Set(this SqliteCommand command, params SqliteParameter[] parameters) {
-		var _parameters = command.Parameters;
-		if (_parameters.Count > 0) {
-			_parameters.Clear();
+		var paramsCol = command.Parameters;
+		if (paramsCol.Count > 0) {
+			paramsCol.Clear();
 		}
-		_parameters.AddRange(parameters);
+		paramsCol.AddRange(parameters);
 		return command;
 	}
 
