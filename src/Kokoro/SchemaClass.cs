@@ -436,9 +436,122 @@ public sealed class SchemaClass : DataEntity {
 		_Uid = uid;
 	}
 
-
+	[SkipLocalsInit]
 	public void SaveChanges() {
-		throw new NotImplementedException();
+		var state = _State;
+		if (state < 0) goto Missing;
+
+		var db = Host.Db; // Throws if host is already disposed
+		using (new NestingWriteTransaction(db)) {
+			using var cmd = db.CreateCommand();
+			SqliteParameterCollection cmdParams = cmd.Parameters;
+
+			// Save core state
+			if (state != StateFlags.NoChanges) {
+				cmdParams.AddWithValue("$rowid", _RowId);
+
+				StringBuilder cmdSb = new();
+				cmdSb.Append("UPDATE SchemaClasses SET\n");
+
+				if ((state & StateFlags.Change_Uid) != 0) {
+					cmdSb.Append("uid=$uid,");
+					cmdParams.AddWithValue("$uid", _Uid.ToByteArray());
+				}
+				if ((state & StateFlags.Change_Ordinal) != 0) {
+					cmdSb.Append("ordinal=$ordinal,");
+					cmdParams.AddWithValue("$ordinal", _Ordinal);
+				}
+				if ((state & StateFlags.Change_SrcRowId) != 0) {
+					cmdSb.Append("src=$src,");
+					cmdParams.AddWithValue("$src", RowIds.Box(_SrcRowId));
+				}
+				if ((state & StateFlags.Change_Name) != 0) {
+					cmdSb.Append("name=$name,");
+					cmdParams.AddWithValue("$name", _Name);
+				}
+
+				Debug.Assert(cmdSb[^1] == ',', $"No changes to save: `{nameof(_State)} == {state}`");
+				cmdSb.Remove(cmdSb.Length - 1, 1); // Remove final comma
+
+				cmdSb.Append("\nWHERE rowid=$rowid");
+				cmd.CommandText = cmdSb.ToString();
+
+				int updated = cmd.ExecuteNonQuery();
+				if (updated != 0) {
+					Debug.Assert(updated is 1 or 0);
+					_State = StateFlags.NoChanges; // Changes saved successfully
+				} else
+					goto Missing;
+			}
+
+			// Save field infos
+			{
+				var changes = _FieldInfoChanges;
+				if (changes != null) {
+					foreach (var (fieldName, info) in changes) {
+						long fld;
+						{
+							cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
+							cmdParams.Clear();
+							cmdParams.AddWithValue("$name", fieldName.Value);
+
+							var r = cmd.ExecuteReader();
+							// ^ No `using` since the reader will be disposed
+							// automatically anyway if either the command text
+							// changes or the command object is disposed.
+
+							if (r.Read()) {
+								fld = r.GetInt64(0);
+								goto UpdateFieldInfo;
+							} else {
+								goto InsertNewFieldName;
+							}
+
+							// TODO Cache and load from cache
+						}
+
+					InsertNewFieldName:
+						{
+							cmd.CommandText = "INSERT INTO FieldNames(rowid,name) VALUES($rowid,$name)";
+							cmdParams.Clear();
+							cmdParams.AddWithValue("$rowid", fld = Host.Context.NextFieldNameRowId());
+							cmdParams.AddWithValue("$name", fieldName.Value);
+
+							int updated = cmd.ExecuteNonQuery(); // Shouldn't normally fail
+							Debug.Assert(updated == 1, $"Updated: {updated}");
+						}
+
+					UpdateFieldInfo:
+						{
+							cmd.CommandText = """
+								INSERT INTO SchemaClassToFields(cls,fld,ordinal,st)
+								VALUES($cls,$fld,$ordinal,$st)
+								ON CONFLICT DO UPDATE
+								SET ordinal=$ordinal,st=$st
+								""";
+							cmdParams.Clear();
+							cmdParams.AddWithValue("$cls", _RowId);
+							cmdParams.AddWithValue("$fld", fld);
+							cmdParams.AddWithValue("$ordinal", info.Ordinal);
+							cmdParams.AddWithValue("$st", info.StorageType);
+						}
+					}
+					// Loop end
+
+					changes.Clear(); // Changes saved successfully
+				}
+			}
+		}
+
+		// Success!
+		return;
+
+	Missing:
+		E_CannotUpdate_MRec(_RowId);
+
+		[DoesNotReturn]
+		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
+			$"Cannot update `{nameof(SchemaClass)}` with rowid {rowid} as it's missing.");
 	}
 
 
