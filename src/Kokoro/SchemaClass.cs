@@ -173,7 +173,7 @@ public sealed class SchemaClass : DataEntity {
 			SELECT uid,ordinal,src,name FROM SchemaClasses
 			WHERE rowid=$rowid
 			""");
-		cmd.Parameters.Add(new SqliteParameter("$rowid", _RowId));
+		cmd.Parameters.AddWithValue("$rowid", _RowId);
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
@@ -331,7 +331,7 @@ public sealed class SchemaClass : DataEntity {
 		long fld;
 		{
 			cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
-			cmdParams.Add(new SqliteParameter("$name", fieldName.Value));
+			cmdParams.AddWithValue("$name", fieldName.Value);
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -350,8 +350,8 @@ public sealed class SchemaClass : DataEntity {
 				SELECT ordinal,st FROM SchemaClassToFields
 				WHERE cls=$cls AND fld=$fld
 				""";
-			cmdParams.Add(new SqliteParameter("$cls", _RowId));
-			cmdParams.Add(new SqliteParameter("$fld", fld));
+			cmdParams.AddWithValue("$cls", _RowId);
+			cmdParams.AddWithValue("$fld", fld);
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
