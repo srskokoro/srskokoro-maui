@@ -1,4 +1,4 @@
-﻿namespace Kokoro;
+﻿namespace Kokoro.Exceptions;
 using System;
 using System.Runtime.Serialization;
 

@@ -2,6 +2,7 @@
   <Import Project="..\Kokoro.Common\Kokoro.Common.Usings.targets" />
   <ItemGroup>
     <Using Include="Kokoro" />
+    <Using Include="Kokoro.Exceptions" />
     <Using Include="Kokoro.Internal.Sqlite.Extensions" />
   </ItemGroup>
 </Project>
