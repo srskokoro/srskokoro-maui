@@ -28,7 +28,7 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
-	private HashSet<StringKey>? _FieldInfosChanged;
+	private Dictionary<StringKey, FieldInfo>? _FieldInfosChanged;
 
 	[StructLayout(LayoutKind.Auto)]
 	public struct FieldInfo {
@@ -130,7 +130,7 @@ public sealed class SchemaClass : DataEntity {
 
 	Set:
 		infos[name] = info;
-		changed.Add(name);
+		changed[name] = info;
 		return;
 
 	Init:
