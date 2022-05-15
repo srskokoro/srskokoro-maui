@@ -390,7 +390,7 @@ public sealed class SchemaClass : DataEntity {
 		var infos = _FieldInfos;
 		if (infos != null) {
 			infos.Clear();
-			_FieldInfoChanges?.Clear();
+			_FieldInfoChanges = null;
 		}
 	}
 
