@@ -46,7 +46,6 @@ public sealed class SchemaClass : DataEntity {
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public SchemaClass(KokoroCollection host) : base(host) { }
 
 	public SchemaClass(KokoroCollection host, long rowid)
