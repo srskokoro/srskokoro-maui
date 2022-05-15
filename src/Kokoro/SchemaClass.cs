@@ -126,7 +126,7 @@ public sealed class SchemaClass : DataEntity {
 		var changes = _FieldInfoChanges;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
-			goto InitChanged;
+			goto InitChanges;
 		}
 
 	Set:
@@ -136,7 +136,7 @@ public sealed class SchemaClass : DataEntity {
 
 	Init:
 		_FieldInfos = infos = new();
-	InitChanged:
+	InitChanges:
 		_FieldInfoChanges = changes = new();
 		goto Set;
 	}
