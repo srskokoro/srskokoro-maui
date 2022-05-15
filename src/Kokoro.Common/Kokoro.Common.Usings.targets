@@ -8,6 +8,7 @@
 
     <Using Include="System.Text" />
 
+    <Using Include="CommunityToolkit.Diagnostics" />
     <Using Include="CommunityToolkit.HighPerformance" />
 
     <Using Include="Kokoro.Common" />
