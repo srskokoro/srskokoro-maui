@@ -5,5 +5,6 @@ public abstract class DataEntity {
 
 	public KokoroCollection Host => _Host;
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public DataEntity(KokoroCollection host) => _Host = host;
 }
