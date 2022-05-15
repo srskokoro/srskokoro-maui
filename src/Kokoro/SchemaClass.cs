@@ -13,6 +13,9 @@ public sealed class SchemaClass : DataEntity {
 	private long _SrcRowId;
 	private string? _Name;
 
+	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
+	private Dictionary<StringKey, FieldInfo>? _FieldInfoChanges;
+
 	private StateFlags _State;
 
 	[Flags]
@@ -26,9 +29,6 @@ public sealed class SchemaClass : DataEntity {
 
 		NotExists       = 1 << 31,
 	}
-
-	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
-	private Dictionary<StringKey, FieldInfo>? _FieldInfoChanges;
 
 	[StructLayout(LayoutKind.Auto)]
 	public struct FieldInfo {
