@@ -83,7 +83,7 @@ partial class KokoroContext {
 			"parent INTEGER REFERENCES Items" + OnRowIdFk + "," +
 
 			// The item ordinal.
-			Ordinal_Int64Nn + "," +
+			Ordinal_Int32Nn + "," +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
 
