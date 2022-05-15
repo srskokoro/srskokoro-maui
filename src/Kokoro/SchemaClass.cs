@@ -18,6 +18,14 @@ public sealed class SchemaClass : DataEntity {
 
 	private StateFlags _State;
 
+	public bool Exists {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		get => _State < 0 ? false : true;
+	}
+
+
 	[Flags]
 	private enum StateFlags : int {
 		NoChanges = 0,
@@ -46,18 +54,12 @@ public sealed class SchemaClass : DataEntity {
 		}
 	}
 
+
 	public SchemaClass(KokoroCollection host) : base(host) { }
 
 	public SchemaClass(KokoroCollection host, long rowid)
 		: this(host) => _RowId = rowid;
 
-
-	public bool Exists {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		// Ternary operator returning true/false prevents redundant asm generation:
-		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		get => _State < 0 ? false : true;
-	}
 
 	public long RowId {
 		get => _RowId;
