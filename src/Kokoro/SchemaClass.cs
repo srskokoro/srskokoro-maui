@@ -374,11 +374,11 @@ public sealed class SchemaClass : DataEntity {
 
 
 	public void Unload() {
-		UnloadOnlyCore();
-		UnloadOnlyNonCore();
+		UnloadCoreState();
+		UnloadFieldInfos();
 	}
 
-	private void UnloadOnlyCore() {
+	public void UnloadCoreState() {
 		_State = default;
 		_Uid = default;
 		_Ordinal = default;
@@ -386,7 +386,7 @@ public sealed class SchemaClass : DataEntity {
 		_Name = default;
 	}
 
-	private void UnloadOnlyNonCore() {
+	public void UnloadFieldInfos() {
 		var infos = _FieldInfos;
 		if (infos != null) {
 			infos.Clear();
