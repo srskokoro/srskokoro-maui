@@ -419,6 +419,7 @@ public sealed class SchemaClass : DataEntity {
 	public void SaveAsNew(long rowid, UniqueId uid)
 		=> SaveAsNew(Host.Db, rowid, uid);
 
+	[SkipLocalsInit]
 	private void SaveAsNew(KokoroSqliteDb db, long rowid, UniqueId uid) {
 		try {
 			db.Exec("INSERT INTO SchemaClasses" +
