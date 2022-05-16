@@ -196,8 +196,8 @@ public sealed class SchemaClass : DataEntity {
 			return; // Early exit
 		}
 
-		// Otherwise, either deleted or never existed
-		Unload(); // Let that state materialize here then
+		// Otherwise, either deleted or never existed.
+		Unload(); // Let that state materialize here then.
 		_State = StateFlags.NotExists;
 	}
 
