@@ -422,16 +422,29 @@ public sealed class SchemaClass : DataEntity {
 	[SkipLocalsInit]
 	private void SaveAsNew(KokoroSqliteDb db, long rowid, UniqueId uid) {
 		try {
-			db.Exec("INSERT INTO SchemaClasses" +
+			using var tx = new NestingWriteTransaction(db);
+			using var cmd = db.CreateCommand(
+				"INSERT INTO SchemaClasses" +
 				"(rowid,uid,ordinal,src,name)" +
 				" VALUES" +
-				"($rowid,$uid,$ordinal,$src,$name)"
-				, new SqliteParameter("$rowid", rowid)
-				, new SqliteParameter("$uid", uid.ToByteArray())
-				, new SqliteParameter("$ordinal", _Ordinal)
-				, new SqliteParameter("$src", RowIds.Box(_SrcRowId))
-				, new SqliteParameter("$name", _Name)
-			);
+				"($rowid,$uid,$ordinal,$src,$name)");
+
+			SqliteParameterCollection cmdParams = cmd.Parameters;
+			cmdParams.AddWithValue("$rowid", rowid);
+			cmdParams.AddWithValue("$uid", uid.ToByteArray());
+			cmdParams.AddWithValue("$ordinal", _Ordinal);
+			cmdParams.AddWithValue("$src", RowIds.Box(_SrcRowId));
+			cmdParams.AddWithValue("$name", _Name);
+
+			int updated = cmd.ExecuteNonQuery();
+			Debug.Assert(updated == 1);
+
+			// Save field infos
+			{
+				var changes = _FieldInfoChanges;
+				if (changes != null)
+					InternalSaveFieldInfos(cmd, changes, rowid);
+			}
 		} catch (Exception ex) when (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
@@ -444,8 +457,6 @@ public sealed class SchemaClass : DataEntity {
 
 		_RowId = rowid;
 		_Uid = uid;
-
-		// FIXME Must save field infos as well
 	}
 
 	[SkipLocalsInit]
@@ -499,62 +510,8 @@ public sealed class SchemaClass : DataEntity {
 			// Save field infos
 			{
 				var changes = _FieldInfoChanges;
-				if (changes != null) {
-					foreach (var (fieldName, info) in changes) {
-						long fld;
-						{
-							cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
-							cmdParams.Clear();
-							cmdParams.AddWithValue("$name", fieldName.Value);
-
-							var r = cmd.ExecuteReader();
-							// ^ No `using` since the reader will be disposed
-							// automatically anyway if either the command text
-							// changes or the command object is disposed.
-
-							if (r.Read()) {
-								fld = r.GetInt64(0);
-								goto UpdateFieldInfo;
-							} else {
-								goto InsertNewFieldName;
-							}
-
-							// TODO Cache and load from cache
-						}
-
-					InsertNewFieldName:
-						{
-							cmd.CommandText = "INSERT INTO FieldNames(rowid,name) VALUES($rowid,$name)";
-							cmdParams.Clear();
-							cmdParams.AddWithValue("$rowid", fld = Host.Context.NextFieldNameRowId());
-							cmdParams.AddWithValue("$name", fieldName.Value);
-
-							int updated = cmd.ExecuteNonQuery(); // Shouldn't normally fail
-							Debug.Assert(updated == 1, $"Updated: {updated}");
-						}
-
-					UpdateFieldInfo:
-						{
-							cmd.CommandText = """
-								INSERT INTO SchemaClassToFields(cls,fld,ordinal,st)
-								VALUES($cls,$fld,$ordinal,$st)
-								ON CONFLICT DO UPDATE
-								SET ordinal=$ordinal,st=$st
-								""";
-							cmdParams.Clear();
-							cmdParams.AddWithValue("$cls", _RowId);
-							cmdParams.AddWithValue("$fld", fld);
-							cmdParams.AddWithValue("$ordinal", info.Ordinal);
-							cmdParams.AddWithValue("$st", info.StorageType);
-
-							int updated = cmd.ExecuteNonQuery();
-							Debug.Assert(updated == 1, $"Updated: {updated}");
-						}
-					}
-					// Loop end
-
-					changes.Clear(); // Changes saved successfully
-				}
+				if (changes != null)
+					InternalSaveFieldInfos(cmd, changes, _RowId);
 			}
 		}
 
@@ -567,6 +524,65 @@ public sealed class SchemaClass : DataEntity {
 		[DoesNotReturn]
 		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
 			$"Cannot update `{nameof(SchemaClass)}` with rowid {rowid} as it's missing.");
+	}
+
+	[SkipLocalsInit]
+	private void InternalSaveFieldInfos(SqliteCommand cmd, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsRowId) {
+		SqliteParameterCollection cmdParams = cmd.Parameters;
+		foreach (var (fieldName, info) in fieldInfoChanges) {
+			long fld;
+			{
+				cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
+				cmdParams.Clear();
+				cmdParams.AddWithValue("$name", fieldName.Value);
+
+				var r = cmd.ExecuteReader();
+				// ^ No `using` since the reader will be disposed
+				// automatically anyway if either the command text
+				// changes or the command object is disposed.
+
+				if (r.Read()) {
+					fld = r.GetInt64(0);
+					goto UpdateFieldInfo;
+				} else {
+					goto InsertNewFieldName;
+				}
+
+				// TODO Cache and load from cache
+			}
+
+		InsertNewFieldName:
+			{
+				cmd.CommandText = "INSERT INTO FieldNames(rowid,name) VALUES($rowid,$name)";
+				cmdParams.Clear();
+				cmdParams.AddWithValue("$rowid", fld = Host.Context.NextFieldNameRowId());
+				cmdParams.AddWithValue("$name", fieldName.Value);
+
+				int updated = cmd.ExecuteNonQuery(); // Shouldn't normally fail
+				Debug.Assert(updated == 1, $"Updated: {updated}");
+			}
+
+		UpdateFieldInfo:
+			{
+				cmd.CommandText = """
+					INSERT INTO SchemaClassToFields(cls,fld,ordinal,st)
+					VALUES($cls,$fld,$ordinal,$st)
+					ON CONFLICT DO UPDATE
+					SET ordinal=$ordinal,st=$st
+					""";
+				cmdParams.Clear();
+				cmdParams.AddWithValue("$cls", clsRowId);
+				cmdParams.AddWithValue("$fld", fld);
+				cmdParams.AddWithValue("$ordinal", info.Ordinal);
+				cmdParams.AddWithValue("$st", info.StorageType);
+
+				int updated = cmd.ExecuteNonQuery();
+				Debug.Assert(updated == 1, $"Updated: {updated}");
+			}
+		}
+		// Loop end
+
+		fieldInfoChanges.Clear(); // Changes saved successfully
 	}
 
 
