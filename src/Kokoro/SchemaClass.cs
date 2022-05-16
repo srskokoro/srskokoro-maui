@@ -546,6 +546,9 @@ public sealed class SchemaClass : DataEntity {
 							cmdParams.AddWithValue("$fld", fld);
 							cmdParams.AddWithValue("$ordinal", info.Ordinal);
 							cmdParams.AddWithValue("$st", info.StorageType);
+
+							int updated = cmd.ExecuteNonQuery();
+							Debug.Assert(updated == 1, $"Updated: {updated}");
 						}
 					}
 					// Loop end
