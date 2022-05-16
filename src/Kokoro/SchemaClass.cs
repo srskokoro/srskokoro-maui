@@ -338,7 +338,7 @@ public sealed class SchemaClass : DataEntity {
 			if (r.Read()) {
 				fld = r.GetInt64(0);
 			} else {
-				return;
+				goto NotFound;
 			}
 			// TODO Cache and load from cache
 		}
@@ -369,8 +369,16 @@ public sealed class SchemaClass : DataEntity {
 				_FieldInfoChanges?.Remove(name);
 
 				SetCachedFieldInfo(name, info);
+
+				return; // Early exit
 			}
 		}
+
+	NotFound:
+		// Otherwise, either deleted or never existed.
+		// Let that state materialize here then.
+		_FieldInfoChanges?.Remove(name);
+		_FieldInfos?.Remove(name);
 	}
 
 
