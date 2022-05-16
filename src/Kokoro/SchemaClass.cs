@@ -443,6 +443,8 @@ public sealed class SchemaClass : DataEntity {
 
 		_RowId = rowid;
 		_Uid = uid;
+
+		// FIXME Must save field infos as well
 	}
 
 	[SkipLocalsInit]
