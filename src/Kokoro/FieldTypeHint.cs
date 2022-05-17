@@ -1,7 +1,9 @@
 ﻿namespace Kokoro;
 
 public enum FieldTypeHint : int {
+	Interned =-0x1,
 	Null     = 0x0,
+
 	Zero     = 0x1,
 	One      = 0x2,
 	Int8     = 0x3,

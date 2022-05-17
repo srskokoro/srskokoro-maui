@@ -5,7 +5,6 @@ public sealed class FieldVal {
 	private readonly byte[] _Data;
 
 	public FieldVal(int typeHint, byte[] data) {
-		Guard.IsGreaterThan(typeHint, 0);
 		_TypeHint = typeHint;
 		_Data = data;
 	}
