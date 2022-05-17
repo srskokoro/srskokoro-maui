@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
 
 internal sealed class NullFieldsMarshal : FieldsMarshal2 {
+	public static readonly NullFieldsMarshal Instance = new();
 
-	public NullFieldsMarshal() : base(Stream.Null) { }
+	private NullFieldsMarshal() : base(Stream.Null) { }
 }
