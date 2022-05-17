@@ -6,7 +6,7 @@ internal ref struct NestingWriteTransaction {
 	private readonly string _CommitCommand;
 
 	private const string OutermostCommit = "END";
-	private bool IsOutermost {
+	private readonly bool IsOutermost {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => ReferenceEquals(_CommitCommand, OutermostCommit);
 	}
