@@ -6,6 +6,9 @@ internal abstract class FieldsMarshal2 : FieldsMarshal {
 
 	public int ModStampCount => _ModStampCount;
 
+
+	private protected FieldsMarshal2() { }
+
 	public FieldsMarshal2(Stream stream) {
 		_Stream = stream;
 
@@ -48,6 +51,7 @@ internal abstract class FieldsMarshal2 : FieldsMarshal {
 
 		_FieldValListPos = (_ModStampListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize) + modstampListSize;
 	}
+
 
 	public long ReadModStamp(int index) {
 		if ((uint)index < (uint)_ModStampCount) {
