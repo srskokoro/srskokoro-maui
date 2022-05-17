@@ -3,6 +3,7 @@
   <ItemGroup>
     <Using Include="Kokoro" />
     <Using Include="Kokoro.Exceptions" />
+    <Using Include="Kokoro.Internal.IO.Extensions" />
     <Using Include="Kokoro.Internal.Sqlite.Extensions" />
   </ItemGroup>
 </Project>
