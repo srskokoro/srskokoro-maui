@@ -83,11 +83,11 @@ internal abstract class FieldsMarshal : IDisposable {
 				if (typeHint < 0) {
 					// Field value is interned
 
-					// TODO-XXX Handle interned field value
-					// - When interned, the current field data is a varint rowid
+					// When interned, the current field data is a varint rowid
 					// pointing to a row in an interning table.
-					// - It shouldn't be possible to load the current data
-					// without first resolving to the actual data interned.
+					long rowid = (long)stream.ReadVarInt();
+
+					return OnReadFieldValInterned(rowid);
 				}
 
 				var data = new byte[fValLen];
@@ -106,4 +106,6 @@ internal abstract class FieldsMarshal : IDisposable {
 	}
 
 	protected virtual FieldVal? OnReadFieldValFail(int index) => null;
+
+	protected virtual FieldVal? OnReadFieldValInterned(long rowid) => null;
 }

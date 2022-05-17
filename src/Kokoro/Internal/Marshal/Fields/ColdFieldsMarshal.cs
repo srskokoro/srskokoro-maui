@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
 
-internal sealed class ColdFieldsMarshal : FieldsMarshal {
+internal class ColdFieldsMarshal : FieldsMarshal {
 
 	public ColdFieldsMarshal(Stream stream) : base(stream) { }
 }
