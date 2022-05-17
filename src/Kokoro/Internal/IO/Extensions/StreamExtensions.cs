@@ -11,8 +11,9 @@ internal static class StreamExtensions {
 		int sread = stream.Read(buffer);
 
 		int vread = VarInts.Read(buffer, out ulong result);
+		stream.Position += vread - sread;
+
 		if (vread != 0) {
-			stream.Position += vread - sread;
 			return result;
 		} else {
 			E_EndOfStream_InvOp();
