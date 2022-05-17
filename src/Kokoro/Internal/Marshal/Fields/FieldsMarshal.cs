@@ -76,7 +76,7 @@ internal abstract class FieldsMarshal : IDisposable {
 				// Seek to the target field's value bytes
 				stream.Position = _FieldValListPos + fOffset;
 
-				ulong fValSpec = stream.ReadVarInt();
+				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
 				Debug.Assert(fValSpec <= int.MaxValue);
 
 				int typeHint = (int)fValSpec - 1;
@@ -90,10 +90,10 @@ internal abstract class FieldsMarshal : IDisposable {
 					return OnReadFieldValInterned(rowid);
 				}
 
-				var data = new byte[fValLen];
+				var data = new byte[fValLen - fValSpecLen];
 				{
 					int sread = stream.Read(data);
-					Debug.Assert(sread == fValLen);
+					Debug.Assert(sread == data.Length);
 				}
 
 				return new FieldVal(typeHint, data);
