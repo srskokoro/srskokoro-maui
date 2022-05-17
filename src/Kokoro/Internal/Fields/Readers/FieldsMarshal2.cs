@@ -1,12 +1,12 @@
 ﻿namespace Kokoro.Internal.Fields.Readers;
 
-internal abstract class FieldsDataReader2 : FieldsDataReader {
+internal abstract class FieldsMarshal2 : FieldsMarshal {
 	private protected int _ModStampCount, _ModStampSize;
 	private protected long _ModStampListPos;
 
 	public int ModStampCount => _ModStampCount;
 
-	public FieldsDataReader2(Stream stream) {
+	public FieldsMarshal2(Stream stream) {
 		_Stream = stream;
 
 		const int MaxSize = 0b111 + 1; // 7 + 1 == 8

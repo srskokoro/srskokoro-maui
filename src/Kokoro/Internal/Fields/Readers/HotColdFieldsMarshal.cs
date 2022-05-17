@@ -1,11 +1,11 @@
 ﻿namespace Kokoro.Internal.Fields.Readers;
 
-internal abstract class HotColdFieldsDataReader : FieldsDataReader2 {
+internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
 
-	public HotColdFieldsDataReader(Stream hotFieldsData) : base(hotFieldsData) { }
+	public HotColdFieldsMarshal(Stream hotFieldsData) : base(hotFieldsData) { }
 
-	private protected ColdFieldsDataReader? _ColdReader;
-	public ColdFieldsDataReader ColdReader {
+	private protected ColdFieldsMarshal? _ColdReader;
+	public ColdFieldsMarshal ColdReader {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _ColdReader;
@@ -16,7 +16,7 @@ internal abstract class HotColdFieldsDataReader : FieldsDataReader2 {
 		}
 	}
 
-	protected abstract ColdFieldsDataReader ReadColdFieldsData();
+	protected abstract ColdFieldsMarshal ReadColdFieldsData();
 
 	protected sealed override FieldVal OnReadFieldValFail(int index) {
 		Debug.Assert((uint)index >= (uint)_FieldCount);

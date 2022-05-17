@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Internal.Fields.Readers;
 
-internal abstract class FieldsDataReader : IDisposable {
+internal abstract class FieldsMarshal : IDisposable {
 	private protected Stream _Stream;
 
 	private protected int _FieldCount, _FieldOffsetSize;
@@ -14,10 +14,10 @@ internal abstract class FieldsDataReader : IDisposable {
 
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-	private protected FieldsDataReader() { }
+	private protected FieldsMarshal() { }
 #pragma warning restore CS8618
 
-	public FieldsDataReader(Stream stream) {
+	public FieldsMarshal(Stream stream) {
 		_Stream = stream;
 
 		const int MaxSize = 0b111 + 1; // 7 + 1 == 8
