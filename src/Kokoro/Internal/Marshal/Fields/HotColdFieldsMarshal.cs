@@ -4,8 +4,8 @@ internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
 
 	public HotColdFieldsMarshal(Stream hotFieldsData) : base(hotFieldsData) { }
 
-	private protected ColdFieldsMarshal? _ColdReader;
-	public ColdFieldsMarshal ColdReader {
+	private protected FieldsMarshal? _ColdReader;
+	public FieldsMarshal ColdReader {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _ColdReader;
@@ -16,7 +16,7 @@ internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
 		}
 	}
 
-	protected abstract ColdFieldsMarshal ReadColdFieldsData();
+	protected virtual FieldsMarshal ReadColdFieldsData() => NullFieldsMarshal.Instance;
 
 	protected sealed override FieldVal? OnReadFieldValFail(int index) {
 		Debug.Assert((uint)index >= (uint)_FieldCount);
