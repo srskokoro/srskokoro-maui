@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Fields.Readers;
+﻿namespace Kokoro.Internal.Marshal.Fields;
 
 internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
 
