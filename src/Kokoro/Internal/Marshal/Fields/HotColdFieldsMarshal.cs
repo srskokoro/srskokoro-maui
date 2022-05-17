@@ -18,7 +18,7 @@ internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
 
 	protected abstract ColdFieldsMarshal ReadColdFieldsData();
 
-	protected sealed override FieldVal OnReadFieldValFail(int index) {
+	protected sealed override FieldVal? OnReadFieldValFail(int index) {
 		Debug.Assert((uint)index >= (uint)_FieldCount);
 		return ColdReader.ReadFieldVal(index - _FieldCount);
 	}

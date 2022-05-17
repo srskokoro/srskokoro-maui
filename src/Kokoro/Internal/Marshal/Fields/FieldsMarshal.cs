@@ -48,7 +48,7 @@ internal abstract class FieldsMarshal : IDisposable {
 
 	public virtual void Dispose() => _Stream.Dispose();
 
-	public FieldVal ReadFieldVal(int index) {
+	public FieldVal? ReadFieldVal(int index) {
 		if ((uint)index < (uint)_FieldCount) {
 			var stream = _Stream;
 
@@ -105,6 +105,5 @@ internal abstract class FieldsMarshal : IDisposable {
 		}
 	}
 
-	protected virtual FieldVal OnReadFieldValFail(int index)
-		=> ThrowHelper.ThrowArgumentOutOfRangeException<FieldVal>();
+	protected virtual FieldVal? OnReadFieldValFail(int index) => null;
 }
