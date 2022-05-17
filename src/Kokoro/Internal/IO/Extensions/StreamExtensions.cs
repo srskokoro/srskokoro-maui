@@ -11,10 +11,13 @@ internal static class StreamExtensions {
 		int sread = stream.Read(buffer);
 
 		int vread = VarInts.Read(buffer, out ulong result);
-		if (vread == 0) E_EndOfStream_InvOp();
-
-		stream.Position += vread - sread;
-		return result;
+		if (vread != 0) {
+			stream.Position += vread - sread;
+			return result;
+		} else {
+			E_EndOfStream_InvOp();
+			return 0;
+		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
