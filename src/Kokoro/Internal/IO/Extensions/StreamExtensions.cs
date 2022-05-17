@@ -22,6 +22,38 @@ internal static class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
+	public static ulong ReadVarIntOrZero(this Stream stream) {
+		Span<byte> buffer = stackalloc byte[9];
+		int sread = stream.Read(buffer);
+
+		int vread = VarInts.Read(buffer, out ulong result);
+		stream.Position += vread - sread;
+
+		if (vread != 0) {
+			return result;
+		} else {
+			return 0;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static bool TryReadVarInt(this Stream stream, out ulong result) {
+		Span<byte> buffer = stackalloc byte[9];
+		int sread = stream.Read(buffer);
+
+		int vread = VarInts.Read(buffer, out result);
+		stream.Position += vread - sread;
+
+		if (vread != 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
 	public static ulong ReadUIntX(this Stream stream, int sizeOfUIntX) {
 		const int MaxSize = sizeof(ulong);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
