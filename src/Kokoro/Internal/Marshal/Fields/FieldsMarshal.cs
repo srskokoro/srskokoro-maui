@@ -98,7 +98,7 @@ internal abstract class FieldsMarshal : IDisposable {
 
 				return new FieldVal(typeHint, data);
 			} else {
-				return new FieldVal(FieldTypeHint.Null, Array.Empty<byte>());
+				return new FieldVal();
 			}
 		} else {
 			return OnReadFieldValFail(index);
