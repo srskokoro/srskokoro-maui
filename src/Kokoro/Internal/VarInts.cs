@@ -61,7 +61,7 @@ internal static class VarInts {
 		return 9;
 
 	Fail:
-		U.SkipInit(out result);
+		result = 0;
 		return 0;
 	}
 

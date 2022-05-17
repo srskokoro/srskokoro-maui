@@ -29,11 +29,7 @@ internal static class StreamExtensions {
 		int vread = VarInts.Read(buffer, out ulong result);
 		stream.Position += vread - sread;
 
-		if (vread != 0) {
-			return result;
-		} else {
-			return 0;
-		}
+		return result;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
