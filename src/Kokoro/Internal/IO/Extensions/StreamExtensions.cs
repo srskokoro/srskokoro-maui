@@ -35,18 +35,14 @@ internal static class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
-	public static bool TryReadVarInt(this Stream stream, out ulong result) {
+	public static int TryReadVarInt(this Stream stream, out ulong result) {
 		Span<byte> buffer = stackalloc byte[9];
 		int sread = stream.Read(buffer);
 
 		int vread = VarInts.Read(buffer, out result);
 		stream.Position += vread - sread;
 
-		if (vread != 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return vread;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
