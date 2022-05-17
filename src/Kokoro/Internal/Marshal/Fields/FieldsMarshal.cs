@@ -27,7 +27,7 @@ internal abstract class FieldsMarshal : IDisposable {
 
 		// --
 		// Read the descriptor for the list of field offsets
-		ulong fDesc = stream.ReadVarInt();
+		ulong fDesc = stream.ReadVarIntOrZero();
 		Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
 
 		// Get the field count and field offset integer size

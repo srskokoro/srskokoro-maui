@@ -16,7 +16,7 @@ internal abstract class FieldsMarshal2 : FieldsMarshal {
 
 		// --
 		// Read the descriptor for the list of field offsets
-		ulong fDesc = stream.ReadVarInt();
+		ulong fDesc = stream.ReadVarIntOrZero();
 		Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
 
 		// Get the field count and field offset integer size
@@ -31,7 +31,7 @@ internal abstract class FieldsMarshal2 : FieldsMarshal {
 
 		// --
 		// Read the descriptor for the list of modstamps
-		ulong mDesc = stream.ReadVarInt();
+		ulong mDesc = stream.ReadVarIntOrZero();
 		Debug.Assert(mDesc <= MaxDesc, $"`{nameof(mDesc)}` too large: {mDesc:X}");
 
 		// Get the modstamp count and modstamp integer size
