@@ -18,7 +18,7 @@ internal abstract class AbsHotColdFieldsReader : BaseFieldsReader.WithModStamps 
 		}
 	}
 
-	protected virtual FieldsReader ReadColdFieldsData() => NullFieldsReader.Instance;
+	protected abstract FieldsReader ReadColdFieldsData();
 
 	protected sealed override FieldVal? OnReadFieldValOutOfRange(int index) {
 		Debug.Assert((uint)index >= (uint)FieldCount);
