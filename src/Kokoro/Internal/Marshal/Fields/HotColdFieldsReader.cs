@@ -1,8 +1,9 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using System.IO;
 
-internal abstract class HotColdFieldsReader : FieldsReader2 {
+internal abstract class AbsHotColdFieldsReader : BaseFieldsReader.WithModStamps {
 
-	public HotColdFieldsReader(Stream hotFieldsData) : base(hotFieldsData) { }
+	public AbsHotColdFieldsReader(Stream hotFieldsStream) : base(hotFieldsStream) { }
 
 	private protected FieldsReader? _ColdReader;
 	public FieldsReader ColdReader {
@@ -19,8 +20,8 @@ internal abstract class HotColdFieldsReader : FieldsReader2 {
 	protected virtual FieldsReader ReadColdFieldsData() => NullFieldsReader.Instance;
 
 	protected sealed override FieldVal? OnReadFieldValOutOfRange(int index) {
-		Debug.Assert((uint)index >= (uint)_FieldCount);
-		return ColdReader.ReadFieldVal(index - _FieldCount);
+		Debug.Assert((uint)index >= (uint)FieldCount);
+		return ColdReader.ReadFieldVal(index - FieldCount);
 	}
 
 	public override void Dispose() {

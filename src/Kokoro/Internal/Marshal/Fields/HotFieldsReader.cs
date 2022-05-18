@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using System.IO;
 
-internal class HotFieldsReader : FieldsReader2 {
+internal class HotFieldsReader : BaseFieldsReader.WithModStamps {
 
 	public HotFieldsReader(Stream stream) : base(stream) { }
 

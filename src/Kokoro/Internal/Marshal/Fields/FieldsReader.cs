@@ -1,23 +1,15 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using System.IO;
 
-internal abstract class FieldsReader : IDisposable {
-	private protected Stream _Stream;
+internal abstract partial class BaseFieldsReader : FieldsReader {
 
-	private protected int _FieldCount, _FieldOffsetSize;
-	private protected long _FieldOffsetListPos;
-	private protected long _FieldValListPos;
+	private Stream _Stream;
 
+	private int _FieldCount, _FieldOffsetSize;
+	private long _FieldOffsetListPos;
+	private long _FieldValListPos;
 
-	public Stream Stream => _Stream;
-
-	public int FieldCount => _FieldCount;
-
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-	private protected FieldsReader() { }
-#pragma warning restore CS8618
-
-	public FieldsReader(Stream stream) {
+	public BaseFieldsReader(Stream stream) {
 		_Stream = stream;
 
 		const int MaxSize = 0b111 + 1; // 7 + 1 == 8
@@ -45,10 +37,13 @@ internal abstract class FieldsReader : IDisposable {
 		_FieldValListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize;
 	}
 
+	// --
 
-	public virtual void Dispose() => _Stream.Dispose();
+	public sealed override Stream Stream => _Stream;
 
-	public FieldVal? ReadFieldVal(int index) {
+	public int FieldCount => _FieldCount;
+
+	public sealed override FieldVal? ReadFieldVal(int index) {
 		if ((uint)index < (uint)_FieldCount) {
 			var stream = _Stream;
 
@@ -108,4 +103,8 @@ internal abstract class FieldsReader : IDisposable {
 	protected virtual FieldVal? OnReadFieldValOutOfRange(int index) => null;
 
 	protected virtual FieldVal? OnReadFieldValInterned(long rowid) => null;
+
+	public override long ReadModStamp(int index) => throw new NotImplementedException();
+
+	public override void Dispose() => _Stream.Dispose();
 }

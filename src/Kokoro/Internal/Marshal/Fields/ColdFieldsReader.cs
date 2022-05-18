@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using System.IO;
 
-internal class ColdFieldsReader : FieldsReader {
+internal class ColdFieldsReader : BaseFieldsReader {
 
 	public ColdFieldsReader(Stream stream) : base(stream) { }
 

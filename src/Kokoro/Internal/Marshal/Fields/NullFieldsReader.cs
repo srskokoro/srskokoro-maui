@@ -1,7 +1,18 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using System.IO;
 
-internal sealed class NullFieldsReader : FieldsReader2 {
+internal sealed class NullFieldsReader : FieldsReader {
+
 	public static readonly NullFieldsReader Instance = new();
 
-	private NullFieldsReader() => _Stream = Stream.Null;
+	private NullFieldsReader() { }
+
+	public override Stream Stream => Stream.Null;
+
+	public override FieldVal? ReadFieldVal(int index) => null;
+
+	public override long ReadModStamp(int index)
+		=> ThrowHelper.ThrowArgumentOutOfRangeException<long>();
+
+	public override void Dispose() { }
 }
