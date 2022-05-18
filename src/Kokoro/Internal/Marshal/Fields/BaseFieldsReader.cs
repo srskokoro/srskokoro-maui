@@ -130,7 +130,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 			cmd.Parameters.AddWithValue("$rowid", rowid);
 
 			using var r = cmd.ExecuteReader();
-			if (!r.Read() || r.GetBoolean(0)) {
+			if (!r.Read() || !r.GetBoolean(0)) {
 				return null;
 			}
 
