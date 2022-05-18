@@ -1,11 +1,11 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
 
-internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
+internal abstract class HotColdFieldsReader : FieldsReader2 {
 
-	public HotColdFieldsMarshal(Stream hotFieldsData) : base(hotFieldsData) { }
+	public HotColdFieldsReader(Stream hotFieldsData) : base(hotFieldsData) { }
 
-	private protected FieldsMarshal? _ColdReader;
-	public FieldsMarshal ColdReader {
+	private protected FieldsReader? _ColdReader;
+	public FieldsReader ColdReader {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _ColdReader;
@@ -16,7 +16,7 @@ internal abstract class HotColdFieldsMarshal : FieldsMarshal2 {
 		}
 	}
 
-	protected virtual FieldsMarshal ReadColdFieldsData() => NullFieldsMarshal.Instance;
+	protected virtual FieldsReader ReadColdFieldsData() => NullFieldsReader.Instance;
 
 	protected sealed override FieldVal? OnReadFieldValFail(int index) {
 		Debug.Assert((uint)index >= (uint)_FieldCount);
