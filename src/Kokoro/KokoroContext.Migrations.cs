@@ -73,6 +73,25 @@ partial class KokoroContext {
 
 		")");
 
+		// A table for interned field values.
+		db.Exec("CREATE TABLE FieldValuesInterned(" +
+
+			RowIdPk + "," +
+
+			// The number of fields referencing this record.
+			//
+			// Manually incremented/decremented due to the current nature of how
+			// fields are stored. Unused records, and those whose reference
+			// count is now zero, should be deleted when no longer needed.
+			//
+			// TODO A trigger for when this column is now zero: delete the row.
+			"refCount INTEGER NOT NULL CHECK(refCount >= 0)," +
+
+			// The field value bytes.
+			"data BLOB UNIQUE NOT NULL" +
+
+		")");
+
 		// A schemable item.
 		db.Exec("CREATE TABLE Items(" +
 
