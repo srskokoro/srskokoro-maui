@@ -1,9 +1,10 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
 using System.IO;
 
-internal abstract class AbsHotColdFieldsReader : BaseFieldsReader.WithModStamps {
+internal abstract class AbsHotColdFieldsReader<TOwner> : BaseFieldsReader<TOwner>.WithModStamps
+		where TOwner : DataEntity {
 
-	public AbsHotColdFieldsReader(DataEntity owner, Stream hotFieldsStream)
+	public AbsHotColdFieldsReader(TOwner owner, Stream hotFieldsStream)
 		: base(owner, hotFieldsStream) { }
 
 	private FieldsReader? _ColdReader;

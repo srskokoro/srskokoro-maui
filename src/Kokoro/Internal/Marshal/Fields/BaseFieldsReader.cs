@@ -3,15 +3,17 @@ using Microsoft.Data.Sqlite;
 using System.IO;
 using static SQLitePCL.raw;
 
-internal abstract partial class BaseFieldsReader : FieldsReader {
-	private DataEntity _Owner;
+internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
+		where TOwner : DataEntity {
+
+	private TOwner _Owner;
 	private Stream _Stream;
 
 	private int _FieldCount, _FieldOffsetSize;
 	private long _FieldOffsetListPos;
 	private long _FieldValListPos;
 
-	public BaseFieldsReader(DataEntity owner, Stream stream) {
+	public BaseFieldsReader(TOwner owner, Stream stream) {
 		_Owner = owner;
 		_Stream = stream;
 
@@ -42,7 +44,7 @@ internal abstract partial class BaseFieldsReader : FieldsReader {
 
 	// --
 
-	public DataEntity Owner => _Owner;
+	public TOwner Owner => _Owner;
 
 	public sealed override Stream Stream => _Stream;
 

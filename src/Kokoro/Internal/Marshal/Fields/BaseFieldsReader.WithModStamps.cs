@@ -1,18 +1,18 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
 using System.IO;
 
-internal abstract partial class BaseFieldsReader {
+internal abstract partial class BaseFieldsReader<TOwner> {
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 	private BaseFieldsReader() { }
 #pragma warning restore CS8618
 
-	public abstract partial class WithModStamps : BaseFieldsReader {
+	public abstract partial class WithModStamps : BaseFieldsReader<TOwner> {
 
 		private int _ModStampCount, _ModStampSize;
 		private long _ModStampListPos;
 
-		public WithModStamps(DataEntity owner, Stream stream) {
+		public WithModStamps(TOwner owner, Stream stream) {
 			_Owner = owner;
 			_Stream = stream;
 
