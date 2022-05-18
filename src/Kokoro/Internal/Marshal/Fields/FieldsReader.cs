@@ -101,11 +101,11 @@ internal abstract class FieldsReader : IDisposable {
 				return new FieldVal();
 			}
 		} else {
-			return OnReadFieldValFail(index);
+			return OnReadFieldValOutOfRange(index);
 		}
 	}
 
-	protected virtual FieldVal? OnReadFieldValFail(int index) => null;
+	protected virtual FieldVal? OnReadFieldValOutOfRange(int index) => null;
 
 	protected virtual FieldVal? OnReadFieldValInterned(long rowid) => null;
 }

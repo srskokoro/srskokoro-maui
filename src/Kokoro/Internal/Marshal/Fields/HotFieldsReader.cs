@@ -4,5 +4,5 @@ internal class HotFieldsReader : FieldsReader2 {
 
 	public HotFieldsReader(Stream stream) : base(stream) { }
 
-	protected sealed override FieldVal? OnReadFieldValFail(int index) => null;
+	protected sealed override FieldVal? OnReadFieldValOutOfRange(int index) => null;
 }

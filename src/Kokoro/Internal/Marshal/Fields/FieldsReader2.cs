@@ -62,10 +62,10 @@ internal abstract class FieldsReader2 : FieldsReader {
 
 			return (long)stream.ReadUIntX(mSize);
 		} else {
-			return OnReadModStampFail(index);
+			return OnReadModStampOutOfRange(index);
 		}
 	}
 
-	protected virtual long OnReadModStampFail(int index)
+	protected virtual long OnReadModStampOutOfRange(int index)
 		=> ThrowHelper.ThrowArgumentOutOfRangeException<long>();
 }

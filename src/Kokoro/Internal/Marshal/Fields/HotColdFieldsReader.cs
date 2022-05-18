@@ -18,7 +18,7 @@ internal abstract class HotColdFieldsReader : FieldsReader2 {
 
 	protected virtual FieldsReader ReadColdFieldsData() => NullFieldsReader.Instance;
 
-	protected sealed override FieldVal? OnReadFieldValFail(int index) {
+	protected sealed override FieldVal? OnReadFieldValOutOfRange(int index) {
 		Debug.Assert((uint)index >= (uint)_FieldCount);
 		return ColdReader.ReadFieldVal(index - _FieldCount);
 	}
