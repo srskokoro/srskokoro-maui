@@ -3,5 +3,5 @@ using System.IO;
 
 internal sealed class ColdFieldsReader : BaseFieldsReader {
 
-	public ColdFieldsReader(Stream stream) : base(stream) { }
+	public ColdFieldsReader(DataEntity owner, Stream stream) : base(owner, stream) { }
 }

@@ -3,5 +3,5 @@ using System.IO;
 
 internal sealed class HotFieldsReader : BaseFieldsReader.WithModStamps {
 
-	public HotFieldsReader(Stream stream) : base(stream) { }
+	public HotFieldsReader(DataEntity owner, Stream stream) : base(owner, stream) { }
 }

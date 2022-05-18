@@ -12,7 +12,8 @@ internal abstract partial class BaseFieldsReader {
 		private int _ModStampCount, _ModStampSize;
 		private long _ModStampListPos;
 
-		public WithModStamps(Stream stream) {
+		public WithModStamps(DataEntity owner, Stream stream) {
+			_Owner = owner;
 			_Stream = stream;
 
 			const int MaxSize = 0b111 + 1; // 7 + 1 == 8

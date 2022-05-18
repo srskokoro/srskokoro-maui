@@ -3,7 +3,8 @@ using System.IO;
 
 internal abstract class AbsHotColdFieldsReader : BaseFieldsReader.WithModStamps {
 
-	public AbsHotColdFieldsReader(Stream hotFieldsStream) : base(hotFieldsStream) { }
+	public AbsHotColdFieldsReader(DataEntity owner, Stream hotFieldsStream)
+		: base(owner, hotFieldsStream) { }
 
 	private protected FieldsReader? _ColdReader;
 	public FieldsReader ColdReader {

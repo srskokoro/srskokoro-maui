@@ -1,15 +1,18 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using Microsoft.Data.Sqlite;
 using System.IO;
+using static SQLitePCL.raw;
 
 internal abstract partial class BaseFieldsReader : FieldsReader {
-
+	private DataEntity _Owner;
 	private Stream _Stream;
 
 	private int _FieldCount, _FieldOffsetSize;
 	private long _FieldOffsetListPos;
 	private long _FieldValListPos;
 
-	public BaseFieldsReader(Stream stream) {
+	public BaseFieldsReader(DataEntity owner, Stream stream) {
+		_Owner = owner;
 		_Stream = stream;
 
 		const int MaxSize = 0b111 + 1; // 7 + 1 == 8
@@ -38,6 +41,8 @@ internal abstract partial class BaseFieldsReader : FieldsReader {
 	}
 
 	// --
+
+	public DataEntity Owner => _Owner;
 
 	public sealed override Stream Stream => _Stream;
 
@@ -77,12 +82,7 @@ internal abstract partial class BaseFieldsReader : FieldsReader {
 				int typeHint = (int)fValSpec - 1;
 				if (typeHint < 0) {
 					// Field value is interned
-
-					// When interned, the current field data is a varint rowid
-					// pointing to a row in an interning table.
-					long rowid = (long)stream.ReadVarInt();
-
-					return OnReadFieldValInterned(rowid);
+					return ReadFieldValInterned(_Owner, stream);
 				}
 
 				var data = new byte[fValLen - fValSpecLen];
@@ -102,7 +102,62 @@ internal abstract partial class BaseFieldsReader : FieldsReader {
 
 	protected virtual FieldVal? OnReadFieldValOutOfRange(int index) => null;
 
-	protected virtual FieldVal? OnReadFieldValInterned(long rowid) => null;
+	private static FieldVal? ReadFieldValInterned(DataEntity owner, Stream stream) {
+		var db = owner.Host.Db; // Throws if host is already disposed
+
+		// When interned, the current field data is a varint rowid pointing to a
+		// row in the interning table.
+		long rowid = (long)stream.ReadVarInt();
+
+		SqliteBlob blob;
+		try {
+			// Should open for read-only access as the data column is expected
+			// to be a part of an SQL index, PRIMARY KEY or UNIQUE constraint.
+			blob = new(db,
+				tableName: "FieldValuesInterned", columnName: "data",
+				rowid: rowid, readOnly: true
+			);
+		} catch (SqliteException ex) when (ex.ErrorCode is SQLITE_ERROR) {
+			// Return null only if the error was caused by either the row not
+			// existing or the data column not being a BLOB.
+
+			using var cmd = db.CreateCommand(
+				"SELECT typeof(data) IS 'blob'" +
+				" FROM FieldValuesInterned" +
+				" WHERE rowid=$rowid");
+			cmd.Parameters.AddWithValue("$rowid", rowid);
+
+			using var r = cmd.ExecuteReader();
+			if (!r.Read() || r.GetBoolean(0)) {
+				return null;
+			}
+
+			throw;
+		}
+
+		try {
+			// Assumption: While the BLOB is open, there's an implicit read
+			// transaction. If the row is modified while the BLOB is open, so
+			// long as the modification happens in a different DB connection,
+			// reads from the BLOB won't fail.
+			//
+			// TODO Test and verify the above assumption.
+			//
+			// ---
+			// Quote from SQLite docs:
+			//
+			// > An open `sqlite3_blob` used for incremental BLOB I/O also
+			// counts as an unfinished statement. The `sqlite3_blob` finishes
+			// when it is closed.
+			//
+			// From, "2.3. Implicit versus explicit transactions | Transaction"
+			// - https://www.sqlite.org/lang_transaction.html#implicit_versus_explicit_transactions
+
+			return blob.ReadFieldVal();
+		} finally {
+			blob.Dispose();
+		}
+	}
 
 	public override long ReadModStamp(int index) => throw new NotImplementedException();
 
