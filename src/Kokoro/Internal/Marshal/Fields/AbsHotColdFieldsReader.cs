@@ -6,7 +6,7 @@ internal abstract class AbsHotColdFieldsReader : BaseFieldsReader.WithModStamps 
 	public AbsHotColdFieldsReader(DataEntity owner, Stream hotFieldsStream)
 		: base(owner, hotFieldsStream) { }
 
-	private protected FieldsReader? _ColdReader;
+	private FieldsReader? _ColdReader;
 	public FieldsReader ColdReader {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
