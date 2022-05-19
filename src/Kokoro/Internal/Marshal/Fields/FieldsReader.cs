@@ -5,7 +5,7 @@ internal abstract class FieldsReader : IDisposable {
 
 	public abstract Stream Stream { get; }
 
-	public abstract FieldVal? ReadFieldVal(int index);
+	public abstract FieldVal ReadFieldVal(int index);
 
 	public abstract long ReadModStamp(int index);
 

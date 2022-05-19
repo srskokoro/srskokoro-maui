@@ -9,7 +9,7 @@ internal sealed class NullFieldsReader : FieldsReader {
 
 	public override Stream Stream => Stream.Null;
 
-	public override FieldVal? ReadFieldVal(int index) => null;
+	public override FieldVal ReadFieldVal(int index) => FieldVal.Null;
 
 	public override long ReadModStamp(int index)
 		=> ThrowHelper.ThrowArgumentOutOfRangeException<long>();

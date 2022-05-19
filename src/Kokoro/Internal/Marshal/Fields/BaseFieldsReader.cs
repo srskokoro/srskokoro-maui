@@ -50,7 +50,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 
 	public int FieldCount => _FieldCount;
 
-	public sealed override FieldVal? ReadFieldVal(int index) {
+	public sealed override FieldVal ReadFieldVal(int index) {
 		if ((uint)index < (uint)_FieldCount) {
 			var stream = _Stream;
 
@@ -102,9 +102,9 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 		}
 	}
 
-	protected virtual FieldVal? OnReadFieldValOutOfRange(int index) => null;
+	protected virtual FieldVal OnReadFieldValOutOfRange(int index) => FieldVal.Null;
 
-	private static FieldVal? ReadFieldValInterned(DataEntity owner, Stream stream) {
+	private static FieldVal ReadFieldValInterned(DataEntity owner, Stream stream) {
 		var db = owner.Host.Db; // Throws if host is already disposed
 
 		// When interned, the current field data is a varint rowid pointing to a
@@ -120,8 +120,8 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 				rowid: rowid, readOnly: true
 			);
 		} catch (SqliteException ex) when (ex.ErrorCode is SQLITE_ERROR) {
-			// Return null only if the error was caused by either the row not
-			// existing or the data column not being a BLOB.
+			// Return successfully still if the error was caused by either the
+			// row not existing or the data column not being a BLOB.
 
 			using var cmd = db.CreateCommand(
 				"SELECT typeof(data) IS 'blob'" +
@@ -131,7 +131,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 
 			using var r = cmd.ExecuteReader();
 			if (!r.Read() || !r.GetBoolean(0)) {
-				return null;
+				return FieldVal.Null;
 			}
 
 			throw;
