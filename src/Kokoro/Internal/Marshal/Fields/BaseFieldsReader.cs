@@ -161,7 +161,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 		}
 	}
 
-	public override long ReadModStamp(int index) => throw new NotImplementedException();
+	public override long ReadModStamp(int index) => throw new NotSupportedException();
 
 	public override void Dispose() => _Stream.Dispose();
 }
