@@ -14,12 +14,14 @@ internal static class Bytes {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeeded(this uint value) {
 		// Reference: https://stackoverflow.com/a/2274675
+		// See also, https://stackoverflow.com/a/46738575
 		return (32 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeeded(this ulong value) {
 		// Reference: https://stackoverflow.com/a/2274675
+		// See also, https://stackoverflow.com/a/46738575
 		return (64 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
 	}
 
