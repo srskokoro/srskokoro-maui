@@ -163,7 +163,8 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 
 	public override int ModStampCount => 0;
 
-	public override long ReadModStamp(int index) => throw new NotSupportedException();
+	public override long ReadModStamp(int index)
+		=> throw new ArgumentOutOfRangeException(nameof(index));
 
 	public override void Dispose() => _Stream.Dispose();
 }
