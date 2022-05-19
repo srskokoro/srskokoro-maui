@@ -12,7 +12,7 @@ internal sealed class NullFieldsReader : FieldsReader {
 	public override FieldVal ReadFieldVal(int index) => FieldVal.Null;
 
 	public override long ReadModStamp(int index)
-		=> throw new ArgumentOutOfRangeException();
+		=> throw new ArgumentOutOfRangeException(nameof(index));
 
 	public override void Dispose() { }
 }

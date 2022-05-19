@@ -74,6 +74,6 @@ internal abstract partial class BaseFieldsReader<TOwner> {
 		}
 
 		protected virtual long OnReadModStampOutOfRange(int index)
-			=> throw new ArgumentOutOfRangeException();
+			=> throw new ArgumentOutOfRangeException(nameof(index));
 	}
 }
