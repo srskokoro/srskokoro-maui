@@ -89,6 +89,6 @@ internal static class StreamExtensions {
 				return new FieldVal(typeHint, data);
 			}
 		}
-		return new FieldVal();
+		return FieldVal.Null;
 	}
 }
