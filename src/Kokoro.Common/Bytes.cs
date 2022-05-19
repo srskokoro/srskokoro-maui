@@ -12,12 +12,16 @@ internal static class Bytes {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static int CountBytesNeeded(this uint value)
-		=> (32 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
+	public static int CountBytesNeeded(this uint value) {
+		// Reference: https://stackoverflow.com/a/2274675
+		return (32 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static int CountBytesNeeded(this ulong value)
-		=> (64 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
+	public static int CountBytesNeeded(this ulong value) {
+		// Reference: https://stackoverflow.com/a/2274675
+		return (64 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededOr1(this uint value) {
