@@ -48,7 +48,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 
 	public sealed override Stream Stream => _Stream;
 
-	public int FieldCount => _FieldCount;
+	public sealed override int FieldCount => _FieldCount;
 
 	public sealed override FieldVal ReadFieldVal(int index) {
 		if ((uint)index < (uint)_FieldCount) {
@@ -160,6 +160,8 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 			blob.Dispose();
 		}
 	}
+
+	public override int ModStampCount => 0;
 
 	public override long ReadModStamp(int index) => throw new NotSupportedException();
 

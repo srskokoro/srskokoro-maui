@@ -58,7 +58,7 @@ internal abstract partial class BaseFieldsReader<TOwner> {
 
 		// --
 
-		public int ModStampCount => _ModStampCount;
+		public sealed override int ModStampCount => _ModStampCount;
 
 		public sealed override long ReadModStamp(int index) {
 			if ((uint)index < (uint)_ModStampCount) {
