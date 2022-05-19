@@ -15,11 +15,11 @@ internal abstract class AbsHotColdFieldsReader<TOwner> : BaseFieldsReader<TOwner
 			if (_ != null) {
 				return _;
 			}
-			return _ColdReader = CreateColdFieldsReader();
+			return _ColdReader = CreateColdReader();
 		}
 	}
 
-	protected abstract FieldsReader CreateColdFieldsReader();
+	protected abstract FieldsReader CreateColdReader();
 
 	protected sealed override FieldVal OnReadFieldValOutOfRange(int index) {
 		Debug.Assert((uint)index >= (uint)FieldCount);
