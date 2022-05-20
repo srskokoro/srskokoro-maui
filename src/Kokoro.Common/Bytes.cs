@@ -28,16 +28,16 @@ internal static class Bytes {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededOr1(this uint value) {
 		int x = value.CountBytesNeeded();
-		// NOTE: On ARM and Intel machines, the following generates less asm
-		// than the equivalent `x | (x == 0)`
+		// NOTE: On both ARM and Intel/AMD machines, the following generates
+		// less asm than the equivalent `x | (x == 0)`
 		return x | (int)((uint)(x-1) >> 31);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededOr1(this ulong value) {
 		int x = value.CountBytesNeeded();
-		// NOTE: On ARM and Intel machines, the following generates less asm
-		// than the equivalent `x | (x == 0)`
+		// NOTE: On both ARM and Intel/AMD machines, the following generates
+		// less asm than the equivalent `x | (x == 0)`
 		return x | (int)((uint)(x-1) >> 63);
 	}
 }
