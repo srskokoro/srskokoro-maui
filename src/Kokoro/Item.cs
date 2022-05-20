@@ -1,5 +1,6 @@
 ﻿namespace Kokoro;
 using Kokoro.Internal;
+using Kokoro.Internal.Marshal.Fields;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 
@@ -182,6 +183,215 @@ public sealed class Item : DataEntity {
 		// Otherwise, either deleted or never existed.
 		Unload(); // Let that state materialize here then.
 		_State = StateFlags.NotExists;
+	}
+
+	public void Load(StringKey fieldName1) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+			InternalLoadField(db, fieldName3);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+			InternalLoadField(db, fieldName3);
+			InternalLoadField(db, fieldName4);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+			InternalLoadField(db, fieldName3);
+			InternalLoadField(db, fieldName4);
+			InternalLoadField(db, fieldName5);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+			InternalLoadField(db, fieldName3);
+			InternalLoadField(db, fieldName4);
+			InternalLoadField(db, fieldName5);
+			InternalLoadField(db, fieldName6);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+			InternalLoadField(db, fieldName3);
+			InternalLoadField(db, fieldName4);
+			InternalLoadField(db, fieldName5);
+			InternalLoadField(db, fieldName6);
+			InternalLoadField(db, fieldName7);
+		}
+	}
+
+	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7, StringKey fieldName8) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			InternalLoadField(db, fieldName1);
+			InternalLoadField(db, fieldName2);
+			InternalLoadField(db, fieldName3);
+			InternalLoadField(db, fieldName4);
+			InternalLoadField(db, fieldName5);
+			InternalLoadField(db, fieldName6);
+			InternalLoadField(db, fieldName7);
+			InternalLoadField(db, fieldName8);
+			// TODO A counterpart that loads up to 16 fields
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void Load(params StringKey[] fieldNames)
+		=> Load(fieldNames.AsSpan());
+
+	public void Load(ReadOnlySpan<StringKey> fieldNames) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+
+			// TODO Unroll?
+			foreach (var fieldName in fieldNames)
+				InternalLoadField(db, fieldName);
+		}
+	}
+
+	[SkipLocalsInit]
+	private void InternalLoadField(KokoroSqliteDb db, StringKey name) {
+		using var cmd = db.CreateCommand();
+		var cmdParams = cmd.Parameters;
+
+		long fld;
+		{
+			cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
+			cmdParams.AddWithValue("$name", name.Value);
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				fld = r.GetInt64(0);
+			} else {
+				goto NotFound;
+			}
+			// TODO Cache and load from cache
+		}
+
+		int index;
+		FieldStorageType st;
+		{
+			cmd.CommandText = """
+				SELECT index_st FROM SchemaToFields
+				WHERE schema=$schema AND fld=$fld
+				""";
+
+			cmdParams.Clear();
+
+			// NOTE: Requires a preloaded core state
+			cmdParams.AddWithValue("$schema", _SchemaRowId);
+			cmdParams.AddWithValue("$fld", fld);
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "index_st");
+				uint index_st = (uint)r.GetInt32(0);
+
+				st = (FieldStorageType)(index_st & 0b11);
+				st.DAssert_Defined();
+
+				index = (int)(index_st >> 2);
+				Debug.Assert(index >= 0);
+			} else {
+				goto NotFound;
+			}
+		}
+
+		// --
+
+		long rowid;
+		string tableName;
+		{
+			string cmdTxt;
+			if (st != FieldStorageType.Shared) {
+				tableName = "Items";
+				cmdTxt = "SELECT 1 FROM Items WHERE rowid=$rowid";
+				rowid = _RowId;
+			} else {
+				tableName = "Schemas";
+				cmdTxt = "SELECT 1 FROM Schemas WHERE rowid=$rowid";
+				rowid = _SchemaRowId;
+			}
+
+			cmd.CommandText = cmdTxt;
+			cmdParams.Clear();
+			cmdParams.AddWithValue("$rowid", rowid);
+		}
+
+		using (var r = cmd.ExecuteReader()) {
+			if (r.Read()) {
+				// Same as `SqliteDataReader.GetStream()` but more performant
+				SqliteBlob blob = new(db, tableName, columnName: "data", rowid, readOnly: true);
+
+				// TODO Batch-load fields in a single fields reader, instead of
+				// recreating instances unnecessarily every field load.
+				FieldsReader fr;
+				if (st != FieldStorageType.Shared) {
+					fr = new ItemFieldsReader(this, blob);
+				} else {
+					fr = new HotFieldsReader(this, blob);
+				}
+
+				FieldVal fieldVal = fr.ReadFieldVal(index);
+
+				// Pending changes will be discarded
+				_FieldChanges?.Remove(name);
+
+				SetCache(name, fieldVal);
+
+				return; // Early exit
+			}
+		}
+
+	NotFound:
+		// Otherwise, either deleted or never existed.
+		// Let that state materialize here then.
+		_FieldChanges?.Remove(name);
+		_Fields?.Remove(name);
 	}
 
 
