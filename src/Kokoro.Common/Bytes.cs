@@ -30,6 +30,11 @@ internal static class Bytes {
 		int x = value.CountBytesNeeded();
 		// NOTE: On both ARM and Intel/AMD machines, the following generates
 		// less asm than the equivalent `x | (x == 0)`
+		//
+		// Assumption: This performs just as well as `x | (x == 0)` in most
+		// cases, especially on some machines where `x == 0` requires a branch.
+		//
+		// TODO Benchmark!
 		return x | (int)((uint)(x-1) >> 31);
 	}
 
@@ -38,6 +43,11 @@ internal static class Bytes {
 		int x = value.CountBytesNeeded();
 		// NOTE: On both ARM and Intel/AMD machines, the following generates
 		// less asm than the equivalent `x | (x == 0)`
+		//
+		// Assumption: This performs just as well as `x | (x == 0)` in most
+		// cases, especially on some machines where `x == 0` requires a branch.
+		//
+		// TODO Benchmark!
 		return x | (int)((uint)(x-1) >> 63);
 	}
 }
