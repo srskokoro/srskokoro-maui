@@ -1,5 +1,7 @@
 ﻿namespace Kokoro;
 using Kokoro.Internal;
+using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
 
 public sealed class Item : DataEntity {
 
@@ -137,4 +139,14 @@ public sealed class Item : DataEntity {
 		_Fields = fields = new();
 		goto Set;
 	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static long LoadRowId(KokoroCollection host, UniqueId uid)
+		=> LoadRowId(host.Db, uid);
+
+	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
+		=> db.ExecScalar<long>(
+			"SELECT rowid FROM Items WHERE uid=$uid"
+			, new SqliteParameter("$uid", uid.ToByteArray()));
 }
