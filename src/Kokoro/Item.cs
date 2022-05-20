@@ -149,4 +149,42 @@ public sealed class Item : DataEntity {
 		=> db.ExecScalar<long>(
 			"SELECT rowid FROM Items WHERE uid=$uid"
 			, new SqliteParameter("$uid", uid.ToByteArray()));
+
+
+	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
+		var context = host.Context;
+		long newRowId = context.NextItemRowId();
+		return AlterRowId(host.Db, oldRowId, newRowId);
+	}
+
+	/// <summary>
+	/// Alias for <see cref="RenewRowId(KokoroCollection, long)"/>
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool AlterRowId(KokoroCollection host, long oldRowId)
+		=> RenewRowId(host, oldRowId);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId)
+		=> AlterRowId(host.Db, oldRowId, newRowId);
+
+	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
+		int updated;
+		try {
+			updated = db.Exec(
+				"UPDATE Items SET rowid=$newRowId WHERE rowid=$oldRowId"
+				, new SqliteParameter("$oldRowId", oldRowId)
+				, new SqliteParameter("$newRowId", newRowId)
+			);
+		} catch (Exception ex) when (
+			ex is not SqliteException sqlex ||
+			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
+		) {
+			db.Context?.UndoSchemaClassRowId(newRowId);
+			throw;
+		}
+
+		Debug.Assert(updated is 1 or 0);
+		return ((byte)updated).ToUnsafeBool();
+	}
 }
