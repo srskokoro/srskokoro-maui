@@ -151,6 +151,53 @@ public sealed class Item : DataEntity {
 			, new SqliteParameter("$uid", uid.ToByteArray()));
 
 
+	public void Load() {
+		var db = Host.Db;
+		using var cmd = db.CreateCommand("""
+			SELECT uid,parent,ordinal,schema FROM Items
+			WHERE rowid=$rowid
+			""");
+		cmd.Parameters.AddWithValue("$rowid", _RowId);
+
+		using var r = cmd.ExecuteReader();
+		if (r.Read()) {
+			// Pending changes will be discarded
+			_State = StateFlags.NoChanges;
+
+			r.DAssert_Name(0, "uid");
+			_Uid = r.GetUniqueId(0);
+
+			r.DAssert_Name(1, "parent");
+			_ParentRowId = r.GetInt64(1);
+
+			r.DAssert_Name(2, "ordinal");
+			_Ordinal = r.GetInt32(2);
+
+			r.DAssert_Name(3, "schema");
+			_SchemaRowId = r.GetInt64(3);
+
+			return; // Early exit
+		}
+
+		// Otherwise, either deleted or never existed.
+		Unload(); // Let that state materialize here then.
+		_State = StateFlags.NotExists;
+	}
+
+
+	public void Unload() {
+		UnloadCoreState();
+	}
+
+	public void UnloadCoreState() {
+		_State = default;
+		_Uid = default;
+		_ParentRowId = default;
+		_Ordinal = default;
+		_SchemaRowId = default;
+	}
+
+
 	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
 		var context = host.Context;
 		long newRowId = context.NextItemRowId();
