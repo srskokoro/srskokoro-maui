@@ -50,6 +50,36 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 
 	public sealed override int FieldCount => _FieldCount;
 
+	public sealed override (long Offset, long Length) BoundsOfFieldVal(int index) {
+		if ((uint)index < (uint)_FieldCount) {
+			var stream = _Stream;
+
+			int fSize = _FieldOffsetSize;
+			stream.Position = _FieldOffsetListPos + index * fSize;
+
+			long fOffset = (long)stream.ReadUIntX(fSize);
+			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `long.MaxValue`: {(ulong)fOffset:X}");
+
+			long fValLen;
+			if ((uint)index + 1u < (uint)_FieldCount) {
+				long fOffsetNext = (long)stream.ReadUIntX(fSize);
+				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `long.MaxValue`: {(ulong)fOffsetNext:X}");
+
+				fValLen = fOffsetNext - fOffset;
+				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
+					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
+			} else {
+				fValLen = stream.Length - fOffset;
+				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
+					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
+			}
+
+			return (_FieldValListPos + fOffset, fValLen);
+		} else {
+			return (_Stream.Length, 0);
+		}
+	}
+
 	public sealed override FieldVal ReadFieldVal(int index) {
 		if ((uint)index < (uint)_FieldCount) {
 			var stream = _Stream;
