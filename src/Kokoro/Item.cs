@@ -187,6 +187,7 @@ public sealed class Item : DataEntity {
 
 	public void Unload() {
 		UnloadCoreState();
+		UnloadFields();
 	}
 
 	public void UnloadCoreState() {
@@ -195,6 +196,14 @@ public sealed class Item : DataEntity {
 		_ParentRowId = default;
 		_Ordinal = default;
 		_SchemaRowId = default;
+	}
+
+	public void UnloadFields() {
+		var fields = _Fields;
+		if (fields != null) {
+			fields.Clear();
+			_FieldChanges = null;
+		}
 	}
 
 
