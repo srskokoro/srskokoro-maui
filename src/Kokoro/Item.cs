@@ -450,4 +450,28 @@ public sealed class Item : DataEntity {
 		Debug.Assert(updated is 1 or 0);
 		return ((byte)updated).ToUnsafeBool();
 	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Delete() => DeleteFrom(Host.Db, _RowId);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool DeleteFrom(KokoroCollection host, long rowid)
+		=> DeleteFrom(host.Db, rowid);
+
+	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
+		int deleted = db.Cmd("DELETE FROM Items WHERE rowid=$rowid")
+			.AddParams(new("$rowid", rowid)).Consume();
+
+		Debug.Assert(deleted is 1 or 0);
+		return ((byte)deleted).ToUnsafeBool();
+	}
+
+	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
+		int deleted = host.Db.Cmd("DELETE FROM Items WHERE uid=$uid")
+			.AddParams(new("$uid", uid)).Consume();
+
+		Debug.Assert(deleted is 1 or 0);
+		return ((byte)deleted).ToUnsafeBool();
+	}
 }
