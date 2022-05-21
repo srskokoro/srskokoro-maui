@@ -15,6 +15,18 @@ internal static class SqliteCommandExtensions {
 		return command;
 	}
 
+	/// <summary>
+	/// Same as <see cref="Set(SqliteCommand, string)"/> but always discards
+	/// prepared statements (by avoiding the costly <see cref="string"/>
+	/// comparison needed to prevent prepared statements from being discarded).
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static SqliteCommand Reset(this SqliteCommand command, string commandText) {
+		command.CommandText = null; // Avoids the cost of a string comparison
+		command.CommandText = commandText; // No string comparison will happen here
+		return command;
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static SqliteCommand ClearParams(this SqliteCommand command) {
