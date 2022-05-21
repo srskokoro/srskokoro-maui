@@ -16,7 +16,7 @@ internal sealed class ItemFieldsReader : AbsHotColdFieldsReader<Item> {
 			" WHERE rowid=$rowid");
 
 		long rowid = item.RowId;
-		cmd.Parameters.AddWithValue("$rowid", rowid);
+		cmd.Parameters.Add(new("$rowid", rowid));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {

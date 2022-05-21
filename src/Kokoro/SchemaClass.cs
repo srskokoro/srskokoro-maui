@@ -170,11 +170,11 @@ public sealed class SchemaClass : DataEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.CreateCommand("""
+		using var cmd = db.Cmd("""
 			SELECT uid,ordinal,src,name FROM SchemaClasses
 			WHERE rowid=$rowid
 			""");
-		cmd.Parameters.AddWithValue("$rowid", _RowId);
+		cmd.Parameters.Add(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
@@ -332,7 +332,7 @@ public sealed class SchemaClass : DataEntity {
 		long fld;
 		{
 			cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
-			cmdParams.AddWithValue("$name", name.Value);
+			cmdParams.Add(new("$name", name.Value));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -347,12 +347,12 @@ public sealed class SchemaClass : DataEntity {
 
 		// Load field info
 		{
-			cmd.CommandText = """
+			cmd.Reset("""
 				SELECT ordinal,st FROM SchemaClassToFields
 				WHERE cls=$cls AND fld=$fld
-				""";
-			cmdParams.AddWithValue("$cls", _RowId);
-			cmdParams.AddWithValue("$fld", fld);
+				""");
+			cmdParams.Add(new("$cls", _RowId));
+			cmdParams.Add(new("$fld", fld));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -423,18 +423,18 @@ public sealed class SchemaClass : DataEntity {
 	private void SaveAsNew(KokoroSqliteDb db, long rowid, UniqueId uid) {
 		try {
 			using var tx = new NestingWriteTransaction(db);
-			using var cmd = db.CreateCommand(
+			using var cmd = db.Cmd(
 				"INSERT INTO SchemaClasses" +
 				"(rowid,uid,ordinal,src,name)" +
 				" VALUES" +
 				"($rowid,$uid,$ordinal,$src,$name)");
 
-			SqliteParameterCollection cmdParams = cmd.Parameters;
-			cmdParams.AddWithValue("$rowid", rowid);
-			cmdParams.AddWithValue("$uid", uid.ToByteArray());
-			cmdParams.AddWithValue("$ordinal", _Ordinal);
-			cmdParams.AddWithValue("$src", RowIds.Box(_SrcRowId));
-			cmdParams.AddWithValue("$name", _Name);
+			var cmdParams = cmd.Parameters;
+			cmdParams.Add(new("$rowid", rowid));
+			cmdParams.Add(new("$uid", uid.ToByteArray()));
+			cmdParams.Add(new("$ordinal", _Ordinal));
+			cmdParams.Add(new("$src", RowIds.Box(_SrcRowId)));
+			cmdParams.Add(new("$name", _Name));
 
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1);
@@ -467,30 +467,30 @@ public sealed class SchemaClass : DataEntity {
 		var db = Host.Db; // Throws if host is already disposed
 		using (new NestingWriteTransaction(db)) {
 			using var cmd = db.CreateCommand();
-			SqliteParameterCollection cmdParams = cmd.Parameters;
+			var cmdParams = cmd.Parameters;
 
 			// Save core state
 			if (state != StateFlags.NoChanges) {
-				cmdParams.AddWithValue("$rowid", _RowId);
+				cmdParams.Add(new("$rowid", _RowId));
 
 				StringBuilder cmdSb = new();
 				cmdSb.Append("UPDATE SchemaClasses SET\n");
 
 				if ((state & StateFlags.Change_Uid) != 0) {
 					cmdSb.Append("uid=$uid,");
-					cmdParams.AddWithValue("$uid", _Uid.ToByteArray());
+					cmdParams.Add(new("$uid", _Uid.ToByteArray()));
 				}
 				if ((state & StateFlags.Change_Ordinal) != 0) {
 					cmdSb.Append("ordinal=$ordinal,");
-					cmdParams.AddWithValue("$ordinal", _Ordinal);
+					cmdParams.Add(new("$ordinal", _Ordinal));
 				}
 				if ((state & StateFlags.Change_SrcRowId) != 0) {
 					cmdSb.Append("src=$src,");
-					cmdParams.AddWithValue("$src", RowIds.Box(_SrcRowId));
+					cmdParams.Add(new("$src", RowIds.Box(_SrcRowId)));
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
-					cmdParams.AddWithValue("$name", _Name);
+					cmdParams.Add(new("$name", _Name));
 				}
 
 				Debug.Assert(cmdSb[^1] == ',', $"No changes to save: `{nameof(_State)} == {state}`");
@@ -528,13 +528,13 @@ public sealed class SchemaClass : DataEntity {
 
 	[SkipLocalsInit]
 	private void InternalSaveFieldInfos(SqliteCommand cmd, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsRowId) {
-		SqliteParameterCollection cmdParams = cmd.Parameters;
+		var cmdParams = cmd.Parameters;
 		foreach (var (fieldName, info) in fieldInfoChanges) {
 			long fld;
 			{
-				cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
+				cmd.Reset("SELECT rowid FROM FieldNames WHERE name=$name");
 				cmdParams.Clear();
-				cmdParams.AddWithValue("$name", fieldName.Value);
+				cmdParams.Add(new("$name", fieldName.Value));
 
 				var r = cmd.ExecuteReader();
 				// ^ No `using` since the reader will be disposed
@@ -553,10 +553,10 @@ public sealed class SchemaClass : DataEntity {
 
 		InsertNewFieldName:
 			{
-				cmd.CommandText = "INSERT INTO FieldNames(rowid,name) VALUES($rowid,$name)";
+				cmd.Reset("INSERT INTO FieldNames(rowid,name) VALUES($rowid,$name)");
 				cmdParams.Clear();
-				cmdParams.AddWithValue("$rowid", fld = Host.Context.NextFieldNameRowId());
-				cmdParams.AddWithValue("$name", fieldName.Value);
+				cmdParams.Add(new("$rowid", fld = Host.Context.NextFieldNameRowId()));
+				cmdParams.Add(new("$name", fieldName.Value));
 
 				int updated = cmd.ExecuteNonQuery(); // Shouldn't normally fail
 				Debug.Assert(updated == 1, $"Updated: {updated}");
@@ -564,17 +564,17 @@ public sealed class SchemaClass : DataEntity {
 
 		UpdateFieldInfo:
 			{
-				cmd.CommandText = """
+				cmd.Reset("""
 					INSERT INTO SchemaClassToFields(cls,fld,ordinal,st)
 					VALUES($cls,$fld,$ordinal,$st)
 					ON CONFLICT DO UPDATE
 					SET ordinal=$ordinal,st=$st
-					""";
+					""");
 				cmdParams.Clear();
-				cmdParams.AddWithValue("$cls", clsRowId);
-				cmdParams.AddWithValue("$fld", fld);
-				cmdParams.AddWithValue("$ordinal", info.Ordinal);
-				cmdParams.AddWithValue("$st", info.StorageType);
+				cmdParams.Add(new("$cls", clsRowId));
+				cmdParams.Add(new("$fld", fld));
+				cmdParams.Add(new("$ordinal", info.Ordinal));
+				cmdParams.Add(new("$st", info.StorageType));
 
 				int updated = cmd.ExecuteNonQuery();
 				Debug.Assert(updated == 1, $"Updated: {updated}");

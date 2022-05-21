@@ -154,11 +154,11 @@ public sealed class Item : DataEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.CreateCommand("""
+		using var cmd = db.Cmd("""
 			SELECT uid,parent,ordinal,schema FROM Items
 			WHERE rowid=$rowid
 			""");
-		cmd.Parameters.AddWithValue("$rowid", _RowId);
+		cmd.Parameters.Add(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
@@ -300,8 +300,8 @@ public sealed class Item : DataEntity {
 
 		long fld;
 		{
-			cmd.CommandText = "SELECT rowid FROM FieldNames WHERE name=$name";
-			cmdParams.AddWithValue("$name", name.Value);
+			cmd.Set("SELECT rowid FROM FieldNames WHERE name=$name");
+			cmdParams.Add(new("$name", name.Value));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -315,16 +315,15 @@ public sealed class Item : DataEntity {
 		int index;
 		FieldStorageType st;
 		{
-			cmd.CommandText = """
+			cmd.Reset("""
 				SELECT index_st FROM SchemaToFields
 				WHERE schema=$schema AND fld=$fld
-				""";
-
+				""");
 			cmdParams.Clear();
 
 			// NOTE: Requires a preloaded core state
-			cmdParams.AddWithValue("$schema", _SchemaRowId);
-			cmdParams.AddWithValue("$fld", fld);
+			cmdParams.Add(new("$schema", _SchemaRowId));
+			cmdParams.Add(new("$fld", fld));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -357,9 +356,9 @@ public sealed class Item : DataEntity {
 				rowid = _SchemaRowId;
 			}
 
-			cmd.CommandText = cmdTxt;
+			cmd.Reset(cmdTxt);
 			cmdParams.Clear();
-			cmdParams.AddWithValue("$rowid", rowid);
+			cmdParams.Add(new("$rowid", rowid));
 		}
 
 		using (var r = cmd.ExecuteReader()) {

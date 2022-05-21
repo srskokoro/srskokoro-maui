@@ -157,7 +157,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 				"SELECT typeof(data) IS 'blob'" +
 				" FROM FieldValuesInterned" +
 				" WHERE rowid=$rowid");
-			cmd.Parameters.AddWithValue("$rowid", rowid);
+			cmd.Parameters.Add(new("$rowid", rowid));
 
 			using var r = cmd.ExecuteReader();
 			if (!r.Read() || !r.GetBoolean(0)) {
