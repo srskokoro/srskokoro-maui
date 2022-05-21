@@ -24,9 +24,7 @@ internal static class SqliteConnectionExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static SqliteCommand Cmd(this SqliteConnection connection, string commandText) {
-		var command = connection.CreateCommand();
-		command.CommandText = commandText;
-		return command;
+		return connection.CreateCommand(commandText);
 	}
 
 
