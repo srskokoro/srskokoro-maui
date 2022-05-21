@@ -163,9 +163,9 @@ public sealed class SchemaClass : DataEntity {
 		=> LoadRowId(host.Db, uid);
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.ExecScalar<long>(
-			"SELECT rowid FROM SchemaClasses WHERE uid=$uid"
-			, new SqliteParameter("$uid", uid.ToByteArray()));
+		=> db.Cmd("SELECT rowid FROM SchemaClasses WHERE uid=$uid")
+			.AddParams(new("$uid", uid.ToByteArray()))
+			.ConsumeScalar<long>();
 
 
 	public void Load() {
@@ -606,11 +606,10 @@ public sealed class SchemaClass : DataEntity {
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
 		int updated;
 		try {
-			updated = db.Exec(
-				"UPDATE SchemaClasses SET rowid=$newRowId WHERE rowid=$oldRowId"
-				, new SqliteParameter("$oldRowId", oldRowId)
-				, new SqliteParameter("$newRowId", newRowId)
-			);
+			updated = db.Cmd("UPDATE SchemaClasses SET rowid=$newRowId WHERE rowid=$oldRowId")
+				.AddParams(new("$oldRowId", oldRowId))
+				.AddParams(new("$newRowId", newRowId))
+				.Consume();
 		} catch (Exception ex) when (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
@@ -632,18 +631,16 @@ public sealed class SchemaClass : DataEntity {
 		=> DeleteFrom(host.Db, rowid);
 
 	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
-		int deleted = db.Exec(
-			"DELETE FROM SchemaClasses WHERE rowid=$rowid"
-			, new SqliteParameter("$rowid", rowid));
+		int deleted = db.Cmd("DELETE FROM SchemaClasses WHERE rowid=$rowid")
+			.AddParams(new("$rowid", rowid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();
 	}
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
-		int deleted = host.Db.Exec(
-			"DELETE FROM SchemaClasses WHERE uid=$uid"
-			, new SqliteParameter("$uid", uid));
+		int deleted = host.Db.Cmd("DELETE FROM SchemaClasses WHERE uid=$uid")
+			.AddParams(new("$uid", uid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();

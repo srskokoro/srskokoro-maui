@@ -147,9 +147,9 @@ public sealed class Item : DataEntity {
 		=> LoadRowId(host.Db, uid);
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.ExecScalar<long>(
-			"SELECT rowid FROM Items WHERE uid=$uid"
-			, new SqliteParameter("$uid", uid.ToByteArray()));
+		=> db.Cmd("SELECT rowid FROM Items WHERE uid=$uid")
+			.AddParams(new("$uid", uid.ToByteArray()))
+			.ConsumeScalar<long>();
 
 
 	public void Load() {
@@ -437,11 +437,9 @@ public sealed class Item : DataEntity {
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
 		int updated;
 		try {
-			updated = db.Exec(
-				"UPDATE Items SET rowid=$newRowId WHERE rowid=$oldRowId"
-				, new SqliteParameter("$oldRowId", oldRowId)
-				, new SqliteParameter("$newRowId", newRowId)
-			);
+			updated = db.Cmd("UPDATE Items SET rowid=$newRowId WHERE rowid=$oldRowId")
+				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
+				.Consume();
 		} catch (Exception ex) when (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
