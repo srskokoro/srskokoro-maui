@@ -40,6 +40,8 @@ public sealed class SchemaClass : DataEntity {
 
 	[StructLayout(LayoutKind.Auto)]
 	public struct FieldInfo {
+		internal bool _IsDeleted;
+
 		private int _Ordinal;
 		private FieldStorageType _StorageType;
 
@@ -140,6 +142,10 @@ public sealed class SchemaClass : DataEntity {
 		_FieldInfoChanges = changes = new();
 		goto Set;
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void DeleteFieldInfo(StringKey name)
+		=> SetFieldInfo(name, new() { _IsDeleted = true });
 
 	public void SetCachedFieldInfo(StringKey name, FieldInfo info) {
 		var infos = _FieldInfos;
@@ -550,12 +556,22 @@ public sealed class SchemaClass : DataEntity {
 
 				if (r.Read()) {
 					fld = r.GetInt64(0);
-					goto UpdateFieldInfo;
+					if (!info._IsDeleted) {
+						goto UpdateFieldInfo;
+					} else {
+						goto DeleteFieldInfo;
+					}
 				} else {
-					goto InsertNewFieldName;
+					if (!info._IsDeleted) {
+						goto InsertNewFieldName;
+					} else {
+						// Deletion requested, but there's nothing to delete, as
+						// the field is nonexistent.
+						continue;
+					}
 				}
 
-				// TODO Cache and load from cache
+				// TODO Cache field rowids and load from cache
 			}
 
 		InsertNewFieldName:
@@ -585,6 +601,23 @@ public sealed class SchemaClass : DataEntity {
 
 				int updated = cmd.ExecuteNonQuery();
 				Debug.Assert(updated == 1, $"Updated: {updated}");
+
+				continue;
+			}
+
+		DeleteFieldInfo:
+			{
+				cmd.Reset("DELETE FROM SchemaClassToFields WHERE (cls,fld)=($cls,$fld)");
+				cmdParams.Clear();
+				cmdParams.Add(new("$cls", clsRowId));
+				cmdParams.Add(new("$fld", fld));
+
+				int deleted = cmd.ExecuteNonQuery();
+				// NOTE: It's possible for nothing to be deleted, for when the
+				// field doesn't exist in the first place yet we have it cached.
+				//
+				// TODO Cache field rowids and load from cache
+				Debug.Assert(deleted is 1 or 0);
 			}
 		}
 		// Loop end
