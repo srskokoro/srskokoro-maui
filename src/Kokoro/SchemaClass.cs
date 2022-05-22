@@ -157,6 +157,14 @@ public sealed class SchemaClass : DataEntity {
 		goto Set;
 	}
 
+	public void UnloadFieldInfo(StringKey name) {
+		var infos = _FieldInfos;
+		if (infos != null) {
+			infos.Remove(name);
+			_FieldInfoChanges?.Remove(name);
+		}
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long LoadRowId(KokoroCollection host, UniqueId uid)
@@ -377,8 +385,7 @@ public sealed class SchemaClass : DataEntity {
 	NotFound:
 		// Otherwise, either deleted or never existed.
 		// Let that state materialize here then.
-		_FieldInfoChanges?.Remove(name);
-		_FieldInfos?.Remove(name);
+		UnloadFieldInfo(name);
 	}
 
 
