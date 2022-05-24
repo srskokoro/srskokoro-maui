@@ -341,6 +341,11 @@ partial class KokoroContext {
 			// - 0b10: Cold
 			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2)," +
 
+			// The field locality type:
+			// - 0: Shared
+			// - 1: Local
+			"loc INTEGER NOT NULL AS (st != 0)," +
+
 			"PRIMARY KEY(cls, fld)" +
 
 		") WITHOUT ROWID");
