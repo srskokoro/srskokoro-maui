@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal.IO.Extensions;
+using Kokoro.Common.Util;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 

@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal;
+﻿namespace Kokoro.Common.Util;
 using System.Runtime.InteropServices;
 
 // Variable-length integer encoding from SQLite 4.
