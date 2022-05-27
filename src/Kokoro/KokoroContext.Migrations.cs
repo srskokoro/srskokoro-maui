@@ -305,7 +305,8 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema class's primary data,
 			// which includes other tables that comprises the schema class, but
-			// excludes the `rowid`, `src` and `name`.
+			// excludes the `rowid`, `src`, `name`, and the contents of included
+			// schema classes (only the included schema class's `uid` is used).
 			//
 			// Null if the schema class is runtime-bound, i.e., the runtime is
 			// the one defining the schema class and the schema class definition
