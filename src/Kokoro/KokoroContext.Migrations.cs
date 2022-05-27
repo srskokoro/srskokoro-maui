@@ -104,6 +104,13 @@ partial class KokoroContext {
 			// The item ordinal.
 			Ordinal_Int32Nn + "," +
 
+			// The number of milliseconds since Unix epoch, when the `parent`
+			// and/or `ordinal` columns were last modified.
+			//
+			// Also, the first time an item is created, both the `parent` and
+			// `ordinal` columns are considered modified for the first time.
+			"ordModStamp INTEGER NOT NULL," +
+
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
 
 			// The blob comprising the list of modstamps and field data.
@@ -142,13 +149,8 @@ partial class KokoroContext {
 			// list of modstamps should be returned instead.
 			//   - Lookups via negative modstamp indices should be considered an
 			//   error.
-			// - The first entry of the modstamp list is always the Unix time
-			// when the `parent` and/or `ordinal` columns were last modified.
-			//   - The first time an item is created, both the `parent` and
-			//   `ordinal` columns are considered modified for the first time.
-			//   This implies that the modstamp list is never empty.
-			// - If the modstamp list is empty (which shouldn't happen
-			// normally), the fallback for modstamp lookups should simply be the
+			// - If the modstamp list is empty, the fallback for modstamp
+			// lookups should simply be the `ordModStamp` (if available) or the
 			// Unix time when the collection was "first" created (which is
 			// independent of collection creation due to device syncs).
 			// - If an item holds fat fields, the last entry of the modstamp
@@ -222,12 +224,6 @@ partial class KokoroContext {
 
 			// The blob comprising the list of shared modstamps and shared field
 			// data.
-			//
-			// The blob format is the same as `Items.data` column with a few
-			// differences: the modstamp list can be empty, along with the
-			// obvious reason as to why it can be empty. Refer to the notes on
-			// `Items.data` column regarding what will happen when a modstamp is
-			// looked up while the modstamp list is empty.
 			"data BLOB NOT NULL" +
 
 		")");

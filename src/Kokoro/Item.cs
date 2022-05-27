@@ -12,6 +12,8 @@ public sealed class Item : DataEntity {
 	private long _ParentRowId;
 	private int _Ordinal;
 
+	private ulong _OrdModStamp;
+
 	private long _SchemaRowId;
 	private Dictionary<StringKey, FieldVal>? _Fields;
 	private Dictionary<StringKey, FieldVal>? _FieldChanges;
@@ -33,7 +35,8 @@ public sealed class Item : DataEntity {
 		Change_Uid         = 1 << 0,
 		Change_ParentRowId = 1 << 1,
 		Change_Ordinal     = 1 << 2,
-		Change_SchemaRowId = 1 << 3,
+		Change_OrdModStamp = 1 << 3,
+		Change_SchemaRowId = 1 << 4,
 
 		NotExists          = 1 << 31,
 	}
@@ -79,6 +82,16 @@ public sealed class Item : DataEntity {
 	}
 
 	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
+
+	public ulong OrdModStamp {
+		get => _OrdModStamp;
+		set {
+			_OrdModStamp = value;
+			_State = StateFlags.Change_OrdModStamp;
+		}
+	}
+
+	public void SetCachedOrdModStamp(ulong ordModStamp) => _OrdModStamp = ordModStamp;
 
 	public long SchemaRowId {
 		get => _SchemaRowId;
@@ -155,7 +168,7 @@ public sealed class Item : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,parent,ordinal,schema FROM Items
+			SELECT uid,parent,ordinal,ordModStamp,schema FROM Items
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -174,8 +187,11 @@ public sealed class Item : DataEntity {
 			r.DAssert_Name(2, "ordinal");
 			_Ordinal = r.GetInt32(2);
 
-			r.DAssert_Name(3, "schema");
-			_SchemaRowId = r.GetInt64(3);
+			r.DAssert_Name(3, "ordModStamp");
+			_OrdModStamp = (ulong)r.GetInt64(3);
+
+			r.DAssert_Name(4, "schema");
+			_SchemaRowId = r.GetInt64(4);
 
 			return; // Early exit
 		}
