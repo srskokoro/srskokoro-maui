@@ -201,7 +201,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`.
+			// `rowid`, `localModStampCount` and `localFieldCount`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
