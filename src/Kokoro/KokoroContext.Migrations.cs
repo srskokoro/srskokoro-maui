@@ -259,9 +259,9 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// Each schema is a snapshot of the schema classes it used to build
-		// itself. This table lists the schema classes that was used.
-		db.Exec("CREATE TABLE SchemaToSchemaClasses(" +
+		// Each schema is a snapshot of the explicitly set schema classes used
+		// to assemble the schema. This table lists those schema classes.
+		db.Exec("CREATE TABLE SchemaToDirectClasses(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
@@ -289,6 +289,30 @@ partial class KokoroContext {
 			"UNIQUE(schema, sharedModStampIndex)," +
 
 			"UNIQUE(schema, localModStampIndex)" +
+
+		") WITHOUT ROWID");
+
+		// The implicitly set schema classes used to assemble the schema. Such
+		// "indirect" schema classes were "not" directly set to the schema.
+		// Otherwise, they shouldn't be in this table.
+		db.Exec("CREATE TABLE SchemaToIndirectClasses(" +
+
+			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+
+			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+
+			// The cryptographic checksum of the schema class when the schema
+			// was created. Null if not available when the schema was created,
+			// even though it might now be available at the present moment --
+			// remember, a schema is a snapshot.
+			"csum BLOB," +
+
+			// The direct class responsible for the implicit attachment of the
+			// schema class to the schema. This is the explicitly set schema
+			// class that included the indirect schema class.
+			"dcls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+
+			"PRIMARY KEY(schema, cls)" +
 
 		") WITHOUT ROWID");
 
