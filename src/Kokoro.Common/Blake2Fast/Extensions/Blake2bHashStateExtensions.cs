@@ -16,20 +16,16 @@ internal static partial class Blake2bHashStateExtensions {
 		VarInts.Write(buffer, input);
 		state.Update(buffer);
 	}
+}
 
-	// --
+// Little-Endian
+static partial class Blake2bHashStateExtensions {
 
 	// Exists only for completeness
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void UpdateLE(this Blake2bHashState state, byte input) => state.Update(input);
 
-	// Exists only for completeness
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void UpdateBE(this Blake2bHashState state, byte input) => state.Update(input);
-}
-
-// Little-Endian
-static partial class Blake2bHashStateExtensions {
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void UpdateLE(this Blake2bHashState state, short input) {
@@ -128,6 +124,12 @@ static partial class Blake2bHashStateExtensions {
 
 // Big-Endian
 static partial class Blake2bHashStateExtensions {
+
+	// Exists only for completeness
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void UpdateBE(this Blake2bHashState state, byte input) => state.Update(input);
+
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void UpdateBE(this Blake2bHashState state, short input) {
