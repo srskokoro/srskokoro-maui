@@ -23,6 +23,10 @@ static partial class Blake2bHashStateExtensions {
 
 	// Exists only for completeness
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void UpdateLE(this Blake2bHashState state, sbyte input) => state.Update(input);
+
+	// Exists only for completeness
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void UpdateLE(this Blake2bHashState state, byte input) => state.Update(input);
 
 	// --
@@ -124,6 +128,10 @@ static partial class Blake2bHashStateExtensions {
 
 // Big-Endian
 static partial class Blake2bHashStateExtensions {
+
+	// Exists only for completeness
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void UpdateBE(this Blake2bHashState state, sbyte input) => state.Update(input);
 
 	// Exists only for completeness
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
