@@ -17,29 +17,44 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 		_Owner = owner;
 		_Stream = stream;
 
-		const int MaxSize = 0b111 + 1; // 7 + 1 == 8
-		const int MaxCount = int.MaxValue / MaxSize;
+		try {
+			const int MaxSize = 0b111 + 1; // 7 + 1 == 8
+			const int MaxCount = int.MaxValue / MaxSize;
 
-		const ulong MaxDesc = (ulong)MaxCount << 3 | 0b111;
+			const ulong MaxDesc = (ulong)MaxCount << 3 | 0b111;
 
-		// --
-		// Read the descriptor for the list of field offsets
-		ulong fDesc = stream.ReadVarIntOrZero();
-		Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
+			// --
+			// Read the descriptor for the list of field offsets
+			ulong fDesc = stream.ReadVarIntOrZero();
+			Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
 
-		// Get the field count and field offset integer size
-		int fCount = (int)(fDesc >> 3);
-		int fSize = ((int)fDesc & 0b111) + 1;
+			// Get the field count and field offset integer size
+			int fCount = (int)(fDesc >> 3);
+			int fSize = ((int)fDesc & 0b111) + 1;
 
-		_FieldCount = fCount;
-		_FieldOffsetSize = fSize;
+			_FieldCount = fCount;
+			_FieldOffsetSize = fSize;
 
-		// The size in bytes of the entire field offset list
-		int fieldOffsetListSize = fCount * fSize;
+			// The size in bytes of the entire field offset list
+			int fieldOffsetListSize = fCount * fSize;
 
-		// --
+			// --
 
-		_FieldValListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize;
+			_FieldValListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize;
+
+		} catch (NotSupportedException) when (!stream.CanRead || !stream.CanSeek) {
+			// NOTE: We ensure that the constructor never throws under normal
+			// circumstances: if we simply couldn't read the needed data to
+			// complete initialization, then we should just swallow the
+			// exception, and initialize with reasonable defaults. So far, the
+			// only exception we should guard against is the one thrown when the
+			// stream doesn't support reading or seeking (as the code in the
+			// above try-block requires it).
+
+			_FieldCount = 0;
+			_FieldOffsetSize = 1;
+			_FieldValListPos = _FieldOffsetListPos = 0;
+		}
 	}
 
 	// --
