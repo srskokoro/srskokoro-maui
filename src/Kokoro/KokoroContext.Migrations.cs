@@ -203,7 +203,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`, `localModStampCount` and `localFieldCount`.
+			// `rowid`, `modStampCount` and `localFieldCount`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -216,14 +216,17 @@ partial class KokoroContext {
 
 			// The expected number of modstamps in the schemable where the
 			// schema is applied.
-			$"localModStampCount INTEGER NOT NULL CHECK(localModStampCount {BetweenInt32RangeGE0})," +
+			$"modStampCount INTEGER NOT NULL CHECK(modStampCount {BetweenInt32RangeGE0})," +
 
 			// The expected number of field data in the schemable where the
 			// schema is applied.
 			$"localFieldCount INTEGER NOT NULL CHECK(localFieldCount {BetweenInt32RangeGE0})," +
 
-			// The blob comprising the list of shared modstamps and shared field
-			// data.
+			// The blob comprising the list of field offsets and field values
+			// for shared fields.
+			//
+			// The blob format is similar to the `Items.data` column, except
+			// that there's no modstamp list.
 			"data BLOB NOT NULL" +
 
 		")");
@@ -251,7 +254,15 @@ partial class KokoroContext {
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (st != 0)," +
 
+			// Quirks:
+			// - Can also be used to lookup the direct class (in `SchemaToDirectClasses`
+			// table) responsible for the field's inclusion.
 			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
+
+			// The schema class that defined this field, which can either be a
+			// direct class (in `SchemaToDirectClasses`) or an indirect class
+			// (in `SchemaToIndirectClasses`).
+			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -259,8 +270,13 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// Each schema is a snapshot of the explicitly set schema classes used
-		// to assemble the schema. This table lists those schema classes.
+		// A schema can also be thought of as a schema class set, in that no
+		// data can enter a schema unless defined by a schema class: a schema is
+		// composed by the various compiled states of its schema classes. Each
+		// schema is a snapshot of the explicitly set schema classes used to
+		// assemble the schema.
+		//
+		// This table lists those "explicitly" set schema classes.
 		db.Exec("CREATE TABLE SchemaToDirectClasses(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
@@ -273,22 +289,19 @@ partial class KokoroContext {
 			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
-			// Quirks:
-			// - Null when not contributing any shared fields.
-			// - While a schema can never be modified upon creation, it can
-			// inherit the modstamps of an older schema it was based on and only
-			// differ on modstamp entries that really changed.
-			$"sharedModStampIndex INTEGER CHECK(sharedModStampIndex {BetweenInt32RangeGE0})," +
-
-			// Quirks:
-			// - Null when not contributing any local fields.
-			$"localModStampIndex INTEGER CHECK(localModStampIndex {BetweenInt32RangeGE0})," +
+			// Each direct schema class contributes a modstamp entry to the
+			// schemable, initially set to the datetime the schema class was
+			// directly attached (or reattached), and updated to the current
+			// datetime whenever any of its fields (shared or local) are
+			// updated. The modstamp entry is added even if the direct schema
+			// class doesn't contribute any field. Note that, the fields that a
+			// direct schema class contributes also include those from its
+			// indirect schema classes.
+			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, cls)," +
 
-			"UNIQUE(schema, sharedModStampIndex)," +
-
-			"UNIQUE(schema, localModStampIndex)" +
+			"UNIQUE(schema, modStampIndex)" +
 
 		") WITHOUT ROWID");
 
