@@ -391,7 +391,12 @@ public sealed class Item : DataEntity {
 					fr = new HotFieldsReader(this, blob);
 				}
 
-				FieldVal fieldVal = fr.ReadFieldVal(index);
+				FieldVal fieldVal;
+				try {
+					fieldVal = fr.ReadFieldVal(index);
+				} finally {
+					fr.Dispose();
+				}
 
 				// Pending changes will be discarded
 				_FieldChanges?.Remove(name);
