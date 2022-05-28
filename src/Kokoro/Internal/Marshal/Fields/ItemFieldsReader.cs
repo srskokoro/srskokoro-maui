@@ -27,7 +27,7 @@ internal sealed class ItemFieldsReader : AbsHotColdFieldsReader<Item> {
 
 			// NOTE: Even if both the `SqliteCommand` and `SqliteDataReader` are
 			// disposed, the `SqliteBlob` stream will still be valid.
-			return new ColdFieldsReader(item, blob);
+			return new PlainFieldsReader(item, blob);
 		} else {
 			return NullFieldsReader.Instance;
 		}

@@ -388,7 +388,7 @@ public sealed class Item : DataEntity {
 				if (st != FieldStorageType.Shared) {
 					fr = new ItemFieldsReader(this, blob);
 				} else {
-					fr = new ColdFieldsReader(this, blob);
+					fr = new PlainFieldsReader(this, blob);
 				}
 
 				FieldVal fieldVal;

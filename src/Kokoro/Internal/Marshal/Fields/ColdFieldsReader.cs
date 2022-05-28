@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
 using System.IO;
 
-internal sealed class ColdFieldsReader : BaseFieldsReader<DataEntity> {
+internal sealed class PlainFieldsReader : BaseFieldsReader<DataEntity> {
 
-	public ColdFieldsReader(DataEntity owner, Stream stream) : base(owner, stream) { }
+	public PlainFieldsReader(DataEntity owner, Stream stream) : base(owner, stream) { }
 }
