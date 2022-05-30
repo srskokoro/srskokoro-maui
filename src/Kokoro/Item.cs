@@ -3,6 +3,7 @@ using Kokoro.Internal;
 using Kokoro.Internal.Marshal.Fields;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.Runtime.InteropServices;
 
 public sealed class Item : DataEntity {
 
@@ -147,6 +148,17 @@ public sealed class Item : DataEntity {
 
 	Set:
 		fields[name] = value;
+
+		{
+			var changes = _FieldChanges;
+			if (changes != null) {
+				ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(changes, name);
+				if (!U.IsNullRef(ref valueRef)) {
+					valueRef = value;
+				}
+			}
+		}
+
 		return;
 
 	Init:

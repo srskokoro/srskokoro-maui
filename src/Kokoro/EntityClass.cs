@@ -156,6 +156,17 @@ public sealed class EntityClass : DataEntity {
 
 	Set:
 		infos[name] = info;
+
+		{
+			var changes = _FieldInfoChanges;
+			if (changes != null) {
+				ref var infoRef = ref CollectionsMarshal.GetValueRefOrNullRef(changes, name);
+				if (!U.IsNullRef(ref infoRef)) {
+					infoRef = info;
+				}
+			}
+		}
+
 		return;
 
 	Init:
