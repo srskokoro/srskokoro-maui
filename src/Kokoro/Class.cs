@@ -679,13 +679,10 @@ public sealed class Class : DataEntity {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public bool Delete() => DeleteFrom(Host.Db, _RowId);
+	public bool Delete() => DeleteFrom(Host, _RowId);
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool DeleteFrom(KokoroCollection host, long rowid)
-		=> DeleteFrom(host.Db, rowid);
-
-	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
+	public static bool DeleteFrom(KokoroCollection host, long rowid) {
+		var db = host.Db;
 		int deleted = db.Cmd("DELETE FROM Class WHERE rowid=$rowid")
 			.AddParams(new("$rowid", rowid)).Consume();
 
