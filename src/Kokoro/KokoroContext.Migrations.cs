@@ -94,7 +94,7 @@ partial class KokoroContext {
 
 		// An item, a node in a tree-like structure that can have classes and/or
 		// fields, with the precise layout of its fields described by a schema.
-		// An item is also said to be a type of a schemable entity.
+		// An item is also said to be a type of schemable entity.
 		db.Exec("CREATE TABLE Item(" +
 
 			RowIdPk + "," +
