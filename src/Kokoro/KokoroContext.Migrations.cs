@@ -92,9 +92,12 @@ partial class KokoroContext {
 
 		")");
 
-		// An item, a node in a tree-like structure that can have classes and/or
-		// fields, with the precise layout of its fields described by a schema.
-		// An item is also said to be a type of schemable entity.
+		// An item, a node in a tree-like structure that can have fields, with
+		// with its fields described by one or more classes.
+		//
+		// An item is also said to be a type of classable entity due to its
+		// ability be assigned classes, with the latter also referred to as
+		// entity classes.
 		db.Exec("CREATE TABLE Item(" +
 
 			RowIdPk + "," +
@@ -113,6 +116,8 @@ partial class KokoroContext {
 			// `ordinal` columns are considered modified for the first time.
 			"ordModStamp INTEGER NOT NULL," +
 
+			// A compilation of an item's classes, which may be shared by one or
+			// more other items or classable enities.
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFk + "," +
 
 			// The blob comprising the list of modstamps and field data.
@@ -197,10 +202,20 @@ partial class KokoroContext {
 
 		")"); // TODO Consider `WITHOUT ROWID` optimization?"
 
-		// An entity schema: an immutable data structure meant to describe an
-		// entity, its classes, and its fields, along with any field that may be
-		// shared by one or more other entities. Entities are also referred to
-		// as schemable entities due to its relation with entity schemas.
+		// A classable's schema: an immutable data structure meant to describe a
+		// compilation or compiled combination of zero or more entity classes.
+		//
+		// While an entity class describes a classable entity's fields, a schema
+		// is a compilation of that description, with the schema meant to
+		// describe the "precise" layout of the fields in data storage.
+		//
+		// A schema is also a frozen snapshot of the various classes used to
+		// form it. Classes may be altered freely at any time, but a schema
+		// ensures that those alterations doesn't affect how an entity's fields
+		// are laid out or accessed, unless the classable entity is updated to
+		// use the newer state of its entity classes.
+		//
+		// A schema may also be referred to as an entity schema.
 		db.Exec("CREATE TABLE Schema(" +
 
 			RowIdPk + "," +
@@ -218,15 +233,15 @@ partial class KokoroContext {
 			// finalized and not yet immutable.
 			"usum BLOB UNIQUE," +
 
-			// The expected number of modstamps in the entity where the schema
-			// is applied.
+			// The expected number of modstamps in the classable entity where
+			// the schema is applied.
 			//
 			// This should always be equal to the number of direct classes bound
 			// to the schema -- see `SchemaToDirectClass` table.
 			$"modStampCount INTEGER NOT NULL CHECK(modStampCount {BetweenInt32RangeGE0})," +
 
-			// The expected number of field data in the entity where the schema
-			// is applied.
+			// The expected number of field data in the classable entity where
+			// the schema is applied.
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToField` table.
@@ -280,10 +295,10 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// An entity schema can also be thought of as an entity class set, in
-		// that no data can enter a schema unless defined by an entity class: a
-		// schema is composed by the various compiled states of its entity
-		// classes. Each schema is a snapshot of the explicitly bound entity
+		// A classable's schema can also be thought of as an entity class set,
+		// in that no data can enter a schema unless defined by an entity class:
+		// a schema is composed by the various compiled states of its entity
+		// classes, as each schema is a snapshot of the explicitly bound entity
 		// classes used to assemble the schema.
 		//
 		// This table lists those "explicitly" bound entity classes.
@@ -296,11 +311,11 @@ partial class KokoroContext {
 			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
 			// even though it might now be available at the present moment --
-			// remember, an entity schema is a snapshot.
+			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
 			// Each direct entity class contributes a modstamp entry to the
-			// schemable entity, initially set to the datetime the entity class
+			// classable entity, initially set to the datetime the entity class
 			// was directly attached (or reattached), and updated to the current
 			// datetime whenever any of the entity's fields (shared or local)
 			// are updated. The modstamp entry is added even if the direct class
@@ -327,7 +342,7 @@ partial class KokoroContext {
 			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
 			// even though it might now be available at the present moment --
-			// remember, an entity schema is a snapshot.
+			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
 			// The direct class responsible for the implicit attachment of the
