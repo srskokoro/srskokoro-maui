@@ -222,7 +222,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`, `modst_count` and `localFieldCount`.
+			// `rowid`, `modst_count` and `lfld_count`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -245,7 +245,7 @@ partial class KokoroContext {
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"localFieldCount INTEGER NOT NULL CHECK(localFieldCount {BetweenInt32RangeGE0})," +
+			$"lfld_count INTEGER NOT NULL CHECK(lfld_count {BetweenInt32RangeGE0})," +
 
 			// The blob comprising the list of field offsets and field values
 			// for shared fields.
