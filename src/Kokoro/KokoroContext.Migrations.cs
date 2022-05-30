@@ -302,11 +302,11 @@ partial class KokoroContext {
 			// Each direct entity class contributes a modstamp entry to the
 			// schemable entity, initially set to the datetime the entity class
 			// was directly attached (or reattached), and updated to the current
-			// datetime whenever any of its fields (shared or local) are
-			// updated. The modstamp entry is added even if the direct entity
-			// class doesn't contribute any field. Note that, the fields that a
-			// direct entity class contributes also include those from its
-			// indirect entity classes.
+			// datetime whenever any of the entity's fields (shared or local)
+			// are updated. The modstamp entry is added even if the direct class
+			// doesn't contribute any field. Note that, the fields that a direct
+			// entity class contributes also include those from its indirect
+			// entity classes.
 			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, cls)," +
