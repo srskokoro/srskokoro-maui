@@ -4,7 +4,7 @@ using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
-public sealed class SchemaClass : DataEntity {
+public sealed class EntityClass : DataEntity {
 
 	private long _RowId;
 
@@ -57,9 +57,9 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 
-	public SchemaClass(KokoroCollection host) : base(host) { }
+	public EntityClass(KokoroCollection host) : base(host) { }
 
-	public SchemaClass(KokoroCollection host, long rowid)
+	public EntityClass(KokoroCollection host, long rowid)
 		: this(host) => _RowId = rowid;
 
 
@@ -177,7 +177,7 @@ public sealed class SchemaClass : DataEntity {
 		=> LoadRowId(host.Db, uid);
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.Cmd("SELECT rowid FROM SchemaClasses WHERE uid=$uid")
+		=> db.Cmd("SELECT rowid FROM EntityClasses WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ConsumeScalar<long>();
 
@@ -185,7 +185,7 @@ public sealed class SchemaClass : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ordinal,src,name FROM SchemaClasses
+			SELECT uid,ordinal,src,name FROM EntityClasses
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -362,7 +362,7 @@ public sealed class SchemaClass : DataEntity {
 		// Load field info
 		{
 			cmd.Reset("""
-				SELECT ordinal,st FROM SchemaClassToFields
+				SELECT ordinal,st FROM EntityClassToFields
 				WHERE cls=$cls AND fld=$fld
 				""");
 			cmdParams.Add(new("$cls", _RowId));
@@ -425,7 +425,7 @@ public sealed class SchemaClass : DataEntity {
 		var db = host.Db; // Throws if host is already disposed
 		var context = host.ContextOrNull; // Not null if didn't throw above
 		Debug.Assert(context != null);
-		SaveAsNew(db, context.NextSchemaClassRowId(), uid);
+		SaveAsNew(db, context.NextEntityClassRowId(), uid);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -437,7 +437,7 @@ public sealed class SchemaClass : DataEntity {
 		try {
 			using var tx = new NestingWriteTransaction(db);
 			using var cmd = db.Cmd(
-				"INSERT INTO SchemaClasses" +
+				"INSERT INTO EntityClasses" +
 				"(rowid,uid,ordinal,src,name)" +
 				" VALUES" +
 				"($rowid,$uid,$ordinal,$src,$name)");
@@ -462,7 +462,7 @@ public sealed class SchemaClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			db.Context?.UndoSchemaClassRowId(rowid);
+			db.Context?.UndoEntityClassRowId(rowid);
 			throw;
 		}
 
@@ -487,7 +487,7 @@ public sealed class SchemaClass : DataEntity {
 				cmdParams.Add(new("$rowid", _RowId));
 
 				StringBuilder cmdSb = new();
-				cmdSb.Append("UPDATE SchemaClasses SET\n");
+				cmdSb.Append("UPDATE EntityClasses SET\n");
 
 				if ((state & StateFlags.Change_Uid) != 0) {
 					cmdSb.Append("uid=$uid,");
@@ -536,7 +536,7 @@ public sealed class SchemaClass : DataEntity {
 
 		[DoesNotReturn]
 		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
-			$"Cannot update `{nameof(SchemaClass)}` with rowid {rowid} as it's missing.");
+			$"Cannot update `{nameof(EntityClass)}` with rowid {rowid} as it's missing.");
 	}
 
 	[SkipLocalsInit]
@@ -588,7 +588,7 @@ public sealed class SchemaClass : DataEntity {
 		UpdateFieldInfo:
 			{
 				cmd.Reset("""
-					INSERT INTO SchemaClassToFields(cls,fld,ordinal,st)
+					INSERT INTO EntityClassToFields(cls,fld,ordinal,st)
 					VALUES($cls,$fld,$ordinal,$st)
 					ON CONFLICT DO UPDATE
 					SET ordinal=$ordinal,st=$st
@@ -607,7 +607,7 @@ public sealed class SchemaClass : DataEntity {
 
 		DeleteFieldInfo:
 			{
-				cmd.Reset("DELETE FROM SchemaClassToFields WHERE (cls,fld)=($cls,$fld)");
+				cmd.Reset("DELETE FROM EntityClassToFields WHERE (cls,fld)=($cls,$fld)");
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
@@ -628,7 +628,7 @@ public sealed class SchemaClass : DataEntity {
 
 	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
 		var context = host.Context;
-		long newRowId = context.NextSchemaClassRowId();
+		long newRowId = context.NextEntityClassRowId();
 		return AlterRowId(host.Db, oldRowId, newRowId);
 	}
 
@@ -646,7 +646,7 @@ public sealed class SchemaClass : DataEntity {
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
 		int updated;
 		try {
-			updated = db.Cmd("UPDATE SchemaClasses SET rowid=$newRowId WHERE rowid=$oldRowId")
+			updated = db.Cmd("UPDATE EntityClasses SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId))
 				.AddParams(new("$newRowId", newRowId))
 				.Consume();
@@ -654,7 +654,7 @@ public sealed class SchemaClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			db.Context?.UndoSchemaClassRowId(newRowId);
+			db.Context?.UndoEntityClassRowId(newRowId);
 			throw;
 		}
 
@@ -671,7 +671,7 @@ public sealed class SchemaClass : DataEntity {
 		=> DeleteFrom(host.Db, rowid);
 
 	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
-		int deleted = db.Cmd("DELETE FROM SchemaClasses WHERE rowid=$rowid")
+		int deleted = db.Cmd("DELETE FROM EntityClasses WHERE rowid=$rowid")
 			.AddParams(new("$rowid", rowid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
@@ -679,7 +679,7 @@ public sealed class SchemaClass : DataEntity {
 	}
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
-		int deleted = host.Db.Cmd("DELETE FROM SchemaClasses WHERE uid=$uid")
+		int deleted = host.Db.Cmd("DELETE FROM EntityClasses WHERE uid=$uid")
 			.AddParams(new("$uid", uid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);

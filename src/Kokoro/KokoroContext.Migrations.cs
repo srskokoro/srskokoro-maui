@@ -92,7 +92,9 @@ partial class KokoroContext {
 
 		")");
 
-		// A schemable item.
+		// An item, a node in a tree-like structure that can have classes and/or
+		// fields, with the precise layout of its fields described by a schema.
+		// An item is also said to be a type of a schemable entity.
 		db.Exec("CREATE TABLE Items(" +
 
 			RowIdPk + "," +
@@ -195,8 +197,10 @@ partial class KokoroContext {
 
 		")"); // TODO Consider `WITHOUT ROWID` optimization?"
 
-		// An immutable data structure meant to describe a schemable -- a
-		// schemable is anything where a schema can be attached/applied.
+		// An entity schema: an immutable data structure meant to describe an
+		// entity, its classes, and its fields, along with any field that may be
+		// shared by one or more other entities. Entities are also referred to
+		// as schemable entities due to its relation with entity schemas.
 		db.Exec("CREATE TABLE Schemas(" +
 
 			RowIdPk + "," +
@@ -214,15 +218,15 @@ partial class KokoroContext {
 			// finalized and not yet immutable.
 			"usum BLOB UNIQUE," +
 
-			// The expected number of modstamps in the schemable where the
-			// schema is applied.
+			// The expected number of modstamps in the entity where the schema
+			// is applied.
 			//
 			// This should always be equal to the number of direct classes bound
 			// to the schema -- see `SchemaToDirectClasses` table.
 			$"modStampCount INTEGER NOT NULL CHECK(modStampCount {BetweenInt32RangeGE0})," +
 
-			// The expected number of field data in the schemable where the
-			// schema is applied.
+			// The expected number of field data in the entity where the schema
+			// is applied.
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToFields` table.
@@ -265,10 +269,10 @@ partial class KokoroContext {
 			// table) responsible for the field's inclusion.
 			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
-			// The schema class that defined this field, which can either be a
+			// The entity class that defined this field, which can either be a
 			// direct class (in `SchemaToDirectClasses`) or an indirect class
 			// (in `SchemaToIndirectClasses`).
-			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -276,33 +280,33 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// A schema can also be thought of as a schema class set, in that no
-		// data can enter a schema unless defined by a schema class: a schema is
-		// composed by the various compiled states of its schema classes. Each
-		// schema is a snapshot of the explicitly set schema classes used to
-		// assemble the schema.
+		// An entity schema can also be thought of as an entity class set, in
+		// that no data can enter a schema unless defined by an entity class: a
+		// schema is composed by the various compiled states of its entity
+		// classes. Each schema is a snapshot of the explicitly set entity
+		// classes used to assemble the schema.
 		//
-		// This table lists those "explicitly" set schema classes.
+		// This table lists those "explicitly" set entity classes.
 		db.Exec("CREATE TABLE SchemaToDirectClasses(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
 
-			// The cryptographic checksum of the schema class when the schema
+			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
 			// even though it might now be available at the present moment --
-			// remember, a schema is a snapshot.
+			// remember, an entity schema is a snapshot.
 			"csum BLOB," +
 
-			// Each direct schema class contributes a modstamp entry to the
-			// schemable, initially set to the datetime the schema class was
-			// directly attached (or reattached), and updated to the current
+			// Each direct entity class contributes a modstamp entry to the
+			// schemable entity, initially set to the datetime the entity class
+			// was directly attached (or reattached), and updated to the current
 			// datetime whenever any of its fields (shared or local) are
-			// updated. The modstamp entry is added even if the direct schema
+			// updated. The modstamp entry is added even if the direct entity
 			// class doesn't contribute any field. Note that, the fields that a
-			// direct schema class contributes also include those from its
-			// indirect schema classes.
+			// direct entity class contributes also include those from its
+			// indirect entity classes.
 			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, cls)," +
@@ -311,51 +315,51 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// The implicitly set schema classes used to assemble the schema. Such
-		// "indirect" schema classes were "not" directly set to the schema.
+		// The implicitly set entity classes used to assemble the schema. Such
+		// "indirect" entity classes were "not" directly set to the schema.
 		// Otherwise, they shouldn't be in this table.
 		db.Exec("CREATE TABLE SchemaToIndirectClasses(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
 
-			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
 
-			// The cryptographic checksum of the schema class when the schema
+			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
 			// even though it might now be available at the present moment --
-			// remember, a schema is a snapshot.
+			// remember, an entity schema is a snapshot.
 			"csum BLOB," +
 
 			// The direct class responsible for the implicit attachment of the
-			// schema class to the schema. This is the explicitly set schema
-			// class that included the indirect schema class.
-			"dcls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+			// entity class to the schema. This is the explicitly set entity
+			// class that included the indirect entity class.
+			"dcls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, cls)" +
 
 		") WITHOUT ROWID");
 
 		// -
-		db.Exec("CREATE TABLE SchemaClasses(" +
+		db.Exec("CREATE TABLE EntityClasses(" +
 
 			RowIdPk + "," +
 
 			UidUkCk + "," +
 
-			// The cryptographic checksum of the schema class's primary data,
-			// which includes other tables that comprises the schema class, but
+			// The cryptographic checksum of the entity class's primary data,
+			// which includes other tables that comprises the entity class, but
 			// excludes the `rowid`, `src`, `name`, and the contents of included
-			// schema classes (only the included schema class's `uid` is used).
+			// entity classes (only the included entity class's `uid` is used).
 			//
-			// Null if the schema class is runtime-bound, i.e., the runtime is
-			// the one defining the schema class and the schema class definition
+			// Null if the entity class is runtime-bound, i.e., the runtime is
+			// the one defining the entity class and the entity class definition
 			// is never persisted to disk or DB.
 			"csum BLOB," +
 
-			// The schema class ordinal.
+			// The entity class ordinal.
 			Ordinal_Int32Nn + "," +
 
-			// TODO A trigger for when this column is nulled out: consider deleting the schema class as well
+			// TODO A trigger for when this column is nulled out: consider deleting the entity class as well
 			"src INTEGER REFERENCES Items" + OnRowIdFkNullDel + "," +
 
 			// Quirks:
@@ -366,9 +370,9 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE SchemaClassToFields(" +
+		db.Exec("CREATE TABLE EntityClassToFields(" +
 
-			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFkCascDel + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
 
@@ -390,13 +394,13 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		db.Exec("CREATE TABLE SchemaClassToIncludes(" +
+		db.Exec("CREATE TABLE EntityClassToIncludes(" +
 
-			// The including schema class.
-			"cls INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFkCascDel + "," +
+			// The including entity class.
+			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFkCascDel + "," +
 
-			// The included schema class.
-			"incl INTEGER NOT NULL REFERENCES SchemaClasses" + OnRowIdFk + "," +
+			// The included entity class.
+			"incl INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(cls, incl)" +
 
