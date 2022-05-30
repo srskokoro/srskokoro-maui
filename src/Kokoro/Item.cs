@@ -451,8 +451,9 @@ public sealed class Item : DataEntity {
 
 	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
 		var context = host.Context;
+		var db = host.DbOrNull; Debug.Assert(db != null);
 		long newRowId = context.NextItemRowId();
-		return AlterRowId(host.Db, oldRowId, newRowId);
+		return AlterRowId(db, oldRowId, newRowId);
 	}
 
 	/// <summary>
