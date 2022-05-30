@@ -362,7 +362,7 @@ public sealed class EntityClass : DataEntity {
 		// Load field info
 		{
 			cmd.Reset("""
-				SELECT ordinal,st FROM ClassToField
+				SELECT ordinal,sto FROM ClassToField
 				WHERE cls=$cls AND fld=$fld
 				""");
 			cmdParams.Add(new("$cls", _RowId));
@@ -375,7 +375,7 @@ public sealed class EntityClass : DataEntity {
 				r.DAssert_Name(0, "ordinal");
 				info.Ordinal = r.GetInt32(0);
 
-				r.DAssert_Name(1, "st");
+				r.DAssert_Name(1, "sto");
 				info.StorageType = (FieldStorageType)r.GetInt32(1);
 				info.StorageType.DAssert_Defined();
 
@@ -588,16 +588,16 @@ public sealed class EntityClass : DataEntity {
 		UpdateFieldInfo:
 			{
 				cmd.Reset("""
-					INSERT INTO ClassToField(cls,fld,ordinal,st)
-					VALUES($cls,$fld,$ordinal,$st)
+					INSERT INTO ClassToField(cls,fld,ordinal,sto)
+					VALUES($cls,$fld,$ordinal,$sto)
 					ON CONFLICT DO UPDATE
-					SET ordinal=$ordinal,st=$st
+					SET ordinal=$ordinal,sto=$sto
 					""");
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
 				cmdParams.Add(new("$ordinal", info.Ordinal));
-				cmdParams.Add(new("$st", info.StorageType));
+				cmdParams.Add(new("$sto", info.StorageType));
 
 				int updated = cmd.ExecuteNonQuery();
 				Debug.Assert(updated == 1, $"Updated: {updated}");

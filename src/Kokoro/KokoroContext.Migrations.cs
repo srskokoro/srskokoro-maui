@@ -262,23 +262,23 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
-			$"idx_st INTEGER NOT NULL CHECK(idx_st {BetweenInt32RangeGE0})," +
+			$"idx_sto INTEGER NOT NULL CHECK(idx_sto {BetweenInt32RangeGE0})," +
 
-			"idx_loc INTEGER NOT NULL AS ((idx_st >> 1) | (idx_st & 0x1))," +
+			"idx_loc INTEGER NOT NULL AS ((idx_sto >> 1) | (idx_sto & 0x1))," +
 
 			// The field index.
-			"idx INTEGER NOT NULL AS (idx_st >> 2)," +
+			"idx INTEGER NOT NULL AS (idx_sto >> 2)," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2) AS (idx_st & 0x3)," +
+			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_sto & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
-			"loc INTEGER NOT NULL AS (st != 0)," +
+			"loc INTEGER NOT NULL AS (sto != 0)," +
 
 			// The modstamp index.
 			//
@@ -403,12 +403,12 @@ partial class KokoroContext {
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2)," +
+			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
-			"loc INTEGER NOT NULL AS (st != 0)," +
+			"loc INTEGER NOT NULL AS (sto != 0)," +
 
 			"PRIMARY KEY(cls, fld)" +
 

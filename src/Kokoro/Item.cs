@@ -329,10 +329,10 @@ public sealed class Item : DataEntity {
 		}
 
 		int idx;
-		FieldStorageType st;
+		FieldStorageType sto;
 		{
 			cmd.Reset("""
-				SELECT idx_st FROM SchemaToField
+				SELECT idx_sto FROM SchemaToField
 				WHERE schema=$schema AND fld=$fld
 				""");
 			cmdParams.Clear();
@@ -343,13 +343,13 @@ public sealed class Item : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "idx_st");
-				uint idx_st = (uint)r.GetInt32(0);
+				r.DAssert_Name(0, "idx_sto");
+				uint idx_sto = (uint)r.GetInt32(0);
 
-				st = (FieldStorageType)(idx_st & 0b11);
-				st.DAssert_Defined();
+				sto = (FieldStorageType)(idx_sto & 0b11);
+				sto.DAssert_Defined();
 
-				idx = (int)(idx_st >> 2);
+				idx = (int)(idx_sto >> 2);
 				Debug.Assert(idx >= 0);
 			} else {
 				goto NotFound;
@@ -362,7 +362,7 @@ public sealed class Item : DataEntity {
 		string tableName;
 		{
 			string cmdTxt;
-			if (st != FieldStorageType.Shared) {
+			if (sto != FieldStorageType.Shared) {
 				tableName = "Item";
 				cmdTxt = "SELECT 1 FROM Item WHERE rowid=$rowid";
 				rowid = _RowId;
@@ -385,7 +385,7 @@ public sealed class Item : DataEntity {
 				// TODO Batch-load fields in a single fields reader, instead of
 				// recreating instances unnecessarily every field load.
 				FieldsReader fr;
-				if (st != FieldStorageType.Shared) {
+				if (sto != FieldStorageType.Shared) {
 					fr = new ItemFieldsReader(this, blob);
 				} else {
 					fr = new PlainFieldsReader(this, blob);
