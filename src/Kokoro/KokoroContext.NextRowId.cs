@@ -19,7 +19,7 @@ partial class KokoroContext {
 			UNION ALL
 			SELECT ifnull(max(rowid), 0) FROM Schema
 			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM EntityClass
+			SELECT ifnull(max(rowid), 0) FROM Class
 			UNION ALL
 			SELECT ifnull(max(rowid), 0) FROM FieldName
 			""");

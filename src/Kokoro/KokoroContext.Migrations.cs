@@ -287,7 +287,7 @@ partial class KokoroContext {
 			// The entity class that defined this field, which can either be a
 			// direct class (in `SchemaToDirectClass`) or an indirect class (in
 			// `SchemaToIndirectClass`).
-			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -306,7 +306,7 @@ partial class KokoroContext {
 
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
-			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
@@ -337,7 +337,7 @@ partial class KokoroContext {
 
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
-			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
@@ -348,14 +348,14 @@ partial class KokoroContext {
 			// The direct class responsible for the implicit attachment of the
 			// entity class to the schema. This is the explicitly bound entity
 			// class that included the indirect entity class.
-			"dcls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
+			"dcls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, cls)" +
 
 		") WITHOUT ROWID");
 
 		// -
-		db.Exec("CREATE TABLE EntityClass(" +
+		db.Exec("CREATE TABLE Class(" +
 
 			RowIdPk + "," +
 
@@ -385,9 +385,9 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE EntityClassToField(" +
+		db.Exec("CREATE TABLE ClassToField(" +
 
-			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
@@ -409,13 +409,13 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		db.Exec("CREATE TABLE EntityClassToInclude(" +
+		db.Exec("CREATE TABLE ClassToInclude(" +
 
 			// The including entity class.
-			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + "," +
 
 			// The included entity class.
-			"incl INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
+			"incl INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(cls, incl)" +
 

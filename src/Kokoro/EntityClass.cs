@@ -177,7 +177,7 @@ public sealed class EntityClass : DataEntity {
 		=> LoadRowId(host.Db, uid);
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.Cmd("SELECT rowid FROM EntityClass WHERE uid=$uid")
+		=> db.Cmd("SELECT rowid FROM Class WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ConsumeScalar<long>();
 
@@ -185,7 +185,7 @@ public sealed class EntityClass : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ordinal,src,name FROM EntityClass
+			SELECT uid,ordinal,src,name FROM Class
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -362,7 +362,7 @@ public sealed class EntityClass : DataEntity {
 		// Load field info
 		{
 			cmd.Reset("""
-				SELECT ordinal,st FROM EntityClassToField
+				SELECT ordinal,st FROM ClassToField
 				WHERE cls=$cls AND fld=$fld
 				""");
 			cmdParams.Add(new("$cls", _RowId));
@@ -437,7 +437,7 @@ public sealed class EntityClass : DataEntity {
 		try {
 			using var tx = new NestingWriteTransaction(db);
 			using var cmd = db.Cmd(
-				"INSERT INTO EntityClass" +
+				"INSERT INTO Class" +
 				"(rowid,uid,ordinal,src,name)" +
 				" VALUES" +
 				"($rowid,$uid,$ordinal,$src,$name)");
@@ -487,7 +487,7 @@ public sealed class EntityClass : DataEntity {
 				cmdParams.Add(new("$rowid", _RowId));
 
 				StringBuilder cmdSb = new();
-				cmdSb.Append("UPDATE EntityClass SET\n");
+				cmdSb.Append("UPDATE Class SET\n");
 
 				if ((state & StateFlags.Change_Uid) != 0) {
 					cmdSb.Append("uid=$uid,");
@@ -588,7 +588,7 @@ public sealed class EntityClass : DataEntity {
 		UpdateFieldInfo:
 			{
 				cmd.Reset("""
-					INSERT INTO EntityClassToField(cls,fld,ordinal,st)
+					INSERT INTO ClassToField(cls,fld,ordinal,st)
 					VALUES($cls,$fld,$ordinal,$st)
 					ON CONFLICT DO UPDATE
 					SET ordinal=$ordinal,st=$st
@@ -607,7 +607,7 @@ public sealed class EntityClass : DataEntity {
 
 		DeleteFieldInfo:
 			{
-				cmd.Reset("DELETE FROM EntityClassToField WHERE (cls,fld)=($cls,$fld)");
+				cmd.Reset("DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)");
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
@@ -646,7 +646,7 @@ public sealed class EntityClass : DataEntity {
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
 		int updated;
 		try {
-			updated = db.Cmd("UPDATE EntityClass SET rowid=$newRowId WHERE rowid=$oldRowId")
+			updated = db.Cmd("UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId))
 				.AddParams(new("$newRowId", newRowId))
 				.Consume();
@@ -671,7 +671,7 @@ public sealed class EntityClass : DataEntity {
 		=> DeleteFrom(host.Db, rowid);
 
 	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
-		int deleted = db.Cmd("DELETE FROM EntityClass WHERE rowid=$rowid")
+		int deleted = db.Cmd("DELETE FROM Class WHERE rowid=$rowid")
 			.AddParams(new("$rowid", rowid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
@@ -679,7 +679,7 @@ public sealed class EntityClass : DataEntity {
 	}
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
-		int deleted = host.Db.Cmd("DELETE FROM EntityClass WHERE uid=$uid")
+		int deleted = host.Db.Cmd("DELETE FROM Class WHERE uid=$uid")
 			.AddParams(new("$uid", uid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
