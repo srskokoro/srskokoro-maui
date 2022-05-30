@@ -476,7 +476,7 @@ public sealed class Item : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			db.Context?.UndoEntityClassRowId(newRowId);
+			db.Context?.UndoClassRowId(newRowId);
 			throw;
 		}
 

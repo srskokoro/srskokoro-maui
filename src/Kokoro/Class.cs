@@ -4,7 +4,10 @@ using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
-public sealed class EntityClass : DataEntity {
+/// <summary>
+/// An entity class, i.e., a classable entity's class.
+/// </summary>
+public sealed class Class : DataEntity {
 
 	private long _RowId;
 
@@ -57,9 +60,9 @@ public sealed class EntityClass : DataEntity {
 	}
 
 
-	public EntityClass(KokoroCollection host) : base(host) { }
+	public Class(KokoroCollection host) : base(host) { }
 
-	public EntityClass(KokoroCollection host, long rowid)
+	public Class(KokoroCollection host, long rowid)
 		: this(host) => _RowId = rowid;
 
 
@@ -436,7 +439,7 @@ public sealed class EntityClass : DataEntity {
 		var db = host.Db; // Throws if host is already disposed
 		var context = host.ContextOrNull; // Not null if didn't throw above
 		Debug.Assert(context != null);
-		SaveAsNew(db, context.NextEntityClassRowId(), uid);
+		SaveAsNew(db, context.NextClassRowId(), uid);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -473,7 +476,7 @@ public sealed class EntityClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			db.Context?.UndoEntityClassRowId(rowid);
+			db.Context?.UndoClassRowId(rowid);
 			throw;
 		}
 
@@ -547,7 +550,7 @@ public sealed class EntityClass : DataEntity {
 
 		[DoesNotReturn]
 		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
-			$"Cannot update `{nameof(EntityClass)}` with rowid {rowid} as it's missing.");
+			$"Cannot update `{nameof(Class)}` with rowid {rowid} as it's missing.");
 	}
 
 	[SkipLocalsInit]
@@ -639,7 +642,7 @@ public sealed class EntityClass : DataEntity {
 
 	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
 		var context = host.Context;
-		long newRowId = context.NextEntityClassRowId();
+		long newRowId = context.NextClassRowId();
 		return AlterRowId(host.Db, oldRowId, newRowId);
 	}
 
@@ -665,7 +668,7 @@ public sealed class EntityClass : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		) {
-			db.Context?.UndoEntityClassRowId(newRowId);
+			db.Context?.UndoClassRowId(newRowId);
 			throw;
 		}
 

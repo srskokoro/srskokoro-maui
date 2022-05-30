@@ -27,23 +27,23 @@ partial class KokoroContext {
 		using var reader = cmd.ExecuteReader();
 		reader.Read(); _NextItemRowId = reader.GetInt64(0);
 		reader.Read(); _NextSchemaRowId = reader.GetInt64(0);
-		reader.Read(); _NextEntityClassRowId = reader.GetInt64(0);
+		reader.Read(); _NextClassRowId = reader.GetInt64(0);
 		reader.Read(); _NextFieldNameRowId = reader.GetInt64(0);
 	}
 
 	private long _NextItemRowId;
 	private long _NextSchemaRowId;
-	private long _NextEntityClassRowId;
+	private long _NextClassRowId;
 	private long _NextFieldNameRowId;
 
 	internal long NextItemRowId() => NextRowId(ref _NextItemRowId);
 	internal long NextSchemaRowId() => NextRowId(ref _NextSchemaRowId);
-	internal long NextEntityClassRowId() => NextRowId(ref _NextEntityClassRowId);
+	internal long NextClassRowId() => NextRowId(ref _NextClassRowId);
 	internal long NextFieldNameRowId() => NextRowId(ref _NextFieldNameRowId);
 
 	internal void UndoItemRowId(long rowidToUndo) => UndoRowId(ref _NextItemRowId, rowidToUndo);
 	internal void UndoSchemaRowId(long rowidToUndo) => UndoRowId(ref _NextSchemaRowId, rowidToUndo);
-	internal void UndoEntityClassRowId(long rowidToUndo) => UndoRowId(ref _NextEntityClassRowId, rowidToUndo);
+	internal void UndoClassRowId(long rowidToUndo) => UndoRowId(ref _NextClassRowId, rowidToUndo);
 	internal void UndoFieldNameRowId(long rowidToUndo) => UndoRowId(ref _NextFieldNameRowId, rowidToUndo);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
