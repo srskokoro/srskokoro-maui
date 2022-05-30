@@ -168,7 +168,7 @@ public sealed class Item : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,parent,ordinal,ordModStamp,schema FROM Item
+			SELECT uid,parent,ord,ordModStamp,schema FROM Item
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -184,7 +184,7 @@ public sealed class Item : DataEntity {
 			r.DAssert_Name(1, "parent");
 			_ParentRowId = r.GetInt64(1);
 
-			r.DAssert_Name(2, "ordinal");
+			r.DAssert_Name(2, "ord");
 			_Ordinal = r.GetInt32(2);
 
 			r.DAssert_Name(3, "ordModStamp");

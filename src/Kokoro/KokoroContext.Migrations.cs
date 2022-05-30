@@ -59,8 +59,8 @@ partial class KokoroContext {
 		const string BetweenInt32Range = $"BETWEEN {Int32MinHex} AND {Int32MaxHex}";
 		const string BetweenInt32RangeGE0 = $"BETWEEN 0 AND {Int32MaxHex}";
 
-		const string Ordinal_Int32Nn = $"ordinal INTEGER NOT NULL CHECK(ordinal {BetweenInt32Range})";
-		const string Ordinal_Int64Nn = $"ordinal INTEGER NOT NULL";
+		const string Ord_Int32Nn = $"ord INTEGER NOT NULL CHECK(ord {BetweenInt32Range})";
+		const string Ord_Int64Nn = $"ord INTEGER NOT NULL";
 
 		// --
 
@@ -107,13 +107,13 @@ partial class KokoroContext {
 			"parent INTEGER REFERENCES Item" + OnRowIdFk + "," +
 
 			// The item ordinal.
-			Ordinal_Int32Nn + "," +
+			Ord_Int32Nn + "," +
 
 			// The number of milliseconds since Unix epoch, when the `parent`
-			// and/or `ordinal` columns were last modified.
+			// and/or `ord` columns were last modified.
 			//
 			// Also, the first time an item is created, both the `parent` and
-			// `ordinal` columns are considered modified for the first time.
+			// `ord` columns are considered modified for the first time.
 			"ordModStamp INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
@@ -377,7 +377,7 @@ partial class KokoroContext {
 			"csum BLOB," +
 
 			// The entity class ordinal.
-			Ordinal_Int32Nn + "," +
+			Ord_Int32Nn + "," +
 
 			// TODO A trigger for when this column is nulled out: consider deleting the entity class as well
 			"src INTEGER REFERENCES Item" + OnRowIdFkNullDel + "," +
@@ -397,7 +397,7 @@ partial class KokoroContext {
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
 			// The field ordinal.
-			Ordinal_Int32Nn + "," +
+			Ord_Int32Nn + "," +
 
 			// The field store type:
 			// - 0b00: Shared

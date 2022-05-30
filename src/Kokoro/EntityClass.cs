@@ -185,7 +185,7 @@ public sealed class EntityClass : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ordinal,src,name FROM Class
+			SELECT uid,ord,src,name FROM Class
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -198,7 +198,7 @@ public sealed class EntityClass : DataEntity {
 			r.DAssert_Name(0, "uid");
 			_Uid = r.GetUniqueId(0);
 
-			r.DAssert_Name(1, "ordinal");
+			r.DAssert_Name(1, "ord");
 			_Ordinal = r.GetInt32(1);
 
 			r.DAssert_Name(2, "src");
@@ -362,7 +362,7 @@ public sealed class EntityClass : DataEntity {
 		// Load field info
 		{
 			cmd.Reset("""
-				SELECT ordinal,sto FROM ClassToField
+				SELECT ord,sto FROM ClassToField
 				WHERE cls=$cls AND fld=$fld
 				""");
 			cmdParams.Add(new("$cls", _RowId));
@@ -372,7 +372,7 @@ public sealed class EntityClass : DataEntity {
 			if (r.Read()) {
 				U.SkipInit(out FieldInfo info);
 
-				r.DAssert_Name(0, "ordinal");
+				r.DAssert_Name(0, "ord");
 				info.Ordinal = r.GetInt32(0);
 
 				r.DAssert_Name(1, "sto");
@@ -438,14 +438,14 @@ public sealed class EntityClass : DataEntity {
 			using var tx = new NestingWriteTransaction(db);
 			using var cmd = db.Cmd(
 				"INSERT INTO Class" +
-				"(rowid,uid,ordinal,src,name)" +
+				"(rowid,uid,ord,src,name)" +
 				" VALUES" +
-				"($rowid,$uid,$ordinal,$src,$name)");
+				"($rowid,$uid,$ord,$src,$name)");
 
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$rowid", rowid));
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
-			cmdParams.Add(new("$ordinal", _Ordinal));
+			cmdParams.Add(new("$ord", _Ordinal));
 			cmdParams.Add(new("$src", RowIds.Box(_SrcRowId)));
 			cmdParams.Add(new("$name", _Name));
 
@@ -494,8 +494,8 @@ public sealed class EntityClass : DataEntity {
 					cmdParams.Add(new("$uid", _Uid.ToByteArray()));
 				}
 				if ((state & StateFlags.Change_Ordinal) != 0) {
-					cmdSb.Append("ordinal=$ordinal,");
-					cmdParams.Add(new("$ordinal", _Ordinal));
+					cmdSb.Append("ord=$ord,");
+					cmdParams.Add(new("$ord", _Ordinal));
 				}
 				if ((state & StateFlags.Change_SrcRowId) != 0) {
 					cmdSb.Append("src=$src,");
@@ -588,15 +588,15 @@ public sealed class EntityClass : DataEntity {
 		UpdateFieldInfo:
 			{
 				cmd.Reset("""
-					INSERT INTO ClassToField(cls,fld,ordinal,sto)
-					VALUES($cls,$fld,$ordinal,$sto)
+					INSERT INTO ClassToField(cls,fld,ord,sto)
+					VALUES($cls,$fld,$ord,$sto)
 					ON CONFLICT DO UPDATE
-					SET ordinal=$ordinal,sto=$sto
+					SET ord=$ord,sto=$sto
 					""");
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
-				cmdParams.Add(new("$ordinal", info.Ordinal));
+				cmdParams.Add(new("$ord", info.Ordinal));
 				cmdParams.Add(new("$sto", info.StorageType));
 
 				int updated = cmd.ExecuteNonQuery();
