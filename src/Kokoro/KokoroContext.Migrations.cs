@@ -217,15 +217,15 @@ partial class KokoroContext {
 			// The expected number of modstamps in the schemable where the
 			// schema is applied.
 			//
-			// This should always be equal to the number of direct classes
-			// attached to the schema -- see `SchemaToDirectClasses` table.
+			// This should always be equal to the number of direct classes bound
+			// to the schema -- see `SchemaToDirectClasses` table.
 			$"modStampCount INTEGER NOT NULL CHECK(modStampCount {BetweenInt32RangeGE0})," +
 
 			// The expected number of field data in the schemable where the
 			// schema is applied.
 			//
-			// This should always be equal to the number of local fields under
-			// the schema -- see `SchemaToFields` table.
+			// This should always be equal to the number of local fields defined
+			// by the schema -- see `SchemaToFields` table.
 			$"localFieldCount INTEGER NOT NULL CHECK(localFieldCount {BetweenInt32RangeGE0})," +
 
 			// The blob comprising the list of field offsets and field values
