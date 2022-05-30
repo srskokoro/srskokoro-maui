@@ -283,10 +283,10 @@ partial class KokoroContext {
 		// An entity schema can also be thought of as an entity class set, in
 		// that no data can enter a schema unless defined by an entity class: a
 		// schema is composed by the various compiled states of its entity
-		// classes. Each schema is a snapshot of the explicitly set entity
+		// classes. Each schema is a snapshot of the explicitly bound entity
 		// classes used to assemble the schema.
 		//
-		// This table lists those "explicitly" set entity classes.
+		// This table lists those "explicitly" bound entity classes.
 		db.Exec("CREATE TABLE SchemaToDirectClasses(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
@@ -315,8 +315,8 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		// The implicitly set entity classes used to assemble the schema. Such
-		// "indirect" entity classes were "not" directly set to the schema.
+		// The implicitly bound entity classes used to assemble the schema. Such
+		// "indirect" entity classes were "not" directly bound to the schema.
 		// Otherwise, they shouldn't be in this table.
 		db.Exec("CREATE TABLE SchemaToIndirectClasses(" +
 
@@ -331,7 +331,7 @@ partial class KokoroContext {
 			"csum BLOB," +
 
 			// The direct class responsible for the implicit attachment of the
-			// entity class to the schema. This is the explicitly set entity
+			// entity class to the schema. This is the explicitly bound entity
 			// class that included the indirect entity class.
 			"dcls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
 
