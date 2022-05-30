@@ -185,7 +185,7 @@ partial class KokoroContext {
 			// Under normal circumstances, this column is never empty, nor does
 			// it contain an empty list of field offsets; nonetheless, field
 			// values can still be empty as they can be zero-length blobs.
-			"vals BLOB NOT NULL" +
+			"data BLOB NOT NULL" +
 
 		")");
 

@@ -22,7 +22,7 @@ internal sealed class ItemFieldsReader : AbsHotColdFieldsReader<Item> {
 		if (r.Read()) {
 			// Same as `SqliteDataReader.GetStream()` but more performant
 			SqliteBlob blob = new(db,
-				tableName: "ItemToColdField", columnName: "vals",
+				tableName: "ItemToColdField", columnName: "data",
 				rowid, readOnly: true);
 
 			// NOTE: Even if both the `SqliteCommand` and `SqliteDataReader` are
