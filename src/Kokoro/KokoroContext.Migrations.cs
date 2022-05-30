@@ -109,12 +109,12 @@ partial class KokoroContext {
 			// The item ordinal.
 			Ord_Int32Nn + "," +
 
-			// The number of milliseconds since Unix epoch, when the `parent`
-			// and/or `ord` columns were last modified.
+			// A modstamp, a number of milliseconds since Unix epoch, when the
+			// `parent` and/or `ord` columns were last modified.
 			//
 			// Also, the first time an item is created, both the `parent` and
 			// `ord` columns are considered modified for the first time.
-			"ordModStamp INTEGER NOT NULL," +
+			"ord_modst INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
 			// more other items or classable enities.
@@ -157,7 +157,7 @@ partial class KokoroContext {
 			//   - Lookups via negative modstamp indices should be considered an
 			//   error.
 			// - If the modstamp list is empty, the fallback for modstamp
-			// lookups should simply be the `ordModStamp` (if available) or the
+			// lookups should simply be the `ord_modst` (if available) or the
 			// Unix time when the collection was "first" created (which is
 			// independent of collection creation due to device syncs).
 			// - If an item holds fat fields, the last entry of the modstamp
@@ -222,7 +222,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`, `modStampCount` and `localFieldCount`.
+			// `rowid`, `modst_count` and `localFieldCount`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -238,7 +238,7 @@ partial class KokoroContext {
 			//
 			// This should always be equal to the number of direct classes bound
 			// to the schema -- see `SchemaToDirectClass` table.
-			$"modStampCount INTEGER NOT NULL CHECK(modStampCount {BetweenInt32RangeGE0})," +
+			$"modst_count INTEGER NOT NULL CHECK(modst_count {BetweenInt32RangeGE0})," +
 
 			// The expected number of field data in the classable entity where
 			// the schema is applied.
@@ -285,7 +285,7 @@ partial class KokoroContext {
 			// Quirks:
 			// - Can also be used to lookup the direct class (in `SchemaToDirectClass`
 			// table) responsible for the field's inclusion.
-			$"modStampIdx INTEGER NOT NULL CHECK(modStampIdx {BetweenInt32RangeGE0})," +
+			$"modst_idx INTEGER NOT NULL CHECK(modst_idx {BetweenInt32RangeGE0})," +
 
 			// The entity class that defined this field, which can either be a
 			// direct class (in `SchemaToDirectClass`) or an indirect class (in
@@ -327,11 +327,11 @@ partial class KokoroContext {
 			// doesn't contribute any field. Note that, the fields that a direct
 			// entity class contributes also include those from its indirect
 			// entity classes.
-			$"modStampIdx INTEGER NOT NULL CHECK(modStampIdx {BetweenInt32RangeGE0})," +
+			$"modst_idx INTEGER NOT NULL CHECK(modst_idx {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, cls)," +
 
-			"UNIQUE(schema, modStampIdx)" +
+			"UNIQUE(schema, modst_idx)" +
 
 		") WITHOUT ROWID");
 
