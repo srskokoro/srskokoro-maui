@@ -266,7 +266,7 @@ partial class KokoroContext {
 
 			"index_loc INTEGER NOT NULL AS ((index_st >> 1) | (index_st & 0x1))," +
 
-			"index INTEGER NOT NULL AS (index_st >> 2)," +
+			"`index` INTEGER NOT NULL AS (index_st >> 2)," +
 
 			// The field store type:
 			// - 0b00: Shared
