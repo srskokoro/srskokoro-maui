@@ -65,7 +65,7 @@ partial class KokoroContext {
 		// --
 
 		// A string interning table for field names.
-		db.Exec("CREATE TABLE FieldNames(" +
+		db.Exec("CREATE TABLE FieldName(" +
 
 			RowIdPk + "," +
 
@@ -74,7 +74,7 @@ partial class KokoroContext {
 		")");
 
 		// A table for interned field values.
-		db.Exec("CREATE TABLE FieldValuesInterned(" +
+		db.Exec("CREATE TABLE FieldValueInterned(" +
 
 			RowIdPk + "," +
 
@@ -95,13 +95,13 @@ partial class KokoroContext {
 		// An item, a node in a tree-like structure that can have classes and/or
 		// fields, with the precise layout of its fields described by a schema.
 		// An item is also said to be a type of a schemable entity.
-		db.Exec("CREATE TABLE Items(" +
+		db.Exec("CREATE TABLE Item(" +
 
 			RowIdPk + "," +
 
 			UidUkCk + "," +
 
-			"parent INTEGER REFERENCES Items" + OnRowIdFk + "," +
+			"parent INTEGER REFERENCES Item" + OnRowIdFk + "," +
 
 			// The item ordinal.
 			Ordinal_Int32Nn + "," +
@@ -113,7 +113,7 @@ partial class KokoroContext {
 			// `ordinal` columns are considered modified for the first time.
 			"ordModStamp INTEGER NOT NULL," +
 
-			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFk + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFk + "," +
 
 			// The blob comprising the list of modstamps and field data.
 			//
@@ -161,19 +161,19 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE ItemToColdFields(" +
+		db.Exec("CREATE TABLE ItemToColdField(" +
 
-			RowIdPk + " REFERENCES Items" + OnRowIdFkCascDel + "," +
+			RowIdPk + " REFERENCES Item" + OnRowIdFkCascDel + "," +
 
 			// The blob comprising the list of field offsets and field values
 			// for cold fields.
 			//
-			// The blob format is similar to the `Items.data` column, except
+			// The blob format is similar to the `Item.data` column, except
 			// that there's no modstamp list.
 			//
 			// The values for cold fields are initially stored in the parent
-			// table, under the `Items.data` column, alongside hot fields.
-			// However, when the `Items.data` column of an item row exceeds a
+			// table, under the `Item.data` column, alongside hot fields.
+			// However, when the `Item.data` column of an item row exceeds a
 			// certain size, the values for the cold fields are moved here (but
 			// their modstamps still remain in the parent table).
 			//
@@ -184,11 +184,11 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE ItemToFatFields(" +
+		db.Exec("CREATE TABLE ItemToFatField(" +
 
-			"item INTEGER NOT NULL REFERENCES Items" + OnRowIdFkCascDel + "," +
+			"item INTEGER NOT NULL REFERENCES Item" + OnRowIdFkCascDel + "," +
 
-			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
 			// The field value.
 			"val BLOB NOT NULL," +
@@ -201,7 +201,7 @@ partial class KokoroContext {
 		// entity, its classes, and its fields, along with any field that may be
 		// shared by one or more other entities. Entities are also referred to
 		// as schemable entities due to its relation with entity schemas.
-		db.Exec("CREATE TABLE Schemas(" +
+		db.Exec("CREATE TABLE Schema(" +
 
 			RowIdPk + "," +
 
@@ -222,30 +222,30 @@ partial class KokoroContext {
 			// is applied.
 			//
 			// This should always be equal to the number of direct classes bound
-			// to the schema -- see `SchemaToDirectClasses` table.
+			// to the schema -- see `SchemaToDirectClass` table.
 			$"modStampCount INTEGER NOT NULL CHECK(modStampCount {BetweenInt32RangeGE0})," +
 
 			// The expected number of field data in the entity where the schema
 			// is applied.
 			//
 			// This should always be equal to the number of local fields defined
-			// by the schema -- see `SchemaToFields` table.
+			// by the schema -- see `SchemaToField` table.
 			$"localFieldCount INTEGER NOT NULL CHECK(localFieldCount {BetweenInt32RangeGE0})," +
 
 			// The blob comprising the list of field offsets and field values
 			// for shared fields.
 			//
-			// The blob format is similar to the `Items.data` column, except
-			// that there's no modstamp list.
+			// The blob format is similar to the `Item.data` column, except that
+			// there's no modstamp list.
 			"data BLOB NOT NULL" +
 
 		")");
 
-		db.Exec("CREATE TABLE SchemaToFields(" +
+		db.Exec("CREATE TABLE SchemaToField(" +
 
-			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
-			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
 			$"index_st INTEGER NOT NULL CHECK(index_st {BetweenInt32RangeGE0})," +
 
@@ -265,14 +265,14 @@ partial class KokoroContext {
 			"loc INTEGER NOT NULL AS (st != 0)," +
 
 			// Quirks:
-			// - Can also be used to lookup the direct class (in `SchemaToDirectClasses`
+			// - Can also be used to lookup the direct class (in `SchemaToDirectClass`
 			// table) responsible for the field's inclusion.
 			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
 
 			// The entity class that defined this field, which can either be a
-			// direct class (in `SchemaToDirectClasses`) or an indirect class
-			// (in `SchemaToIndirectClasses`).
-			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
+			// direct class (in `SchemaToDirectClass`) or an indirect class (in
+			// `SchemaToIndirectClass`).
+			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, fld)," +
 
@@ -287,11 +287,11 @@ partial class KokoroContext {
 		// classes used to assemble the schema.
 		//
 		// This table lists those "explicitly" bound entity classes.
-		db.Exec("CREATE TABLE SchemaToDirectClasses(" +
+		db.Exec("CREATE TABLE SchemaToDirectClass(" +
 
-			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
-			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
@@ -318,11 +318,11 @@ partial class KokoroContext {
 		// The implicitly bound entity classes used to assemble the schema. Such
 		// "indirect" entity classes were "not" directly bound to the schema.
 		// Otherwise, they shouldn't be in this table.
-		db.Exec("CREATE TABLE SchemaToIndirectClasses(" +
+		db.Exec("CREATE TABLE SchemaToIndirectClass(" +
 
-			"schema INTEGER NOT NULL REFERENCES Schemas" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
-			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the entity class when the schema
 			// was created. Null if not available when the schema was created,
@@ -333,14 +333,14 @@ partial class KokoroContext {
 			// The direct class responsible for the implicit attachment of the
 			// entity class to the schema. This is the explicitly bound entity
 			// class that included the indirect entity class.
-			"dcls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
+			"dcls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, cls)" +
 
 		") WITHOUT ROWID");
 
 		// -
-		db.Exec("CREATE TABLE EntityClasses(" +
+		db.Exec("CREATE TABLE EntityClass(" +
 
 			RowIdPk + "," +
 
@@ -360,7 +360,7 @@ partial class KokoroContext {
 			Ordinal_Int32Nn + "," +
 
 			// TODO A trigger for when this column is nulled out: consider deleting the entity class as well
-			"src INTEGER REFERENCES Items" + OnRowIdFkNullDel + "," +
+			"src INTEGER REFERENCES Item" + OnRowIdFkNullDel + "," +
 
 			// Quirks:
 			// - Null when unnamed.
@@ -370,11 +370,11 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE EntityClassToFields(" +
+		db.Exec("CREATE TABLE EntityClassToField(" +
 
-			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFkCascDel + "," +
 
-			"fld INTEGER NOT NULL REFERENCES FieldNames" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
 			// The field ordinal.
 			Ordinal_Int32Nn + "," +
@@ -394,13 +394,13 @@ partial class KokoroContext {
 
 		") WITHOUT ROWID");
 
-		db.Exec("CREATE TABLE EntityClassToIncludes(" +
+		db.Exec("CREATE TABLE EntityClassToInclude(" +
 
 			// The including entity class.
-			"cls INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFkCascDel + "," +
 
 			// The included entity class.
-			"incl INTEGER NOT NULL REFERENCES EntityClasses" + OnRowIdFk + "," +
+			"incl INTEGER NOT NULL REFERENCES EntityClass" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(cls, incl)" +
 

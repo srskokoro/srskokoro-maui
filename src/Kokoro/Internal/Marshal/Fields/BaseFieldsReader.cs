@@ -161,7 +161,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 			// Should open for read-only access as the data column is expected
 			// to be a part of an SQL index, PRIMARY KEY or UNIQUE constraint.
 			blob = new(db,
-				tableName: "FieldValuesInterned", columnName: "data",
+				tableName: "FieldValueInterned", columnName: "data",
 				rowid: rowid, readOnly: true
 			);
 		} catch (SqliteException ex) when (ex.ErrorCode is SQLITE_ERROR) {
@@ -170,7 +170,7 @@ internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
 
 			using var cmd = db.CreateCommand(
 				"SELECT typeof(data) IS 'blob'" +
-				" FROM FieldValuesInterned" +
+				" FROM FieldValueInterned" +
 				" WHERE rowid=$rowid");
 			cmd.Parameters.Add(new("$rowid", rowid));
 

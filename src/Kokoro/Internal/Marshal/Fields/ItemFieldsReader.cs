@@ -12,7 +12,7 @@ internal sealed class ItemFieldsReader : AbsHotColdFieldsReader<Item> {
 		var db = item.Host.Db;
 
 		using SqliteCommand cmd = db.CreateCommand(
-			"SELECT 1 FROM ItemToColdFields" +
+			"SELECT 1 FROM ItemToColdField" +
 			" WHERE rowid=$rowid");
 
 		long rowid = item.RowId;
@@ -22,7 +22,7 @@ internal sealed class ItemFieldsReader : AbsHotColdFieldsReader<Item> {
 		if (r.Read()) {
 			// Same as `SqliteDataReader.GetStream()` but more performant
 			SqliteBlob blob = new(db,
-				tableName: "ItemToColdFields", columnName: "vals",
+				tableName: "ItemToColdField", columnName: "vals",
 				rowid, readOnly: true);
 
 			// NOTE: Even if both the `SqliteCommand` and `SqliteDataReader` are

@@ -160,7 +160,7 @@ public sealed class Item : DataEntity {
 		=> LoadRowId(host.Db, uid);
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.Cmd("SELECT rowid FROM Items WHERE uid=$uid")
+		=> db.Cmd("SELECT rowid FROM Item WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ConsumeScalar<long>();
 
@@ -168,7 +168,7 @@ public sealed class Item : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,parent,ordinal,ordModStamp,schema FROM Items
+			SELECT uid,parent,ordinal,ordModStamp,schema FROM Item
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -316,7 +316,7 @@ public sealed class Item : DataEntity {
 
 		long fld;
 		{
-			cmd.Set("SELECT rowid FROM FieldNames WHERE name=$name");
+			cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
 			cmdParams.Add(new("$name", name.Value));
 
 			using var r = cmd.ExecuteReader();
@@ -332,7 +332,7 @@ public sealed class Item : DataEntity {
 		FieldStorageType st;
 		{
 			cmd.Reset("""
-				SELECT index_st FROM SchemaToFields
+				SELECT index_st FROM SchemaToField
 				WHERE schema=$schema AND fld=$fld
 				""");
 			cmdParams.Clear();
@@ -363,12 +363,12 @@ public sealed class Item : DataEntity {
 		{
 			string cmdTxt;
 			if (st != FieldStorageType.Shared) {
-				tableName = "Items";
-				cmdTxt = "SELECT 1 FROM Items WHERE rowid=$rowid";
+				tableName = "Item";
+				cmdTxt = "SELECT 1 FROM Item WHERE rowid=$rowid";
 				rowid = _RowId;
 			} else {
-				tableName = "Schemas";
-				cmdTxt = "SELECT 1 FROM Schemas WHERE rowid=$rowid";
+				tableName = "Schema";
+				cmdTxt = "SELECT 1 FROM Schema WHERE rowid=$rowid";
 				rowid = _SchemaRowId;
 			}
 
@@ -457,7 +457,7 @@ public sealed class Item : DataEntity {
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
 		int updated;
 		try {
-			updated = db.Cmd("UPDATE Items SET rowid=$newRowId WHERE rowid=$oldRowId")
+			updated = db.Cmd("UPDATE Item SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
 				.Consume();
 		} catch (Exception ex) when (
@@ -481,7 +481,7 @@ public sealed class Item : DataEntity {
 		=> DeleteFrom(host.Db, rowid);
 
 	internal static bool DeleteFrom(KokoroSqliteDb db, long rowid) {
-		int deleted = db.Cmd("DELETE FROM Items WHERE rowid=$rowid")
+		int deleted = db.Cmd("DELETE FROM Item WHERE rowid=$rowid")
 			.AddParams(new("$rowid", rowid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
@@ -489,7 +489,7 @@ public sealed class Item : DataEntity {
 	}
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
-		int deleted = host.Db.Cmd("DELETE FROM Items WHERE uid=$uid")
+		int deleted = host.Db.Cmd("DELETE FROM Item WHERE uid=$uid")
 			.AddParams(new("$uid", uid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);

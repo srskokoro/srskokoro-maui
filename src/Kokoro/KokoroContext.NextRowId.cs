@@ -15,13 +15,13 @@ partial class KokoroContext {
 
 	private void LoadNextRowIdsFrom(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand("""
-			SELECT ifnull(max(rowid), 0) FROM Items
+			SELECT ifnull(max(rowid), 0) FROM Item
 			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM Schemas
+			SELECT ifnull(max(rowid), 0) FROM Schema
 			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM EntityClasses
+			SELECT ifnull(max(rowid), 0) FROM EntityClass
 			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM FieldNames
+			SELECT ifnull(max(rowid), 0) FROM FieldName
 			""");
 
 		using var reader = cmd.ExecuteReader();
