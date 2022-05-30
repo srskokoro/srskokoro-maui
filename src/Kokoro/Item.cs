@@ -328,11 +328,11 @@ public sealed class Item : DataEntity {
 			// TODO Cache and load from cache
 		}
 
-		int index;
+		int idx;
 		FieldStorageType st;
 		{
 			cmd.Reset("""
-				SELECT index_st FROM SchemaToField
+				SELECT idx_st FROM SchemaToField
 				WHERE schema=$schema AND fld=$fld
 				""");
 			cmdParams.Clear();
@@ -343,14 +343,14 @@ public sealed class Item : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "index_st");
-				uint index_st = (uint)r.GetInt32(0);
+				r.DAssert_Name(0, "idx_st");
+				uint idx_st = (uint)r.GetInt32(0);
 
-				st = (FieldStorageType)(index_st & 0b11);
+				st = (FieldStorageType)(idx_st & 0b11);
 				st.DAssert_Defined();
 
-				index = (int)(index_st >> 2);
-				Debug.Assert(index >= 0);
+				idx = (int)(idx_st >> 2);
+				Debug.Assert(idx >= 0);
 			} else {
 				goto NotFound;
 			}
@@ -393,7 +393,7 @@ public sealed class Item : DataEntity {
 
 				FieldVal fieldVal;
 				try {
-					fieldVal = fr.ReadFieldVal(index);
+					fieldVal = fr.ReadFieldVal(idx);
 				} finally {
 					fr.Dispose();
 				}

@@ -262,27 +262,30 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
-			$"index_st INTEGER NOT NULL CHECK(index_st {BetweenInt32RangeGE0})," +
+			$"idx_st INTEGER NOT NULL CHECK(idx_st {BetweenInt32RangeGE0})," +
 
-			"index_loc INTEGER NOT NULL AS ((index_st >> 1) | (index_st & 0x1))," +
+			"idx_loc INTEGER NOT NULL AS ((idx_st >> 1) | (idx_st & 0x1))," +
 
-			"`index` INTEGER NOT NULL AS (index_st >> 2)," +
+			// The field index.
+			"idx INTEGER NOT NULL AS (idx_st >> 2)," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2) AS (index_st & 0x3)," +
+			"st INTEGER NOT NULL CHECK(st BETWEEN 0x0 AND 0x2) AS (idx_st & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (st != 0)," +
 
+			// The modstamp index.
+			//
 			// Quirks:
 			// - Can also be used to lookup the direct class (in `SchemaToDirectClass`
 			// table) responsible for the field's inclusion.
-			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
+			$"modStampIdx INTEGER NOT NULL CHECK(modStampIdx {BetweenInt32RangeGE0})," +
 
 			// The entity class that defined this field, which can either be a
 			// direct class (in `SchemaToDirectClass`) or an indirect class (in
@@ -291,7 +294,7 @@ partial class KokoroContext {
 
 			"PRIMARY KEY(schema, fld)," +
 
-			"UNIQUE(schema, index_loc)" +
+			"UNIQUE(schema, idx_loc)" +
 
 		") WITHOUT ROWID");
 
@@ -314,6 +317,8 @@ partial class KokoroContext {
 			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
+			// The modstamp index.
+			//
 			// Each direct entity class contributes a modstamp entry to the
 			// classable entity, initially set to the datetime the entity class
 			// was directly attached (or reattached), and updated to the current
@@ -322,11 +327,11 @@ partial class KokoroContext {
 			// doesn't contribute any field. Note that, the fields that a direct
 			// entity class contributes also include those from its indirect
 			// entity classes.
-			$"modStampIndex INTEGER NOT NULL CHECK(modStampIndex {BetweenInt32RangeGE0})," +
+			$"modStampIdx INTEGER NOT NULL CHECK(modStampIdx {BetweenInt32RangeGE0})," +
 
 			"PRIMARY KEY(schema, cls)," +
 
-			"UNIQUE(schema, modStampIndex)" +
+			"UNIQUE(schema, modStampIdx)" +
 
 		") WITHOUT ROWID");
 
