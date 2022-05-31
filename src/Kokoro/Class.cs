@@ -531,7 +531,7 @@ public sealed class Class : DataEntity {
 
 				int updated = cmd.ExecuteNonQuery();
 				if (updated != 0) {
-					Debug.Assert(updated is 1 or 0);
+					Debug.Assert(updated == 1);
 					_State = StateFlags.NoChanges; // Changes saved successfully
 				} else
 					goto Missing;
