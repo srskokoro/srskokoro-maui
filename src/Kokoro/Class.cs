@@ -434,13 +434,8 @@ public sealed class Class : DataEntity {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void SaveAsNew() => SaveAsNew(UniqueId.Create());
 
-	public void SaveAsNew(UniqueId uid) {
-		var host = Host;
-		var db = host.Db; // Throws if host is already disposed
-		var context = host.ContextOrNull; // Not null if didn't throw above
-		Debug.Assert(context != null);
-		SaveAsNew(db, context.NextClassRowId(), uid);
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void SaveAsNew(UniqueId uid) => SaveAsNew(Host.Db, 0, uid);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void SaveAsNew(long rowid, UniqueId uid)
@@ -448,6 +443,15 @@ public sealed class Class : DataEntity {
 
 	[SkipLocalsInit]
 	private void SaveAsNew(KokoroSqliteDb db, long rowid, UniqueId uid) {
+		bool hasUsedNextRowId;
+		if (rowid == 0) {
+			Debug.Assert(db.Context != null);
+			rowid = db.Context.NextClassRowId();
+			hasUsedNextRowId = true;
+		} else {
+			hasUsedNextRowId = false;
+		}
+
 		try {
 			using var tx = new NestingWriteTransaction(db);
 			using var cmd = db.Cmd(
@@ -472,10 +476,10 @@ public sealed class Class : DataEntity {
 				if (changes != null)
 					InternalSaveFieldInfos(cmd, changes, rowid);
 			}
-		} catch (Exception ex) when (
+		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
-		) {
+		)) {
 			db.Context?.UndoClassRowId(rowid);
 			throw;
 		}
@@ -640,12 +644,8 @@ public sealed class Class : DataEntity {
 	}
 
 
-	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
-		var context = host.Context;
-		var db = host.DbOrNull; Debug.Assert(db != null);
-		long newRowId = context.NextClassRowId();
-		return AlterRowId(db, oldRowId, newRowId);
-	}
+	public static bool RenewRowId(KokoroCollection host, long oldRowId)
+		=> AlterRowId(host.Db, oldRowId, 0);
 
 	/// <summary>
 	/// Alias for <see cref="RenewRowId(KokoroCollection, long)"/>
@@ -659,16 +659,25 @@ public sealed class Class : DataEntity {
 		=> AlterRowId(host.Db, oldRowId, newRowId);
 
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
+		bool hasUsedNextRowId;
+		if (newRowId == 0) {
+			Debug.Assert(db.Context != null);
+			newRowId = db.Context.NextClassRowId();
+			hasUsedNextRowId = true;
+		} else {
+			hasUsedNextRowId = false;
+		}
+
 		int updated;
 		try {
 			updated = db.Cmd("UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId))
 				.AddParams(new("$newRowId", newRowId))
 				.Consume();
-		} catch (Exception ex) when (
+		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
-		) {
+		)) {
 			db.Context?.UndoClassRowId(newRowId);
 			throw;
 		}

@@ -449,12 +449,8 @@ public sealed class Item : DataEntity {
 	}
 
 
-	public static bool RenewRowId(KokoroCollection host, long oldRowId) {
-		var context = host.Context;
-		var db = host.DbOrNull; Debug.Assert(db != null);
-		long newRowId = context.NextItemRowId();
-		return AlterRowId(db, oldRowId, newRowId);
-	}
+	public static bool RenewRowId(KokoroCollection host, long oldRowId)
+		=> AlterRowId(host.Db, oldRowId, 0);
 
 	/// <summary>
 	/// Alias for <see cref="RenewRowId(KokoroCollection, long)"/>
@@ -468,15 +464,24 @@ public sealed class Item : DataEntity {
 		=> AlterRowId(host.Db, oldRowId, newRowId);
 
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
+		bool hasUsedNextRowId;
+		if (newRowId == 0) {
+			Debug.Assert(db.Context != null);
+			newRowId = db.Context.NextItemRowId();
+			hasUsedNextRowId = true;
+		} else {
+			hasUsedNextRowId = false;
+		}
+
 		int updated;
 		try {
 			updated = db.Cmd("UPDATE Item SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
 				.Consume();
-		} catch (Exception ex) when (
+		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
-		) {
+		)) {
 			db.Context?.UndoItemRowId(newRowId);
 			throw;
 		}
