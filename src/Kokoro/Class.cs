@@ -644,6 +644,7 @@ public sealed class Class : DataEntity {
 	}
 
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool RenewRowId(KokoroCollection host, long oldRowId)
 		=> AlterRowId(host.Db, oldRowId, 0);
 
