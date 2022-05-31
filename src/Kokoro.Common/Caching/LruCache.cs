@@ -109,21 +109,22 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public void Put(TKey key, TValue value) {
-		int entrySize = SafeSizeOf(key, value);
-		int size = _Size + entrySize;
-		int maxSize = _MaxSize;
-
 		var map = _Map;
 		ref var node = ref CollectionsMarshal.GetValueRefOrAddDefault(map, key, out _);
 
 		if (node == null) {
-			node = new();
+			node = new() { Key = key };
 		} else {
+			key = node.Key;
 			Detach(node);
 		}
-		node.Key = key;
 		node.Value = value;
+
+		int entrySize = SafeSizeOf(key, value);
 		node.Size = entrySize;
+
+		int size = _Size + entrySize;
+		int maxSize = _MaxSize;
 
 		// Trim to max size
 		if (size > maxSize) {
