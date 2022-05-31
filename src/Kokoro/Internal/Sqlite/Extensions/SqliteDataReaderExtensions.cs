@@ -8,7 +8,7 @@ internal static class SqliteDataReaderExtensions {
 		return s.Read<UniqueId>();
 	}
 
-	public static byte[] GetBytes(this SqliteDataReader reader, int ordinal) {
+	public static byte[] GetBytesOrEmpty(this SqliteDataReader reader, int ordinal) {
 		if (reader.GetValue(ordinal) is byte[] bytes) {
 			return bytes;
 		}
