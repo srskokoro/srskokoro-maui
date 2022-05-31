@@ -644,18 +644,18 @@ public sealed class Class : DataEntity {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool RenewRowId(KokoroCollection host, long oldRowId)
+	public static void RenewRowId(KokoroCollection host, long oldRowId)
 		=> AlterRowId(host, oldRowId, 0);
 
 	/// <summary>
 	/// Alias for <see cref="RenewRowId(KokoroCollection, long)"/>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool AlterRowId(KokoroCollection host, long oldRowId)
+	public static void AlterRowId(KokoroCollection host, long oldRowId)
 		=> RenewRowId(host, oldRowId);
 
 	[SkipLocalsInit]
-	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId) {
+	public static void AlterRowId(KokoroCollection host, long oldRowId, long newRowId) {
 		var db = host.Db; // Throws if host is already disposed
 
 		bool hasUsedNextRowId;
@@ -682,8 +682,17 @@ public sealed class Class : DataEntity {
 			throw;
 		}
 
-		Debug.Assert(updated is 1 or 0);
-		return ((byte)updated).ToUnsafeBool();
+		if (updated != 0) {
+			Debug.Assert(updated == 1);
+			return;
+		}
+
+		// Otherwise, record missing -- either deleted or never existed.
+		E_CannotUpdate_MRec(oldRowId);
+
+		[DoesNotReturn]
+		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
+			$"Cannot update `{nameof(Class)}` with rowid {rowid} as it's missing.");
 	}
 
 
