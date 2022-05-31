@@ -231,7 +231,9 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	public void Clear() {
 		_Map.Clear();
 
-		// See also, https://blog.stephencleary.com/2010/02/q-should-i-set-variables-to-null-to.html
+		// Let the GC free up the linked list of `Node` objects.
+		// - No need to null out individual `Node` objects.
+		// - See also, https://blog.stephencleary.com/2010/02/q-should-i-set-variables-to-null-to.html
 		_Head = _Tail = null;
 
 		_Size = 0;
