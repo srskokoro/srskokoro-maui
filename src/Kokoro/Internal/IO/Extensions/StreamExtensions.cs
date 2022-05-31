@@ -5,6 +5,14 @@ using System.Runtime.InteropServices;
 
 internal static class StreamExtensions {
 
+	public static byte[] ReadFully(this Stream stream) {
+		MemoryStream mstream = new();
+		stream.CopyTo(mstream);
+		return mstream.ToArray();
+	}
+
+	// --
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static ulong ReadVarInt(this Stream stream) {
