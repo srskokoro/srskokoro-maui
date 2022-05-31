@@ -464,6 +464,7 @@ public sealed class Item : DataEntity {
 	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId)
 		=> AlterRowId(host.Db, oldRowId, newRowId);
 
+	[SkipLocalsInit]
 	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
 		bool hasUsedNextRowId;
 		if (newRowId == 0) {
