@@ -9,10 +9,8 @@ internal static class SqliteDataReaderExtensions {
 		throw new InvalidOperationException($"The data is NULL at ordinal {ordinal}. This method can't be called on NULL values. Check using IsDBNull before calling.");
 	}
 
-	public static UniqueId GetUniqueId(this SqliteDataReader reader, int ordinal) {
-		using var s = reader.GetStream(ordinal);
-		return s.Read<UniqueId>();
-	}
+	public static UniqueId GetUniqueId(this SqliteDataReader reader, int ordinal)
+		=> new(reader.GetBytes(ordinal));
 
 	public static byte[]? GetBytes(this SqliteDataReader reader, int ordinal) {
 		if (reader.GetValue(ordinal) is byte[] bytes) {
