@@ -488,7 +488,7 @@ public sealed class Item : DataEntity {
 		}
 
 		if (updated != 0) {
-			Debug.Assert(updated == 1);
+			Debug.Assert(updated == 1, $"Updated: {updated}");
 			return;
 		}
 

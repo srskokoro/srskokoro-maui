@@ -467,7 +467,7 @@ public sealed class Class : DataEntity {
 			cmdParams.Add(new("$name", _Name));
 
 			int updated = cmd.ExecuteNonQuery();
-			Debug.Assert(updated == 1);
+			Debug.Assert(updated == 1, $"Updated: {updated}");
 
 			// Save field infos
 			{
@@ -531,7 +531,7 @@ public sealed class Class : DataEntity {
 
 				int updated = cmd.ExecuteNonQuery();
 				if (updated != 0) {
-					Debug.Assert(updated == 1);
+					Debug.Assert(updated == 1, $"Updated: {updated}");
 					_State = StateFlags.NoChanges; // Changes saved successfully
 				} else
 					goto Missing;
@@ -683,7 +683,7 @@ public sealed class Class : DataEntity {
 		}
 
 		if (updated != 0) {
-			Debug.Assert(updated == 1);
+			Debug.Assert(updated == 1, $"Updated: {updated}");
 			return;
 		}
 
