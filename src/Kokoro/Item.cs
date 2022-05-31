@@ -451,7 +451,7 @@ public sealed class Item : DataEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool RenewRowId(KokoroCollection host, long oldRowId)
-		=> AlterRowId(host.Db, oldRowId, 0);
+		=> AlterRowId(host, oldRowId, 0);
 
 	/// <summary>
 	/// Alias for <see cref="RenewRowId(KokoroCollection, long)"/>
@@ -460,14 +460,13 @@ public sealed class Item : DataEntity {
 	public static bool AlterRowId(KokoroCollection host, long oldRowId)
 		=> RenewRowId(host, oldRowId);
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId)
-		=> AlterRowId(host.Db, oldRowId, newRowId);
-
 	[SkipLocalsInit]
-	internal static bool AlterRowId(KokoroSqliteDb db, long oldRowId, long newRowId) {
+	public static bool AlterRowId(KokoroCollection host, long oldRowId, long newRowId) {
+		var db = host.Db; // Throws if host is already disposed
+
 		bool hasUsedNextRowId;
 		if (newRowId == 0) {
+			// Guaranteed not null if didn't throw above
 			Debug.Assert(db.Context != null);
 			newRowId = db.Context.NextItemRowId();
 			hasUsedNextRowId = true;
