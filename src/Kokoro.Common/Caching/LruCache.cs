@@ -102,18 +102,25 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private Node? GetNode(TKey key) {
 		if (!_Map.TryGetValue(key, out var node)) {
 			return null;
 		}
+		ReattachAsHead(node);
+		return node;
+	}
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	private void ReattachAsHead(Node node) {
 		// Detach node
 		{
 			var prev = node.Prev;
 			if (prev == null) {
 				// NOTE: The node is currently the head, since only the head can
 				// have a null previous node.
+
+				// This becomes a conditional jump forward to not favor it
 				goto Done;
 			}
 
@@ -140,7 +147,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 
 	Done:
-		return node;
+		return;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
