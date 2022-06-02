@@ -6,6 +6,18 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 
 	private readonly int _HashCode;
 
+	internal static int ApproxSizeOverhead {
+		[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+		get =>
+			/// For <see cref="StringKey"/>: sync block + type handle + <see cref="Value"/> + <see cref="_HashCode"/> (with padding)
+			/// For <see cref="string"/>: sync block + type handle + (<see cref="string.Length"/> + null-terminator + padding)
+			IntPtr.Size * 6 + sizeof(int) * 2
+			;
+		// See also,
+		// - https://stackoverflow.com/a/14287092
+		// - https://stackoverflow.com/a/5691114
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public StringKey(string value) {
 		// NOTE: Hash computation is the same as that if we used `record` types instead.
