@@ -63,6 +63,8 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		=> throw new InvalidOperationException($"Size less than 1 ({resultSize}): [{key}]={value}");
 
 
+	#region `TryPeek(…)`
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryPeek(TKey key, [MaybeNullWhen(false)] out TValue value) {
 		Node? node = PeekNode(key);
@@ -102,6 +104,9 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 	}
 
+	#endregion
+
+	#region `TryGet(…)`
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value) {
@@ -142,6 +147,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 	}
 
+	#endregion
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private Node? PeekNode(TKey key) {
