@@ -63,6 +63,43 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		=> throw new InvalidOperationException($"Size less than 1 ({resultSize}): [{key}]={value}");
 
 
+	#region `Normalize(…)`
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public TKey Normalize(TKey key) {
+		Node? node = PeekNode(key);
+		if (node != null) {
+			return node.Key;
+		} else {
+			return key;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Normalize(ref TKey key) {
+		Node? node = PeekNode(key);
+		if (node != null) {
+			key = node.Key;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Normalize(TKey key, [MaybeNullWhen(false)] out TKey origKey) {
+		Node? node = PeekNode(key);
+		if (node != null) {
+			origKey = node.Key;
+			return true;
+		} else {
+			origKey = default;
+			return false;
+		}
+	}
+
+	#endregion
+
 	#region `TryPeek(…)`
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
