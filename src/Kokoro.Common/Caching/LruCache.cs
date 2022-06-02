@@ -324,6 +324,70 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 	}
 
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool Rename(TKey oldKey, TKey newKey) {
+		if (_Map.TryGetValue(oldKey, out var node)) {
+			Rename(node, newKey);
+			return true;
+		}
+		return false;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool AlterValue(TKey key, TValue value) {
+		if (_Map.TryGetValue(key, out var node)) {
+			AlterValue(node, value);
+			return true;
+		}
+		return false;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool AlterEntry(TKey key, TValue value) {
+		if (_Map.TryGetValue(key, out var node)) {
+			AlterEntry(node, key, value);
+			return true;
+		}
+		return false;
+	}
+
+
+	private void UpdateSize(Node node, int newSize)
+		=> _Size = _Size - node.Size + (node.Size = newSize);
+
+	private void Rename(Node node, TKey newKey) {
+		int entrySize = SizeOf(newKey, node.Value);
+		if (entrySize > 0) {
+			UpdateSize(node, entrySize);
+			node.Key = newKey;
+		} else {
+			SizeOf__E_CannotBeLT1_InvOp(newKey, node.Value, entrySize);
+		}
+	}
+
+	private void AlterValue(Node node, TValue value) {
+		int entrySize = SizeOf(node.Key, value);
+		if (entrySize > 0) {
+			UpdateSize(node, entrySize);
+			node.Value = value;
+		} else {
+			SizeOf__E_CannotBeLT1_InvOp(node.Key, value, entrySize);
+		}
+	}
+
+	private void AlterEntry(Node node, TKey key, TValue value) {
+		int entrySize = SizeOf(key, value);
+		if (entrySize > 0) {
+			UpdateSize(node, entrySize);
+			node.Key = key;
+			node.Value = value;
+		} else {
+			SizeOf__E_CannotBeLT1_InvOp(key, value, entrySize);
+		}
+	}
+
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool Remove(TKey key) {
 		if (_Map.Remove(key, out var node)) {
