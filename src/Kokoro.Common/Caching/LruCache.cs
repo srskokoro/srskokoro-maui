@@ -66,49 +66,49 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value) {
 		Node? node = GetNode(key);
-		if (node == null) {
-			value = default;
-			return false;
-		} else {
+		if (node != null) {
 			value = node.Value;
 			return true;
+		} else {
+			value = default;
+			return false;
 		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGet(ref TKey key, [MaybeNullWhen(false)] out TValue value) {
 		Node? node = GetNode(key);
-		if (node == null) {
-			value = default;
-			return false;
-		} else {
+		if (node != null) {
 			key = node.Key;
 			value = node.Value;
 			return true;
+		} else {
+			value = default;
+			return false;
 		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value, [MaybeNullWhen(false)] out TKey origKey) {
 		Node? node = GetNode(key);
-		if (node == null) {
-			origKey = default;
-			value = default;
-			return false;
-		} else {
+		if (node != null) {
 			origKey = node.Key;
 			value = node.Value;
 			return true;
+		} else {
+			origKey = default;
+			value = default;
+			return false;
 		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private Node? GetNode(TKey key) {
-		if (!_Map.TryGetValue(key, out var node)) {
-			return null;
+		if (_Map.TryGetValue(key, out var node)) {
+			ReattachAsHead(node);
+			return node;
 		}
-		ReattachAsHead(node);
-		return node;
+		return null;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
