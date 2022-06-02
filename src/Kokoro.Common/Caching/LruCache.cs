@@ -63,11 +63,49 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		=> throw new InvalidOperationException($"Size less than 1 ({resultSize}): [{key}]={value}");
 
 
-	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value) {
-		if (!_Map.TryGetValue(key, out var node)) {
+		Node? node = GetNode(key);
+		if (node == null) {
 			value = default;
 			return false;
+		} else {
+			value = node.Value;
+			return true;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryGet(ref TKey key, [MaybeNullWhen(false)] out TValue value) {
+		Node? node = GetNode(key);
+		if (node == null) {
+			value = default;
+			return false;
+		} else {
+			key = node.Key;
+			value = node.Value;
+			return true;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value, [MaybeNullWhen(false)] out TKey origKey) {
+		Node? node = GetNode(key);
+		if (node == null) {
+			origKey = default;
+			value = default;
+			return false;
+		} else {
+			origKey = node.Key;
+			value = node.Value;
+			return true;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	private Node? GetNode(TKey key) {
+		if (!_Map.TryGetValue(key, out var node)) {
+			return null;
 		}
 
 		// Detach node
@@ -102,8 +140,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 
 	Done:
-		value = node.Value;
-		return true;
+		return node;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
