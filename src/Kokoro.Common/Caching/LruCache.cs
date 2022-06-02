@@ -64,6 +64,46 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryPeek(TKey key, [MaybeNullWhen(false)] out TValue value) {
+		Node? node = PeekNode(key);
+		if (node != null) {
+			value = node.Value;
+			return true;
+		} else {
+			value = default;
+			return false;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryPeek(ref TKey key, [MaybeNullWhen(false)] out TValue value) {
+		Node? node = PeekNode(key);
+		if (node != null) {
+			key = node.Key;
+			value = node.Value;
+			return true;
+		} else {
+			value = default;
+			return false;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryPeek(TKey key, [MaybeNullWhen(false)] out TValue value, [MaybeNullWhen(false)] out TKey origKey) {
+		Node? node = PeekNode(key);
+		if (node != null) {
+			origKey = node.Key;
+			value = node.Value;
+			return true;
+		} else {
+			origKey = default;
+			value = default;
+			return false;
+		}
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value) {
 		Node? node = GetNode(key);
 		if (node != null) {
@@ -100,6 +140,15 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 			value = default;
 			return false;
 		}
+	}
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private Node? PeekNode(TKey key) {
+		if (_Map.TryGetValue(key, out var node)) {
+			return node;
+		}
+		return null;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -149,6 +198,7 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 	Done:
 		return;
 	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
