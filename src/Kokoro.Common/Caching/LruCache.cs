@@ -257,8 +257,14 @@ internal class LruCache<TKey, TValue> where TKey : notnull {
 		}
 		node.Value = value;
 
-		int entrySize = SafeSizeOf(key, value);
-		node.Size = entrySize;
+		int entrySize = SizeOf(key, value);
+		if (entrySize > 0) {
+			node.Size = entrySize;
+		} else {
+			map.Remove(key); // Undo mapping
+			SizeOf__E_CannotBeLT1_InvOp(key, value, entrySize); // Throw
+			return; // Unreachable
+		}
 
 		int size = _Size + entrySize;
 		int maxSize = _MaxSize;
