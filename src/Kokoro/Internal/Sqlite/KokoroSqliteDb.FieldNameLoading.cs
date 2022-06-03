@@ -3,6 +3,9 @@ using Kokoro.Internal.Caching;
 using Microsoft.Data.Sqlite;
 
 internal partial class KokoroSqliteDb {
+	// TODO-FIXME Should ensure that caches are never stale by preventing field names from being remapped to a different
+	// rowid so long as the DB or context exists.
+	// - Alt., maintain the cache so long as the SQLite DB's data version still matches.
 	private readonly FieldNameToIdCache _FieldNameToIdCache = new(2048);
 	private readonly FieldIdToNameCache _FieldIdToNameCache = new(2048);
 
@@ -68,6 +71,9 @@ internal partial class KokoroSqliteDb {
 	[SkipLocalsInit]
 	internal long InsertFieldNameOrThrow(string fieldName) {
 		using var cmd = CreateCommand();
+		// TODO-FIXME Will throw on race
+		// TODO Avoid race by wrapping inside an `OptionalReadTransaction` then performing a `SELECT` followed by an `INSERT` if not yet existing
+		// - Perhaps also rename it into `EnsureFieldName()`
 		cmd.Set("INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)");
 
 		long fieldId = Context!.NextFieldNameRowId();
