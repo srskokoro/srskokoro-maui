@@ -1,6 +1,5 @@
 ﻿namespace Kokoro.Internal.Sqlite;
 using Kokoro.Internal;
-using Kokoro.Internal.Caching;
 using Microsoft.Data.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
