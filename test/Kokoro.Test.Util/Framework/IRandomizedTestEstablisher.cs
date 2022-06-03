@@ -31,7 +31,7 @@ public interface IRandomizedTestEstablisher {
 		protected static Random GetRandom(Type type) {
 			var rh = al_RandomHolder.Value!;
 			return rh._RandomPerType.GetOrAdd(type
-				, static (type, randomSeedBase) => new(unchecked(randomSeedBase + StableHashCode.Of(type.ToString())))
+				, static (type, randomSeedBase) => new(unchecked(randomSeedBase + type.ToString().GetDjb2HashCode()))
 				, rh._RandomSeedBase);
 		}
 	}
