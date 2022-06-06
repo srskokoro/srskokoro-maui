@@ -280,7 +280,8 @@ partial class KokoroContext {
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (sto != 0)," +
 
-			// The modstamp index.
+			// The modstamp index of this field in the classable entity where
+			// the schema is applied (even if this field is a shared field).
 			//
 			// Quirks:
 			// - Can also be used to lookup the direct class (in `SchemaToDirectClass`
