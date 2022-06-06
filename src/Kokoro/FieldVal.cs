@@ -24,6 +24,13 @@ public sealed class FieldVal {
 		get => _Data;
 	}
 
+	public bool IsInterned {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		get => RawTypeHint.IsInterned() ? true : false;
+	}
+
 	public FieldVal() {
 		_TypeHint = (int)FieldTypeHint.Null;
 		_Data = Array.Empty<byte>();
