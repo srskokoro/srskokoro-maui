@@ -356,12 +356,12 @@ public sealed class Item : DataEntity {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				r.DAssert_Name(0, "idx_sto");
-				uint idx_sto = (uint)r.GetInt32(0);
+				int idx_sto = r.GetInt32(0);
 
 				sto = (FieldStorageType)(idx_sto & 0b11);
 				sto.DAssert_Defined();
 
-				idx = (int)(idx_sto >> 2);
+				idx = (int)((uint)idx_sto >> 2);
 				Debug.Assert(idx >= 0);
 			} else {
 				goto NotFound;
