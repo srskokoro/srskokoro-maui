@@ -9,7 +9,7 @@ public class InvalidationToken {
 	internal InvalidationSource Source;
 	internal nuint DataMark = InvalidationSource.DataMarkInit;
 
-	public InvalidationToken(KokoroCollection host) => Source = host.InvSrc;
+	public InvalidationToken(KokoroCollection host) => Source = host.InvalidationSource;
 
 	/// <summary>
 	/// Returns <see langword="true"/> if it's very likely that the collection
@@ -30,7 +30,7 @@ public class InvalidationToken {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			if (IsQuiteFresh) {
-				if (!Source.OwnerDb.UpdateInvSrc()) {
+				if (!Source.OwnerDb.UpdateInvalidationSource()) {
 					return true; // Still really fresh
 				}
 			}

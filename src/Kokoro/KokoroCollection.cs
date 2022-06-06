@@ -29,9 +29,9 @@ public class KokoroCollection : IDisposable {
 		}
 	}
 
-	internal InvalidationSource InvSrc {
+	internal InvalidationSource InvalidationSource {
 		get {
-			var invsrc = Db.InvSrc!;
+			var invsrc = Db.InvalidationSource!;
 			Debug.Assert(invsrc != null);
 			return invsrc;
 		}
@@ -42,7 +42,7 @@ public class KokoroCollection : IDisposable {
 	public KokoroContext? ContextOrNull => _Context;
 	internal KokoroSqliteDb? DbOrNull => _Db;
 
-	internal InvalidationSource? InvSrcOrNull => _Db?.InvSrc;
+	internal InvalidationSource? InvalidationSourceOrNull => _Db?.InvalidationSource;
 
 	#endregion
 

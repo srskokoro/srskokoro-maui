@@ -30,10 +30,10 @@ internal partial class KokoroSqliteDb : SqliteConnection {
 	internal KokoroCollection? Owner;
 
 	private long _LastPragmaDataVersion;
-	internal InvalidationSource? InvSrc;
+	internal InvalidationSource? InvalidationSource;
 
 	internal void SetUpWith(KokoroContext context, KokoroCollection owner) {
-		InvSrc = new(this, Owner = owner);
+		InvalidationSource = new(this, Owner = owner);
 		Context = context;
 	}
 
@@ -41,14 +41,14 @@ internal partial class KokoroSqliteDb : SqliteConnection {
 		Context = null;
 		Owner = null;
 
-		var invsrc = InvSrc;
-		InvSrc = null;
+		var invsrc = InvalidationSource;
+		InvalidationSource = null;
 
 		Debug.Assert(invsrc != null);
 		invsrc.Dispose();
 	}
 
-	internal bool UpdateInvSrc() {
+	internal bool UpdateInvalidationSource() {
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
 		// - See, for example, how SQLite did it for its FTS5 extension, https://github.com/sqlite/sqlite/blob/2d27d36cba01b9ceff2c36ad0cef9468db370024/ext/fts5/fts5_index.c#L1066
 		// - Once the above TODO is done, consider marking this method for
@@ -67,14 +67,14 @@ internal partial class KokoroSqliteDb : SqliteConnection {
 		// outer method to be inlined (since, as of writing this, methods
 		// containing try-catch blocks cannot be inlined).
 		void OnDataMarkExhausted() {
-			InvalidationSource prev = InvSrc!, next;
+			InvalidationSource prev = InvalidationSource!, next;
 			try {
 				next = new(this, Owner!); // May throw due to OOM
 			} catch {
 				--prev.DataMark; // Revert the increment
 				throw;
 			}
-			InvSrc = next;
+			InvalidationSource = next;
 			prev.Dispose();
 		}
 	}

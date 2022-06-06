@@ -26,8 +26,8 @@ internal class InvalidationSource : IDisposable {
 	internal KokoroCollection Owner => _Owner;
 
 	private InvalidationSource? _Latest;
-	public InvalidationSource Latest => _Latest ?? _Owner.InvSrc;
-	public InvalidationSource? LatestOrNull => _Latest ?? _Owner.InvSrc;
+	public InvalidationSource Latest => _Latest ?? _Owner.InvalidationSource;
+	public InvalidationSource? LatestOrNull => _Latest ?? _Owner.InvalidationSource;
 
 	internal InvalidationSource(KokoroSqliteDb db, KokoroCollection owner) {
 		_Db = db;
