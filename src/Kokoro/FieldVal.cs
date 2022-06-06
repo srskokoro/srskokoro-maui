@@ -10,6 +10,20 @@ public sealed class FieldVal {
 		internal static readonly FieldVal Instance = new();
 	}
 
+	public int IntTypeHint => _TypeHint;
+
+	public FieldTypeHint RawTypeHint => (FieldTypeHint)_TypeHint;
+
+	public FieldTypeHint ResolvedTypeHint {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => RawTypeHint.Resolve();
+	}
+
+	public ReadOnlySpan<byte> Data {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _Data;
+	}
+
 	public FieldVal() {
 		_TypeHint = (int)FieldTypeHint.Null;
 		_Data = Array.Empty<byte>();
