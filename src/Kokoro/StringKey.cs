@@ -31,7 +31,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	public int CompareTo(object? obj) => CompareTo(obj as StringKey);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public int CompareTo(StringKey? other) => Value.CompareTo(other?.Value);
+	public int CompareTo(StringKey? other) => string.CompareOrdinal(Value, other?.Value);
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	public override bool Equals([NotNullWhen(true)] object? obj) {
