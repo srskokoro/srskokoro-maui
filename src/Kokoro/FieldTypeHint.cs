@@ -1,7 +1,6 @@
 ﻿namespace Kokoro;
 
 public enum FieldTypeHint : int {
-	Interned =-0x1,
 	Null     = 0x0,
 
 	Zero     = 0x1,
@@ -23,4 +22,16 @@ public static class FieldTypeHintExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int Value(this FieldTypeHint @enum) => (int)@enum;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static FieldTypeHint ToggleInterned(this FieldTypeHint @enum) => ~@enum;
+
+	/// <summary>
+	/// Resolves to the actual non-interned counterpart (if currently interned).
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static FieldTypeHint Resolve(this FieldTypeHint @enum) {
+		int copy = (int)@enum;
+		return (FieldTypeHint)(copy ^ (copy >> (sizeof(FieldTypeHint) * 8 - 1)));
+	}
 }
