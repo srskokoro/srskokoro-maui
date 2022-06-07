@@ -276,9 +276,35 @@ partial class KokoroContext {
 		// classes, as each schema is a snapshot of the explicitly bound entity
 		// classes used to assemble the schema.
 		//
-		// This table lists the bound entity classes used to assemble the
-		// schema.
-		db.Exec("CREATE TABLE SchemaToClass(" +
+		// This table lists those "explicitly" bound entity classes.
+		db.Exec("CREATE TABLE SchemaToDirectClass(" +
+
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
+
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
+
+			// The cryptographic checksum of the entity class when the schema
+			// was created. Null if not available when the schema was created,
+			// even though it might now be available at the present moment --
+			// remember, a schema is a snapshot.
+			"csum BLOB," +
+
+			"PRIMARY KEY(schema, cls)" +
+
+		") WITHOUT ROWID");
+
+		// The implicitly bound entity classes used to assemble the schema. Such
+		// "indirect" entity classes were "not" directly bound to the schema.
+		// Otherwise, they shouldn't be in this table.
+		//
+		// This table is exactly like `SchemaToDirectClass` except that classes
+		// not in that table goes into this table instead.
+		//
+		// Being able to distinguish between direct and indirect classes can be
+		// useful when trying to copy the classes of one classable entity to
+		// another without having to copy all classes, as only the direct
+		// classes are needed to be copied.
+		db.Exec("CREATE TABLE SchemaToIndirectClass(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
