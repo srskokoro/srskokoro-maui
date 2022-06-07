@@ -12,10 +12,10 @@ public sealed class Item : DataEntity {
 
 	private long _ParentRowId;
 	private int _Ordinal;
-
 	private ulong _OrdModStamp;
 
 	private long _SchemaRowId;
+	private ulong _DataModStamp;
 	private Dictionary<StringKey, FieldVal>? _Fields;
 	private Dictionary<StringKey, FieldVal>? _FieldChanges;
 
@@ -33,13 +33,14 @@ public sealed class Item : DataEntity {
 	private enum StateFlags : int {
 		NoChanges = 0,
 
-		Change_Uid         = 1 << 0,
-		Change_ParentRowId = 1 << 1,
-		Change_Ordinal     = 1 << 2,
-		Change_OrdModStamp = 1 << 3,
-		Change_SchemaRowId = 1 << 4,
+		Change_Uid          = 1 << 0,
+		Change_ParentRowId  = 1 << 1,
+		Change_Ordinal      = 1 << 2,
+		Change_OrdModStamp  = 1 << 3,
+		Change_SchemaRowId  = 1 << 4,
+		Change_DataModStamp = 1 << 5,
 
-		NotExists          = 1 << 31,
+		NotExists           = 1 << 31,
 	}
 
 
@@ -103,6 +104,16 @@ public sealed class Item : DataEntity {
 	}
 
 	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
+
+	public ulong DataModStamp {
+		get => _DataModStamp;
+		set {
+			_DataModStamp = value;
+			_State = StateFlags.Change_DataModStamp;
+		}
+	}
+
+	public void SetCachedDataModStamp(ulong dataModStamp) => _DataModStamp = dataModStamp;
 
 
 	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
@@ -180,7 +191,7 @@ public sealed class Item : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,parent,ord,ord_modst,schema FROM Item
+			SELECT uid,parent,ord,ord_modst,schema,data_modst FROM Item
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -204,6 +215,9 @@ public sealed class Item : DataEntity {
 
 			r.DAssert_Name(4, "schema");
 			_SchemaRowId = r.GetInt64(4);
+
+			r.DAssert_Name(5, "data_modst");
+			_DataModStamp = (ulong)r.GetInt64(5);
 
 			return; // Early exit
 		}

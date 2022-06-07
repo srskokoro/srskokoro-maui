@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 using System.IO;
 using static SQLitePCL.raw;
 
-internal abstract partial class BaseFieldsReader<TOwner> : FieldsReader
+internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 		where TOwner : DataEntity {
 
 	private TOwner _Owner;

@@ -12,10 +12,5 @@ internal abstract class FieldsReader : IDisposable {
 
 	public abstract FieldVal ReadFieldVal(int index);
 
-	public virtual int ModStampCount => 0;
-
-	public virtual long ReadModStamp(int index)
-		=> throw new ArgumentOutOfRangeException(nameof(index));
-
 	public abstract void Dispose();
 }

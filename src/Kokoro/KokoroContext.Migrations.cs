@@ -122,48 +122,40 @@ partial class KokoroContext {
 			// more other items or classable enities.
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFk + "," +
 
-			// The blob comprising the list of modstamps and field data.
+			// A modstamp, a number of milliseconds since Unix epoch, when the
+			// `schema` column and/or any field data were last modified.
+			//
+			// This is also set to the "first" time the item is created, as the
+			// item is considered modified for the first time. Note that, this
+			// is independent of item creation due to device syncs, as syncing
+			// should simply keep any existing modstamps on sync.
+			//
+			// If a plugin needs to have separate modstamp for a set of fields
+			// (so as to have a separate sync conflict handling for it), place
+			// the fields in a subrecord instead.
+			// TODO-XXX Implement subrecord mechanics
+			"data_modst INTEGER NOT NULL," +
+
+			// The blob comprising the list of field data.
 			//
 			// The blob format is as follows, listed in order:
 			// 1. A 64-bit integer stored as a varint.
 			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
-			//   integers that will be defined in *point 3*; the remaining bits
+			//   integers that will be defined in *point 2*; the remaining bits
 			//   indicate the number of integers in the said list.
-			// 2. A 64-bit integer stored as a varint.
-			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
-			//   bytes needed to store the largest integer in the list of
-			//   integers that will be defined in *point 4*; the remaining bits
-			//   indicate the number of integers in the said list.
-			// 3. The list of field offsets, as a list of unsigned integers.
+			// 2. The list of field offsets, as a list of unsigned integers.
 			//   - Each is a byte offset, where offset 0 is the location of the
-			//   first byte in *point 5*.
+			//   first byte in *point 3*.
 			//   - Each occupies X bytes, where X is the minimum amount of bytes
 			//   needed to store the largest integer in the list. The 3 LSBs in
 			//   *point 1* determines X: `0b000` (or `0x0`) means X is 1 byte,
 			//   `0b111` (or `0x7`) means X is 8 bytes, etc.
-			// 4. The list of modstamps, as a list of unsigned integers.
-			//   - Each is a span of milliseconds since Unix epoch.
-			//   - Each occupies X bytes, where X is the minimum amount of bytes
-			//   needed to store the largest integer in the list. The 3 LSBs in
-			//   *point 2* determines X: `0b000` (or `0x0`) means X is 1 byte,
-			//   `0b111` (or `0x7`) means X is 8 bytes, etc.
-			// 5. The list of field values -- the bytes simply concatenated.
+			// 3. The list of field values -- the bytes simply concatenated.
 			//
 			// Quirks:
 			// - A field offset may point to the same byte offset as another if
 			// they share the same field value.
-			// - During a modstamp lookup, if the modstamp index is greater than
-			// the last modstamp index available, the largest modstamp in the
-			// list of modstamps should be returned instead.
-			//   - Lookups via negative modstamp indices should be considered an
-			//   error.
-			// - If the modstamp list is empty, the fallback for modstamp
-			// lookups should simply be the `ord_modst` (if available) or the
-			// Unix time when the collection was "first" created (which is
-			// independent of collection creation due to device syncs).
-			// - If an item holds fat fields, the last entry of the modstamp
-			// list is always the modstamp of the last modified fat field.
 			"data BLOB NOT NULL" +
 
 		")");
@@ -175,14 +167,12 @@ partial class KokoroContext {
 			// The blob comprising the list of field offsets and field values
 			// for cold fields.
 			//
-			// The blob format is similar to the `Item.data` column, except
-			// that there's no modstamp list.
+			// The blob format is similar to the `Item.data` column.
 			//
 			// The values for cold fields are initially stored in the parent
 			// table, under the `Item.data` column, alongside hot fields.
 			// However, when the `Item.data` column of an item row exceeds a
-			// certain size, the values for the cold fields are moved here (but
-			// their modstamps still remain in the parent table).
+			// certain size, the values for the cold fields are moved here.
 			//
 			// Under normal circumstances, this column is never empty, nor does
 			// it contain an empty list of field offsets; nonetheless, field
@@ -224,7 +214,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`, `modst_count` and `lfld_count`.
+			// `rowid` and `lfld_count`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -234,13 +224,6 @@ partial class KokoroContext {
 			// If the first byte is `0x00` (zero), then the schema should be
 			// considered a draft, yet to be finalized and not yet immutable.
 			"usum BLOB NOT NULL UNIQUE," +
-
-			// The expected number of modstamps in the classable entity where
-			// the schema is applied.
-			//
-			// This should always be equal to the number of direct classes bound
-			// to the schema -- see `SchemaToDirectClass` table.
-			$"modst_count INTEGER NOT NULL CHECK(modst_count {BetweenInt32RangeGE0})," +
 
 			// The expected number of field data in the classable entity where
 			// the schema is applied.
@@ -252,8 +235,7 @@ partial class KokoroContext {
 			// The blob comprising the list of field offsets and field values
 			// for shared fields.
 			//
-			// The blob format is similar to the `Item.data` column, except that
-			// there's no modstamp list.
+			// The blob format is similar to the `Item.data` column.
 			"data BLOB NOT NULL" +
 
 		")");
@@ -281,14 +263,6 @@ partial class KokoroContext {
 			// - 0: Shared
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (sto != 0)," +
-
-			// The modstamp index of this field in the classable entity where
-			// the schema is applied (even if this field is a shared field).
-			//
-			// Quirks:
-			// - Can also be used to lookup the direct class (in `SchemaToDirectClass`
-			// table) responsible for the field's inclusion.
-			$"modst_idx INTEGER NOT NULL CHECK(modst_idx {BetweenInt32RangeGE0})," +
 
 			// The entity class that defined this field, which can either be a
 			// direct class (in `SchemaToDirectClass`) or an indirect class (in
@@ -320,21 +294,7 @@ partial class KokoroContext {
 			// remember, a schema is a snapshot.
 			"csum BLOB," +
 
-			// The modstamp index.
-			//
-			// Each direct entity class contributes a modstamp entry to the
-			// classable entity, initially set to the datetime the entity class
-			// was directly attached (or reattached), and updated to the current
-			// datetime whenever any of the entity's fields (shared or local)
-			// are updated. The modstamp entry is added even if the direct class
-			// doesn't contribute any field. Note that, the fields that a direct
-			// entity class contributes also include those from its indirect
-			// entity classes.
-			$"modst_idx INTEGER NOT NULL CHECK(modst_idx {BetweenInt32RangeGE0})," +
-
-			"PRIMARY KEY(schema, cls)," +
-
-			"UNIQUE(schema, modst_idx)" +
+			"PRIMARY KEY(schema, cls)" +
 
 		") WITHOUT ROWID");
 
