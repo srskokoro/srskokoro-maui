@@ -229,9 +229,9 @@ partial class KokoroContext {
 			// There should not be any schema whose primary data is the same as
 			// another yet holds a different `rowid`.
 			//
-			// If null, the schema should be considered a draft, yet to be
-			// finalized and not yet immutable.
-			"usum BLOB UNIQUE," +
+			// If the first byte is `0x00` (zero), then the schema should be
+			// considered a draft, yet to be finalized and not yet immutable.
+			"usum BLOB NOT NULL UNIQUE," +
 
 			// The expected number of modstamps in the classable entity where
 			// the schema is applied.
