@@ -112,8 +112,10 @@ partial class KokoroContext {
 			// A modstamp, a number of milliseconds since Unix epoch, when the
 			// `parent` and/or `ord` columns were last modified.
 			//
-			// Also, the first time an item is created, both the `parent` and
-			// `ord` columns are considered modified for the first time.
+			// This is also set to the "first" time the item is created, as the
+			// item is considered modified for the first time. Note that, this
+			// is independent of item creation due to device syncs, as syncing
+			// should simply keep any existing modstamps on sync.
 			"ord_modst INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
