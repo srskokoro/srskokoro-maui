@@ -12,10 +12,10 @@ public sealed class Item : DataEntity {
 
 	private long _ParentRowId;
 	private int _Ordinal;
-	private ulong _OrdModStamp;
+	private long _OrdModStamp;
 
 	private long _SchemaRowId;
-	private ulong _DataModStamp;
+	private long _DataModStamp;
 	private Dictionary<StringKey, FieldVal>? _Fields;
 	private Dictionary<StringKey, FieldVal>? _FieldChanges;
 
@@ -85,7 +85,7 @@ public sealed class Item : DataEntity {
 
 	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
 
-	public ulong OrdModStamp {
+	public long OrdModStamp {
 		get => _OrdModStamp;
 		set {
 			_OrdModStamp = value;
@@ -93,7 +93,7 @@ public sealed class Item : DataEntity {
 		}
 	}
 
-	public void SetCachedOrdModStamp(ulong ordModStamp) => _OrdModStamp = ordModStamp;
+	public void SetCachedOrdModStamp(long ordModStamp) => _OrdModStamp = ordModStamp;
 
 	public long SchemaRowId {
 		get => _SchemaRowId;
@@ -105,7 +105,7 @@ public sealed class Item : DataEntity {
 
 	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
 
-	public ulong DataModStamp {
+	public long DataModStamp {
 		get => _DataModStamp;
 		set {
 			_DataModStamp = value;
@@ -113,7 +113,7 @@ public sealed class Item : DataEntity {
 		}
 	}
 
-	public void SetCachedDataModStamp(ulong dataModStamp) => _DataModStamp = dataModStamp;
+	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
 
 
 	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
@@ -211,13 +211,13 @@ public sealed class Item : DataEntity {
 			_Ordinal = r.GetInt32(2);
 
 			r.DAssert_Name(3, "ord_modst");
-			_OrdModStamp = (ulong)r.GetInt64(3);
+			_OrdModStamp = r.GetInt64(3);
 
 			r.DAssert_Name(4, "schema");
 			_SchemaRowId = r.GetInt64(4);
 
 			r.DAssert_Name(5, "data_modst");
-			_DataModStamp = (ulong)r.GetInt64(5);
+			_DataModStamp = r.GetInt64(5);
 
 			return; // Early exit
 		}
