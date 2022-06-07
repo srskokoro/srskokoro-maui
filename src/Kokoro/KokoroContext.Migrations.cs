@@ -264,11 +264,6 @@ partial class KokoroContext {
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (sto != 0)," +
 
-			// The entity class that defined this field, which can either be a
-			// direct class (in `SchemaToDirectClass`) or an indirect class (in
-			// `SchemaToIndirectClass`).
-			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
-
 			"PRIMARY KEY(schema, fld)," +
 
 			"UNIQUE(schema, idx_loc)" +
@@ -281,8 +276,9 @@ partial class KokoroContext {
 		// classes, as each schema is a snapshot of the explicitly bound entity
 		// classes used to assemble the schema.
 		//
-		// This table lists those "explicitly" bound entity classes.
-		db.Exec("CREATE TABLE SchemaToDirectClass(" +
+		// This table lists the bound entity classes used to assemble the
+		// schema.
+		db.Exec("CREATE TABLE SchemaToClass(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
 
@@ -293,30 +289,6 @@ partial class KokoroContext {
 			// even though it might now be available at the present moment --
 			// remember, a schema is a snapshot.
 			"csum BLOB," +
-
-			"PRIMARY KEY(schema, cls)" +
-
-		") WITHOUT ROWID");
-
-		// The implicitly bound entity classes used to assemble the schema. Such
-		// "indirect" entity classes were "not" directly bound to the schema.
-		// Otherwise, they shouldn't be in this table.
-		db.Exec("CREATE TABLE SchemaToIndirectClass(" +
-
-			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
-
-			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
-
-			// The cryptographic checksum of the entity class when the schema
-			// was created. Null if not available when the schema was created,
-			// even though it might now be available at the present moment --
-			// remember, a schema is a snapshot.
-			"csum BLOB," +
-
-			// The direct class responsible for the implicit attachment of the
-			// entity class to the schema. This is the explicitly bound entity
-			// class that included the indirect entity class.
-			"dcls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			"PRIMARY KEY(schema, cls)" +
 
