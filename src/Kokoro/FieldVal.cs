@@ -1,14 +1,15 @@
 ﻿namespace Kokoro;
 
 public sealed class FieldVal {
-	private readonly int _TypeHint;
-	private readonly byte[] _Data;
 
 	public static FieldVal Null => NullFieldVal.Instance;
 
 	private static class NullFieldVal {
 		internal static readonly FieldVal Instance = new();
 	}
+
+	private readonly int _TypeHint;
+	private readonly byte[] _Data;
 
 	public int IntTypeHint => _TypeHint;
 
