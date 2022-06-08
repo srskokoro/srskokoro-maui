@@ -2,9 +2,9 @@
 
 public sealed class FieldVal {
 
-	public static FieldVal Null => NullFieldVal.Instance;
+	public static FieldVal Null => NullInstHolder.Instance;
 
-	private static class NullFieldVal {
+	private static class NullInstHolder {
 		internal static readonly FieldVal Instance = new();
 	}
 
