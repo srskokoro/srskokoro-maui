@@ -11,7 +11,9 @@ public enum FieldTypeHint : int {
 
 	/// <summary>
 	/// A two's complement integer occupying zero or more bytes, up to 8 bytes.
-	/// When zero bytes, this is the same as the integer zero.
+	/// When zero bytes, this is the same as the integer zero. When more than 8
+	/// bytes, the excess bytes will be treated as extra BLOB data and will be
+	/// ignored if the data is coerced into an integer.
 	/// </summary>
 	Int      = 0x3,
 
