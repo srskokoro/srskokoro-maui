@@ -687,8 +687,7 @@ public sealed class Class : DataEntity {
 		int updated;
 		try {
 			updated = db.Cmd("UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
-				.AddParams(new("$oldRowId", oldRowId))
-				.AddParams(new("$newRowId", newRowId))
+				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
 				.Consume();
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
