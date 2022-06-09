@@ -84,13 +84,13 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		var currentPragmaDataVersion = this.ExecScalar<long>("PRAGMA data_version");
 		if (currentPragmaDataVersion == _LastPragmaDataVersion) return false;
 
-		UpdateInvalidationTokens();
+		Invalidate();
 		_LastPragmaDataVersion = currentPragmaDataVersion;
 		return true;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void UpdateInvalidationTokens() {
+	public void Invalidate() {
 		if (++InvalidationSource!.DataMark == InvalidationSource.DataMarkExhausted)
 			OnDataMarkExhausted();
 
