@@ -3,7 +3,7 @@ using Kokoro.Internal;
 using Microsoft.Data.Sqlite;
 
 /// <remarks>Not thread-safe.</remarks>
-internal partial class KokoroSqliteDb : SqliteConnection {
+internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
 	public new SqliteTransaction? Transaction { get => base.Transaction; }
 
