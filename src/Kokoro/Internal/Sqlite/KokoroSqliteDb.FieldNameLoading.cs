@@ -2,7 +2,7 @@
 using Kokoro.Internal.Caching;
 using Microsoft.Data.Sqlite;
 
-internal partial class KokoroSqliteDb {
+partial class KokoroSqliteDb {
 	// TODO-FIXME Should ensure that caches are never stale by preventing field names from being remapped to a different
 	// rowid so long as the DB or context exists.
 	// - Alt., maintain the cache so long as the SQLite DB's data version still matches.
