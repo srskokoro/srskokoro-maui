@@ -77,7 +77,7 @@ partial class KokoroSqliteDb {
 	public long InsertFieldNameOrThrow(string fieldName) {
 		using var cmd = CreateCommand();
 		// TODO-FIXME Will throw on race
-		// TODO Avoid race by wrapping inside an `OptionalReadTransaction` then performing a `SELECT` followed by an `INSERT` if not yet existing
+		// TODO Avoid race by wrapping inside an `NestingWriteTransaction` then performing a `SELECT` followed by an `INSERT` if not yet existing
 		// - Perhaps also rename it into `EnsureFieldName()`
 		cmd.Set("INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)");
 
