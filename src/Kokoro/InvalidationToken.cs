@@ -38,7 +38,7 @@ public class InvalidationToken {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			if (IsQuiteFresh) {
-				if (!Source.OwnerDb.UpdateInvalidationSource()) {
+				if (!Source.OwnerDb.ReloadCaches()) {
 					return true; // Still really fresh
 				}
 			}

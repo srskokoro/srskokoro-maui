@@ -89,7 +89,7 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		invsrc.Dispose();
 	}
 
-	internal bool UpdateInvalidationSource() {
+	internal bool ReloadCaches() {
 		// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
 		// - See, for example, how SQLite did it for its FTS5 extension, https://github.com/sqlite/sqlite/blob/2d27d36cba01b9ceff2c36ad0cef9468db370024/ext/fts5/fts5_index.c#L1066
 		// - Once the above TODO is done, consider marking this method for
