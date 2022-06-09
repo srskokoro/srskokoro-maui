@@ -479,6 +479,8 @@ public sealed class Class : DataEntity {
 				}
 			}
 
+			_State = StateFlags.NoChanges; // Pending changes are now saved
+
 			// COMMIT (or RELEASE) should be guaranteed to not fail at this
 			// point if there's at least one operation that started a write.
 			// - See, https://www.sqlite.org/rescode.html#busy
@@ -491,8 +493,6 @@ public sealed class Class : DataEntity {
 			db.Context?.UndoClassRowId(rowid);
 			throw;
 		}
-
-		_State = StateFlags.NoChanges; // Pending changes are now saved
 
 		_RowId = rowid;
 		_Uid = uid;
