@@ -69,38 +69,57 @@ partial class KokoroSqliteDb {
 	}
 
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long InsertFieldNameOrThrow(StringKey fieldName)
-		=> InsertFieldNameOrThrow(fieldName.Value);
-
 	[SkipLocalsInit]
-	public long InsertFieldNameOrThrow(string fieldName) {
-		using var cmd = CreateCommand();
-		// TODO-FIXME Will throw on race
-		// TODO Avoid race by wrapping inside an `NestingWriteTransaction` then performing a `SELECT` followed by an `INSERT` if not yet existing
-		// - Perhaps also rename it into `EnsureFieldName()`
-		cmd.Set("INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)");
-
-		long fieldId = Context!.NextFieldNameRowId();
-		var cmdParams = cmd.Params();
-		cmdParams.Add(new("$rowid", fieldId));
-		cmdParams.Add(new("$name", fieldName));
-
-		try {
-			int updated = cmd.ExecuteNonQuery();
-			Debug.Assert(updated == 1, $"Updated: {updated}");
-			return fieldId;
-
-		} catch (Exception ex) when (
-			ex is not SqliteException sqlex ||
-			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
-		) {
-			if (ex is SqliteException sqlex2 && sqlex2.SqliteExtendedErrorCode == SQLitePCL.raw.SQLITE_CONSTRAINT_UNIQUE) {
-				ThrowHelper.ThrowInvalidOperationException();
-			}
-			Debug.Fail("Shouldn't normally fail.", $"Unexpected: {ex}");
-			Context?.UndoFieldNameRowId(fieldId);
-			throw;
+	public long EnsureFieldName(StringKey fieldName) {
+		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+			return id;
 		}
+
+		using var tx = new NestingWriteTransaction(this);
+
+		using (var cmd = QueryForFieldId(fieldName)) {
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				id = r.GetInt64(0);
+			} else {
+				goto InsertNewFieldName;
+			}
+		}
+
+		_FieldNameToIdCache.Put(fieldName, id);
+		tx.DisposeNoInvalidate();
+		return id;
+
+	InsertNewFieldName:
+		using (var cmd = CreateCommand()) {
+			cmd.Set(
+				"INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)"
+			).AddParams(
+				new("$rowid", id = Context!.NextFieldNameRowId()),
+				new("$name", fieldName.Value));
+
+			try {
+				int updated = cmd.ExecuteNonQuery();
+				Debug.Assert(updated == 1, $"Updated: {updated}");
+			} catch (Exception ex) when (
+				ex is not SqliteException sqlex ||
+				sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
+			) {
+				// Shouldn't fail via uniqueness constraint, since we already
+				// know that the field name didn't exist beforehand, and we're
+				// in a transaction.
+				Debug.Assert(
+					ex is not SqliteException sqlex2 ||
+					sqlex2.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_UNIQUE,
+					"Shouldn't normally fail.", $"Unexpected: {ex}"
+				);
+				Context?.UndoFieldNameRowId(id);
+				throw;
+			}
+		}
+
+		_FieldNameToIdCache.Put(fieldName, id);
+		tx.Commit();
+		return id;
 	}
 }
