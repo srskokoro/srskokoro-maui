@@ -6,6 +6,17 @@ using static SQLitePCL.raw;
 /// <remarks>Not thread-safe.</remarks>
 internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
+	public bool HasActiveTransaction {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get {
+			// NOTE: Auto-commit is unset (zero) while a transaction is active.
+			if (sqlite3_get_autocommit(Handle) == 0) {
+				return true;
+			}
+			return false;
+		}
+	}
+
 	public KokoroSqliteDb() : this(null) { }
 
 	public KokoroSqliteDb(string? connectionString) : base(connectionString) { }
