@@ -147,6 +147,31 @@ internal static class VarInts {
 			"Destination span must be at least 9 bytes to accommodate the largest possible varint.");
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static int Length(ulong value) {
+		// Favor small values (as they're more common) more than larger values
+
+		if (value <= 240) return 1;
+		if (value <= 2287) return 2;
+		if (value <= 67823) return 3;
+
+		uint l = (uint)value;
+		uint h = (uint)(value >> 32);
+		if (h == 0) {
+			if (l <= 0xFF_FFFF) {
+				return 4;
+			}
+			return 5;
+		}
+
+		if (h <= 0xFF) return 6;
+		if (h <= 0xFFFF) return 7;
+		if (h <= 0xFF_FFFF) return 8;
+
+		return 9;
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
 	[SkipLocalsInit]
 	public static int Write(Span<byte> dest, uint value) {
@@ -189,5 +214,16 @@ internal static class VarInts {
 		[DoesNotReturn]
 		static void E_DestinationTooShort_AOOR() => throw new ArgumentOutOfRangeException(nameof(dest),
 			"Destination span must be at least 5 bytes to accommodate the largest possible varint.");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static int Length(uint value) {
+		// Favor small values (as they're more common) more than larger values
+		if (value <= 240) return 1;
+		if (value <= 2287) return 2;
+		if (value <= 67823) return 3;
+		if (value <= 0xFF_FFFF) return 4;
+		return 5;
 	}
 }
