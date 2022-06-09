@@ -472,11 +472,18 @@ public sealed class Class : DataEntity {
 			// Save field infos
 			{
 				var changes = _FieldInfoChanges;
-				if (changes != null)
+				if (changes != null) {
 					InternalSaveFieldInfos(cmd, changes, rowid);
+
+					changes.Clear(); // Changes saved successfully
+				}
 			}
 
+			// COMMIT (or RELEASE) should be guaranteed to not fail at this
+			// point if there's at least one operation that started a write.
+			// - See, https://www.sqlite.org/rescode.html#busy
 			tx.Commit();
+
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
@@ -534,7 +541,6 @@ public sealed class Class : DataEntity {
 				int updated = cmd.ExecuteNonQuery();
 				if (updated != 0) {
 					Debug.Assert(updated == 1, $"Updated: {updated}");
-					_State = StateFlags.NoChanges; // Changes saved successfully
 				} else
 					goto Missing;
 			}
@@ -542,10 +548,18 @@ public sealed class Class : DataEntity {
 			// Save field infos
 			{
 				var changes = _FieldInfoChanges;
-				if (changes != null)
+				if (changes != null) {
 					InternalSaveFieldInfos(cmd, changes, _RowId);
+
+					changes.Clear(); // Changes saved successfully
+				}
 			}
 
+			_State = StateFlags.NoChanges; // Pending changes are now saved
+
+			// COMMIT (or RELEASE) should be guaranteed to not fail at this
+			// point if there's at least one operation that started a write.
+			// - See, https://www.sqlite.org/rescode.html#busy
 			tx.Commit();
 		}
 
@@ -642,8 +656,6 @@ public sealed class Class : DataEntity {
 			}
 		}
 		// Loop end
-
-		fieldInfoChanges.Clear(); // Changes saved successfully
 	}
 
 
