@@ -725,7 +725,8 @@ public sealed class Class : DataEntity {
 	}
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
-		int deleted = host.Db.Cmd("DELETE FROM Class WHERE uid=$uid")
+		var db = host.Db;
+		int deleted = db.Cmd("DELETE FROM Class WHERE uid=$uid")
 			.AddParams(new("$uid", uid)).Consume();
 
 		Debug.Assert(deleted is 1 or 0);
