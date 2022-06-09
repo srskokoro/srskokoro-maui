@@ -13,7 +13,11 @@ public class InvalidationToken {
 
 	/// <summary>
 	/// Returns <see langword="true"/> if it's very likely that the collection
-	/// wasn't modified since <see cref="SetFresh()"/> was last called.
+	/// data on disk wasn't modified since <see cref="SetFresh()"/> was last called.
+	/// <para>
+	/// If inside a write transaction, the collection data on disk is only
+	/// considered modified once the write transaction commits.
+	/// </para>
 	/// </summary>
 	public bool IsQuiteFresh {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -23,8 +27,12 @@ public class InvalidationToken {
 	}
 
 	/// <summary>
-	/// Returns <see langword="true"/> if the collection really wasn't modified
-	/// since <see cref="SetFresh()"/> was last called.
+	/// Returns <see langword="true"/> if the collection data on disk really
+	/// wasn't modified since <see cref="SetFresh()"/> was last called.
+	/// <para>
+	/// If inside a write transaction, the collection data on disk is only
+	/// considered modified once the write transaction commits.
+	/// </para>
 	/// </summary>
 	public bool IsReallyFresh {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
