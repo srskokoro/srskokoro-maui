@@ -475,6 +475,8 @@ public sealed class Class : DataEntity {
 				if (changes != null)
 					InternalSaveFieldInfos(cmd, changes, rowid);
 			}
+
+			tx.Commit();
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
@@ -495,7 +497,7 @@ public sealed class Class : DataEntity {
 		if (state < 0) goto Missing;
 
 		var db = Host.Db; // Throws if host is already disposed
-		using (new NestingWriteTransaction(db)) {
+		using (var tx = new NestingWriteTransaction(db)) {
 			using var cmd = db.CreateCommand();
 			var cmdParams = cmd.Parameters;
 
@@ -543,6 +545,8 @@ public sealed class Class : DataEntity {
 				if (changes != null)
 					InternalSaveFieldInfos(cmd, changes, _RowId);
 			}
+
+			tx.Commit();
 		}
 
 		// Success!
