@@ -35,10 +35,22 @@ internal ref struct NestingWriteTransaction {
 		_Db = db;
 	}
 
-	public void Commit() {
+	public void CommitNoInvalidate() {
 		try {
 			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
 			_Db!.Exec(_CommitCommand);
+		} catch (NullReferenceException) when (_Db == null) {
+			E_AlreadyReleased_InvOp();
+		}
+		_Db = null;
+	}
+
+	public void Commit() {
+		try {
+			var db = _Db!;
+			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
+			db.Exec(_CommitCommand);
+			db.Invalidate();
 		} catch (NullReferenceException) when (_Db == null) {
 			E_AlreadyReleased_InvOp();
 		}
