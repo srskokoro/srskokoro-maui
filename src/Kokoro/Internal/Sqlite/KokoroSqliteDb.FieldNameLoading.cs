@@ -11,6 +11,9 @@ partial class KokoroSqliteDb {
 		_FieldIdToNameCache.Clear();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool ReloadFieldNameCaches() => ReloadCaches();
+
 	public long LoadStaleFieldId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
