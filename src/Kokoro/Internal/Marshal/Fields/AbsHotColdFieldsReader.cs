@@ -21,6 +21,11 @@ internal abstract class AbsHotColdFieldsReader<TOwner> : BaseFieldsReader<TOwner
 
 	protected abstract FieldsReader CreateColdReader();
 
+	protected sealed override LatentFieldVal OnReadFieldValLaterOutOfRange(int index) {
+		Debug.Assert((uint)index >= (uint)FieldCount);
+		return ColdReader.ReadFieldValLater(index - FieldCount);
+	}
+
 	protected sealed override FieldVal OnReadFieldValOutOfRange(int index) {
 		Debug.Assert((uint)index >= (uint)FieldCount);
 		return ColdReader.ReadFieldVal(index - FieldCount);

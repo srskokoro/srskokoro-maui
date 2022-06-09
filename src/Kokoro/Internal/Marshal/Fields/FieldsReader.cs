@@ -7,8 +7,7 @@ internal abstract class FieldsReader : IDisposable {
 
 	public abstract int FieldCount { get; }
 
-	// TODO Consider making `Length` an `int` instead?
-	public abstract (long Offset, long Length) BoundsOfFieldVal(int index);
+	public abstract LatentFieldVal ReadFieldValLater(int index);
 
 	public abstract FieldVal ReadFieldVal(int index);
 

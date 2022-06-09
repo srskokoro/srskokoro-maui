@@ -65,7 +65,7 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 
 	public sealed override int FieldCount => _FieldCount;
 
-	public sealed override (long Offset, long Length) BoundsOfFieldVal(int index) {
+	public sealed override LatentFieldVal ReadFieldValLater(int index) {
 		if ((uint)index < (uint)_FieldCount) {
 			var stream = _Stream;
 
@@ -89,9 +89,9 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
 
-			return (_FieldValListPos + fOffset, fValLen);
+			return new(stream, _FieldValListPos + fOffset, fValLen);
 		} else {
-			return (_Stream.Length, 0);
+			return OnReadFieldValLaterOutOfRange(index);
 		}
 	}
 
@@ -146,6 +146,9 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 			return OnReadFieldValOutOfRange(index);
 		}
 	}
+
+	protected virtual LatentFieldVal OnReadFieldValLaterOutOfRange(int index)
+		=> new(_Stream, _Stream.Length, 0);
 
 	protected virtual FieldVal OnReadFieldValOutOfRange(int index) => FieldVal.Null;
 
