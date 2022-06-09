@@ -116,7 +116,13 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	// --
 
 	private int OnSqliteCommit(object user_data) {
-		Invalidate();
+		try {
+			Invalidate();
+		} catch (Exception) {
+#if DEBUG
+			throw;
+#endif
+		}
 		return 0;
 	}
 
