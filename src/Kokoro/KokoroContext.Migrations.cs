@@ -136,9 +136,9 @@ partial class KokoroContext {
 			// TODO-XXX Implement subrecord mechanics
 			"data_modst INTEGER NOT NULL," +
 
-			// The blob comprising the list of field data.
+			// The BLOB comprising the list of field data.
 			//
-			// The blob format is as follows, listed in order:
+			// The BLOB format is as follows, listed in order:
 			// 1. A 64-bit integer stored as a varint.
 			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
@@ -164,10 +164,10 @@ partial class KokoroContext {
 
 			RowIdPk + " REFERENCES Item" + OnRowIdFkCascDel + "," +
 
-			// The blob comprising the list of field offsets and field values
+			// The BLOB comprising the list of field offsets and field values
 			// for cold fields.
 			//
-			// The blob format is similar to the `Item.data` column.
+			// The BLOB format is similar to the `Item.data` column.
 			//
 			// The values for cold fields are initially stored in the parent
 			// table, under the `Item.data` column, alongside hot fields.
@@ -176,7 +176,7 @@ partial class KokoroContext {
 			//
 			// Under normal circumstances, this column is never empty, nor does
 			// it contain an empty list of field offsets; nonetheless, field
-			// values can still be empty as they can be zero-length blobs.
+			// values can still be empty as they can be zero-length BLOBs.
 			"data BLOB NOT NULL" +
 
 		")");
@@ -232,10 +232,10 @@ partial class KokoroContext {
 			// by the schema -- see `SchemaToField` table.
 			$"lfld_count INTEGER NOT NULL CHECK(lfld_count {BetweenInt32RangeGE0})," +
 
-			// The blob comprising the list of field offsets and field values
+			// The BLOB comprising the list of field offsets and field values
 			// for shared fields.
 			//
-			// The blob format is similar to the `Item.data` column.
+			// The BLOB format is similar to the `Item.data` column.
 			"data BLOB NOT NULL" +
 
 		")");
