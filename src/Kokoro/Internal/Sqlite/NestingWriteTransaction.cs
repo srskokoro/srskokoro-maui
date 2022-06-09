@@ -64,6 +64,18 @@ internal ref struct NestingWriteTransaction {
 		_Db = null;
 	}
 
+	public void DisposeNoInvalidate() {
+		var db = _Db;
+		if (db == null) return;
+
+		// Same as `Dispose()` above, but avoids clearing caches.
+		if (db.HasActiveTransaction) {
+			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
+			db.Exec(!IsOutermost ? "ROLLBACK TO _; RELEASE _" : "ROLLBACK");
+		}
+		_Db = null;
+	}
+
 	[DoesNotReturn]
 	private static void E_AlreadyReleased_InvOp()
 		=> throw new InvalidOperationException($"Transaction already complete; it's no longer usable.");
