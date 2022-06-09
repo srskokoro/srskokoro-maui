@@ -3,16 +3,17 @@
 public enum FieldTypeHint : int {
 	Null     = 0x0,
 
+	/// <summary>The integer zero.</summary>
 	Zero     = 0x1,
+
+	/// <summary>The integer one.</summary>
 	One      = 0x2,
-	Int8     = 0x3,
-	Int16    = 0x4,
-	Int24    = 0x5,
-	Int32    = 0x6,
-	Int40    = 0x7,
-	Int48    = 0x8,
-	Int56    = 0x9,
-	Int64    = 0xA,
+
+	/// <summary>
+	/// A two's complement integer occupying zero or more bytes, up to 8 bytes.
+	/// When zero bytes, this is the same as the integer zero.
+	/// </summary>
+	Int      = 0x3,
 
 	Text     = 0x3E,
 	Blob     = 0x3F,
