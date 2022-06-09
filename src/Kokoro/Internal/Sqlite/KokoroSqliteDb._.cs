@@ -45,9 +45,11 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		this.Exec("PRAGMA ignore_check_constraints=1");
 #endif
 		sqlite3_rollback_hook(Handle, OnSqliteRollback, null);
+		sqlite3_commit_hook(Handle, OnSqliteCommit, null);
 	}
 
 	public override void Close() {
+		sqlite3_commit_hook(Handle, null, null);
 		sqlite3_rollback_hook(Handle, null, null);
 		base.Close();
 	}
@@ -112,6 +114,11 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	}
 
 	// --
+
+	private int OnSqliteCommit(object user_data) {
+		Invalidate();
+		return 0;
+	}
 
 	private void OnSqliteRollback(object user_data) => OnNestingWriteRollback();
 
