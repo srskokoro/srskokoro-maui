@@ -3,11 +3,13 @@ using Kokoro.Internal.Caching;
 using Microsoft.Data.Sqlite;
 
 partial class KokoroSqliteDb {
-	// TODO-FIXME Should ensure that caches are never stale by preventing field names from being remapped to a different
-	// rowid so long as the DB or context exists.
-	// - Alt., maintain the cache so long as the SQLite DB's data version still matches.
 	private readonly FieldNameToIdCache _FieldNameToIdCache = new(2048);
 	private readonly FieldIdToNameCache _FieldIdToNameCache = new(2048);
+
+	internal void ClearFieldNameCaches() {
+		_FieldNameToIdCache.Clear();
+		_FieldIdToNameCache.Clear();
+	}
 
 	internal long LoadFieldId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {

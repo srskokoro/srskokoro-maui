@@ -1,15 +1,37 @@
 ﻿namespace Kokoro.Internal.Sqlite;
 using Kokoro.Internal;
 using Microsoft.Data.Sqlite;
+using static SQLitePCL.raw;
 
 /// <remarks>Not thread-safe.</remarks>
 internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
-	public new SqliteTransaction? Transaction { get => base.Transaction; }
-
 	public KokoroSqliteDb() : this(null) { }
 
 	public KokoroSqliteDb(string? connectionString) : base(connectionString) { }
+
+	#region `BeginTransaction(…)` overrides
+	// NOTE: We disallowed `BeginTransaction(…)` so that we can set up custom
+	// hooks for commits and rollbacks.
+	//
+	// We also hid various `BeginTransaction(…)` overloads (via `new` modifier)
+	// so that we can annotate them with `[Obsolete(…, error: true)]` attribute.
+
+	[Obsolete("Not supported", error: true)]
+	public new SqliteTransaction BeginTransaction() => throw new NotSupportedException();
+
+	[Obsolete("Not supported", error: true)]
+	public new SqliteTransaction BeginTransaction(bool deferred) => BeginTransaction();
+
+	[Obsolete("Not supported", error: true)]
+	public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel) => BeginTransaction();
+
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+	[Obsolete("Not supported", error: true)]
+	public sealed override SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel, bool deferred) => BeginTransaction();
+#pragma warning restore CS0809
+
+	#endregion
 
 	public override void Open() {
 		Debug.Assert(!new SqliteConnectionStringBuilder(ConnectionString).Pooling,
@@ -22,6 +44,12 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 #if !DEBUG
 		this.Exec("PRAGMA ignore_check_constraints=1");
 #endif
+		sqlite3_rollback_hook(Handle, OnSqliteRollback, null);
+	}
+
+	public override void Close() {
+		sqlite3_rollback_hook(Handle, null, null);
+		base.Close();
 	}
 
 	// --
@@ -77,5 +105,21 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 			InvalidationSource = next;
 			prev.Dispose();
 		}
+	}
+
+	// --
+
+	private void OnSqliteRollback(object user_data) => OnNestingWriteRollback();
+
+	internal void OnNestingWriteRollback() {
+		// Clear custom caches here
+		// --
+
+		// NOTE: We should ensure that the field name caches are never stale by
+		// preventing field names from being remapped to a different rowid so
+		// long as the DB or context exists. One way to accomplish that is to
+		// clear the cache on rollback, and delete any offending cache entry
+		// whenever a field name is deleted (as the rowid might get remapped).
+		ClearFieldNameCaches();
 	}
 }

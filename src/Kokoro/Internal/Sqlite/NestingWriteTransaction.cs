@@ -57,7 +57,12 @@ internal ref struct NestingWriteTransaction {
 		// NOTE: Auto-commit is unset (zero) while a transaction is active.
 		if (sqlite3_get_autocommit(db.Handle) == 0) {
 			// TODO Use (and reuse) `sqlite3_stmt` directly with `SQLITE_PREPARE_PERSISTENT`
-			db.Exec(IsOutermost ? "ROLLBACK" : "ROLLBACK TO _; RELEASE _");
+			if (IsOutermost) {
+				db.Exec("ROLLBACK");
+			} else {
+				db.Exec("ROLLBACK TO _; RELEASE _");
+				db.OnNestingWriteRollback();
+			}
 		}
 		_Db = null;
 	}
