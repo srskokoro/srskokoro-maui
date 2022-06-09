@@ -90,7 +90,7 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal void UpdateInvalidationTokens() {
+	public void UpdateInvalidationTokens() {
 		if (++InvalidationSource!.DataMark == InvalidationSource.DataMarkExhausted)
 			OnDataMarkExhausted();
 

@@ -6,12 +6,12 @@ partial class KokoroSqliteDb {
 	private readonly FieldNameToIdCache _FieldNameToIdCache = new(2048);
 	private readonly FieldIdToNameCache _FieldIdToNameCache = new(2048);
 
-	internal void ClearFieldNameCaches() {
+	public void ClearFieldNameCaches() {
 		_FieldNameToIdCache.Clear();
 		_FieldIdToNameCache.Clear();
 	}
 
-	internal long LoadFieldId(StringKey fieldName) {
+	public long LoadFieldId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
@@ -25,7 +25,7 @@ partial class KokoroSqliteDb {
 		return 0;
 	}
 
-	internal StringKey? LoadFieldName(long fieldId) {
+	public StringKey? LoadFieldName(long fieldId) {
 		if (_FieldIdToNameCache.TryGet(fieldId, out var name)) {
 			return name;
 		}
@@ -67,11 +67,11 @@ partial class KokoroSqliteDb {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal long InsertFieldNameOrThrow(StringKey fieldName)
+	public long InsertFieldNameOrThrow(StringKey fieldName)
 		=> InsertFieldNameOrThrow(fieldName.Value);
 
 	[SkipLocalsInit]
-	internal long InsertFieldNameOrThrow(string fieldName) {
+	public long InsertFieldNameOrThrow(string fieldName) {
 		using var cmd = CreateCommand();
 		// TODO-FIXME Will throw on race
 		// TODO Avoid race by wrapping inside an `OptionalReadTransaction` then performing a `SELECT` followed by an `INSERT` if not yet existing
