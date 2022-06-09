@@ -99,6 +99,8 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
 		Invalidate();
 		_LastPragmaDataVersion = currentPragmaDataVersion;
+
+		ClearCaches();
 		return true;
 	}
 
@@ -137,12 +139,11 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		return 0;
 	}
 
-	private void OnSqliteRollback(object user_data) => OnNestingWriteRollback();
+	private void OnSqliteRollback(object user_data) => ClearCaches();
 
-	internal void OnNestingWriteRollback() {
-		// Clear custom caches here
-		// --
+	public void OnNestingWriteRollback() => ClearCaches();
 
+	internal void ClearCaches() {
 		// NOTE: We should ensure that the field name caches are never stale by
 		// preventing field names from being remapped to a different rowid so
 		// long as the DB or context exists. One way to accomplish that is to
