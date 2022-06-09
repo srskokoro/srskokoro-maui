@@ -11,7 +11,7 @@ partial class KokoroSqliteDb {
 		_FieldIdToNameCache.Clear();
 	}
 
-	public long LoadFieldId(StringKey fieldName) {
+	public long LoadStaleFieldId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
@@ -25,7 +25,7 @@ partial class KokoroSqliteDb {
 		return 0;
 	}
 
-	public StringKey? LoadFieldName(long fieldId) {
+	public StringKey? LoadStaleFieldName(long fieldId) {
 		if (_FieldIdToNameCache.TryGet(fieldId, out var name)) {
 			return name;
 		}
