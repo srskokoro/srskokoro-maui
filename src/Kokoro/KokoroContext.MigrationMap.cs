@@ -1,7 +1,7 @@
 ﻿namespace Kokoro;
 using System.Text.RegularExpressions;
 
-public partial class KokoroContext {
+partial class KokoroContext {
 
 	private static partial void InitMigrationMap(MigrationMap map);
 
