@@ -42,7 +42,8 @@ public sealed class FieldVal {
 		_Data = data;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldVal(FieldTypeHint typeHint, byte[] data)
-		: this((int)typeHint, data) { }
+	public FieldVal(FieldTypeHint typeHint, byte[] data) {
+		_TypeHint = (int)typeHint;
+		_Data = data;
+	}
 }
