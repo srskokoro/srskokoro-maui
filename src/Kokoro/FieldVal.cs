@@ -11,8 +11,6 @@ public sealed class FieldVal {
 	private readonly int _TypeHint;
 	private readonly byte[] _Data;
 
-	public int IntTypeHint => _TypeHint;
-
 	public FieldTypeHint TypeHint => (FieldTypeHint)_TypeHint;
 
 	public ReadOnlySpan<byte> Data {
