@@ -8,10 +8,10 @@ public sealed class FieldVal {
 		internal static readonly FieldVal Instance = new();
 	}
 
-	private readonly uint _TypeHint;
+	private readonly FieldTypeHint _TypeHint;
 	private readonly byte[] _Data;
 
-	public FieldTypeHint TypeHint => (FieldTypeHint)_TypeHint;
+	public FieldTypeHint TypeHint => _TypeHint;
 
 	public ReadOnlySpan<byte> Data {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -19,17 +19,17 @@ public sealed class FieldVal {
 	}
 
 	public FieldVal() {
-		_TypeHint = (uint)FieldTypeHint.Null;
+		_TypeHint = FieldTypeHint.Null;
 		_Data = Array.Empty<byte>();
 	}
 
 	public FieldVal(uint typeHint, byte[] data) {
-		_TypeHint = typeHint;
+		_TypeHint = (FieldTypeHint)typeHint;
 		_Data = data;
 	}
 
 	public FieldVal(FieldTypeHint typeHint, byte[] data) {
-		_TypeHint = (uint)typeHint;
+		_TypeHint = typeHint;
 		_Data = data;
 	}
 }
