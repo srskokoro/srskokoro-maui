@@ -5,7 +5,6 @@ public enum FieldTypeHint : int {
 
 	/// <summary>The integer zero.</summary>
 	Zero     = 0x2,
-
 	/// <summary>The integer one.</summary>
 	One      = 0x3,
 
@@ -17,7 +16,6 @@ public enum FieldTypeHint : int {
 	/// either truncated or sign-extended.
 	/// </remarks>
 	Int      = 0x4,
-
 	/// <summary>
 	/// A big-endian arbitrary-length unsigned integer.
 	/// </summary>
