@@ -13,23 +13,11 @@ public sealed class FieldVal {
 
 	public int IntTypeHint => _TypeHint;
 
-	public FieldTypeHint RawTypeHint => (FieldTypeHint)_TypeHint;
-
-	public FieldTypeHint ResolvedTypeHint {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => RawTypeHint.Resolve();
-	}
+	public FieldTypeHint TypeHint => (FieldTypeHint)_TypeHint;
 
 	public ReadOnlySpan<byte> Data {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _Data;
-	}
-
-	public bool IsInterned {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		// Ternary operator returning true/false prevents redundant asm generation:
-		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		get => RawTypeHint.IsInterned() ? true : false;
 	}
 
 	public FieldVal() {
