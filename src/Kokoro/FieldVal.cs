@@ -8,7 +8,7 @@ public sealed class FieldVal {
 		internal static readonly FieldVal Instance = new();
 	}
 
-	private readonly int _TypeHint;
+	private readonly uint _TypeHint;
 	private readonly byte[] _Data;
 
 	public FieldTypeHint TypeHint => (FieldTypeHint)_TypeHint;
@@ -19,17 +19,17 @@ public sealed class FieldVal {
 	}
 
 	public FieldVal() {
-		_TypeHint = (int)FieldTypeHint.Null;
+		_TypeHint = (uint)FieldTypeHint.Null;
 		_Data = Array.Empty<byte>();
 	}
 
-	public FieldVal(int typeHint, byte[] data) {
+	public FieldVal(uint typeHint, byte[] data) {
 		_TypeHint = typeHint;
 		_Data = data;
 	}
 
 	public FieldVal(FieldTypeHint typeHint, byte[] data) {
-		_TypeHint = (int)typeHint;
+		_TypeHint = (uint)typeHint;
 		_Data = data;
 	}
 }

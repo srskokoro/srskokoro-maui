@@ -94,7 +94,7 @@ internal static class StreamExtensions {
 			int vread = stream.TryReadVarInt(out ulong valSpec);
 			if (vread != 0) {
 				var data = new byte[length - vread];
-				int typeHint = (int)valSpec;
+				uint typeHint = (uint)valSpec;
 				return new FieldVal(typeHint, data);
 			}
 		}
