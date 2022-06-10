@@ -6,6 +6,18 @@ using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.Win32.SafeHandles;
 
+/// <summary>
+/// Represents a collection context, used to create <see cref="KokoroCollection">collection
+/// objects</see>.
+/// </summary>
+/// <remarks>
+/// Only one <see cref="KokoroContext"/> may ever exist. Unless the instance is
+/// completely <see cref="Dispose">disposed</see>, the collection data is locked
+/// so that only one process can possess a <see cref="KokoroContext"/> instance.
+/// <para>
+/// This class is thread-safe.
+/// </para>
+/// </remarks>
 public partial class KokoroContext : IDisposable {
 
 	#region Constants

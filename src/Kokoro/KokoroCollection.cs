@@ -2,6 +2,10 @@
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 
+/// <summary>
+/// Represents a collection host, also called a collection object, which
+/// abstracts access to the underlying collection data.
+/// </summary>
 /// <remarks>Not thread-safe.</remarks>
 public class KokoroCollection : IDisposable {
 	private KokoroContext? _Context;
