@@ -10,11 +10,12 @@ public enum FieldTypeHint : int {
 	One      = 0x2,
 
 	/// <summary>
-	/// A two's complement integer occupying zero or more bytes, up to 8 bytes.
-	/// When zero bytes, this is the same as the integer zero. When more than 8
-	/// bytes, the excess bytes will be treated as extra BLOB data and will be
-	/// ignored if the data is coerced into an integer.
+	/// A big-endian arbitrary-length signed integer.
 	/// </summary>
+	/// <remarks>
+	/// Conversion to C#'s primitive integer types may cause the value to be
+	/// either truncated or sign-extended.
+	/// </remarks>
 	Int      = 0x3,
 
 	Text     = 0x3E,
