@@ -159,7 +159,7 @@ csharp_style_unused_value_assignment_preference = discard_variable
 csharp_style_unused_value_expression_statement_preference = discard_variable
 
 # 'using' directive preferences
-csharp_using_directive_placement = inside_namespace:suggestion
+csharp_using_directive_placement = inside_namespace:silent
 
 # CS0162: Unreachable code detected
 dotnet_diagnostic.CS0162.severity = suggestion
