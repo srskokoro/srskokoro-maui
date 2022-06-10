@@ -267,7 +267,8 @@ public partial class KokoroContext : IDisposable {
 			// ^- `DisposeSafely()` might be unnecessary above as the code for
 			// `SqliteConnection.Dispose()` (from `Microsoft.Data.Sqlite`) seems
 			// to suggest that it would never throw. Still, we can afford safety
-			// at this point as we're in a `catch` block anyway.
+			// (and sacrifice performace) at this point as we're in a `catch`
+			// block anyway.
 
 			if (!_Version.Operable)
 				E_VersionNotOperable_NS(ex);
