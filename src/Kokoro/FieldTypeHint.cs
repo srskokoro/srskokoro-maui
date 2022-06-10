@@ -1,4 +1,5 @@
 ﻿namespace Kokoro;
+using Kokoro.Common.Util;
 
 public enum FieldTypeHint : int {
 	Null     = 0x0,
@@ -25,8 +26,14 @@ public enum FieldTypeHint : int {
 	/// </remarks>
 	UInt     = 0x5,
 
-	Text     = 0x3E,
-	Blob     = 0x3F,
+	Text     = 0x57,
+	Blob     = 0x58,
+
+	/// <remarks>
+	/// Note: <c>(0x68 + 16) * 2 == 240</c>, which occupies a single byte when
+	/// encoded as a <see cref="VarInts">varint</see>.
+	/// </remarks>
+	StartOfUnreserved = 0x68
 }
 
 public static class FieldTypeHintExtensions {
