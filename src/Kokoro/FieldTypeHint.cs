@@ -18,6 +18,15 @@ public enum FieldTypeHint : int {
 	/// </remarks>
 	Int      = 0x3,
 
+	/// <summary>
+	/// A big-endian arbitrary-length unsigned integer.
+	/// </summary>
+	/// <remarks>
+	/// Conversion to C#'s primitive integer types may cause the value to be
+	/// either truncated or zero-extended.
+	/// </remarks>
+	UInt     = 0x4,
+
 	Text     = 0x3E,
 	Blob     = 0x3F,
 }
