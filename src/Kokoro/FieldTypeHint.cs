@@ -26,6 +26,17 @@ public enum FieldTypeHint : int {
 	/// </remarks>
 	UInt     = 0x5,
 
+	//Fp8    = 0x6,
+	Fp16     = 0x7,
+	Fp32     = 0x8,
+	Fp64     = 0x9,
+	//Fp80   = 0xA,
+	//Fp128  = 0xB,
+	//Fp256  = 0xC,
+	//Dec32  = 0xD,
+	//Dec64  = 0xE,
+	//Dec128 = 0xF,
+
 	Text     = 0x57,
 	Blob     = 0x58,
 
