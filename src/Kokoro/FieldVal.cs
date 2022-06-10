@@ -23,7 +23,7 @@ public sealed class FieldVal {
 		_Data = Array.Empty<byte>();
 	}
 
-	public FieldVal(uint typeHint, byte[] data) {
+	public FieldVal(FieldTypeHintInt typeHint, byte[] data) {
 		_TypeHint = (FieldTypeHint)typeHint;
 		_Data = data;
 	}

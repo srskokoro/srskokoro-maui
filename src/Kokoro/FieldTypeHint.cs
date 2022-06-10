@@ -1,7 +1,9 @@
-﻿namespace Kokoro;
+﻿global using FieldTypeHintInt = System.UInt32;
+
+namespace Kokoro;
 using Kokoro.Common.Util;
 
-public enum FieldTypeHint : uint {
+public enum FieldTypeHint : FieldTypeHintInt {
 	Null     = 0x0,
 
 	/// <summary>The integer zero.</summary>
@@ -68,5 +70,5 @@ public enum FieldTypeHint : uint {
 public static class FieldTypeHintExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static uint Value(this FieldTypeHint @enum) => (uint)@enum;
+	public static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
 }

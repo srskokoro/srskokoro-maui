@@ -126,7 +126,7 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
 				Debug.Assert(fValSpec <= int.MaxValue);
 
-				int typeHint = (int)fValSpec;
+				FieldTypeHintInt typeHint = (FieldTypeHintInt)fValSpec;
 				var data = new byte[fValLen - fValSpecLen];
 				{
 					int sread = stream.Read(data);
