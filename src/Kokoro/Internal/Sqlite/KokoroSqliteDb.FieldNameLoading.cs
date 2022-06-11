@@ -47,8 +47,12 @@ partial class KokoroSqliteDb {
 		return QueryFieldName(fieldId);
 	}
 
+	[SkipLocalsInit]
 	private long QueryFieldId(StringKey fieldName) {
-		using var cmd = QueryForFieldId(fieldName);
+		using var cmd = CreateCommand();
+		cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
+		cmd.AddParams(new("$name", fieldName.Value));
+
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
 			long id = r.GetInt64(0);
@@ -57,8 +61,12 @@ partial class KokoroSqliteDb {
 		return 0;
 	}
 
+	[SkipLocalsInit]
 	private StringKey? QueryFieldName(long fieldId) {
-		using var cmd = QueryForFieldName(fieldId);
+		using var cmd = CreateCommand();
+		cmd.Set("SELECT name FROM FieldName WHERE rowid=$rowid");
+		cmd.AddParams(new("$rowid", fieldId));
+
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
 			StringKey name = new(r.GetString(0));
@@ -67,32 +75,6 @@ partial class KokoroSqliteDb {
 			return name;
 		}
 		return null;
-	}
-
-	[SkipLocalsInit]
-	private SqliteCommand QueryForFieldId(StringKey fieldName) {
-		var cmd = CreateCommand();
-		try {
-			cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
-			cmd.AddParams(new("$name", fieldName.Value));
-			return cmd;
-		} catch {
-			cmd.Dispose();
-			throw;
-		}
-	}
-
-	[SkipLocalsInit]
-	private SqliteCommand QueryForFieldName(long fieldId) {
-		var cmd = CreateCommand();
-		try {
-			cmd.Set("SELECT name FROM FieldName WHERE rowid=$rowid");
-			cmd.AddParams(new("$rowid", fieldId));
-			return cmd;
-		} catch {
-			cmd.Dispose();
-			throw;
-		}
 	}
 
 
@@ -117,7 +99,10 @@ partial class KokoroSqliteDb {
 		using var tx = new NestingWriteTransaction(this);
 
 		long id;
-		using (var cmd = QueryForFieldId(fieldName)) {
+		using (var cmd = CreateCommand()) {
+			cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
+			cmd.AddParams(new("$name", fieldName.Value));
+
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				id = r.GetInt64(0);
