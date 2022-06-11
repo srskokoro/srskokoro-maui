@@ -83,7 +83,7 @@ partial class KokoroSqliteDb {
 
 
 	[SkipLocalsInit]
-	public long EnsureFieldName(StringKey fieldName) {
+	public long EnsureFieldId(StringKey fieldName) {
 		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
