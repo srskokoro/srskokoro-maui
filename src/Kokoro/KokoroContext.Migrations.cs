@@ -43,7 +43,7 @@ partial class KokoroContext {
 		using var transaction = db.BeginTransaction();
 
 		const string RowIdPk = "rowid INTEGER PRIMARY KEY CHECK(rowid != 0)";
-		const string UidUkCk = "uid BLOB UNIQUE NOT NULL CHECK(length(uid) == 16)";
+		const string UidUkCk = "uid BLOB UNIQUE NOT NULL CHECK(length(uid) = 16)";
 
 		// NOTE: Even without `ON DELETE RESTRICT`, SQLite prohibits parent key
 		// deletions -- consult the SQLite docs for details.
