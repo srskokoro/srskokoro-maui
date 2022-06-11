@@ -198,7 +198,7 @@ public sealed class Class : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ord,ifnull(grp,0) AS grp,name FROM Class
+			SELECT uid,ord,ifnull(grp,0)AS grp,name FROM Class
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));

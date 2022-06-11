@@ -191,7 +191,7 @@ public sealed class Item : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ifnull(parent,0) AS parent,ord,ord_modst,schema,data_modst FROM Item
+			SELECT uid,ifnull(parent,0)AS parent,ord,ord_modst,schema,dat_modst FROM Item
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -216,7 +216,7 @@ public sealed class Item : DataEntity {
 			r.DAssert_Name(4, "schema");
 			_SchemaRowId = r.GetInt64(4);
 
-			r.DAssert_Name(5, "data_modst");
+			r.DAssert_Name(5, "dat_modst");
 			_DataModStamp = r.GetInt64(5);
 
 			return; // Early exit
@@ -406,7 +406,7 @@ public sealed class Item : DataEntity {
 		using (var r = cmd.ExecuteReader()) {
 			if (r.Read()) {
 				// Same as `SqliteDataReader.GetStream()` but more performant
-				SqliteBlob blob = new(db, tableName, columnName: "data", rowid, readOnly: true);
+				SqliteBlob blob = new(db, tableName, columnName: "dat", rowid, readOnly: true);
 
 				// TODO Batch-load fields in a single fields reader, instead of
 				// recreating instances unnecessarily every field load.
