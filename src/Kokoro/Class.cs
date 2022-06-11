@@ -13,7 +13,7 @@ public sealed class Class : DataEntity {
 
 	private UniqueId _Uid;
 	private int _Ordinal;
-	private long _SrcRowId;
+	private long _GrpRowId;
 	private string? _Name;
 
 	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
@@ -35,7 +35,7 @@ public sealed class Class : DataEntity {
 
 		Change_Uid      = 1 << 0,
 		Change_Ordinal  = 1 << 1,
-		Change_SrcRowId = 1 << 2,
+		Change_GrpRowId = 1 << 2,
 		Change_Name     = 1 << 3,
 
 		NotExists       = 1 << 31,
@@ -91,15 +91,15 @@ public sealed class Class : DataEntity {
 
 	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
 
-	public long SrcRowId {
-		get => _SrcRowId;
+	public long GrpRowId {
+		get => _GrpRowId;
 		set {
-			_SrcRowId = value;
-			_State = StateFlags.Change_SrcRowId;
+			_GrpRowId = value;
+			_State = StateFlags.Change_GrpRowId;
 		}
 	}
 
-	public void SetCachedSrcRowId(long srcRowId) => _SrcRowId = srcRowId;
+	public void SetCachedGrpRowId(long grpRowId) => _GrpRowId = grpRowId;
 
 	public string? Name {
 		get => _Name;
@@ -199,7 +199,7 @@ public sealed class Class : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ord,ifnull(src,0) AS src,name FROM Class
+			SELECT uid,ord,ifnull(grp,0) AS grp,name FROM Class
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -215,8 +215,8 @@ public sealed class Class : DataEntity {
 			r.DAssert_Name(1, "ord");
 			_Ordinal = r.GetInt32(1);
 
-			r.DAssert_Name(2, "src");
-			_SrcRowId = r.GetInt64(2);
+			r.DAssert_Name(2, "grp");
+			_GrpRowId = r.GetInt64(2);
 
 			r.DAssert_Name(3, "name");
 			_Name = r.GetString(3);
@@ -418,7 +418,7 @@ public sealed class Class : DataEntity {
 		_State = default;
 		_Uid = default;
 		_Ordinal = default;
-		_SrcRowId = default;
+		_GrpRowId = default;
 		_Name = default;
 	}
 
@@ -455,15 +455,15 @@ public sealed class Class : DataEntity {
 			using var tx = new NestingWriteTransaction(db);
 			using var cmd = db.Cmd(
 				"INSERT INTO Class" +
-				"(rowid,uid,ord,src,name)" +
+				"(rowid,uid,ord,grp,name)" +
 				" VALUES" +
-				"($rowid,$uid,$ord,$src,$name)");
+				"($rowid,$uid,$ord,$grp,$name)");
 
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$rowid", rowid));
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
 			cmdParams.Add(new("$ord", _Ordinal));
-			cmdParams.Add(new("$src", RowIds.Box(_SrcRowId)));
+			cmdParams.Add(new("$grp", RowIds.Box(_GrpRowId)));
 			cmdParams.Add(new("$name", _Name));
 
 			int updated = cmd.ExecuteNonQuery();
@@ -523,9 +523,9 @@ public sealed class Class : DataEntity {
 					cmdSb.Append("ord=$ord,");
 					cmdParams.Add(new("$ord", _Ordinal));
 				}
-				if ((state & StateFlags.Change_SrcRowId) != 0) {
-					cmdSb.Append("src=$src,");
-					cmdParams.Add(new("$src", RowIds.Box(_SrcRowId)));
+				if ((state & StateFlags.Change_GrpRowId) != 0) {
+					cmdSb.Append("grp=$grp,");
+					cmdParams.Add(new("$grp", RowIds.Box(_GrpRowId)));
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
