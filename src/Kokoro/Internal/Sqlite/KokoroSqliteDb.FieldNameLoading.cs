@@ -14,42 +14,54 @@ partial class KokoroSqliteDb {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public bool ReloadFieldNameCaches() => ReloadCaches();
 
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadFieldId(StringKey fieldName) {
-		ReloadFieldNameCaches();
-		return LoadStaleFieldId(fieldName);
+		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+			return id;
+		}
+		return QueryFieldId(fieldName);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public StringKey? LoadFieldName(long fieldId) {
-		ReloadFieldNameCaches();
-		return LoadStaleFieldName(fieldId);
+		if (!ReloadFieldNameCaches() && _FieldIdToNameCache.TryGet(fieldId, out var name)) {
+			return name;
+		}
+		return QueryFieldName(fieldId);
 	}
 
-
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadStaleFieldId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
+		return QueryFieldId(fieldName);
+	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public StringKey? LoadStaleFieldName(long fieldId) {
+		if (_FieldIdToNameCache.TryGet(fieldId, out var name)) {
+			return name;
+		}
+		return QueryFieldName(fieldId);
+	}
+
+	private long QueryFieldId(StringKey fieldName) {
 		using var cmd = QueryForFieldId(fieldName);
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
-			id = r.GetInt64(0);
+			long id = r.GetInt64(0);
 			_FieldNameToIdCache.Put(fieldName, id);
 		}
 		return 0;
 	}
 
-	public StringKey? LoadStaleFieldName(long fieldId) {
-		if (_FieldIdToNameCache.TryGet(fieldId, out var name)) {
-			return name;
-		}
-
+	private StringKey? QueryFieldName(long fieldId) {
 		using var cmd = QueryForFieldName(fieldId);
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
-			name = new(r.GetString(0));
+			StringKey name = new(r.GetString(0));
 			name = _FieldNameToIdCache.Normalize(name);
 			_FieldIdToNameCache.Put(fieldId, name);
 			return name;
@@ -57,6 +69,7 @@ partial class KokoroSqliteDb {
 		return null;
 	}
 
+	[SkipLocalsInit]
 	private SqliteCommand QueryForFieldId(StringKey fieldName) {
 		var cmd = CreateCommand();
 		try {
@@ -69,6 +82,7 @@ partial class KokoroSqliteDb {
 		}
 	}
 
+	[SkipLocalsInit]
 	private SqliteCommand QueryForFieldName(long fieldId) {
 		var cmd = CreateCommand();
 		try {
