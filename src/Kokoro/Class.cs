@@ -236,6 +236,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 		}
 	}
@@ -244,6 +245,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 		}
@@ -253,6 +255,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 			InternalLoadFieldInfo(db, fieldName3);
@@ -263,6 +266,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 			InternalLoadFieldInfo(db, fieldName3);
@@ -274,6 +278,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 			InternalLoadFieldInfo(db, fieldName3);
@@ -286,6 +291,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 			InternalLoadFieldInfo(db, fieldName3);
@@ -299,6 +305,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 			InternalLoadFieldInfo(db, fieldName3);
@@ -313,6 +320,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadFieldInfo(db, fieldName1);
 			InternalLoadFieldInfo(db, fieldName2);
 			InternalLoadFieldInfo(db, fieldName3);
@@ -333,7 +341,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
-
+			db.ReloadFieldNameCaches();
 			// TODO Unroll?
 			foreach (var fieldName in fieldNames)
 				InternalLoadFieldInfo(db, fieldName);
@@ -344,7 +352,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (core) Load();
-
+			db.ReloadFieldNameCaches();
 			// TODO Unroll?
 			foreach (var fieldName in fieldNames)
 				InternalLoadFieldInfo(db, fieldName);
@@ -353,31 +361,16 @@ public sealed class Class : DataEntity {
 
 	[SkipLocalsInit]
 	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey name) {
-		using var cmd = db.CreateCommand();
-		var cmdParams = cmd.Parameters;
-
-		long fld;
-		{
-			cmd.CommandText = "SELECT rowid FROM FieldName WHERE name=$name";
-			cmdParams.Add(new("$name", name.Value));
-
-			using var r = cmd.ExecuteReader();
-			if (r.Read()) {
-				fld = r.GetInt64(0);
-			} else {
-				goto NotFound;
-			}
-			// TODO Cache and load from cache
-		}
-
-		cmdParams.Clear();
+		long fld = db.LoadStaleFieldId(name);
+		if (fld == 0) goto NotFound;
 
 		// Load field info
-		{
-			cmd.Reset("""
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set("""
 				SELECT ord,sto FROM ClassToField
 				WHERE cls=$cls AND fld=$fld
 				""");
+			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$cls", _RowId));
 			cmdParams.Add(new("$fld", fld));
 
@@ -472,7 +465,7 @@ public sealed class Class : DataEntity {
 			{
 				var changes = _FieldInfoChanges;
 				if (changes != null) {
-					InternalSaveFieldInfos(cmd, changes, rowid);
+					InternalSaveFieldInfos(db, changes, rowid);
 
 					changes.Clear(); // Changes saved successfully
 				}
@@ -548,7 +541,7 @@ public sealed class Class : DataEntity {
 			{
 				var changes = _FieldInfoChanges;
 				if (changes != null) {
-					InternalSaveFieldInfos(cmd, changes, _RowId);
+					InternalSaveFieldInfos(db, changes, _RowId);
 
 					changes.Clear(); // Changes saved successfully
 				}
@@ -574,49 +567,26 @@ public sealed class Class : DataEntity {
 	}
 
 	[SkipLocalsInit]
-	private void InternalSaveFieldInfos(SqliteCommand cmd, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsRowId) {
+	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsRowId) {
+		db.ReloadFieldNameCaches();
+
+		using var cmd = db.CreateCommand();
 		var cmdParams = cmd.Parameters;
+
 		foreach (var (fieldName, info) in fieldInfoChanges) {
 			long fld;
-			{
-				cmd.Reset("SELECT rowid FROM FieldName WHERE name=$name");
-				cmdParams.Clear();
-				cmdParams.Add(new("$name", fieldName.Value));
-
-				var r = cmd.ExecuteReader();
-				// ^ No `using` since the reader will be disposed
-				// automatically anyway if either the command text
-				// changes or the command object is disposed.
-
-				if (r.Read()) {
-					fld = r.GetInt64(0);
-					if (!info._IsDeleted) {
-						goto UpdateFieldInfo;
-					} else {
-						goto DeleteFieldInfo;
-					}
+			if (!info._IsDeleted) {
+				fld = db.LoadStaleOrEnsureFieldId(fieldName);
+				goto UpdateFieldInfo;
+			} else {
+				fld = db.LoadStaleFieldId(fieldName);
+				if (fld != 0) {
+					goto DeleteFieldInfo;
 				} else {
-					if (!info._IsDeleted) {
-						goto InsertNewFieldName;
-					} else {
-						// Deletion requested, but there's nothing to delete, as
-						// the field is nonexistent.
-						continue;
-					}
+					// Deletion requested, but there's nothing to delete, as the
+					// field is nonexistent.
+					continue;
 				}
-
-				// TODO Cache field rowids and load from cache
-			}
-
-		InsertNewFieldName:
-			{
-				cmd.Reset("INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)");
-				cmdParams.Clear();
-				cmdParams.Add(new("$rowid", fld = Host.Context.NextFieldNameRowId()));
-				cmdParams.Add(new("$name", fieldName.Value));
-
-				int updated = cmd.ExecuteNonQuery(); // Shouldn't normally fail
-				Debug.Assert(updated == 1, $"Updated: {updated}");
 			}
 
 		UpdateFieldInfo:
@@ -648,9 +618,7 @@ public sealed class Class : DataEntity {
 
 				int deleted = cmd.ExecuteNonQuery();
 				// NOTE: It's possible for nothing to be deleted, for when the
-				// field doesn't exist in the first place yet we have it cached.
-				//
-				// TODO Cache field rowids and load from cache
+				// field info didn't exist in the first place.
 				Debug.Assert(deleted is 1 or 0);
 			}
 		}

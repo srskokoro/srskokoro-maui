@@ -231,6 +231,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 		}
 	}
@@ -239,6 +240,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 		}
@@ -248,6 +250,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 			InternalLoadField(db, fieldName3);
@@ -258,6 +261,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 			InternalLoadField(db, fieldName3);
@@ -269,6 +273,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 			InternalLoadField(db, fieldName3);
@@ -281,6 +286,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 			InternalLoadField(db, fieldName3);
@@ -294,6 +300,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 			InternalLoadField(db, fieldName3);
@@ -308,6 +315,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
+			db.ReloadFieldNameCaches();
 			InternalLoadField(db, fieldName1);
 			InternalLoadField(db, fieldName2);
 			InternalLoadField(db, fieldName3);
@@ -328,7 +336,7 @@ public sealed class Item : DataEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-
+			db.ReloadFieldNameCaches();
 			// TODO Unroll?
 			foreach (var fieldName in fieldNames)
 				InternalLoadField(db, fieldName);
@@ -340,28 +348,16 @@ public sealed class Item : DataEntity {
 		using var cmd = db.CreateCommand();
 		var cmdParams = cmd.Parameters;
 
-		long fld;
-		{
-			cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
-			cmdParams.Add(new("$name", name.Value));
-
-			using var r = cmd.ExecuteReader();
-			if (r.Read()) {
-				fld = r.GetInt64(0);
-			} else {
-				goto NotFound;
-			}
-			// TODO Cache and load from cache
-		}
+		long fld = db.LoadStaleFieldId(name);
+		if (fld == 0) goto NotFound;
 
 		int idx;
 		FieldStorageType sto;
 		{
-			cmd.Reset("""
+			cmd.Set("""
 				SELECT idx_sto FROM SchemaToField
 				WHERE schema=$schema AND fld=$fld
 				""");
-			cmdParams.Clear();
 
 			// NOTE: Requires a preloaded core state
 			cmdParams.Add(new("$schema", _SchemaRowId));
