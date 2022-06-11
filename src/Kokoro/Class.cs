@@ -41,7 +41,6 @@ public sealed class Class : DataEntity {
 		NotExists       = 1 << 31,
 	}
 
-	[StructLayout(LayoutKind.Auto)]
 	public struct FieldInfo {
 		internal bool _IsDeleted;
 
