@@ -136,7 +136,8 @@ partial class KokoroSqliteDb {
 				"INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)"
 			).AddParams(
 				new("$rowid", id = Context!.NextFieldNameRowId()),
-				new("$name", fieldName.Value));
+				new("$name", fieldName.Value)
+			);
 
 			try {
 				int updated = cmd.ExecuteNonQuery();
