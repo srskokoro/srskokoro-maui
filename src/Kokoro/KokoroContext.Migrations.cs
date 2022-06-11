@@ -152,7 +152,7 @@ partial class KokoroContext {
 			//
 			// The values for cold fields are initially stored in the parent
 			// `Item` table, under the `dat` column, alongside hot fields.
-			// However, when the `dat` column of an item row exceeds a certain
+			// However, if the `dat` column of an item row exceeds a certain
 			// size, the values for the cold fields are moved here.
 			//
 			// Under normal circumstances, this column is never empty, nor does
