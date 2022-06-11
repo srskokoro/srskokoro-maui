@@ -82,14 +82,27 @@ partial class KokoroSqliteDb {
 	}
 
 
-	[SkipLocalsInit]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long EnsureFieldId(StringKey fieldName) {
 		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
+		return QueryOrInsertFieldId(fieldName);
+	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public long LoadStaleOrEnsureFieldId(StringKey fieldName) {
+		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
+			return id;
+		}
+		return QueryOrInsertFieldId(fieldName);
+	}
+
+	[SkipLocalsInit]
+	private long QueryOrInsertFieldId(StringKey fieldName) {
 		using var tx = new NestingWriteTransaction(this);
 
+		long id;
 		using (var cmd = QueryForFieldId(fieldName)) {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
