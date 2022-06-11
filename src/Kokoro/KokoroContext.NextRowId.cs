@@ -53,7 +53,7 @@ partial class KokoroContext {
 		// moments. That should be deemed impossible due to resource limits, but
 		// who knows? Perhaps some high-tech futuristic civilization knows… :P
 		long nextRowId = Interlocked.Increment(ref nextRowIdFieldRef);
-		if (nextRowId < 0) {
+		if (nextRowId <= 0) {
 			Interlocked.Decrement(ref nextRowIdFieldRef);
 			E_Full_InvOp();
 		}
