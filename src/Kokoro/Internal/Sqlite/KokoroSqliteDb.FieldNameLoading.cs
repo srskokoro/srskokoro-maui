@@ -74,7 +74,7 @@ partial class KokoroSqliteDb {
 		var cmd = CreateCommand();
 		try {
 			cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
-			cmd.Params().Add(new("$name", fieldName.Value));
+			cmd.AddParams(new("$name", fieldName.Value));
 			return cmd;
 		} catch {
 			cmd.Dispose();
@@ -87,7 +87,7 @@ partial class KokoroSqliteDb {
 		var cmd = CreateCommand();
 		try {
 			cmd.Set("SELECT name FROM FieldName WHERE rowid=$rowid");
-			cmd.Params().Add(new("$rowid", fieldId));
+			cmd.AddParams(new("$rowid", fieldId));
 			return cmd;
 		} catch {
 			cmd.Dispose();
