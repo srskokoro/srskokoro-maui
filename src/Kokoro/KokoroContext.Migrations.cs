@@ -372,6 +372,8 @@ partial class KokoroContext {
 			// The field alias target.
 			"atarg INTEGER REFERENCES FieldName" + OnRowIdFk + "," +
 
+			// NOTE: Either `sto` or `atarg` is null, but not both, and neither
+			// can both be nonnull, i.e., this is an "exclusive or" logic.
 			"CHECK((sto ISNULL) IS NOT (atarg ISNULL))," +
 
 			"PRIMARY KEY(cls, fld)" +
