@@ -470,7 +470,7 @@ public sealed class Class : DataEntity {
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
 			cmdParams.Add(new("$ord", _Ordinal));
 			cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
-			cmdParams.Add(new("$name", (object?)_Name ?? DBNull.Value));
+			cmdParams.Add(new("$name", _Name.OrDBNull()));
 
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1, $"Updated: {updated}");
@@ -535,7 +535,7 @@ public sealed class Class : DataEntity {
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
-					cmdParams.Add(new("$name", (object?)_Name ?? DBNull.Value));
+					cmdParams.Add(new("$name", _Name.OrDBNull()));
 				}
 
 				Debug.Assert(cmdSb[^1] == ',', $"No changes to save: `{nameof(_State)} == {state}`");
