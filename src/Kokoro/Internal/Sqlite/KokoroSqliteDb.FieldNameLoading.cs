@@ -56,6 +56,7 @@ partial class KokoroSqliteDb {
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
 			long id = r.GetInt64(0);
+			Debug.Assert(id != 0, "Unexpected zero rowid.");
 			_FieldNameToIdCache.Put(fieldName, id);
 		}
 		return 0;
@@ -69,6 +70,7 @@ partial class KokoroSqliteDb {
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
+			Debug.Assert(fieldId != 0, "Unexpected zero rowid.");
 			StringKey name = new(r.GetString(0));
 			name = _FieldNameToIdCache.Normalize(name);
 			_FieldIdToNameCache.Put(fieldId, name);
@@ -78,22 +80,29 @@ partial class KokoroSqliteDb {
 	}
 
 
+	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long EnsureFieldId(StringKey fieldName) {
 		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
+		// NOTE: The following never returns zero.
 		return QueryOrInsertFieldId(fieldName);
 	}
 
+	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadStaleOrEnsureFieldId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
+			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
+		// NOTE: The following never returns zero.
 		return QueryOrInsertFieldId(fieldName);
 	}
 
+	/// <remarks>Never returns zero.</remarks>
 	[SkipLocalsInit]
 	private long QueryOrInsertFieldId(StringKey fieldName) {
 		using var tx = new NestingWriteTransaction(this);
@@ -111,6 +120,7 @@ partial class KokoroSqliteDb {
 			}
 		}
 
+		Debug.Assert(id != 0, "Unexpected zero rowid.");
 		_FieldNameToIdCache.Put(fieldName, id);
 		tx.DisposeNoInvalidate();
 		return id;
@@ -144,6 +154,7 @@ partial class KokoroSqliteDb {
 			}
 		}
 
+		Debug.Assert(id != 0, "Unexpected zero rowid.");
 		_FieldNameToIdCache.Put(fieldName, id);
 		tx.Commit();
 		return id;
