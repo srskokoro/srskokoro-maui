@@ -372,7 +372,7 @@ partial class KokoroContext {
 			// The field alias target.
 			"atarg INTEGER REFERENCES FieldName" + OnRowIdFk + "," +
 
-			"CHECK((sto NOTNULL AND atarg ISNULL) OR (sto ISNULL AND atarg NOTNULL))," +
+			"CHECK((sto ISNULL) IS NOT (atarg ISNULL))," +
 
 			"PRIMARY KEY(cls, fld)" +
 
