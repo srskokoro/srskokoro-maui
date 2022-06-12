@@ -469,8 +469,8 @@ public sealed class Class : DataEntity {
 			cmdParams.Add(new("$rowid", rowid));
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
 			cmdParams.Add(new("$ord", _Ordinal));
-			cmdParams.Add(new("$grp", RowIds.Box(_GrpRowId)));
-			cmdParams.Add(new("$name", _Name));
+			cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
+			cmdParams.Add(new("$name", (object?)_Name ?? DBNull.Value));
 
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1, $"Updated: {updated}");
@@ -531,11 +531,11 @@ public sealed class Class : DataEntity {
 				}
 				if ((state & StateFlags.Change_GrpRowId) != 0) {
 					cmdSb.Append("grp=$grp,");
-					cmdParams.Add(new("$grp", RowIds.Box(_GrpRowId)));
+					cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
-					cmdParams.Add(new("$name", _Name));
+					cmdParams.Add(new("$name", (object?)_Name ?? DBNull.Value));
 				}
 
 				Debug.Assert(cmdSb[^1] == ',', $"No changes to save: `{nameof(_State)} == {state}`");
@@ -621,9 +621,9 @@ public sealed class Class : DataEntity {
 				var aliasTarget = info.AliasTarget;
 				if (aliasTarget is null) {
 					cmd_sto.Value = info.StorageType;
-					cmd_atarg.Value = null;
+					cmd_atarg.Value = DBNull.Value;
 				} else {
-					cmd_sto.Value = null;
+					cmd_sto.Value = DBNull.Value;
 					cmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
 				}
 
