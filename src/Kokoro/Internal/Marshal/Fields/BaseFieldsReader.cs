@@ -133,7 +133,7 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 					Debug.Assert(sread == data.Length);
 				}
 
-				return new FieldVal(typeHint, data);
+				return new(typeHint, data);
 			} else {
 				return FieldVal.Null;
 			}
