@@ -135,7 +135,7 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 
 				return new FieldVal(typeHint, data);
 			} else {
-				return new FieldVal();
+				return FieldVal.Null;
 			}
 		} else {
 			return OnReadFieldValOutOfRange(index);
