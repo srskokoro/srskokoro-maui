@@ -35,7 +35,7 @@ internal readonly record struct LatentFieldVal {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public readonly void Deconstruct(out Stream Stream, out long Offset, out long Length) {
 		Stream = this.Stream;
-		Offset = this.Offset;
-		Length = this.Length;
+		Offset = _Offset;
+		Length = _Length;
 	}
 }
