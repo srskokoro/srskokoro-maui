@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 internal static class DisposeUtils {
 
 	public static ObjectDisposedException OdeFor<T>(in T obj) {
-		return Ode(Var.TypeOf(in obj));
+		return Ode(Types.TypeOf(in obj));
 	}
 
 	public static ObjectDisposedException Ode<T>() {

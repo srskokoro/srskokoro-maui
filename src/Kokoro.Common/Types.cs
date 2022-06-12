@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Common;
+using System;
 
-internal static class Var {
+internal static class Types {
 
 	/// <summary>
 	/// Gets the type of a variable or value without needing to box value types.

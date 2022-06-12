@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Common;
 
-public class Var_Facts : IRandomizedTest {
-	static Random Random => TestUtil.GetRandom<Var_Facts>();
+public class Types_Facts : IRandomizedTest {
+	static Random Random => TestUtil.GetRandom<Types_Facts>();
 
 	[TestFact]
 	[TLabel($"`[.](Guid)` returns `Guid` type object")]
@@ -9,7 +9,7 @@ public class Var_Facts : IRandomizedTest {
 		var guid = new Guid(Random.Init(stackalloc byte[16]));
 
 		Type expected = typeof(Guid);
-		Type returned = Var.TypeOf(Guid.Empty);
+		Type returned = Types.TypeOf(Guid.Empty);
 
 		Assert.Equal(expected, returned);
 	}
@@ -20,7 +20,7 @@ public class Var_Facts : IRandomizedTest {
 		int value = Random.Next();
 
 		Type expected = typeof(int);
-		Type returned = Var.TypeOf(value);
+		Type returned = Types.TypeOf(value);
 
 		Assert.Equal(expected, returned);
 	}
@@ -31,7 +31,7 @@ public class Var_Facts : IRandomizedTest {
 		string str = Random.MakeAsciiStr(0, 42);
 
 		Type expected = typeof(string);
-		Type returned = Var.TypeOf(str);
+		Type returned = Types.TypeOf(str);
 
 		Assert.Equal(expected, returned);
 	}
@@ -40,7 +40,7 @@ public class Var_Facts : IRandomizedTest {
 	[TLabel($"[m!] returns expected type object")]
 	[MemberData(nameof(T004_TypeOf__TheoryData), DisableDiscoveryEnumeration = true)]
 	public void T004_TypeOf(object value, Type expectedType) {
-		Assert.Equal(expectedType, Var.TypeOf(value));
+		Assert.Equal(expectedType, Types.TypeOf(value));
 	}
 
 	public static TheoryData<object?, Type> T004_TypeOf__TheoryData => new() {
