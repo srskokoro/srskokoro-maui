@@ -1,4 +1,5 @@
 ﻿namespace Kokoro;
+using Kokoro.Common.Util;
 
 public sealed class FieldVal {
 
@@ -31,5 +32,14 @@ public sealed class FieldVal {
 	public FieldVal(FieldTypeHint typeHint, byte[] data) {
 		_TypeHint = typeHint;
 		_Data = data;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public uint CountEncodeLength() {
+		Debug.Assert(typeof(FieldTypeHintInt) == typeof(uint));
+		// Given that we're returning a `uint`, the following computation is
+		// guaranteed to not overflow, since `Array.Length` is limited to
+		// `int.MaxValue` (which is ~2GiB).
+		return (uint)VarInts.Length((uint)_TypeHint) + (uint)_Data.Length;
 	}
 }
