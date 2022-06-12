@@ -120,7 +120,7 @@ partial class KokoroContext {
 			// The BLOB comprising the list of field data.
 			//
 			// The BLOB format is as follows, listed in order:
-			// 1. A 64-bit integer stored as a varint.
+			// 1. A 64-bit unsigned integer stored as a varint.
 			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
 			//   integers that will be defined in *point 2*; the remaining bits
