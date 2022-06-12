@@ -47,6 +47,8 @@ public sealed class Class : DataEntity {
 		private int _Ordinal;
 		private FieldStorageType _StorageType;
 
+		private StringKey? _AliasTarget;
+
 		public int Ordinal {
 			readonly get => _Ordinal;
 			set => _Ordinal = value;
@@ -55,6 +57,14 @@ public sealed class Class : DataEntity {
 		public FieldStorageType StorageType {
 			readonly get => _StorageType;
 			set => _StorageType = value;
+		}
+
+		/// <remarks>
+		/// If nonnull, <see cref="StorageType"/> can be any value.
+		/// </remarks>
+		public StringKey? AliasTarget {
+			readonly get => _AliasTarget;
+			set => _AliasTarget = value;
 		}
 	}
 
@@ -367,7 +377,7 @@ public sealed class Class : DataEntity {
 		// Load field info
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set("""
-				SELECT ord,sto FROM ClassToField
+				SELECT ord,ifnull(sto,0)AS sto,ifnull(atarg,0)AS atarg FROM ClassToField
 				WHERE cls=$cls AND fld=$fld
 				""");
 			var cmdParams = cmd.Parameters;
@@ -384,6 +394,10 @@ public sealed class Class : DataEntity {
 				r.DAssert_Name(1, "sto");
 				info.StorageType = (FieldStorageType)r.GetInt32(1);
 				info.StorageType.DAssert_Defined();
+
+				r.DAssert_Name(2, "atarg");
+				long atarg = r.GetInt64(2);
+				info.AliasTarget = atarg == 0 ? null : db.LoadStaleFieldName(atarg);
 
 				// Pending changes will be discarded
 				_FieldInfoChanges?.Remove(name);
@@ -592,16 +606,26 @@ public sealed class Class : DataEntity {
 		UpdateFieldInfo:
 			{
 				cmd.Reset("""
-					INSERT INTO ClassToField(cls,fld,ord,sto)
-					VALUES($cls,$fld,$ord,$sto)
+					INSERT INTO ClassToField(cls,fld,ord,sto,atarg)
+					VALUES($cls,$fld,$ord,$sto,$atarg)
 					ON CONFLICT DO UPDATE
-					SET ord=$ord,sto=$sto
+					SET ord=$ord,sto=$sto,atarg=$atarg
 					""");
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
 				cmdParams.Add(new("$ord", info.Ordinal));
-				cmdParams.Add(new("$sto", info.StorageType));
+				var cmd_sto = cmdParams.Add(new() { ParameterName = "$sto" });
+				var cmd_atarg = cmdParams.Add(new() { ParameterName = "$atarg" });
+
+				var aliasTarget = info.AliasTarget;
+				if (aliasTarget is null) {
+					cmd_sto.Value = info.StorageType;
+					cmd_atarg.Value = null;
+				} else {
+					cmd_sto.Value = null;
+					cmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
+				}
 
 				int updated = cmd.ExecuteNonQuery();
 				Debug.Assert(updated == 1, $"Updated: {updated}");

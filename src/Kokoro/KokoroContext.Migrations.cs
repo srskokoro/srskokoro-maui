@@ -227,29 +227,38 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
-			$"idx_sto INTEGER NOT NULL CHECK(idx_sto {BetweenInt32RangeGE0})," +
+			$"idx_a_sto INTEGER NOT NULL CHECK(idx_a_sto {BetweenInt32RangeGE0})," +
 
-			"idx_loc INTEGER NOT NULL AS ((idx_sto >> 1) | (idx_sto & 0x1))," +
+			"idx_loc INTEGER NOT NULL AS (idx << 1 | loc)," +
 
 			// The field index.
-			"idx INTEGER NOT NULL AS (idx_sto >> 2)," +
+			"idx INTEGER NOT NULL AS (idx_a_sto >> 3)," +
+
+			// The field alias type:
+			// - 0: Not an alias
+			// - 1: Is an alias
+			"a INTEGER NOT NULL AS ((idx_a_sto & 0x4) != 0)," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_sto & 0x3)," +
+			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_a_sto & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (sto != 0)," +
 
-			"PRIMARY KEY(schema, fld)," +
-
-			"UNIQUE(schema, idx_loc)" +
+			"PRIMARY KEY(schema, fld)" +
 
 		") WITHOUT ROWID");
+
+		db.Exec("CREATE UNIQUE INDEX [" +
+			"UK SchemaToField idx_loc WHERE a=0" +
+		"] ON " +
+			"SchemaToField(idx_loc) WHERE a=0" +
+		"");
 
 		// A classable's schema can also be thought of as an entity class set,
 		// in that no data can enter a schema unless defined by an entity class:
@@ -351,12 +360,19 @@ partial class KokoroContext {
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2)," +
+			// - NULL: Alias
+			"sto INTEGER CHECK(sto BETWEEN 0x0 AND 0x2)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
-			"loc INTEGER NOT NULL AS (sto != 0)," +
+			// - NULL: Alias
+			"loc INTEGER AS (sto != 0)," +
+
+			// The field alias target.
+			"atarg INTEGER REFERENCES FieldName" + OnRowIdFk + "," +
+
+			"CHECK((sto NOTNULL AND atarg ISNULL) OR (sto ISNULL AND atarg NOTNULL))," +
 
 			"PRIMARY KEY(cls, fld)" +
 

@@ -355,7 +355,7 @@ public sealed class Item : DataEntity {
 		FieldStorageType sto;
 		{
 			cmd.Set("""
-				SELECT idx_sto FROM SchemaToField
+				SELECT idx_a_sto FROM SchemaToField
 				WHERE schema=$schema AND fld=$fld
 				""");
 
@@ -365,13 +365,13 @@ public sealed class Item : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "idx_sto");
-				int idx_sto = r.GetInt32(0);
+				r.DAssert_Name(0, "idx_a_sto");
+				int idx_a_sto = r.GetInt32(0);
 
-				sto = (FieldStorageType)(idx_sto & 0b11);
+				sto = (FieldStorageType)(idx_a_sto & 0b11);
 				sto.DAssert_Defined();
 
-				idx = (int)((uint)idx_sto >> 2);
+				idx = (int)((uint)idx_a_sto >> 3);
 				Debug.Assert(idx >= 0);
 			} else {
 				goto NotFound;
