@@ -274,10 +274,8 @@ partial class KokoroContext {
 			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the entity class when the schema
-			// was created. Null if not available when the schema was created,
-			// even though it might now be available at the present moment --
-			// remember, a schema is a snapshot.
-			"csum BLOB," +
+			// was created.
+			"csum BLOB NOT NULL," +
 
 			"PRIMARY KEY(schema, cls)" +
 
@@ -301,10 +299,8 @@ partial class KokoroContext {
 			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the entity class when the schema
-			// was created. Null if not available when the schema was created,
-			// even though it might now be available at the present moment --
-			// remember, a schema is a snapshot.
-			"csum BLOB," +
+			// was created.
+			"csum BLOB NOT NULL," +
 
 			"PRIMARY KEY(schema, cls)" +
 
@@ -322,10 +318,8 @@ partial class KokoroContext {
 			// excludes the `rowid`, `grp`, `name`, and the contents of included
 			// entity classes (only the included entity class's `uid` is used).
 			//
-			// Null if the entity class is runtime-bound, i.e., the runtime is
-			// the one defining the entity class and the entity class definition
-			// is never persisted to disk or DB.
-			"csum BLOB," +
+			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
+			"csum BLOB NOT NULL," +
 
 			// The entity class ordinal.
 			Ord_Int32Nn + "," +
