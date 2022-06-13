@@ -1,7 +1,6 @@
 ﻿namespace Kokoro.Common.Blake2Fast.Extensions;
 using global::Blake2Fast.Implementation;
 using Kokoro.Common.Util;
-using System.Buffers.Binary;
 
 internal static partial class Blake2bHashStateExtensions {
 
