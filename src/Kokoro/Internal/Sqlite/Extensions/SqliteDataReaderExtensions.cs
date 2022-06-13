@@ -3,12 +3,6 @@ using Microsoft.Data.Sqlite;
 
 internal static class SqliteDataReaderExtensions {
 
-	[DoesNotReturn]
-	private static T E_CalledOnNullValue_InvOp<T>(int ordinal) {
-		// From, https://github.com/dotnet/efcore/blob/v6.0.3/src/Microsoft.Data.Sqlite.Core/Properties/Resources.resx#L193
-		throw new InvalidOperationException($"The data is NULL at ordinal {ordinal}. This method can't be called on NULL values. Check using IsDBNull before calling.");
-	}
-
 	public static UniqueId GetUniqueId(this SqliteDataReader reader, int ordinal)
 		=> new(reader.GetBytes(ordinal));
 
@@ -31,5 +25,11 @@ internal static class SqliteDataReaderExtensions {
 			return bytes;
 		}
 		return Array.Empty<byte>();
+	}
+
+	[DoesNotReturn]
+	private static T E_CalledOnNullValue_InvOp<T>(int ordinal) {
+		// From, https://github.com/dotnet/efcore/blob/v6.0.3/src/Microsoft.Data.Sqlite.Core/Properties/Resources.resx#L193
+		throw new InvalidOperationException($"The data is NULL at ordinal {ordinal}. This method can't be called on NULL values. Check using IsDBNull before calling.");
 	}
 }
