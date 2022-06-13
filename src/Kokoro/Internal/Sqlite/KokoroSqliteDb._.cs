@@ -44,11 +44,15 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
 	#endregion
 
-	public override void Open() {
-		Debug.Assert(!new SqliteConnectionStringBuilder(ConnectionString).Pooling,
+	[Conditional("DEBUG")]
+	private static void DAssert_ConnectionString(string connectionString) {
+		Debug.Assert(!new SqliteConnectionStringBuilder(connectionString).Pooling,
 			"We're supposedly doing our own pooling; thus, `Pooling` should be " +
 			"`False` in the connection string (yet it isn't).");
+	}
 
+	public override void Open() {
+		DAssert_ConnectionString(ConnectionString);
 		base.Open();
 
 		this.Exec("PRAGMA temp_store=FILE");
