@@ -50,6 +50,7 @@ partial class KokoroContext {
 		const string OnRowIdFk = " ON UPDATE CASCADE";
 		const string OnRowIdFkCascDel = " ON DELETE CASCADE" + " ON UPDATE CASCADE";
 		const string OnRowIdFkNullDel = " ON DELETE SET NULL" + " ON UPDATE CASCADE";
+		const string WithFkDfr = " DEFERRABLE INITIALLY DEFERRED";
 
 		// --
 
@@ -143,7 +144,7 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE ItemToColdField(" +
 
-			RowIdPk + " REFERENCES Item" + OnRowIdFkCascDel + "," +
+			RowIdPk + " REFERENCES Item" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			// The BLOB comprising the list of field offsets and field values
 			// for cold fields.
@@ -164,7 +165,7 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE ItemToFatField(" +
 
-			"item INTEGER NOT NULL REFERENCES Item" + OnRowIdFkCascDel + "," +
+			"item INTEGER NOT NULL REFERENCES Item" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
@@ -223,7 +224,7 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE SchemaToField(" +
 
-			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
@@ -269,7 +270,7 @@ partial class KokoroContext {
 		// This table lists those "explicitly" bound entity classes.
 		db.Exec("CREATE TABLE SchemaToDirectClass(" +
 
-			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
@@ -294,7 +295,7 @@ partial class KokoroContext {
 		// classes are needed to be copied.
 		db.Exec("CREATE TABLE SchemaToIndirectClass(" +
 
-			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + "," +
+			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
 
@@ -343,7 +344,7 @@ partial class KokoroContext {
 
 		db.Exec("CREATE TABLE ClassToField(" +
 
-			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
@@ -385,7 +386,7 @@ partial class KokoroContext {
 		db.Exec("CREATE TABLE ClassToInclude(" +
 
 			// The including entity class.
-			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + "," +
+			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + WithFkDfr + "," +
 
 			// The included entity class.
 			"incl INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
