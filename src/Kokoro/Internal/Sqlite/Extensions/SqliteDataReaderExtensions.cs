@@ -12,7 +12,7 @@ internal static class SqliteDataReaderExtensions {
 	public static UniqueId GetUniqueId(this SqliteDataReader reader, int ordinal)
 		=> new(reader.GetBytes(ordinal));
 
-	public static byte[]? GetBytes(this SqliteDataReader reader, int ordinal) {
+	public static byte[] GetBytes(this SqliteDataReader reader, int ordinal) {
 		if (reader.GetValue(ordinal) is byte[] bytes) {
 			return bytes;
 		}
