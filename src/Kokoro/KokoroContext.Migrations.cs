@@ -347,6 +347,14 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
+			// The cryptographic checksum of the field definition's primary
+			// data, which includes the `FieldName.Name` of this field and that
+			// of the `atarg`, but excludes the `rowid` columns (i.e., `cls`,
+			// `fld` and `atarg`).
+			//
+			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
+			"csum BLOB NOT NULL," +
+
 			// The field ordinal.
 			Ord_Int32Nn + "," +
 
