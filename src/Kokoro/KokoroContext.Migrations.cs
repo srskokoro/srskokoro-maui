@@ -255,7 +255,7 @@ partial class KokoroContext {
 		") WITHOUT ROWID");
 
 		db.Exec("CREATE UNIQUE INDEX [" +
-			"UK SchemaToField idx_loc WHERE a=0" +
+			"UK_SchemaToField_C_idx_loc WHERE a=0" +
 		"] ON " +
 			"SchemaToField(idx_loc) WHERE a=0" +
 		"");
