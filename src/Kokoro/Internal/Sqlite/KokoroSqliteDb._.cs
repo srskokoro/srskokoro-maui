@@ -46,9 +46,12 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
 	[Conditional("DEBUG")]
 	private static void DAssert_ConnectionString(string connectionString) {
-		Debug.Assert(!new SqliteConnectionStringBuilder(connectionString).Pooling,
+		SqliteConnectionStringBuilder csb = new(connectionString);
+		Debug.Assert(!csb.Pooling,
 			"We're supposedly doing our own pooling; thus, `Pooling` should " +
 			"be `False` in the connection string (yet it isn't).");
+		Debug.Assert(csb.RecursiveTriggers, "Should've enabled recursive " +
+			"triggers in the connection string (as it isn't).");
 	}
 
 	public override void Open() {
