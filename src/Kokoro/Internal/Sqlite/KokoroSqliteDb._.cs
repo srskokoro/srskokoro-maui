@@ -47,8 +47,8 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	[Conditional("DEBUG")]
 	private static void DAssert_ConnectionString(string connectionString) {
 		Debug.Assert(!new SqliteConnectionStringBuilder(connectionString).Pooling,
-			"We're supposedly doing our own pooling; thus, `Pooling` should be " +
-			"`False` in the connection string (yet it isn't).");
+			"We're supposedly doing our own pooling; thus, `Pooling` should " +
+			"be `False` in the connection string (yet it isn't).");
 	}
 
 	public override void Open() {
