@@ -11,6 +11,8 @@ internal static class Bytes {
 		return *(bool*)&copy;
 	}
 
+	// --
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeeded(this uint value) {
 		// Reference: https://stackoverflow.com/a/2274675
@@ -49,5 +51,41 @@ internal static class Bytes {
 		//
 		// TODO Benchmark!
 		return x | (int)((uint)(x-1) >> 63);
+	}
+
+	// --
+
+	/// <returns>
+	/// <see cref="CountBytesNeeded(uint)"/> - 1
+	/// </returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CountBytesNeededM1(this uint value) {
+		return (32 - 1 - BitOperations.LeadingZeroCount(value)) >> 3;
+	}
+
+	/// <returns>
+	/// <see cref="CountBytesNeeded(ulong)"/> - 1
+	/// </returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CountBytesNeededM1(this ulong value) {
+		return (64 - 1 - BitOperations.LeadingZeroCount(value)) >> 3;
+	}
+
+	/// <returns>
+	/// <see cref="CountBytesNeededOr1(uint)"/> - 1
+	/// </returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CountBytesNeededM1Or0(this uint value) {
+		int x = value.CountBytesNeededM1();
+		return x ^ (x >> 31);
+	}
+
+	/// <returns>
+	/// <see cref="CountBytesNeededOr1(ulong)"/> - 1
+	/// </returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CountBytesNeededM1Or0(this ulong value) {
+		int x = value.CountBytesNeededM1();
+		return x ^ (x >> 63);
 	}
 }
