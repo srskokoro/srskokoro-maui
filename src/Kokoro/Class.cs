@@ -12,6 +12,8 @@ public sealed class Class : DataEntity {
 	private long _RowId;
 
 	private UniqueId _Uid;
+	private byte[]? _CachedCsum;
+
 	private int _Ordinal;
 	private long _GrpRowId;
 	private string? _Name;
@@ -89,6 +91,11 @@ public sealed class Class : DataEntity {
 	}
 
 	public void SetCachedUid(UniqueId uid) => _Uid = uid;
+
+	public byte[]? CachedCsum => _CachedCsum;
+
+	public void SetCachedCsum(byte[]? csum) => _CachedCsum = csum;
+
 
 	public int Ordinal {
 		get => _Ordinal;
@@ -208,7 +215,7 @@ public sealed class Class : DataEntity {
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.Cmd("""
-			SELECT uid,ord,ifnull(grp,0)AS grp,name FROM Class
+			SELECT uid,csum,ord,ifnull(grp,0)AS grp,name FROM Class
 			WHERE rowid=$rowid
 			""");
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -221,14 +228,17 @@ public sealed class Class : DataEntity {
 			r.DAssert_Name(0, "uid");
 			_Uid = r.GetUniqueId(0);
 
-			r.DAssert_Name(1, "ord");
-			_Ordinal = r.GetInt32(1);
+			r.DAssert_Name(1, "csum");
+			_CachedCsum = r.GetBytesOrNull(1);
 
-			r.DAssert_Name(2, "grp");
-			_GrpRowId = r.GetInt64(2);
+			r.DAssert_Name(2, "ord");
+			_Ordinal = r.GetInt32(2);
 
-			r.DAssert_Name(3, "name");
-			_Name = r.GetString(3);
+			r.DAssert_Name(3, "grp");
+			_GrpRowId = r.GetInt64(3);
+
+			r.DAssert_Name(4, "name");
+			_Name = r.GetString(4);
 
 			return; // Early exit
 		}
