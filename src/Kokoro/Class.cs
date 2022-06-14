@@ -664,23 +664,20 @@ public sealed class Class : DataEntity {
 			int updated = cmd.ExecuteNonQuery();
 			if (updated != 0) {
 				Debug.Assert(updated == 1, $"Updated: {updated}");
-				goto Finalize;
+				// COMMIT (or RELEASE) should be guaranteed to not fail at this
+				// point if there's at least one operation that started a write.
+				// - See, https://www.sqlite.org/rescode.html#busy
+				tx.Commit();
 			} else {
 				goto Missing;
 			}
 
-		Finalize:
 			// Clear pending changes (as they're now saved) and set new `csum`
 			{
 				_FieldInfoChanges?.Clear();
 				_State = StateFlags.NoChanges;
 				_CachedCsum = csum;
 			}
-
-			// COMMIT (or RELEASE) should be guaranteed to not fail at this
-			// point if there's at least one operation that started a write.
-			// - See, https://www.sqlite.org/rescode.html#busy
-			tx.Commit();
 		}
 
 	Success:
