@@ -528,11 +528,11 @@ public sealed class Class : DataEntity {
 			// - See, https://www.sqlite.org/rescode.html#busy
 			tx.Commit();
 
-			// Clear pending changes (as they're now saved) and set new `csum`
+			// Set new `csum` and clear pending changes (as they're now saved)
 			{
-				_FieldInfoChanges?.Clear();
-				_State = StateFlags.NoChanges;
 				_CachedCsum = csum;
+				_State = StateFlags.NoChanges;
+				_FieldInfoChanges?.Clear();
 			}
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
@@ -671,11 +671,11 @@ public sealed class Class : DataEntity {
 				goto Missing;
 			}
 
-			// Clear pending changes (as they're now saved) and set new `csum`
+			// Set new `csum` and clear pending changes (as they're now saved)
 			{
-				_FieldInfoChanges?.Clear();
-				_State = StateFlags.NoChanges;
 				_CachedCsum = csum;
+				_State = StateFlags.NoChanges;
+				_FieldInfoChanges?.Clear();
 			}
 		}
 
