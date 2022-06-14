@@ -481,7 +481,7 @@ public sealed class Class : DataEntity {
 				if (changes != null) {
 					InternalSaveFieldInfos(db, changes, rowid);
 
-					changes.Clear(); // Changes saved successfully
+					changes.Clear(); // Pending changes are now saved
 				}
 			}
 
@@ -557,7 +557,7 @@ public sealed class Class : DataEntity {
 				if (changes != null) {
 					InternalSaveFieldInfos(db, changes, _RowId);
 
-					changes.Clear(); // Changes saved successfully
+					changes.Clear(); // Pending changes are now saved
 				}
 			}
 
