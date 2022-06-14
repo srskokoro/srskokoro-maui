@@ -107,4 +107,12 @@ static partial class Blake2bHashStateExtensions {
 			state.Update(input);
 		}
 	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void UpdateWithLELength(ref this Blake2bHashState state, ReadOnlySpan<byte> input) {
+		state.UpdateLE(input.Length);
+		state.Update(input);
+	}
 }
