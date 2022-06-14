@@ -217,10 +217,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			this = U.As<byte, UniqueId>(ref MemoryMarshal.GetReference(bytes));
 		} else {
 			UniqueId uid = default;
-			if (0 <= bytes.Length) {
-				// ^ See, https://github.com/dotnet/runtime/issues/10950
-				bytes.CopyTo(MemoryMarshal.CreateSpan(ref UnsafeElementRef<UniqueId, byte>(in uid, _Size - bytes.Length), bytes.Length));
-			}
+			bytes.CopyTo(MemoryMarshal.CreateSpan(ref UnsafeElementRef<UniqueId, byte>(in uid, _Size - bytes.Length), bytes.Length));
 			this = uid;
 		}
 	}
