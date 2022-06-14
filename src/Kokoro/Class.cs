@@ -523,18 +523,17 @@ public sealed class Class : DataEntity {
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1, $"Updated: {updated}");
 
+			// COMMIT (or RELEASE) should be guaranteed to not fail at this
+			// point if there's at least one operation that started a write.
+			// - See, https://www.sqlite.org/rescode.html#busy
+			tx.Commit();
+
 			// Clear pending changes (as they're now saved) and set new `csum`
 			{
 				_FieldInfoChanges?.Clear();
 				_State = StateFlags.NoChanges;
 				_CachedCsum = csum;
 			}
-
-			// COMMIT (or RELEASE) should be guaranteed to not fail at this
-			// point if there's at least one operation that started a write.
-			// - See, https://www.sqlite.org/rescode.html#busy
-			tx.Commit();
-
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
