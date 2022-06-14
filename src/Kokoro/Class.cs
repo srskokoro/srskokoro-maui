@@ -550,11 +550,8 @@ public sealed class Class : DataEntity {
 	public void SaveChanges() {
 		var state = _State;
 		if (state < 0) goto Missing;
-
-		if (state == StateFlags.NoChanges) {
-			if (_FieldInfoChanges == null) {
-				goto Success;
-			}
+		if (state == StateFlags.NoChanges && _FieldInfoChanges == null) {
+			goto Success;
 		}
 
 		var db = Host.Db; // Throws if host is already disposed
