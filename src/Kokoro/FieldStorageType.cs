@@ -1,6 +1,8 @@
-﻿namespace Kokoro;
+﻿global using FieldStorageTypeInt = System.Int32;
 
-public enum FieldStorageType : int {
+namespace Kokoro;
+
+public enum FieldStorageType : FieldStorageTypeInt {
 	Shared = 0,
 	Hot    = 1,
 	Cold   = 2,
