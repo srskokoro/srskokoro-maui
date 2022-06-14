@@ -851,7 +851,7 @@ public sealed class Class : DataEntity {
 	private const int ClassCsumDigestLength = 31; // 248-bit hash
 
 	private static byte[] FinishWithClassCsum(ref Blake2bHashState hasher) {
-		const int CsumVer = 0; // The version varint
+		const int CsumVer = 1; // The version varint
 		const int CsumVerLen = 1; // The varint length is a single byte for now
 		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLen);
 
@@ -864,7 +864,7 @@ public sealed class Class : DataEntity {
 	private const int FieldInfoCsumDigestLength = 31; // 248-bit hash
 
 	private static byte[] FinishWithFieldInfoCsum(ref Blake2bHashState hasher) {
-		const int CsumVer = 0; // The version varint
+		const int CsumVer = 1; // The version varint
 		const int CsumVerLen = 1; // The varint length is a single byte for now
 		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLen);
 
