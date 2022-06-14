@@ -1,4 +1,8 @@
 ﻿namespace Kokoro;
+using Blake2Fast;
+using Blake2Fast.Implementation;
+using Kokoro.Common.IO;
+using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
@@ -469,33 +473,62 @@ public sealed class Class : DataEntity {
 
 		try {
 			using var tx = new NestingWriteTransaction(db);
+			// --
+			// Save field infos
+			{
+				var fieldChanges = _FieldInfoChanges;
+				if (fieldChanges != null)
+					InternalSaveFieldInfos(db, fieldChanges, _RowId);
+			}
+
+			// --
+			// Save core state
+
 			using var cmd = db.Cmd(
 				"INSERT INTO Class" +
-				"(rowid,uid,ord,grp,name)" +
+				"(rowid,uid,csum,ord,grp,name)" +
 				" VALUES" +
-				"($rowid,$uid,$ord,$grp,$name)");
+				$"($rowid,$uid,$csum,$ord,$grp,$name)");
 
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$rowid", rowid));
+
+			var hasher = Blake2b.CreateIncrementalHasher(ClassCsumDigestLength);
+			/// WARNING: The expected order of inputs to be fed to the above
+			/// hasher has a strict format, which must be kept in sync with
+			/// <see cref="SaveChanges"/> method (see that method to see the
+			/// expected input format).
+			int hasher_debug_i = 0; // Used only to help assert the above
+
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
+			hasher.Update(uid.Span);
+			Debug.Assert(0 == hasher_debug_i++);
+
 			cmdParams.Add(new("$ord", _Ordinal));
+			hasher.UpdateLE(_Ordinal);
+			Debug.Assert(1 == hasher_debug_i++);
+
 			cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
 			cmdParams.Add(new("$name", _Name.OrDBNull()));
+
+			HashWithFieldInfos(db, rowid, ref hasher);
+			Debug.Assert(2 == hasher_debug_i++);
+
+			HashWithClassIncludes(db, rowid, ref hasher);
+			Debug.Assert(3 == hasher_debug_i++);
+
+			byte[] csum = FinishWithClassCsum(ref hasher);
+			cmdParams.Add(new("$csum", csum));
 
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1, $"Updated: {updated}");
 
-			// Save field infos
+			// Clear pending changes (as they're now saved) and set new `csum`
 			{
-				var changes = _FieldInfoChanges;
-				if (changes != null) {
-					InternalSaveFieldInfos(db, changes, rowid);
-
-					changes.Clear(); // Pending changes are now saved
-				}
+				_FieldInfoChanges?.Clear();
+				_State = StateFlags.NoChanges;
+				_CachedCsum = csum;
 			}
-
-			_State = StateFlags.NoChanges; // Pending changes are now saved
 
 			// COMMIT (or RELEASE) should be guaranteed to not fail at this
 			// point if there's at least one operation that started a write.
@@ -519,26 +552,91 @@ public sealed class Class : DataEntity {
 		var state = _State;
 		if (state < 0) goto Missing;
 
+		if (state == StateFlags.NoChanges) {
+			if (_FieldInfoChanges == null) {
+				goto Success;
+			}
+		}
+
 		var db = Host.Db; // Throws if host is already disposed
 		using (var tx = new NestingWriteTransaction(db)) {
+			// --
+			// Save field infos
+			{
+				var fieldChanges = _FieldInfoChanges;
+				if (fieldChanges != null)
+					InternalSaveFieldInfos(db, fieldChanges, _RowId);
+			}
+
+			// --
+			// Save core state
+
 			using var cmd = db.CreateCommand();
 			var cmdParams = cmd.Parameters;
+			cmdParams.Add(new("$rowid", _RowId));
 
-			// Save core state
+			StringBuilder cmdSb = new();
+			cmdSb.Append("UPDATE Class SET\n");
+
+			var hasher = Blake2b.CreateIncrementalHasher(ClassCsumDigestLength);
+			// WARNING: The expected order of inputs to be fed to the above
+			// hasher must be strictly as follows:
+			//
+			// 0. `uid`
+			// 1. `ord`
+			// 2. The 512-bit hash of, the list of `csum` data from `ClassToField`,
+			// ordered by `ClassToField.ord,FieldName.name`
+			// 3. The 512-bit hash of, the list of `uid` data from `Class ON Class.rowid=ClassToInclude.incl`,
+			// ordered by `Class.uid`
+			//
+			// The resulting hash BLOB shall be prepended with a version varint.
+			// Should any of the following happens, the version varint must
+			// change:
+			//
+			// - The resulting hash BLOB length changes.
+			// - The algorithm for the resulting hash BLOB changes.
+			// - An input entry (from the list of inputs above) was removed.
+			// - The order of an input entry (from the list of inputs above) was
+			// changed or shifted.
+			//
+			// The version varint needs not to change if further input entries
+			// were to be appended (from the list of inputs above).
+			//
+			int hasher_debug_i = 0; // Used only to help assert the above
+
+			// TODO Avoid creating this when it won't be used at all
+			using var cmd_old = db.Cmd("""
+					SELECT uid,ord FROM Class
+					WHERE rowid=$rowid
+					""");
+			cmd_old.Parameters.Add(new("$rowid", _RowId));
+			using var r = cmd_old.ExecuteReader();
+			if (!r.Read()) goto Missing;
+
+			if ((state & StateFlags.Change_Uid) == 0) {
+				r.DAssert_Name(0, "uid");
+				hasher.Update(r.GetUniqueId(0).Span);
+				Debug.Assert(0 == hasher_debug_i++);
+			} else {
+				cmdSb.Append("uid=$uid,");
+				cmdParams.Add(new("$uid", _Uid.ToByteArray()));
+				hasher.Update(_Uid.Span);
+				Debug.Assert(0 == hasher_debug_i++);
+			}
+
+			if ((state & StateFlags.Change_Ordinal) == 0) {
+				r.DAssert_Name(1, "ord");
+				Debug.Assert(Types.TypeOf(_Ordinal) == typeof(int));
+				hasher.UpdateLE(r.GetInt32(1));
+				Debug.Assert(1 == hasher_debug_i++);
+			} else {
+				cmdSb.Append("ord=$ord,");
+				cmdParams.Add(new("$ord", _Ordinal));
+				hasher.UpdateLE(_Ordinal);
+				Debug.Assert(1 == hasher_debug_i++);
+			}
+
 			if (state != StateFlags.NoChanges) {
-				cmdParams.Add(new("$rowid", _RowId));
-
-				StringBuilder cmdSb = new();
-				cmdSb.Append("UPDATE Class SET\n");
-
-				if ((state & StateFlags.Change_Uid) != 0) {
-					cmdSb.Append("uid=$uid,");
-					cmdParams.Add(new("$uid", _Uid.ToByteArray()));
-				}
-				if ((state & StateFlags.Change_Ordinal) != 0) {
-					cmdSb.Append("ord=$ord,");
-					cmdParams.Add(new("$ord", _Ordinal));
-				}
 				if ((state & StateFlags.Change_GrpRowId) != 0) {
 					cmdSb.Append("grp=$grp,");
 					cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
@@ -547,31 +645,37 @@ public sealed class Class : DataEntity {
 					cmdSb.Append("name=$name,");
 					cmdParams.Add(new("$name", _Name.OrDBNull()));
 				}
-
-				Debug.Assert(cmdSb[^1] == ',', $"No changes to save: `{nameof(_State)} == {state}`");
-				cmdSb.Remove(cmdSb.Length - 1, 1); // Remove final comma
-
-				cmdSb.Append("\nWHERE rowid=$rowid");
-				cmd.CommandText = cmdSb.ToString();
-
-				int updated = cmd.ExecuteNonQuery();
-				if (updated != 0) {
-					Debug.Assert(updated == 1, $"Updated: {updated}");
-				} else
-					goto Missing;
 			}
 
-			// Save field infos
+			HashWithFieldInfos(db, _RowId, ref hasher);
+			Debug.Assert(2 == hasher_debug_i++);
+
+			HashWithClassIncludes(db, _RowId, ref hasher);
+			Debug.Assert(3 == hasher_debug_i++);
+
+			byte[] csum = FinishWithClassCsum(ref hasher);
+			cmdParams.Add(new("$csum", csum));
+
+			const string CmdSbEnd = "csum=$csum WHERE rowid=$rowid";
+			cmdSb.Append(CmdSbEnd);
+
+			cmd.CommandText = cmdSb.ToString();
+
+			int updated = cmd.ExecuteNonQuery();
+			if (updated != 0) {
+				Debug.Assert(updated == 1, $"Updated: {updated}");
+				goto Finalize;
+			} else {
+				goto Missing;
+			}
+
+		Finalize:
+			// Clear pending changes (as they're now saved) and set new `csum`
 			{
-				var changes = _FieldInfoChanges;
-				if (changes != null) {
-					InternalSaveFieldInfos(db, changes, _RowId);
-
-					changes.Clear(); // Pending changes are now saved
-				}
+				_FieldInfoChanges?.Clear();
+				_State = StateFlags.NoChanges;
+				_CachedCsum = csum;
 			}
-
-			_State = StateFlags.NoChanges; // Pending changes are now saved
 
 			// COMMIT (or RELEASE) should be guaranteed to not fail at this
 			// point if there's at least one operation that started a write.
@@ -579,7 +683,7 @@ public sealed class Class : DataEntity {
 			tx.Commit();
 		}
 
-		// Success!
+	Success:
 		return;
 
 	Missing:
@@ -588,6 +692,52 @@ public sealed class Class : DataEntity {
 		[DoesNotReturn]
 		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
 			$"Cannot update `{nameof(Class)}` with rowid {rowid} as it's missing.");
+	}
+
+	private static void HashWithFieldInfos(KokoroSqliteDb db, long clsRowId, ref Blake2bHashState hasher) {
+		const int hasher_flds_dlen = 64; // 512-bit hash
+		var hasher_flds = Blake2b.CreateIncrementalHasher(hasher_flds_dlen);
+
+		using var cmd = db.Cmd("""
+			SELECT cls2fld.csum AS csum FROM ClassToField AS cls2fld,FieldName AS fld
+			WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld
+			ORDER BY cls2fld.ord,fld.name
+			""");
+		var cmdParams = cmd.Parameters;
+		cmdParams.Add(new("$cls", clsRowId));
+
+		using var r = cmd.ExecuteReader();
+		while (r.Read()) {
+			r.DAssert_Name(0, "csum");
+			// Will be empty span on null (i.e., won't throw NRE)
+			var csum = (ReadOnlySpan<byte>)r.GetBytesOrNull(0);
+			Debug.Assert(csum.Length > 0, $"Unexpected: field info has no `csum` (under class rowid {clsRowId})");
+			hasher_flds.Update(csum);
+		}
+
+		hasher.Update(hasher_flds.FinishAndGet(stackalloc byte[hasher_flds_dlen]));
+	}
+
+	private static void HashWithClassIncludes(KokoroSqliteDb db, long clsRowId, ref Blake2bHashState hasher) {
+		const int hasher_incls_dlen = 64; // 512-bit hash
+		var hasher_incls = Blake2b.CreateIncrementalHasher(hasher_incls_dlen);
+
+		using var cmd = db.Cmd("""
+			SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls
+			WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl
+			ORDER BY uid
+			""");
+		var cmdParams = cmd.Parameters;
+		cmdParams.Add(new("$cls", clsRowId));
+
+		using var r = cmd.ExecuteReader();
+		while (r.Read()) {
+			r.DAssert_Name(0, "uid");
+			UniqueId uid = r.GetUniqueId(0);
+			hasher_incls.Update(uid.Span);
+		}
+
+		hasher.Update(hasher_incls.FinishAndGet(stackalloc byte[hasher_incls_dlen]));
 	}
 
 	[SkipLocalsInit]
@@ -615,27 +765,73 @@ public sealed class Class : DataEntity {
 
 		UpdateFieldInfo:
 			{
+				var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
+				// WARNING: The expected order of inputs to be fed to the above
+				// hasher must be strictly as follows:
+				//
+				// 0. `fieldName` in UTF8 with length prepended
+				// 1. `info.Ordinal`
+				// 2. `info.StorageType`
+				// 3. `info.AliasTarget` in UTF8 with length prepended
+				//
+				// The resulting hash BLOB shall be prepended with a version
+				// varint. Should any of the following happens, the version
+				// varint must change:
+				//
+				// - The resulting hash BLOB length changes.
+				// - The algorithm for the resulting hash BLOB changes.
+				// - An input entry (from the list of inputs above) was removed.
+				// - The order of an input entry (from the list of inputs above)
+				// was changed or shifted.
+				//
+				// The version varint needs not to change if further input
+				// entries were to be appended (from the list of inputs above).
+				//
+				int hasher_fld_debug_i = 0; // Used only to help assert the above
+
+				hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
+				Debug.Assert(0 == hasher_fld_debug_i++);
+
 				cmd.Reset("""
-					INSERT INTO ClassToField(cls,fld,ord,sto,atarg)
-					VALUES($cls,$fld,$ord,$sto,$atarg)
+					INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)
+					VALUES($cls,$fld,$csum,$ord,$sto,$atarg)
 					ON CONFLICT DO UPDATE
-					SET ord=$ord,sto=$sto,atarg=$atarg
+					SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg
 					""");
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
+
 				cmdParams.Add(new("$ord", info.Ordinal));
+				hasher_fld.UpdateLE(info.Ordinal);
+				Debug.Assert(1 == hasher_fld_debug_i++);
+
 				var cmd_sto = cmdParams.Add(new() { ParameterName = "$sto" });
 				var cmd_atarg = cmdParams.Add(new() { ParameterName = "$atarg" });
 
 				var aliasTarget = info.AliasTarget;
 				if (aliasTarget is null) {
 					cmd_sto.Value = info.StorageType;
+					Debug.Assert(typeof(FieldStorageTypeInt) == typeof(int));
+					hasher_fld.UpdateLE((int)info.StorageType);
+					Debug.Assert(2 == hasher_fld_debug_i++);
+
 					cmd_atarg.Value = DBNull.Value;
+					hasher_fld.UpdateLE(0); // Zero-length
+					Debug.Assert(3 == hasher_fld_debug_i++);
 				} else {
 					cmd_sto.Value = DBNull.Value;
+					Debug.Assert(typeof(FieldStorageTypeInt) == typeof(int));
+					hasher_fld.UpdateLE((int)default(FieldStorageType));
+					Debug.Assert(2 == hasher_fld_debug_i++);
+
 					cmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
+					hasher_fld.UpdateWithLELength(aliasTarget.Value.ToUTF8Bytes());
+					Debug.Assert(3 == hasher_fld_debug_i++);
 				}
+
+				byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
+				cmdParams.Add(new("$csum", csum));
 
 				int updated = cmd.ExecuteNonQuery();
 				Debug.Assert(updated == 1, $"Updated: {updated}");
@@ -659,6 +855,33 @@ public sealed class Class : DataEntity {
 		// Loop end
 	}
 
+	private const int ClassCsumDigestLength = 31; // 248-bit hash
+
+	private static byte[] FinishWithClassCsum(ref Blake2bHashState hasher) {
+		const int CsumVer = 0; // The version varint
+		const int CsumVerLen = 1; // The varint length is a single byte for now
+		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLen);
+
+		Span<byte> csum = stackalloc byte[CsumVerLen + ClassCsumDigestLength];
+		csum[0] = CsumVer; // Prepend version varint
+		hasher.Finish(csum[CsumVerLen..]);
+		return csum.ToArray();
+	}
+
+	private const int FieldInfoCsumDigestLength = 31; // 248-bit hash
+
+	private static byte[] FinishWithFieldInfoCsum(ref Blake2bHashState hasher) {
+		const int CsumVer = 0; // The version varint
+		const int CsumVerLen = 1; // The varint length is a single byte for now
+		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLen);
+
+		Span<byte> csum = stackalloc byte[CsumVerLen + FieldInfoCsumDigestLength];
+		csum[0] = CsumVer; // Prepend version varint
+		hasher.Finish(csum[CsumVerLen..]);
+		return csum.ToArray();
+	}
+
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void RenewRowId(KokoroCollection host, long oldRowId)
