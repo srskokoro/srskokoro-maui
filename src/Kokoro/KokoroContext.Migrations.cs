@@ -79,7 +79,8 @@ partial class KokoroContext {
 		// also referred to as entity classes.
 		//
 		// An item is also said to be a type of fielded entity due to its
-		// ability have fields.
+		// ability have fields, with the latter also referred to as entity
+		// fields.
 		db.Exec("CREATE TABLE Item(" +
 
 			RowIdPk + "," +
