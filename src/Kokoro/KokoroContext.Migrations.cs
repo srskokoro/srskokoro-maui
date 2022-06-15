@@ -116,7 +116,7 @@ partial class KokoroContext {
 			// (so as to have a separate sync conflict handling for it), place
 			// the fields in a subrecord instead.
 			// TODO-XXX Implement subrecord mechanics
-			"dat_modst INTEGER NOT NULL," +
+			"data_modst INTEGER NOT NULL," +
 
 			// The BLOB comprising the list of field data.
 			//
@@ -138,7 +138,7 @@ partial class KokoroContext {
 			//   can be computed. Otherwise, the length cannot be computed and
 			//   the preceding field will be assumed as having a length of zero.
 			// 3. The list of field values -- the bytes simply concatenated.
-			"dat BLOB NOT NULL" +
+			"data BLOB NOT NULL" +
 
 		")");
 
@@ -149,17 +149,17 @@ partial class KokoroContext {
 			// The BLOB comprising the list of field offsets and field values
 			// for cold fields.
 			//
-			// The BLOB format is similar to the `Item.dat` column.
+			// The BLOB format is similar to the `Item.data` column.
 			//
 			// The values for cold fields are initially stored in the parent
-			// `Item` table, under the `dat` column, alongside hot fields.
-			// However, if the `dat` column of an item row exceeds a certain
+			// `Item` table, under the `data` column, alongside hot fields.
+			// However, if the `data` column of an item row exceeds a certain
 			// size, the values for the cold fields are moved here.
 			//
 			// Under normal circumstances, this column is never empty, nor does
 			// it contain an empty list of field offsets; nonetheless, field
 			// values can still be empty as they can be zero-length BLOBs.
-			"dat BLOB NOT NULL" +
+			"data BLOB NOT NULL" +
 
 		")");
 
@@ -217,8 +217,8 @@ partial class KokoroContext {
 			// The BLOB comprising the list of field offsets and field values
 			// for shared fields.
 			//
-			// The BLOB format is similar to the `Item.dat` column.
-			"dat BLOB NOT NULL" +
+			// The BLOB format is similar to the `Item.data` column.
+			"data BLOB NOT NULL" +
 
 		")");
 
