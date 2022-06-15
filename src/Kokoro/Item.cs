@@ -365,12 +365,12 @@ public sealed class Item : FieldedEntity {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				r.DAssert_Name(0, "idx_a_sto");
-				int idx_a_sto = r.GetInt32(0);
+				FieldSpec fspec = r.GetInt32(0);
 
-				sto = (FieldStorageType)(idx_a_sto & 0b11);
+				sto = fspec.StoType;
 				sto.DAssert_Defined();
 
-				idx = (int)((uint)idx_a_sto >> 3);
+				idx = fspec.Index;
 				Debug.Assert(idx >= 0);
 			} else {
 				goto NotFound;
