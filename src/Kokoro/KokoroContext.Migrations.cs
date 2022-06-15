@@ -75,11 +75,11 @@ partial class KokoroContext {
 		")");
 
 		// An item, a node in a tree-like structure that can have fields, with
-		// with its fields described by one or more classes.
+		// with its fields described by one or more classes, with the latter
+		// also referred to as entity classes.
 		//
-		// An item is also said to be a type of classable entity due to its
-		// ability be assigned classes, with the latter also referred to as
-		// entity classes.
+		// An item is also said to be a type of fielded entity due to its
+		// ability have fields.
 		db.Exec("CREATE TABLE Item(" +
 
 			RowIdPk + "," +
@@ -101,7 +101,7 @@ partial class KokoroContext {
 			"ord_modst INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
-			// more other items or classable enities.
+			// more other items or fielded enities.
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFk + "," +
 
 			// A modstamp, a number of milliseconds since Unix epoch, when the
@@ -176,20 +176,21 @@ partial class KokoroContext {
 
 		")"); // TODO Consider `WITHOUT ROWID` optimization?"
 
-		// A classable's schema: an immutable data structure meant to describe a
-		// compilation or compiled combination of zero or more entity classes.
-		//
-		// While an entity class describes a classable entity's fields, a schema
-		// is a compilation of that description, with the schema meant to
-		// describe the "precise" layout of the fields in data storage.
-		//
-		// A schema is also a frozen snapshot of the various classes used to
-		// form it. Classes may be altered freely at any time, but a schema
-		// ensures that those alterations doesn't affect how an entity's fields
-		// are laid out or accessed, unless the classable entity is updated to
-		// use the newer state of its entity classes.
+		// A fielded entity's schema: an immutable data structure meant to
+		// define how and where field data are stored.
 		//
 		// A schema may also be referred to as an entity schema.
+		//
+		// While an entity class describes a fielded entity's fields, a schema
+		// is a compilation of that description, with the schema meant to
+		// describe the "precise" layout and location of the fields in storage.
+		//
+		// A schema is also a compilation or compiled combination of zero or
+		// more entity classes. That is, a schema is a frozen snapshot of the
+		// various entity classes used to form it. Classes may be altered freely
+		// at any time, but a schema ensures that those alterations doesn't
+		// affect how an entity's fields are laid out or accessed, unless the
+		// fielded entity is updated to use the newer state of its classes.
 		db.Exec("CREATE TABLE Schema(" +
 
 			RowIdPk + "," +
@@ -207,8 +208,8 @@ partial class KokoroContext {
 			// considered a draft, yet to be finalized and not yet immutable.
 			"usum BLOB NOT NULL UNIQUE," +
 
-			// The expected number of field data in the classable entity where
-			// the schema is applied.
+			// The expected number of field data in the fielded entity where the
+			// schema is applied.
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToField` table.
@@ -261,9 +262,9 @@ partial class KokoroContext {
 			"SchemaToField(idx_loc) WHERE a=0" +
 		"");
 
-		// A classable's schema can also be thought of as an entity class set,
-		// in that no data can enter a schema unless defined by an entity class:
-		// a schema is composed by the various compiled states of its entity
+		// An entity schema can also be thought of as an entity class set, in
+		// that no data can enter a schema unless defined by an entity class: a
+		// schema is composed by the various compiled states of its entity
 		// classes, as each schema is a snapshot of the explicitly bound entity
 		// classes used to assemble the schema.
 		//
@@ -290,7 +291,7 @@ partial class KokoroContext {
 		// not in that table goes into this table instead.
 		//
 		// Being able to distinguish between direct and indirect classes can be
-		// useful when trying to copy the classes of one classable entity to
+		// useful when trying to copy the classes of one fielded entity to
 		// another without having to copy all classes, as only the direct
 		// classes are needed to be copied.
 		db.Exec("CREATE TABLE SchemaToIndirectClass(" +

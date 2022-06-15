@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
 /// <summary>
-/// An entity class, i.e., a classable entity's class.
+/// An entity class, i.e., a fielded entity's class.
 /// </summary>
 public sealed class Class : DataEntity {
 
