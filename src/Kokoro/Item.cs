@@ -3,7 +3,6 @@ using Kokoro.Internal;
 using Kokoro.Internal.Marshal.Fields;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
-using System.Runtime.InteropServices;
 
 public sealed class Item : FieldedEntity {
 
@@ -15,8 +14,6 @@ public sealed class Item : FieldedEntity {
 	private long _OrdModStamp;
 
 	private long _DataModStamp;
-	private Dictionary<StringKey, FieldVal>? _Fields;
-	private Dictionary<StringKey, FieldVal>? _FieldChanges;
 
 	private StateFlags _State;
 
@@ -113,68 +110,6 @@ public sealed class Item : FieldedEntity {
 	}
 
 	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
-
-
-	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
-		var fields = _Fields;
-		if (fields != null && fields.TryGetValue(name, out value)) {
-			return true;
-		}
-		U.SkipInit(out value);
-		return false;
-	}
-
-	public void Set(StringKey name, FieldVal value) {
-		var fields = _Fields;
-		if (fields == null) {
-			// This becomes a conditional jump forward to not favor it
-			goto Init;
-		}
-
-		var changes = _FieldChanges;
-		if (changes == null) {
-			// This becomes a conditional jump forward to not favor it
-			goto InitChanges;
-		}
-
-	Set:
-		fields[name] = value;
-		changes[name] = value;
-		return;
-
-	Init:
-		_Fields = fields = new();
-	InitChanges:
-		_FieldChanges = changes = new();
-		goto Set;
-	}
-
-	public void SetCache(StringKey name, FieldVal value) {
-		var fields = _Fields;
-		if (fields == null) {
-			// This becomes a conditional jump forward to not favor it
-			goto Init;
-		}
-
-	Set:
-		fields[name] = value;
-
-		{
-			var changes = _FieldChanges;
-			if (changes != null) {
-				ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(changes, name);
-				if (!U.IsNullRef(ref valueRef)) {
-					valueRef = value;
-				}
-			}
-		}
-
-		return;
-
-	Init:
-		_Fields = fields = new();
-		goto Set;
-	}
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
