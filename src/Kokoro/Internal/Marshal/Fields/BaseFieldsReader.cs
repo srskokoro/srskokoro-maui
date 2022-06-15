@@ -1,7 +1,5 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
-using Microsoft.Data.Sqlite;
 using System.IO;
-using static SQLitePCL.raw;
 
 internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 		where TOwner : DataEntity {
