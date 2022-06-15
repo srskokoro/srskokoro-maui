@@ -4,12 +4,12 @@ using System.IO;
 internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 		where TOwner : DataEntity {
 
-	private TOwner _Owner;
-	private Stream _Stream;
+	private readonly TOwner _Owner;
+	private readonly Stream _Stream;
 
-	private int _FieldCount, _FieldOffsetSize;
-	private long _FieldOffsetListPos;
-	private long _FieldValListPos;
+	private readonly int _FieldCount, _FieldOffsetSize;
+	private readonly long _FieldOffsetListPos;
+	private readonly long _FieldValListPos;
 
 	public BaseFieldsReader(TOwner owner, Stream stream) {
 		_Owner = owner;
