@@ -5,7 +5,7 @@ using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
-public sealed class Item : DataEntity {
+public sealed class Item : FieldedEntity {
 
 	private long _RowId;
 	private UniqueId _Uid;
@@ -14,7 +14,6 @@ public sealed class Item : DataEntity {
 	private int _Ordinal;
 	private long _OrdModStamp;
 
-	private long _SchemaRowId;
 	private long _DataModStamp;
 	private Dictionary<StringKey, FieldVal>? _Fields;
 	private Dictionary<StringKey, FieldVal>? _FieldChanges;
@@ -95,7 +94,7 @@ public sealed class Item : DataEntity {
 
 	public void SetCachedOrdModStamp(long ordModStamp) => _OrdModStamp = ordModStamp;
 
-	public long SchemaRowId {
+	public new long SchemaRowId {
 		get => _SchemaRowId;
 		set {
 			_SchemaRowId = value;
@@ -103,7 +102,7 @@ public sealed class Item : DataEntity {
 		}
 	}
 
-	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
+	public new void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
 
 	public long DataModStamp {
 		get => _DataModStamp;
