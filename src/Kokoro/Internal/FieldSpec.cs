@@ -32,9 +32,13 @@ internal readonly struct FieldSpec {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldSpec(uint value) => Value = value;
 
+	// BONUS: We can compare `FieldSpec` against an `int` (due to the implicit
+	// cast) without needing to define some comparison operators.
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static implicit operator int(FieldSpec fspec) => (int)fspec.Value;
 
+	// BONUS: We can compare `FieldSpec` against a `uint` (due to the implicit
+	// cast) without needing to define some comparison operators.
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static implicit operator uint(FieldSpec fspec) => fspec.Value;
 
