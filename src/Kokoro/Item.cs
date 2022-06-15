@@ -111,6 +111,7 @@ public sealed class Item : FieldedEntity {
 
 	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
 
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long LoadRowId(KokoroCollection host, UniqueId uid)
@@ -392,6 +393,7 @@ public sealed class Item : FieldedEntity {
 		}
 	}
 
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void RenewRowId(KokoroCollection host, long oldRowId)

@@ -205,6 +205,7 @@ public sealed class Class : DataEntity {
 		}
 	}
 
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long LoadRowId(KokoroCollection host, UniqueId uid)
@@ -450,6 +451,7 @@ public sealed class Class : DataEntity {
 		}
 	}
 
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void SaveAsNew() => SaveAsNew(UniqueId.Create());
