@@ -48,6 +48,10 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 			// only exception we should guard against is the one thrown when the
 			// stream doesn't support reading or seeking (as the code in the
 			// above try-block requires it).
+			//
+			// That way, a try-finally or `using` block can be set up right
+			// after construction, to properly dispose the state along with the
+			// stream, all in one go.
 
 			_FieldCount = 0;
 			_FieldOffsetSize = 1;
