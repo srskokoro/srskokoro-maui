@@ -138,21 +138,25 @@ public abstract class FieldedEntity : DataEntity {
 		}
 
 	Found:
-		FieldVal fval = reader.ReadFieldVal(fspec);
+		{
+			FieldVal fval = reader.ReadFieldVal(fspec);
 
-		// Pending changes will be discarded
-		_FieldChanges?.Remove(fieldName);
-		SetCache(fieldName, fval);
+			// Pending changes will be discarded
+			_FieldChanges?.Remove(fieldName);
+			SetCache(fieldName, fval);
 
-		return; // Early exit
+			return; // Early exit
+		}
 
 	NotFound:
-		// Otherwise, either deleted or never existed.
-		// Let that state materialize here then.
-		_FieldChanges?.Remove(fieldName);
-		_Fields?.Remove(fieldName);
+		{
+			// Otherwise, either deleted or never existed.
+			// Let that state materialize here then.
+			_FieldChanges?.Remove(fieldName);
+			_Fields?.Remove(fieldName);
 
-		return; // Early exit
+			return; // Early exit
+		}
 
 	TryLoadFatField:
 		using (var cmd = db.CreateCommand()) {
