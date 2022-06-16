@@ -1,84 +1,131 @@
 ﻿namespace Kokoro.Internal.Marshal.Fields;
+using Kokoro.Internal.Sqlite;
 using System.IO;
 
-internal abstract class BaseFieldsReader<TOwner> : FieldsReader
-		where TOwner : DataEntity {
+internal struct FieldsReader : IDisposable {
+	private readonly FieldedEntity _Owner;
+	internal readonly KokoroSqliteDb Db;
 
-	private readonly TOwner _Owner;
-	private readonly Stream _Stream;
+	private State _HotState;
+	private State _SchemaState;
+	private State _ColdState;
 
-	private readonly int _FieldCount, _FieldOffsetSize;
-	private readonly long _FieldOffsetListPos;
-	private readonly long _FieldValListPos;
+	[Obsolete("Shouldn't use.", error: true)]
+	public FieldsReader() => throw new NotSupportedException("Shouldn't use.");
 
-	public BaseFieldsReader(TOwner owner, Stream stream) {
-		_Owner = owner;
-		_Stream = stream;
+	public FieldsReader(FieldedEntity entity) {
+		_Owner = entity;
+		var db = entity.Host.DbOrNull!;
+		_HotState = new(entity.GetHotData(Db = db));
+	}
 
-		try {
-			const int MaxSize = 0b111 + 1; // 7 + 1 == 8
-			const int MaxCount = int.MaxValue / MaxSize;
+	private readonly struct State {
+		internal readonly Stream? _Stream;
+		internal readonly int _FieldCount, _FieldOffsetSize;
+		internal readonly long _FieldOffsetListPos;
+		internal readonly long _FieldValListPos;
 
-			const ulong MaxDesc = (ulong)MaxCount << 3 | 0b111;
+		[Obsolete("Shouldn't use.", error: true)]
+		public State() => throw new NotSupportedException("Shouldn't use.");
 
-			// --
-			// Read the descriptor for the list of field offsets
-			ulong fDesc = stream.ReadVarIntOrZero();
-			Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
+		public State(Stream stream) {
+			_Stream = stream;
 
-			// Get the field count and field offset integer size
-			int fCount = (int)(fDesc >> 3);
-			int fSize = ((int)fDesc & 0b111) + 1;
+			try {
+				const int MaxSize = 0b111 + 1; // 7 + 1 == 8
+				const int MaxCount = int.MaxValue / MaxSize;
 
-			_FieldCount = fCount;
-			_FieldOffsetSize = fSize;
+				const ulong MaxDesc = (ulong)MaxCount << 3 | 0b111;
 
-			// The size in bytes of the entire field offset list
-			int fieldOffsetListSize = fCount * fSize;
+				// --
+				// Read the descriptor for the list of field offsets
+				ulong fDesc = stream.ReadVarIntOrZero();
+				Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
 
-			// --
+				// Get the field count and field offset integer size
+				int fCount = (int)(fDesc >> 3);
+				int fSize = ((int)fDesc & 0b111) + 1;
 
-			_FieldValListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize;
+				_FieldCount = fCount;
+				_FieldOffsetSize = fSize;
 
-		} catch (NotSupportedException) when (!stream.CanRead || !stream.CanSeek) {
-			// NOTE: We ensure that the constructor never throws under normal
-			// circumstances: if we simply couldn't read the needed data to
-			// complete initialization, then we should just swallow the
-			// exception, and initialize with reasonable defaults. So far, the
-			// only exception we should guard against is the one thrown when the
-			// stream doesn't support reading or seeking (as the code in the
-			// above try-block requires it).
-			//
-			// That way, a try-finally or `using` block can be set up right
-			// after construction, to properly dispose the state along with the
-			// stream, all in one go.
+				// The size in bytes of the entire field offset list
+				int fieldOffsetListSize = fCount * fSize;
 
-			_FieldCount = 0;
-			_FieldOffsetSize = 1;
-			_FieldValListPos = _FieldOffsetListPos = 0;
+				// --
+
+				_FieldValListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize;
+
+			} catch (NotSupportedException) when (!stream.CanRead || !stream.CanSeek) {
+				// NOTE: We ensure that the constructor never throws under
+				// normal circumstances: if we simply couldn't read the needed
+				// data to complete initialization, then we should just swallow
+				// the exception, and initialize with reasonable defaults. So
+				// far, the only exception we should guard against is the one
+				// thrown when the stream doesn't support reading or seeking (as
+				// the code in the above try-block requires it).
+				//
+				// That way, a try-finally or `using` block can be set up right
+				// after construction, to properly dispose the state along with
+				// the stream, all in one go.
+
+				_FieldCount = 0;
+				_FieldOffsetSize = 1;
+				_FieldValListPos = _FieldOffsetListPos = 0;
+			}
 		}
 	}
 
 	// --
 
-	public TOwner Owner => _Owner;
+	public FieldedEntity Owner => _Owner;
 
-	public sealed override Stream Stream => _Stream;
+	[SkipLocalsInit]
+	public LatentFieldVal ReadFieldValLater(FieldSpec fspec) {
+		ref State st = ref _HotState;
 
-	public sealed override int FieldCount => _FieldCount;
+		Stream? stream;
+		int index = fspec.Index;
 
-	public sealed override LatentFieldVal ReadFieldValLater(int index) {
-		if ((uint)index < (uint)_FieldCount) {
-			var stream = _Stream;
+		if (fspec.StoType != FieldStorageType.Shared) {
+			if ((uint)index < (uint)st._FieldCount) {
+				stream = st._Stream!;
+				goto DoLoad;
+			} else {
+				index -= st._FieldCount;
 
-			int fSize = _FieldOffsetSize;
-			stream.Position = _FieldOffsetListPos + index * fSize;
+				st = ref _ColdState;
+				stream = st._Stream;
+
+				if (stream != null) {
+					goto CheckIndex;
+				} else {
+					// This becomes a conditional jump forward to not favor it
+					goto InitColdState;
+				}
+			}
+		} else {
+			st = ref _SchemaState;
+			stream = st._Stream;
+
+			if (stream != null) {
+				goto CheckIndex;
+			} else {
+				// This becomes a conditional jump forward to not favor it
+				goto InitSchemaState;
+			}
+		}
+
+	DoLoad:
+		{
+			int fSize = st._FieldOffsetSize;
+			stream.Position = st._FieldOffsetListPos + index * fSize;
 
 			long fOffset = (long)stream.ReadUIntX(fSize);
 			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `long.MaxValue`: {(ulong)fOffset:X}");
 
 			long fValLen;
-			if ((uint)index + 1u < (uint)_FieldCount) {
+			if ((uint)index + 1u < (uint)st._FieldCount) {
 				long fOffsetNext = (long)stream.ReadUIntX(fSize);
 				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `long.MaxValue`: {(ulong)fOffsetNext:X}");
 
@@ -91,24 +138,77 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
 
-			return new(stream, _FieldValListPos + fOffset, fValLen);
-		} else {
-			return OnReadFieldValLaterOutOfRange(index);
+			return new(stream, st._FieldValListPos + fOffset, fValLen);
 		}
+
+	CheckIndex:
+		if ((uint)index < (uint)st._FieldCount) {
+			goto DoLoad;
+		} else {
+			// This becomes a conditional jump forward to not favor it
+			goto Fail;
+		}
+
+	InitSchemaState:
+		stream = _Owner.GetSchemaData(Db);
+		st = new(stream);
+		goto CheckIndex;
+
+	InitColdState:
+		stream = _Owner.GetColdData(Db);
+		st = new(stream);
+		goto CheckIndex;
+
+	Fail:
+		return LatentFieldVal.Null;
 	}
 
-	public sealed override FieldVal ReadFieldVal(int index) {
-		if ((uint)index < (uint)_FieldCount) {
-			var stream = _Stream;
+	[SkipLocalsInit]
+	public FieldVal ReadFieldVal(FieldSpec fspec) {
+		ref State st = ref _HotState;
 
-			int fSize = _FieldOffsetSize;
-			stream.Position = _FieldOffsetListPos + index * fSize;
+		Stream? stream;
+		int index = fspec.Index;
+
+		if (fspec.StoType != FieldStorageType.Shared) {
+			if ((uint)index < (uint)st._FieldCount) {
+				stream = st._Stream!;
+				goto DoLoad;
+			} else {
+				index -= st._FieldCount;
+
+				st = ref _ColdState;
+				stream = st._Stream;
+
+				if (stream != null) {
+					goto CheckIndex;
+				} else {
+					// This becomes a conditional jump forward to not favor it
+					goto InitColdState;
+				}
+			}
+		} else {
+			st = ref _SchemaState;
+			stream = st._Stream;
+
+			if (stream != null) {
+				goto CheckIndex;
+			} else {
+				// This becomes a conditional jump forward to not favor it
+				goto InitSchemaState;
+			}
+		}
+
+	DoLoad:
+		{
+			int fSize = st._FieldOffsetSize;
+			stream.Position = st._FieldOffsetListPos + index * fSize;
 
 			long fOffset = (long)stream.ReadUIntX(fSize);
 			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `long.MaxValue`: {(ulong)fOffset:X}");
 
 			long fValLen;
-			if ((uint)index + 1u < (uint)_FieldCount) {
+			if ((uint)index + 1u < (uint)st._FieldCount) {
 				long fOffsetNext = (long)stream.ReadUIntX(fSize);
 				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `long.MaxValue`: {(ulong)fOffsetNext:X}");
 
@@ -123,7 +223,7 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 
 			if (fValLen > 0) {
 				// Seek to the target field's value bytes
-				stream.Position = _FieldValListPos + fOffset;
+				stream.Position = st._FieldValListPos + fOffset;
 
 				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
 				Debug.Assert(fValSpec <= int.MaxValue);
@@ -139,15 +239,33 @@ internal abstract class BaseFieldsReader<TOwner> : FieldsReader
 			} else {
 				return FieldVal.Null;
 			}
-		} else {
-			return OnReadFieldValOutOfRange(index);
 		}
+
+	CheckIndex:
+		if ((uint)index < (uint)st._FieldCount) {
+			goto DoLoad;
+		} else {
+			// This becomes a conditional jump forward to not favor it
+			goto Fail;
+		}
+
+	InitSchemaState:
+		stream = _Owner.GetSchemaData(Db);
+		st = new(stream);
+		goto CheckIndex;
+
+	InitColdState:
+		stream = _Owner.GetColdData(Db);
+		st = new(stream);
+		goto CheckIndex;
+
+	Fail:
+		return FieldVal.Null;
 	}
 
-	protected virtual LatentFieldVal OnReadFieldValLaterOutOfRange(int index)
-		=> new(_Stream, _Stream.Length, 0);
-
-	protected virtual FieldVal OnReadFieldValOutOfRange(int index) => FieldVal.Null;
-
-	public override void Dispose() => _Stream.Dispose();
+	public void Dispose() {
+		_HotState._Stream!.Dispose();
+		_SchemaState._Stream?.Dispose();
+		_ColdState._Stream?.Dispose();
+	}
 }

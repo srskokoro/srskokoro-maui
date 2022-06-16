@@ -111,6 +111,13 @@ public sealed class Item : FieldedEntity {
 
 	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
 
+
+	internal sealed override Stream GetHotData(KokoroSqliteDb db) {
+		return new SqliteBlob(db,
+			tableName: "Item", columnName: "data",
+			rowid: _RowId, readOnly: true);
+	}
+
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -166,8 +173,15 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -175,9 +189,16 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -185,10 +206,17 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
-			InternalLoadField(db, fieldName3);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+					InternalLoadField(ref fr, fieldName3);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -196,11 +224,18 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
-			InternalLoadField(db, fieldName3);
-			InternalLoadField(db, fieldName4);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+					InternalLoadField(ref fr, fieldName3);
+					InternalLoadField(ref fr, fieldName4);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -208,12 +243,19 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
-			InternalLoadField(db, fieldName3);
-			InternalLoadField(db, fieldName4);
-			InternalLoadField(db, fieldName5);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+					InternalLoadField(ref fr, fieldName3);
+					InternalLoadField(ref fr, fieldName4);
+					InternalLoadField(ref fr, fieldName5);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -221,13 +263,20 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
-			InternalLoadField(db, fieldName3);
-			InternalLoadField(db, fieldName4);
-			InternalLoadField(db, fieldName5);
-			InternalLoadField(db, fieldName6);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+					InternalLoadField(ref fr, fieldName3);
+					InternalLoadField(ref fr, fieldName4);
+					InternalLoadField(ref fr, fieldName5);
+					InternalLoadField(ref fr, fieldName6);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -235,14 +284,21 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
-			InternalLoadField(db, fieldName3);
-			InternalLoadField(db, fieldName4);
-			InternalLoadField(db, fieldName5);
-			InternalLoadField(db, fieldName6);
-			InternalLoadField(db, fieldName7);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+					InternalLoadField(ref fr, fieldName3);
+					InternalLoadField(ref fr, fieldName4);
+					InternalLoadField(ref fr, fieldName5);
+					InternalLoadField(ref fr, fieldName6);
+					InternalLoadField(ref fr, fieldName7);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
@@ -250,16 +306,24 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			InternalLoadField(db, fieldName1);
-			InternalLoadField(db, fieldName2);
-			InternalLoadField(db, fieldName3);
-			InternalLoadField(db, fieldName4);
-			InternalLoadField(db, fieldName5);
-			InternalLoadField(db, fieldName6);
-			InternalLoadField(db, fieldName7);
-			InternalLoadField(db, fieldName8);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					InternalLoadField(ref fr, fieldName1);
+					InternalLoadField(ref fr, fieldName2);
+					InternalLoadField(ref fr, fieldName3);
+					InternalLoadField(ref fr, fieldName4);
+					InternalLoadField(ref fr, fieldName5);
+					InternalLoadField(ref fr, fieldName6);
+					InternalLoadField(ref fr, fieldName7);
+					InternalLoadField(ref fr, fieldName8);
+				} finally {
+					fr.Dispose();
+				}
+			}
 			// TODO A counterpart that loads up to 16 fields
+			// TODO Generate code via T4 text templates instead
 		}
 	}
 
@@ -271,15 +335,24 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			Load();
-			db.ReloadFieldNameCaches();
-			// TODO Unroll?
-			foreach (var fieldName in fieldNames)
-				InternalLoadField(db, fieldName);
+			if (Exists) {
+				db.ReloadFieldNameCaches();
+				var fr = new FieldsReader(this);
+				try {
+					// TODO Unroll?
+					foreach (var fieldName in fieldNames)
+						InternalLoadField(ref fr, fieldName);
+				} finally {
+					fr.Dispose();
+				}
+			}
 		}
 	}
 
 	[SkipLocalsInit]
 	private void InternalLoadField(KokoroSqliteDb db, StringKey name) {
+		// TODO-XXX Remove -- retained only for now for better Git history
+
 		using var cmd = db.CreateCommand();
 		var cmdParams = cmd.Parameters;
 
@@ -339,26 +412,24 @@ public sealed class Item : FieldedEntity {
 				// Same as `SqliteDataReader.GetStream()` but more performant
 				SqliteBlob blob = new(db, tableName, columnName: "data", rowid, readOnly: true);
 
-				// TODO Batch-load fields in a single fields reader, instead of
-				// recreating instances unnecessarily every field load.
 				FieldsReader fr;
 				if (sto != FieldStorageType.Shared) {
-					fr = new ItemFieldsReader(this, blob);
+					//fr = new ItemFieldsReader(this, blob);
 				} else {
-					fr = new PlainFieldsReader(this, blob);
+					//fr = new PlainFieldsReader(this, blob);
 				}
 
 				FieldVal fieldVal;
 				try {
-					fieldVal = fr.ReadFieldVal(idx);
+					//fieldVal = fr.ReadFieldVal(idx);
 				} finally {
-					fr.Dispose();
+					//fr.Dispose();
 				}
 
 				// Pending changes will be discarded
 				_FieldChanges?.Remove(name);
 
-				SetCache(name, fieldVal);
+				//SetCache(name, fieldVal);
 
 				return; // Early exit
 			}
