@@ -28,6 +28,7 @@ internal struct FieldsReader : IDisposable {
 		[Obsolete("Shouldn't use.", error: true)]
 		public State() => throw new NotSupportedException("Shouldn't use.");
 
+		[SkipLocalsInit]
 		public State(Stream stream) {
 			_Stream = stream;
 
@@ -80,6 +81,7 @@ internal struct FieldsReader : IDisposable {
 
 	public FieldedEntity Owner => _Owner;
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public LatentFieldVal ReadFieldValLater(FieldSpec fspec) {
 		ref State st = ref _HotState;
@@ -163,6 +165,7 @@ internal struct FieldsReader : IDisposable {
 		return LatentFieldVal.Null;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public FieldVal ReadFieldVal(FieldSpec fspec) {
 		ref State st = ref _HotState;
