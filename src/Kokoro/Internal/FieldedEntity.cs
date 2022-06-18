@@ -162,13 +162,13 @@ public abstract class FieldedEntity : DataEntity {
 				fspec = r.GetInt32(0);
 				Debug.Assert(fspec.Index >= 0);
 				fspec.StoType.DAssert_Defined();
-				goto ReadFound;
+				goto WithFieldSpec;
 			} else {
-				goto TryLoadFatField;
+				goto WithoutFieldSpec;
 			}
 		}
 
-	ReadFound:
+	WithFieldSpec:
 		fval = reader.Read(fspec);
 
 	Found:
@@ -187,7 +187,7 @@ public abstract class FieldedEntity : DataEntity {
 			return; // Early exit
 		}
 
-	TryLoadFatField:
+	WithoutFieldSpec:
 		{
 			fval = OnLoadFatField(db, fld);
 			if (fval != null) {
