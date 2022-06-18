@@ -170,8 +170,8 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
-			// The field value.
-			"val BLOB NOT NULL," +
+			// The field value bytes.
+			"data BLOB NOT NULL," +
 
 			"PRIMARY KEY(item, fld)" +
 
