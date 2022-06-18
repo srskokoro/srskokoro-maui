@@ -81,6 +81,34 @@ public abstract class FieldedEntity : DataEntity {
 		goto Set;
 	}
 
+	/// <summary>
+	/// Same as <see cref="ClearFieldChangeStatus(StringKey)"/> followed by
+	/// <see cref="SetCache(StringKey, FieldVal)"/>.
+	/// </summary>
+	public void SetAsLoaded(StringKey name, FieldVal value) {
+		var fields = _Fields;
+		if (fields == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+		_FieldChanges?.Remove(name);
+
+	Set:
+		fields[name] = value;
+		return;
+
+	Init:
+		_Fields = fields = new();
+		goto Set;
+	}
+
+	public void ClearFieldChangeStatus(StringKey name)
+		=> _FieldChanges?.Remove(name);
+
+	public void ClearFieldChangeStatuses()
+		=> _FieldChanges = null;
+
 	// --
 
 	internal abstract Stream GetHotData(KokoroSqliteDb db);
@@ -143,9 +171,7 @@ public abstract class FieldedEntity : DataEntity {
 			FieldVal fval = reader.Read(fspec);
 
 			// Pending changes will be discarded
-			_FieldChanges?.Remove(fieldName);
-			SetCache(fieldName, fval);
-
+			SetAsLoaded(fieldName, fval);
 			return; // Early exit
 		}
 
