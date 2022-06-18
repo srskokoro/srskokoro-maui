@@ -138,7 +138,7 @@ public abstract class FieldedEntity : DataEntity {
 
 	Found:
 		{
-			FieldVal fval = reader.ReadFieldVal(fspec);
+			FieldVal fval = reader.Read(fspec);
 
 			// Pending changes will be discarded
 			_FieldChanges?.Remove(fieldName);

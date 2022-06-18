@@ -89,7 +89,7 @@ internal struct FieldsReader : IDisposable {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public LatentFieldVal ReadFieldValLater(FieldSpec fspec) {
+	public LatentFieldVal ReadLater(FieldSpec fspec) {
 		ref State st = ref _HotState;
 
 		Stream? stream;
@@ -173,7 +173,7 @@ internal struct FieldsReader : IDisposable {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public FieldVal ReadFieldVal(FieldSpec fspec) {
+	public FieldVal Read(FieldSpec fspec) {
 		ref State st = ref _HotState;
 
 		Stream? stream;
