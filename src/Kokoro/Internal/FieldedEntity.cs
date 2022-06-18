@@ -52,6 +52,7 @@ public abstract class FieldedEntity : DataEntity {
 		goto Set;
 	}
 
+	[SkipLocalsInit]
 	public void SetCache(StringKey name, FieldVal value) {
 		var fields = _Fields;
 		if (fields == null) {
@@ -64,15 +65,16 @@ public abstract class FieldedEntity : DataEntity {
 
 		{
 			var changes = _FieldChanges;
-			if (changes != null) {
+			if (changes == null) {
+				return;
+			} else {
 				ref var valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(changes, name);
 				if (!U.IsNullRef(ref valueRef)) {
 					valueRef = value;
 				}
+				return;
 			}
 		}
-
-		return;
 
 	Init:
 		_Fields = fields = new();
