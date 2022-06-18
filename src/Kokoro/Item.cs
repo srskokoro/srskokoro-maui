@@ -98,8 +98,6 @@ public sealed class Item : FieldedEntity {
 		}
 	}
 
-	public new void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
-
 	public long DataModStamp {
 		get => _DataModStamp;
 		set {

@@ -15,7 +15,7 @@ public abstract class FieldedEntity : DataEntity {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldedEntity(KokoroCollection host) : base(host) { }
 
-	protected void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
+	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
 
 
 	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
