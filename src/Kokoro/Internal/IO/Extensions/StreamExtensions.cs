@@ -80,28 +80,4 @@ internal static class StreamExtensions {
 	[DoesNotReturn]
 	private static void E_EndOfStream_InvOp()
 		=> throw new InvalidOperationException("The stream didn't contain enough data to read the requested item.");
-
-	// --
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static FieldVal ReadFieldVal(this Stream stream)
-		=> stream.ReadFieldVal(stream.Length);
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	[SkipLocalsInit]
-	public static FieldVal ReadFieldVal(this Stream stream, long length) {
-		if (length > 0) {
-			int vread = stream.TryReadVarInt(out ulong valSpec);
-			if (vread != 0) {
-				var data = new byte[length - vread];
-				{
-					int sread = stream.Read(data);
-					Debug.Assert(sread == data.Length);
-				}
-				FieldTypeHint typeHint = (FieldTypeHint)valSpec;
-				return new FieldVal(typeHint, data);
-			}
-		}
-		return FieldVal.Null;
-	}
 }
