@@ -52,6 +52,7 @@ public abstract class FieldedEntity : DataEntity {
 		goto Set;
 	}
 
+	/// <seealso cref="SetAsLoaded(StringKey, FieldVal)"/>
 	[SkipLocalsInit]
 	public void SetCache(StringKey name, FieldVal value) {
 		var fields = _Fields;
@@ -138,6 +139,7 @@ public abstract class FieldedEntity : DataEntity {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private protected void InternalLoadField(ref FieldsReader reader, StringKey fieldName) {
+		FieldVal? fval;
 		FieldSpec fspec;
 
 		var db = reader.Db;
@@ -160,16 +162,17 @@ public abstract class FieldedEntity : DataEntity {
 				fspec = r.GetInt32(0);
 				Debug.Assert(fspec.Index >= 0);
 				fspec.StoType.DAssert_Defined();
-				goto Found;
+				goto ReadFound;
 			} else {
 				goto TryLoadFatField;
 			}
 		}
 
+	ReadFound:
+		fval = reader.Read(fspec);
+
 	Found:
 		{
-			FieldVal fval = reader.Read(fspec);
-
 			// Pending changes will be discarded
 			SetAsLoaded(fieldName, fval);
 			return; // Early exit
@@ -185,13 +188,17 @@ public abstract class FieldedEntity : DataEntity {
 		}
 
 	TryLoadFatField:
-		using (var cmd = db.CreateCommand()) {
-			// TODO Implement
-			fspec = -1;
-			goto NotFound;
-			goto Found;
+		{
+			fval = OnLoadFatField(db, fld);
+			if (fval != null) {
+				goto Found;
+			} else {
+				goto NotFound;
+			}
 		}
 	}
+
+	private protected abstract FieldVal? OnLoadFatField(KokoroSqliteDb db, long fieldId);
 
 	private protected void UnloadField(StringKey fieldName) {
 		_FieldChanges?.Remove(fieldName);

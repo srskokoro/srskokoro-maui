@@ -1,7 +1,9 @@
 ﻿namespace Kokoro;
+using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.IO;
 
 public sealed class Item : FieldedEntity {
 
@@ -344,6 +346,47 @@ public sealed class Item : FieldedEntity {
 				}
 			}
 		}
+	}
+
+	private protected sealed override FieldVal? OnLoadFatField(KokoroSqliteDb db, long fieldId) {
+		Span<byte> encoded;
+
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set("""
+				SELECT data
+				FROM ItemToFatField
+				WHERE (item,fld)=($item,$fld)
+				""");
+
+			var cmdParams = cmd.Parameters;
+			cmdParams.Add(new("$item", _RowId));
+			cmdParams.Add(new("$fld", fieldId));
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "data");
+				encoded = r.GetBytesOrEmpty(0);
+				goto Found;
+			} else {
+				goto NotFound;
+			}
+		}
+
+	Found:
+		{
+			int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
+			Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
+
+			FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
+			if (typeHint != FieldTypeHint.Null) {
+				byte[] data = encoded[fValSpecLen..].ToArray();
+				return new(typeHint, data);
+			}
+			return FieldVal.Null;
+		}
+
+	NotFound:
+		return null;
 	}
 
 
