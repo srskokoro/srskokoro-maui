@@ -183,7 +183,6 @@ public abstract class FieldedEntity : DataEntity {
 			// Otherwise, either deleted or never existed.
 			// Let that state materialize here then.
 			UnloadField(fieldName);
-
 			return; // Early exit
 		}
 
