@@ -1,5 +1,4 @@
 ﻿namespace Kokoro.Internal;
-using Kokoro.Internal.Marshal.Fields;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;

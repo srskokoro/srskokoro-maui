@@ -1,6 +1,5 @@
 ﻿namespace Kokoro;
 using Kokoro.Internal;
-using Kokoro.Internal.Marshal.Fields;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 

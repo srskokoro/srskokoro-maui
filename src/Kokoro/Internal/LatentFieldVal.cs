@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Marshal.Fields;
+﻿namespace Kokoro.Internal;
 using System.IO;
 
 internal readonly record struct LatentFieldVal {

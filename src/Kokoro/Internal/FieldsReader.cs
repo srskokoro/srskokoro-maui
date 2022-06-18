@@ -1,4 +1,4 @@
-﻿namespace Kokoro.Internal.Marshal.Fields;
+﻿namespace Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using System.IO;
 
