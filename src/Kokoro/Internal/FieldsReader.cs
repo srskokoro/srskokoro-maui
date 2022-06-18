@@ -77,6 +77,12 @@ internal struct FieldsReader : IDisposable {
 		}
 	}
 
+	public void Dispose() {
+		_HotState._Stream!.Dispose();
+		_SchemaState._Stream?.Dispose();
+		_ColdState._Stream?.Dispose();
+	}
+
 	// --
 
 	public FieldedEntity Owner => _Owner;
@@ -264,11 +270,5 @@ internal struct FieldsReader : IDisposable {
 
 	Fail:
 		return FieldVal.Null;
-	}
-
-	public void Dispose() {
-		_HotState._Stream!.Dispose();
-		_SchemaState._Stream?.Dispose();
-		_ColdState._Stream?.Dispose();
 	}
 }
