@@ -6,6 +6,7 @@ internal static class SqliteDataReaderExtensions {
 	public static UniqueId GetUniqueId(this SqliteDataReader reader, int ordinal)
 		=> new(reader.GetBytes(ordinal));
 
+
 	public static byte[] GetBytes(this SqliteDataReader reader, int ordinal) {
 		if (reader.GetValue(ordinal) is byte[] bytes) {
 			return bytes;
@@ -26,6 +27,7 @@ internal static class SqliteDataReaderExtensions {
 		}
 		return Array.Empty<byte>();
 	}
+
 
 	[DoesNotReturn]
 	private static T E_CalledOnNullValue_InvOp<T>(int ordinal) {
