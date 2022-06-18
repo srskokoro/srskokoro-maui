@@ -174,7 +174,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 				} finally {
@@ -190,7 +190,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -207,7 +207,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -225,7 +225,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -244,7 +244,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -264,7 +264,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -285,7 +285,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -307,7 +307,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
 					InternalLoadField(ref fr, fieldName2);
@@ -336,7 +336,7 @@ public sealed class Item : FieldedEntity {
 			Load();
 			if (Exists) {
 				db.ReloadFieldNameCaches();
-				var fr = new FieldsReader(this);
+				var fr = new FieldsReader(this, db);
 				try {
 					// TODO Unroll?
 					foreach (var fieldName in fieldNames)

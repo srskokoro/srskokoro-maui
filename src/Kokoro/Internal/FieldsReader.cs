@@ -13,9 +13,16 @@ internal struct FieldsReader : IDisposable {
 	[Obsolete("Shouldn't use.", error: true)]
 	public FieldsReader() => throw new NotSupportedException("Shouldn't use.");
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsReader(FieldedEntity entity) {
 		_Owner = entity;
 		var db = entity.Host.DbOrNull!;
+		_HotState = new(entity.GetHotData(Db = db));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public FieldsReader(FieldedEntity entity, KokoroSqliteDb db) {
+		_Owner = entity;
 		_HotState = new(entity.GetHotData(Db = db));
 	}
 
