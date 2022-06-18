@@ -360,14 +360,6 @@ public sealed class Item : FieldedEntity {
 		_SchemaRowId = default;
 	}
 
-	public void UnloadFields() {
-		var fields = _Fields;
-		if (fields != null) {
-			fields.Clear();
-			_FieldChanges = null;
-		}
-	}
-
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

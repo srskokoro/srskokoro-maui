@@ -7,8 +7,8 @@ public abstract class FieldedEntity : DataEntity {
 
 	private protected long _SchemaRowId;
 
-	private protected Dictionary<StringKey, FieldVal>? _Fields;
-	private protected Dictionary<StringKey, FieldVal>? _FieldChanges;
+	private Dictionary<StringKey, FieldVal>? _Fields;
+	private Dictionary<StringKey, FieldVal>? _FieldChanges;
 
 	public long SchemaRowId => _SchemaRowId;
 
@@ -151,8 +151,7 @@ public abstract class FieldedEntity : DataEntity {
 		{
 			// Otherwise, either deleted or never existed.
 			// Let that state materialize here then.
-			_FieldChanges?.Remove(fieldName);
-			_Fields?.Remove(fieldName);
+			UnloadField(fieldName);
 
 			return; // Early exit
 		}
@@ -163,6 +162,19 @@ public abstract class FieldedEntity : DataEntity {
 			fspec = -1;
 			goto NotFound;
 			goto Found;
+		}
+	}
+
+	private protected void UnloadField(StringKey fieldName) {
+		_FieldChanges?.Remove(fieldName);
+		_Fields?.Remove(fieldName);
+	}
+
+	public void UnloadFields() {
+		var fields = _Fields;
+		if (fields != null) {
+			fields.Clear();
+			_FieldChanges = null;
 		}
 	}
 }
