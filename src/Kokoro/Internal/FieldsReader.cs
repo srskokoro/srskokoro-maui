@@ -235,7 +235,7 @@ internal struct FieldsReader : IDisposable {
 				stream.Position = st._FieldValListPos + fOffset;
 
 				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
-				Debug.Assert(fValSpec <= int.MaxValue);
+				Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
 
 				FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
 				var data = new byte[fValLen - fValSpecLen];
