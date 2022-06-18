@@ -19,7 +19,7 @@ internal static class StreamExtensions {
 		Span<byte> buffer = stackalloc byte[9];
 		int sread = stream.Read(buffer);
 
-		int vread = VarInts.Read(buffer, out ulong result);
+		int vread = VarInts.Read(buffer[..sread], out ulong result);
 		stream.Position += vread - sread;
 
 		if (vread != 0) {
@@ -36,7 +36,7 @@ internal static class StreamExtensions {
 		Span<byte> buffer = stackalloc byte[9];
 		int sread = stream.Read(buffer);
 
-		int vread = VarInts.Read(buffer, out ulong result);
+		int vread = VarInts.Read(buffer[..sread], out ulong result);
 		stream.Position += vread - sread;
 
 		return result;
@@ -48,7 +48,7 @@ internal static class StreamExtensions {
 		Span<byte> buffer = stackalloc byte[9];
 		int sread = stream.Read(buffer);
 
-		int vread = VarInts.Read(buffer, out result);
+		int vread = VarInts.Read(buffer[..sread], out result);
 		stream.Position += vread - sread;
 
 		return vread;
