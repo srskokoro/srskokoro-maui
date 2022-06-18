@@ -238,16 +238,16 @@ internal struct FieldsReader : IDisposable {
 				Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
 
 				FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
-				var data = new byte[fValLen - fValSpecLen];
-				{
-					int sread = stream.Read(data);
-					Debug.Assert(sread == data.Length);
+				if (typeHint != FieldTypeHint.Null) {
+					var data = new byte[fValLen - fValSpecLen];
+					{
+						int sread = stream.Read(data);
+						Debug.Assert(sread == data.Length);
+					}
+					return new(typeHint, data);
 				}
-
-				return new(typeHint, data);
-			} else {
-				return FieldVal.Null;
 			}
+			return FieldVal.Null;
 		}
 
 	CheckIndex:
