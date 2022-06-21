@@ -51,7 +51,7 @@ public sealed class Class : DataEntity {
 		internal bool _IsDeleted;
 
 		private int _Ordinal;
-		private FieldStorageType _StorageType;
+		private FieldStoreType _StoreType;
 
 		private StringKey? _AliasTarget;
 
@@ -60,13 +60,13 @@ public sealed class Class : DataEntity {
 			set => _Ordinal = value;
 		}
 
-		public FieldStorageType StorageType {
-			readonly get => _StorageType;
-			set => _StorageType = value;
+		public FieldStoreType StoreType {
+			readonly get => _StoreType;
+			set => _StoreType = value;
 		}
 
 		/// <remarks>
-		/// If nonnull, <see cref="StorageType"/> can be any value.
+		/// If nonnull, <see cref="StoreType"/> can be any value.
 		/// </remarks>
 		public StringKey? AliasTarget {
 			readonly get => _AliasTarget;
@@ -407,8 +407,8 @@ public sealed class Class : DataEntity {
 				info.Ordinal = r.GetInt32(0);
 
 				r.DAssert_Name(1, "sto");
-				info.StorageType = (FieldStorageType)r.GetInt32(1);
-				info.StorageType.DAssert_Defined();
+				info.StoreType = (FieldStoreType)r.GetInt32(1);
+				info.StoreType.DAssert_Defined();
 
 				r.DAssert_Name(2, "atarg");
 				long atarg = r.GetInt64(2);
@@ -766,7 +766,7 @@ public sealed class Class : DataEntity {
 				//
 				// 0. `fieldName` in UTF8 with length prepended
 				// 1. `info.Ordinal`
-				// 2. `info.StorageType`
+				// 2. `info.StoreType`
 				// 3. `info.AliasTarget` in UTF8 with length prepended
 				//
 				// The resulting hash BLOB shall be prepended with a version
@@ -806,9 +806,9 @@ public sealed class Class : DataEntity {
 
 				var aliasTarget = info.AliasTarget;
 				if (aliasTarget is null) {
-					cmd_sto.Value = info.StorageType;
-					Debug.Assert(typeof(FieldStorageTypeInt) == typeof(int));
-					hasher_fld.UpdateLE((int)info.StorageType);
+					cmd_sto.Value = info.StoreType;
+					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
+					hasher_fld.UpdateLE((int)info.StoreType);
 					Debug.Assert(2 == hasher_fld_debug_i++);
 
 					cmd_atarg.Value = DBNull.Value;
@@ -816,8 +816,8 @@ public sealed class Class : DataEntity {
 					Debug.Assert(3 == hasher_fld_debug_i++);
 				} else {
 					cmd_sto.Value = DBNull.Value;
-					Debug.Assert(typeof(FieldStorageTypeInt) == typeof(int));
-					hasher_fld.UpdateLE((int)default(FieldStorageType));
+					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
+					hasher_fld.UpdateLE((int)default(FieldStoreType));
 					Debug.Assert(2 == hasher_fld_debug_i++);
 
 					cmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);

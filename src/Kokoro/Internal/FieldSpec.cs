@@ -3,7 +3,7 @@ using CommunityToolkit.HighPerformance.Helpers;
 
 internal readonly struct FieldSpec {
 	// Expected bit layout:
-	// - The 2 LSBs represent the field storage type.
+	// - The 2 LSBs represent the field store type.
 	// - The 3rd LSB (at bit index 2) is set if the field is an alias.
 	// - The remaining bits serve as the index of the field in a field list.
 	//
@@ -21,9 +21,9 @@ internal readonly struct FieldSpec {
 		get => BitHelper.HasFlag(Value, 2);
 	}
 
-	public FieldStorageType StoType {
+	public FieldStoreType StoType {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (FieldStorageType)(Value & 0xb11);
+		get => (FieldStoreType)(Value & 0xb11);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,14 +49,14 @@ internal readonly struct FieldSpec {
 	public static implicit operator FieldSpec(uint value) => new(value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldSpec(int index, FieldStorageType sto) {
-		Debug.Assert(((FieldStorageTypeInt)sto & 0b11) == (FieldStorageTypeInt)sto);
+	public FieldSpec(int index, FieldStoreType sto) {
+		Debug.Assert(((FieldStoreTypeInt)sto & 0b11) == (FieldStoreTypeInt)sto);
 		Value = (uint)index << 3 | (uint)sto;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldSpec(int index, bool isAlias, FieldStorageType sto) {
-		Debug.Assert(((FieldStorageTypeInt)sto & 0b11) == (FieldStorageTypeInt)sto);
+	public FieldSpec(int index, bool isAlias, FieldStoreType sto) {
+		Debug.Assert(((FieldStoreTypeInt)sto & 0b11) == (FieldStoreTypeInt)sto);
 		Value = (uint)index << 3 | (uint)isAlias.ToByte() << 2 | (uint)sto;
 	}
 
