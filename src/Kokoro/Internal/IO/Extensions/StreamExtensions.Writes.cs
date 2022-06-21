@@ -7,6 +7,75 @@ using System.Runtime.InteropServices;
 
 internal static partial class StreamExtensions {
 
+	private const int DefaultCopyBufferSize = 8192;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void CopyPartlyTo(this Stream source, Stream destination, int count)
+		=> source.CopyPartlyTo(destination, count, DefaultCopyBufferSize);
+
+	[SkipLocalsInit]
+	public static void CopyPartlyTo(this Stream source, Stream destination, int count, int bufferSize) {
+		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+		try {
+			int remaining = count;
+			while (remaining > buffer.Length) {
+				int bytesRead = source.Read(buffer, 0, buffer.Length);
+				if (bytesRead != 0) {
+					destination.Write(buffer, 0, bytesRead);
+					remaining -= bytesRead;
+				} else {
+					goto Done;
+				}
+			}
+			// --
+			{
+				int bytesRead;
+				while ((bytesRead = source.Read(buffer, 0, remaining)) != 0) {
+					destination.Write(buffer, 0, bytesRead);
+				}
+			}
+		Done:
+			;
+		} finally {
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void CopyPartlyTo(this Stream source, Stream destination, long count)
+		=> source.CopyPartlyTo(destination, count, DefaultCopyBufferSize);
+
+	[SkipLocalsInit]
+	public static void CopyPartlyTo(this Stream source, Stream destination, long count, int bufferSize) {
+		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+		try {
+			long remaining = count;
+			while (remaining > buffer.Length) {
+				int bytesRead = source.Read(buffer, 0, buffer.Length);
+				if (bytesRead != 0) {
+					destination.Write(buffer, 0, bytesRead);
+					remaining -= bytesRead;
+				} else {
+					goto Done;
+				}
+			}
+			// --
+			{
+				int remainingAsInt = (int)remaining;
+				int bytesRead;
+				while ((bytesRead = source.Read(buffer, 0, remainingAsInt)) != 0) {
+					destination.Write(buffer, 0, bytesRead);
+				}
+			}
+		Done:
+			;
+		} finally {
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
+	}
+
+	// --
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static void WriteVarInt(this Stream stream, ulong value) {
