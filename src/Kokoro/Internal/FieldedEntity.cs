@@ -138,11 +138,11 @@ public abstract class FieldedEntity : DataEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private protected void InternalLoadField(ref FieldsReader reader, StringKey fieldName) {
+	private protected void InternalLoadField(ref FieldsReader fr, StringKey fieldName) {
 		FieldVal? fval;
 		FieldSpec fspec;
 
-		var db = reader.Db;
+		var db = fr.Db;
 		long fld = db.LoadStaleFieldId(fieldName);
 		if (fld == 0) goto NotFound;
 
@@ -169,7 +169,7 @@ public abstract class FieldedEntity : DataEntity {
 		}
 
 	WithFieldSpec:
-		fval = reader.Read(fspec);
+		fval = fr.Read(fspec);
 
 	Found:
 		{
