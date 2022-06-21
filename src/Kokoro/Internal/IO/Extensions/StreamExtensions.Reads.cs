@@ -3,7 +3,7 @@ using Kokoro.Common.Util;
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
-internal static class StreamExtensions {
+internal static partial class StreamExtensions {
 
 	public static byte[] ReadFully(this Stream stream) {
 		MemoryStream mstream = new();
