@@ -41,9 +41,10 @@ internal struct FieldsReader : IDisposable {
 
 			try {
 				const int MaxSize = 0b111 + 1; // 7 + 1 == 8
-				const int MaxCount = int.MaxValue / MaxSize;
+				const int MaxCount = int.MaxValue / MaxSize; // Same as `>> 3`
 
-				const ulong MaxDesc = (ulong)MaxCount << 3 | 0b111;
+				const uint MaxDesc = MaxCount << 3 | 0b111; // Same as `int.MaxValue`
+				Debug.Assert(MaxDesc == int.MaxValue);
 
 				// --
 				// Read the descriptor for the list of field offsets
