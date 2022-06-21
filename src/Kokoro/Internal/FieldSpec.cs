@@ -21,7 +21,7 @@ internal readonly struct FieldSpec {
 		get => BitHelper.HasFlag(Value, 2);
 	}
 
-	public FieldStoreType StoType {
+	public FieldStoreType StoreType {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => (FieldStoreType)(Value & 0xb11);
 	}

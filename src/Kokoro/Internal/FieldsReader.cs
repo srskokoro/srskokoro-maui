@@ -102,7 +102,7 @@ internal struct FieldsReader : IDisposable {
 		Stream? stream;
 		int index = fspec.Index;
 
-		if (fspec.StoType != FieldStoreType.Shared) {
+		if (fspec.StoreType != FieldStoreType.Shared) {
 			if ((uint)index < (uint)st._FieldCount) {
 				stream = st._Stream!;
 				goto DoLoad;
@@ -186,7 +186,7 @@ internal struct FieldsReader : IDisposable {
 		Stream? stream;
 		int index = fspec.Index;
 
-		if (fspec.StoType != FieldStoreType.Shared) {
+		if (fspec.StoreType != FieldStoreType.Shared) {
 			if ((uint)index < (uint)st._FieldCount) {
 				stream = st._Stream!;
 				goto DoLoad;

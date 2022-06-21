@@ -161,7 +161,7 @@ public abstract class FieldedEntity : DataEntity {
 				r.DAssert_Name(0, "idx_a_sto");
 				fspec = r.GetInt32(0);
 				Debug.Assert(fspec.Index >= 0);
-				fspec.StoType.DAssert_Defined();
+				fspec.StoreType.DAssert_Defined();
 				goto WithFieldSpec;
 			} else {
 				goto WithoutFieldSpec;
