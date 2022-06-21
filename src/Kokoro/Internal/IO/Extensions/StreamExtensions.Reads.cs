@@ -16,7 +16,7 @@ internal static partial class StreamExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static ulong ReadVarInt(this Stream stream) {
-		Span<byte> buffer = stackalloc byte[9];
+		Span<byte> buffer = stackalloc byte[VarInts.MaxLength64];
 		int sread = stream.Read(buffer);
 
 		int vread = VarInts.Read(buffer[..sread], out ulong result);
@@ -33,7 +33,7 @@ internal static partial class StreamExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static ulong ReadVarIntOrZero(this Stream stream) {
-		Span<byte> buffer = stackalloc byte[9];
+		Span<byte> buffer = stackalloc byte[VarInts.MaxLength64];
 		int sread = stream.Read(buffer);
 
 		int vread = VarInts.Read(buffer[..sread], out ulong result);
@@ -45,7 +45,7 @@ internal static partial class StreamExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static int TryReadVarInt(this Stream stream, out ulong result) {
-		Span<byte> buffer = stackalloc byte[9];
+		Span<byte> buffer = stackalloc byte[VarInts.MaxLength64];
 		int sread = stream.Read(buffer);
 
 		int vread = VarInts.Read(buffer[..sread], out result);
