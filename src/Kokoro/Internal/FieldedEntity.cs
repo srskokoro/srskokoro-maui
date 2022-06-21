@@ -200,8 +200,11 @@ public abstract class FieldedEntity : DataEntity {
 	private protected abstract FieldVal? OnLoadFatField(KokoroSqliteDb db, long fieldId);
 
 	private protected void UnloadField(StringKey fieldName) {
-		_FieldChanges?.Remove(fieldName);
-		_Fields?.Remove(fieldName);
+		var fields = _Fields;
+		if (fields != null) {
+			fields.Remove(fieldName);
+			_FieldChanges?.Remove(fieldName);
+		}
 	}
 
 	public void UnloadFields() {
