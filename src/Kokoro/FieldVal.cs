@@ -42,4 +42,11 @@ public sealed class FieldVal {
 		// `int.MaxValue` (which is ~2GiB).
 		return (uint)VarInts.Length((uint)_TypeHint) + (uint)_Data.Length;
 	}
+
+	// --
+
+	public void WriteTo(Stream destination) {
+		destination.WriteVarInt((FieldTypeHintInt)_TypeHint);
+		destination.Write(_Data);
+	}
 }

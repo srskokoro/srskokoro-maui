@@ -10,6 +10,7 @@ internal readonly record struct LatentFieldVal {
 	}
 
 	private readonly Stream? _Stream;
+	// TODO Use `int` offset and length -- given that SQLite doesn't support BLOBs > 2147483647 (i.e., `int.MaxValue`)
 	private readonly long _Offset;
 	private readonly long _Length;
 
@@ -37,5 +38,14 @@ internal readonly record struct LatentFieldVal {
 		Stream = this.Stream;
 		Offset = _Offset;
 		Length = _Length;
+	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void WriteTo(Stream destination) {
+		var source = Stream;
+		source.Position = _Offset;
+		source.CopyPartlyTo(destination, _Length);
 	}
 }
