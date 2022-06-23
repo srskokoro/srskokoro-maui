@@ -77,6 +77,8 @@ internal static partial class StreamExtensions {
 		return result;
 	}
 
+	// --
+
 	[DoesNotReturn]
 	private static void E_EndOfStream_InvOp()
 		=> throw new InvalidOperationException("The stream didn't contain enough data to read the requested item.");
