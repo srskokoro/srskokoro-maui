@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Internal;
+using Kokoro.Common.Sqlite;
 using Kokoro.Internal.Sqlite;
-using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
 public abstract class FieldedEntity : DataEntity {
@@ -128,9 +128,9 @@ public abstract class FieldedEntity : DataEntity {
 		// by loading the fielded entity first) or by not calling this method if
 		// the fielded entity is found to not exist (either because it no longer
 		// exists or it simply didn't exist to begin with).
-		return new SqliteBlob(db,
-			tableName: "Schema", columnName: "data",
-			rowid: _SchemaRowId, readOnly: true);
+		return SqliteBlobSlim.Open(db,
+			tableName: "Schema", columnName: "data", rowid: _SchemaRowId,
+			canWrite: false, throwOnAccessFail: true)!;
 	}
 
 	internal virtual Stream GetColdData(KokoroSqliteDb db) => Stream.Null;

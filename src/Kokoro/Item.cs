@@ -1,4 +1,5 @@
 ﻿namespace Kokoro;
+using Kokoro.Common.Sqlite;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
@@ -112,9 +113,9 @@ public sealed class Item : FieldedEntity {
 
 
 	internal sealed override Stream GetHotData(KokoroSqliteDb db) {
-		return new SqliteBlob(db,
-			tableName: "Item", columnName: "data",
-			rowid: _RowId, readOnly: true);
+		return SqliteBlobSlim.Open(db,
+			tableName: "Item", columnName: "data", rowid: _RowId,
+			canWrite: false, throwOnAccessFail: true)!;
 	}
 
 	// --
