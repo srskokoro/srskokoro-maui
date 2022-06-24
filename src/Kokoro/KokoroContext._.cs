@@ -50,7 +50,7 @@ public partial class KokoroContext : IDisposable {
 	// NOTE: 41 is the length of the interpolated string `$"{UInt64.MaxValue}.{UInt64.MaxValue}"`
 	private const int DataVersionFileHeaderWithVersion_MaxChars = 41 + DataVersionFileHeader_Length;
 	private const int DataVersionFileHeaderWithVersion_MaxBytes =
-		IOUtils.MaxBytesForBom + DataVersionFileHeaderWithVersion_MaxChars * IOUtils.MaxBytesPerChar;
+		TextUtils.MaxBytesForBom + DataVersionFileHeaderWithVersion_MaxChars * TextUtils.MaxBytesPerChar;
 
 	internal const string TrashDir = $"trash";
 
@@ -138,7 +138,7 @@ public partial class KokoroContext : IDisposable {
 				}
 
 				verBytes = verBytes[..verBytesRead];
-				var verEnc = IOUtils.GetEncoding(verBytes);
+				var verEnc = TextUtils.GetEncoding(verBytes);
 
 				Span<char> verChars = stackalloc char[verEnc.GetCharCount(verBytes)];
 				verEnc.GetChars(verBytes, verChars);

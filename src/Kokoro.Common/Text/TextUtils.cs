@@ -1,6 +1,6 @@
-﻿namespace Kokoro.Common.IO;
+﻿namespace Kokoro.Common.Text;
 
-internal static partial class IOUtils {
+internal static partial class TextUtils {
 
 	public static byte[] ToUTF8BytesWithBom(this string s) {
 		var utf8 = Encoding.UTF8;

@@ -1,6 +1,6 @@
-﻿namespace Kokoro.Common.IO;
+﻿namespace Kokoro.Common.Text;
 
-internal static partial class IOUtils {
+internal static partial class TextUtils {
 
 	internal static class EncodingCache {
 		internal static readonly UTF8Encoding UTF8N = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);

@@ -1,7 +1,6 @@
 ﻿namespace Kokoro;
 using Blake2Fast;
 using Blake2Fast.Implementation;
-using Kokoro.Common.IO;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
