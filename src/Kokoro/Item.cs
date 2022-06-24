@@ -118,6 +118,12 @@ public sealed class Item : FieldedEntity {
 			canWrite: false, throwOnAccessFail: true)!;
 	}
 
+	internal sealed override Stream GetColdData(KokoroSqliteDb db) {
+		return SqliteBlobSlim.Open(db,
+			tableName: "ItemToColdField", columnName: "data", rowid: _RowId,
+			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
+	}
+
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
