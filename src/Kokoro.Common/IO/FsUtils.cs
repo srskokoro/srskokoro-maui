@@ -40,7 +40,7 @@ internal static class FsUtils {
 		};
 
 		foreach (var (child, rootLen, nameLen, attr, (lastAccessUtc, lastWriteUtc)) in fse) {
-			string childDest = Path.Join(destDir, child.AsSpan()[rootLen..]);
+			string childDest = Path.Join(destDir, child.AsSpan(rootLen));
 
 			FileSystemInfo fsInfo;
 			if ((attr & FileAttributes.ReparsePoint) != 0) {
