@@ -366,7 +366,7 @@ internal sealed class SqliteBlobSlim : Stream {
 
 	[DoesNotReturn]
 	private static void Read__E_BeforeBegin_IO()
-		=> throw new IOException("An attempt was made to read at a position before the beginning of the stream.");
+		=> throw new IOException("An attempt was made to read from a position before the beginning of the stream.");
 
 	[DoesNotReturn]
 	private static void Write__E_BeforeBegin_IO()
