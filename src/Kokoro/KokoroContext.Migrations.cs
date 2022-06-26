@@ -102,7 +102,7 @@ partial class KokoroContext {
 			"ord_modst INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
-			// more other items or fielded enities.
+			// more other items or fielded entities.
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFk + "," +
 
 			// A modstamp, a number of milliseconds since Unix epoch, when the
