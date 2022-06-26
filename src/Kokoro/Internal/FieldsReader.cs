@@ -102,12 +102,13 @@ internal struct FieldsReader : IDisposable {
 
 		Stream? stream;
 		int index = fspec.Index;
+		var sto = fspec.StoreType;
 
-		if (fspec.StoreType != FieldStoreType.Shared) {
+		if (sto != FieldStoreType.Shared) {
 			if ((uint)index < (uint)st._FieldCount) {
 				stream = st._Stream!;
 				goto DoLoad;
-			} else {
+			} else if (sto != FieldStoreType.Hot) {
 				index -= st._FieldCount;
 
 				st = ref _ColdState;
@@ -119,6 +120,9 @@ internal struct FieldsReader : IDisposable {
 					// This becomes a conditional jump forward to not favor it
 					goto InitColdState;
 				}
+			} else {
+				// This becomes a conditional jump forward to not favor it
+				goto Fail;
 			}
 		} else {
 			st = ref _SchemaState;
@@ -186,12 +190,13 @@ internal struct FieldsReader : IDisposable {
 
 		Stream? stream;
 		int index = fspec.Index;
+		var sto = fspec.StoreType;
 
-		if (fspec.StoreType != FieldStoreType.Shared) {
+		if (sto != FieldStoreType.Shared) {
 			if ((uint)index < (uint)st._FieldCount) {
 				stream = st._Stream!;
 				goto DoLoad;
-			} else {
+			} else if (sto != FieldStoreType.Hot) {
 				index -= st._FieldCount;
 
 				st = ref _ColdState;
@@ -203,6 +208,9 @@ internal struct FieldsReader : IDisposable {
 					// This becomes a conditional jump forward to not favor it
 					goto InitColdState;
 				}
+			} else {
+				// This becomes a conditional jump forward to not favor it
+				goto Fail;
 			}
 		} else {
 			st = ref _SchemaState;
