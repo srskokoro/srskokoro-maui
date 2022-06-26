@@ -98,6 +98,10 @@ internal struct FieldsReader : IDisposable {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public LatentFieldVal ReadLater(FieldSpec fspec) {
+		/// NOTICE: This method is mirrored by <see cref="Read(FieldSpec)"/>
+		/// below. If you make any changes here, make sure to keep that version
+		/// in sync as well.
+
 		ref State st = ref _HotState;
 
 		Stream? stream;
@@ -105,10 +109,13 @@ internal struct FieldsReader : IDisposable {
 		var sto = fspec.StoreType;
 
 		if (sto != FieldStoreType.Shared) {
+			// Case: local field
 			if ((uint)index < (uint)st._FieldCount) {
+				// Case: hot field
 				stream = st._Stream!;
 				goto DoLoad;
 			} else if (sto != FieldStoreType.Hot) {
+				// Case: cold field
 				index -= st._FieldCount;
 
 				st = ref _ColdState;
@@ -121,10 +128,12 @@ internal struct FieldsReader : IDisposable {
 					goto InitColdState;
 				}
 			} else {
+				// Case: hot field (but out of bounds)
 				// This becomes a conditional jump forward to not favor it
 				goto Fail;
 			}
 		} else {
+			// Case: shared field (located at the schema-level)
 			st = ref _SchemaState;
 			stream = st._Stream;
 
@@ -138,6 +147,10 @@ internal struct FieldsReader : IDisposable {
 
 	DoLoad:
 		{
+			// TODO Never store the first offset (it's always zero anyway)
+			// - Simply check the index for zero, and if so, skip loading for
+			// the offset, and make the offset `0` instead.
+			//   - The common case should be the index being nonzero.
 			int fSize = st._FieldOffsetSize;
 			stream.Position = st._FieldOffsetListPos + index * fSize;
 
@@ -186,6 +199,10 @@ internal struct FieldsReader : IDisposable {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public FieldVal Read(FieldSpec fspec) {
+		/// NOTICE: This method is mirrored by <see cref="ReadLater(FieldSpec)"/>
+		/// above. If you make any changes here, make sure to keep that version
+		/// in sync as well.
+
 		ref State st = ref _HotState;
 
 		Stream? stream;
@@ -193,10 +210,13 @@ internal struct FieldsReader : IDisposable {
 		var sto = fspec.StoreType;
 
 		if (sto != FieldStoreType.Shared) {
+			// Case: local field
 			if ((uint)index < (uint)st._FieldCount) {
+				// Case: hot field
 				stream = st._Stream!;
 				goto DoLoad;
 			} else if (sto != FieldStoreType.Hot) {
+				// Case: cold field
 				index -= st._FieldCount;
 
 				st = ref _ColdState;
@@ -209,10 +229,12 @@ internal struct FieldsReader : IDisposable {
 					goto InitColdState;
 				}
 			} else {
+				// Case: hot field (but out of bounds)
 				// This becomes a conditional jump forward to not favor it
 				goto Fail;
 			}
 		} else {
+			// Case: shared field (located at the schema-level)
 			st = ref _SchemaState;
 			stream = st._Stream;
 
@@ -226,6 +248,10 @@ internal struct FieldsReader : IDisposable {
 
 	DoLoad:
 		{
+			// TODO Never store the first offset (it's always zero anyway)
+			// - Simply check the index for zero, and if so, skip loading for
+			// the offset, and make the offset `0` instead.
+			//   - The common case should be the index being nonzero.
 			int fSize = st._FieldOffsetSize;
 			stream.Position = st._FieldOffsetListPos + index * fSize;
 
