@@ -96,7 +96,7 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
-	public static void WriteUIntX(this Stream stream, ulong value, int sizeOfUIntX) {
+	public static void WriteUInt64AsUIntX(this Stream stream, ulong value, int sizeOfUIntX) {
 		const int MaxSize = sizeof(ulong);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
 			ThrowHelper.ThrowArgumentOutOfRangeException();
@@ -114,7 +114,7 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
-	public static void WriteUIntXUpTo4Bytes(this Stream stream, uint value, int sizeOfUIntX) {
+	public static void WriteUInt32AsUIntX(this Stream stream, uint value, int sizeOfUIntX) {
 		const int MaxSize = sizeof(uint);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
 			ThrowHelper.ThrowArgumentOutOfRangeException();
