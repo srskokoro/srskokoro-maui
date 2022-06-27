@@ -7,6 +7,15 @@ using System.Runtime.InteropServices;
 
 internal static partial class StreamExtensions {
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object OrNullStream(this Stream? stream) {
+		// Favors the non-null case. The null case becomes the conditional jump forward.
+		if (stream != null) return stream;
+		return Stream.Null;
+	}
+
+	// --
+
 	private const int DefaultCopyBufferSize = 8192;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
