@@ -28,8 +28,8 @@ internal struct FieldsReader : IDisposable {
 
 	private readonly struct State {
 		internal readonly Stream? _Stream;
-		internal readonly int _FieldCount, _FOSize;
-		internal readonly int _FOListPos, _FieldValListPos;
+		internal readonly int _FieldCount, _FOffsetSize;
+		internal readonly int _FOffsetListPos, _FieldValListPos;
 
 		[Obsolete("Shouldn't use.", error: true)]
 		public State() => throw new NotSupportedException("Shouldn't use.");
@@ -61,13 +61,13 @@ internal struct FieldsReader : IDisposable {
 				// in bytes of the entire field offset list
 				int fieldOffsetListSize =
 					(_FieldCount = fDesc.FieldCount) *
-					(_FOSize = fDesc.FOSize);
+					(_FOffsetSize = fDesc.FOffsetSize);
 
 				// --
 
 				uint u_fieldValListPos = (uint)checked(
 					_FieldValListPos = (
-						_FOListPos = unchecked((int)stream.Position)
+						_FOffsetListPos = unchecked((int)stream.Position)
 					) + fieldOffsetListSize
 				);
 
@@ -97,8 +97,8 @@ internal struct FieldsReader : IDisposable {
 				// the stream, all in one go.
 
 				_FieldCount = 0;
-				_FOSize = 1;
-				_FieldValListPos = _FOListPos = 0;
+				_FOffsetSize = 1;
+				_FieldValListPos = _FOffsetListPos = 0;
 			}
 		}
 	}
@@ -181,15 +181,15 @@ internal struct FieldsReader : IDisposable {
 			// - Simply check the index for zero, and if so, skip loading for
 			// the offset, and make the offset `0` instead.
 			//   - The common case should be the index being nonzero.
-			int foSize = st._FOSize;
-			stream.Position = st._FOListPos + index * foSize;
+			int fOffsetSize = st._FOffsetSize;
+			stream.Position = st._FOffsetListPos + index * fOffsetSize;
 
-			int fOffset = (int)stream.ReadUIntXAsUInt32(foSize);
+			int fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
 
 			int fValLen;
 			if ((uint)index + 1u < (uint)st._FieldCount) {
-				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(foSize);
+				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: {(uint)fOffsetNext:X}");
 
 				fValLen = fOffsetNext - fOffset;
@@ -282,15 +282,15 @@ internal struct FieldsReader : IDisposable {
 			// - Simply check the index for zero, and if so, skip loading for
 			// the offset, and make the offset `0` instead.
 			//   - The common case should be the index being nonzero.
-			int foSize = st._FOSize;
-			stream.Position = st._FOListPos + index * foSize;
+			int fOffsetSize = st._FOffsetSize;
+			stream.Position = st._FOffsetListPos + index * fOffsetSize;
 
-			int fOffset = (int)stream.ReadUIntXAsUInt32(foSize);
+			int fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
 
 			int fValLen;
 			if ((uint)index + 1u < (uint)st._FieldCount) {
-				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(foSize);
+				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: {(uint)fOffsetNext:X}");
 
 				fValLen = fOffsetNext - fOffset;

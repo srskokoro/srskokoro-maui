@@ -14,12 +14,12 @@ internal readonly struct FieldsDesc {
 
 	// --
 
-	public const int MaxFOSizeM1Or0 = 0b11; // 3
-	public const int MaxFOSize = 0b11 + 1; // 3 + 1 == 4
+	public const int MaxFOffsetSizeM1Or0 = 0b11; // 3
+	public const int MaxFOffsetSize = 0b11 + 1; // 3 + 1 == 4
 
-	public const int MaxFieldCount = int.MaxValue / MaxFOSize; // Same as `>> 2`
+	public const int MaxFieldCount = int.MaxValue / MaxFOffsetSize; // Same as `>> 2`
 
-	public const int MaxValue = MaxFieldCount << 2 | MaxFOSizeM1Or0; // Same as `int.MaxValue`
+	public const int MaxValue = MaxFieldCount << 2 | MaxFOffsetSizeM1Or0; // Same as `int.MaxValue`
 
 	// --
 
@@ -28,12 +28,12 @@ internal readonly struct FieldsDesc {
 		get => (int)(Value >> 2);
 	}
 
-	public int FOSize {
+	public int FOffsetSize {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => FOSizeM1Or0 + 1;
+		get => FOffsetSizeM1Or0 + 1;
 	}
 
-	public int FOSizeM1Or0 {
+	public int FOffsetSizeM1Or0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => (int)Value & 0b11;
 	}
@@ -61,11 +61,11 @@ internal readonly struct FieldsDesc {
 	public static implicit operator FieldsDesc(uint value) => new(value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldsDesc(int fCount, int foSizeM1Or0) {
-		Value = (uint)fCount << 2 | (uint)foSizeM1Or0;
+	public FieldsDesc(int fCount, int fOffsetSizeM1Or0) {
+		Value = (uint)fCount << 2 | (uint)fOffsetSizeM1Or0;
 
 		Debug.Assert(FieldCount == fCount);
-		Debug.Assert(FOSizeM1Or0 == foSizeM1Or0);
+		Debug.Assert(FOffsetSizeM1Or0 == fOffsetSizeM1Or0);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
