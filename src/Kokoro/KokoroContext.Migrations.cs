@@ -122,8 +122,8 @@ partial class KokoroContext {
 			// The BLOB comprising the list of field data.
 			//
 			// The BLOB format is as follows, listed in order:
-			// 1. A 64-bit unsigned integer stored as a varint.
-			//   - In 64-bit form, the 3 LSBs indicate the minimum amount of
+			// 1. A 32-bit unsigned integer stored as a varint.
+			//   - In 32-bit form, the 2 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
 			//   integers that will be defined in *point 2*; the remaining bits
 			//   indicate the number of integers in the said list.
@@ -131,9 +131,9 @@ partial class KokoroContext {
 			//   - Each is a byte offset, where offset 0 is the location of the
 			//   first byte in *point 3*.
 			//   - Each occupies X bytes, where X is the minimum amount of bytes
-			//   needed to store the largest integer in the list. The 3 LSBs in
-			//   *point 1* determines X: `0b000` (or `0x0`) means X is 1 byte,
-			//   `0b111` (or `0x7`) means X is 8 bytes, etc.
+			//   needed to store the largest integer in the list. The 2 LSBs in
+			//   *point 1* determines X: `0b00` (or `0x0`) means X is 1 byte,
+			//   `0b11` (or `0x3`) means X is 4 bytes, etc.
 			//   - Each field offset must always be greater than or equal to all
 			//   preceding field offsets, so that the preceding field's length
 			//   can be computed. Otherwise, the length cannot be computed and
