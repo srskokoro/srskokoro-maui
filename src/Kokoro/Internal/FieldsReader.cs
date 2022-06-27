@@ -36,6 +36,8 @@ internal struct FieldsReader : IDisposable {
 
 		[SkipLocalsInit]
 		public State(Stream stream) {
+			Debug.Assert(stream != null);
+
 			// SQLite doesn't support BLOBs > 2147483647 (i.e., `int.MaxValue`)
 			Debug.Assert(stream.Length <= int.MaxValue);
 
@@ -74,7 +76,7 @@ internal struct FieldsReader : IDisposable {
 				}
 
 			} catch (Exception ex) when (
-				ex is OverflowException ||
+				ex is OverflowException || stream == null ||
 				(ex is NotSupportedException && (!stream.CanRead || !stream.CanSeek))
 			) {
 				// NOTE: We ensure that the constructor never throws under
