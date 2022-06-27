@@ -29,14 +29,16 @@ internal struct FieldsReader : IDisposable {
 	private readonly struct State {
 		internal readonly Stream? _Stream;
 		internal readonly int _FieldCount, _FieldOffsetSize;
-		internal readonly long _FieldOffsetListPos;
-		internal readonly long _FieldValListPos;
+		internal readonly int _FieldOffsetListPos, _FieldValListPos;
 
 		[Obsolete("Shouldn't use.", error: true)]
 		public State() => throw new NotSupportedException("Shouldn't use.");
 
 		[SkipLocalsInit]
 		public State(Stream stream) {
+			// SQLite doesn't support BLOBs > 2147483647 (i.e., `int.MaxValue`)
+			Debug.Assert(stream.Length <= int.MaxValue);
+
 			_Stream = stream;
 
 			try {
@@ -65,16 +67,24 @@ internal struct FieldsReader : IDisposable {
 
 				// --
 
-				_FieldValListPos = (_FieldOffsetListPos = stream.Position) + fieldOffsetListSize;
+				checked {
+					_FieldValListPos = (
+						_FieldOffsetListPos = (int)stream.Position
+					) + fieldOffsetListSize;
+				}
 
-			} catch (NotSupportedException) when (!stream.CanRead || !stream.CanSeek) {
+			} catch (Exception ex) when (
+				ex is OverflowException ||
+				(ex is NotSupportedException && (!stream.CanRead || !stream.CanSeek))
+			) {
 				// NOTE: We ensure that the constructor never throws under
 				// normal circumstances: if we simply couldn't read the needed
 				// data to complete initialization, then we should just swallow
-				// the exception, and initialize with reasonable defaults. So
-				// far, the only exception we should guard against is the one
-				// thrown when the stream doesn't support reading or seeking (as
-				// the code in the above try-block requires it).
+				// the exception, and initialize with reasonable defaults. Other
+				// than the overflow check, the only other exception we must
+				// guard against for now is the one thrown when the stream does
+				// not support reading or seeking (as the code in the above
+				// try-block requires it).
 				//
 				// That way, a try-finally or `using` block can be set up right
 				// after construction, to properly dispose the state along with
@@ -156,19 +166,19 @@ internal struct FieldsReader : IDisposable {
 			int fSize = st._FieldOffsetSize;
 			stream.Position = st._FieldOffsetListPos + index * fSize;
 
-			long fOffset = (long)stream.ReadUIntX(fSize);
-			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `long.MaxValue`: {(ulong)fOffset:X}");
+			int fOffset = (int)stream.ReadUIntXAsUInt32(fSize);
+			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
 
-			long fValLen;
+			int fValLen;
 			if ((uint)index + 1u < (uint)st._FieldCount) {
-				long fOffsetNext = (long)stream.ReadUIntX(fSize);
-				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `long.MaxValue`: {(ulong)fOffsetNext:X}");
+				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fSize);
+				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: {(uint)fOffsetNext:X}");
 
 				fValLen = fOffsetNext - fOffset;
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
 			} else {
-				fValLen = stream.Length - fOffset;
+				fValLen = (int)(stream.Length - fOffset);
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
@@ -257,19 +267,19 @@ internal struct FieldsReader : IDisposable {
 			int fSize = st._FieldOffsetSize;
 			stream.Position = st._FieldOffsetListPos + index * fSize;
 
-			long fOffset = (long)stream.ReadUIntX(fSize);
-			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `long.MaxValue`: {(ulong)fOffset:X}");
+			int fOffset = (int)stream.ReadUIntXAsUInt32(fSize);
+			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
 
-			long fValLen;
+			int fValLen;
 			if ((uint)index + 1u < (uint)st._FieldCount) {
-				long fOffsetNext = (long)stream.ReadUIntX(fSize);
-				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `long.MaxValue`: {(ulong)fOffsetNext:X}");
+				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fSize);
+				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: {(uint)fOffsetNext:X}");
 
 				fValLen = fOffsetNext - fOffset;
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
 			} else {
-				fValLen = stream.Length - fOffset;
+				fValLen = (int)(stream.Length - fOffset);
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
