@@ -48,6 +48,8 @@ internal readonly record struct LatentFieldVal {
 		source.CopyPartlyTo(destination, _Length);
 	}
 
+	// --
+
 	#region Equality and Comparability
 
 	public readonly bool Equals(LatentFieldVal other) {
