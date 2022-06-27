@@ -17,7 +17,7 @@ internal static class FsUtils {
 	private readonly record struct CopyDirContents_FseResult(
 		string Child, int RootLength, int NameLength, FileAttributes Attributes,
 		(DateTimeOffset LastAccessUtc, DateTimeOffset LastWriteUtc) FileTimes
-	) { }
+	);
 
 	public static void CopyDirContents(string srcDir, string destDir) {
 		// Will throw (on enumeration) if not a directory
