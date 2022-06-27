@@ -47,4 +47,17 @@ internal readonly record struct LatentFieldVal {
 		source.Position = _Offset;
 		source.CopyPartlyTo(destination, _Length);
 	}
+
+	#region Equality and Comparability
+
+	public readonly bool Equals(LatentFieldVal other) {
+		if (_Stream == other._Stream && _Offset == other._Offset && _Length == other._Length)
+			return true;
+		return false;
+	}
+
+	public override readonly int GetHashCode()
+		=> HashCode.Combine(_Stream, _Offset, _Length);
+
+	#endregion
 }
