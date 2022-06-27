@@ -40,20 +40,22 @@ internal struct FieldsReader : IDisposable {
 			_Stream = stream;
 
 			try {
-				const int MaxSize = 0b11 + 1; // 3 + 1 == 4
-				const int MaxCount = int.MaxValue / MaxSize; // Same as `>> 2`
-
-				const uint MaxDesc = MaxCount << 2 | 0b11; // Same as `int.MaxValue`
-				Debug.Assert(MaxDesc == int.MaxValue);
-
 				// --
 				// Read the descriptor for the list of field offsets
-				ulong fDesc = stream.ReadVarIntOrZero();
-				Debug.Assert(fDesc <= MaxDesc, $"`{nameof(fDesc)}` too large: {fDesc:X}");
+				FieldsDesc fDesc;
+				{
+					const uint MaxDesc = FieldsDesc.MaxValue;
+					Debug.Assert(MaxDesc == int.MaxValue);
+
+					ulong fDescU64 = stream.ReadVarIntOrZero();
+					Debug.Assert(fDescU64 <= MaxDesc, $"`{nameof(fDescU64)}` too large: {fDescU64:X}");
+
+					fDesc = (uint)fDescU64;
+				}
 
 				// Get the field count and field offset integer size
-				int fCount = (int)(fDesc >> 2);
-				int fSize = ((int)fDesc & 0b11) + 1;
+				int fCount = fDesc.FieldCount;
+				int fSize = fDesc.FOSize;
 
 				_FieldCount = fCount;
 				_FieldOffsetSize = fSize;
