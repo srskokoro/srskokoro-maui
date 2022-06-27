@@ -57,15 +57,11 @@ internal struct FieldsReader : IDisposable {
 					fDesc = (uint)fDescU64;
 				}
 
-				// Get the field count and field offset integer size
-				int fCount = fDesc.FieldCount;
-				int fSize = fDesc.FOSize;
-
-				_FieldCount = fCount;
-				_FieldOffsetSize = fSize;
-
-				// The size in bytes of the entire field offset list
-				int fieldOffsetListSize = fCount * fSize;
+				// Get the field count, field offset integer size, and the size
+				// in bytes of the entire field offset list
+				int fieldOffsetListSize =
+					(_FieldCount = fDesc.FieldCount) *
+					(_FieldOffsetSize = fDesc.FOSize);
 
 				// --
 
