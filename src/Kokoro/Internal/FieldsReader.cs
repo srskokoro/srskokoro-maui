@@ -69,11 +69,19 @@ internal struct FieldsReader : IDisposable {
 
 				// --
 
-				checked {
+				uint u_fieldValListPos = (uint)checked(
 					_FieldValListPos = (
-						_FieldOffsetListPos = (int)stream.Position
-					) + fieldOffsetListSize;
-				}
+						_FieldOffsetListPos = unchecked((int)stream.Position)
+					) + fieldOffsetListSize
+				);
+
+				// NOTE: If the following won't throw, the `(int)stream.Position`
+				// before us was truncated as a positve integer successfully.
+				uint u_streamLength = (uint)checked((int)unchecked((ulong)stream.Length));
+
+				/// Ensure <see cref="HotFieldValsLength"/> will never return a
+				/// negative value.
+				_ = checked(u_streamLength - u_fieldValListPos);
 
 			} catch (Exception ex) when (
 				ex is OverflowException || stream == null ||
@@ -108,6 +116,18 @@ internal struct FieldsReader : IDisposable {
 	// --
 
 	public FieldedEntity Owner => _Owner;
+
+	public int HotFieldCount => _HotState._FieldCount;
+
+	public int HotFieldValsLength {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get {
+			ref var st = ref _HotState;
+			int n = (int)st._Stream!.Length - st._FieldValListPos;
+			Debug.Assert(n >= 0, "Constructor should've ensured this to be never negative.");
+			return n;
+		}
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
