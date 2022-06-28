@@ -319,6 +319,7 @@ internal struct FieldsReader : IDisposable {
 					return new(typeHint, data);
 				}
 			}
+			// Fallthrough
 		}
 
 	Fail:
