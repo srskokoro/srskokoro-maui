@@ -125,8 +125,10 @@ partial class KokoroContext {
 			// 1. A 32-bit unsigned integer stored as a varint.
 			//   - In 32-bit form, the 2 LSBs indicate the minimum amount of
 			//   bytes needed to store the largest integer in the list of
-			//   integers that will be defined in *point 2*; the remaining bits
-			//   indicate the number of integers in the said list.
+			//   integers that will be defined in *point 2*; the next bit (at
+			//   bit index 2, of LSB 0 bit numbering) is reserved for a special
+			//   purpose; the remaining bits indicate the number of integers in
+			//   the list of integers mentioned earlier.
 			// 2. The list of field offsets, as a list of 32-bit unsigned
 			// integers.
 			//   - Each is a byte offset, where offset 0 is the location of the
