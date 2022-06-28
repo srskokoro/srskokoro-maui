@@ -127,7 +127,8 @@ partial class KokoroContext {
 			//   bytes needed to store the largest integer in the list of
 			//   integers that will be defined in *point 2*; the remaining bits
 			//   indicate the number of integers in the said list.
-			// 2. The list of field offsets, as a list of unsigned integers.
+			// 2. The list of field offsets, as a list of 32-bit unsigned
+			// integers.
 			//   - Each is a byte offset, where offset 0 is the location of the
 			//   first byte in *point 3*.
 			//   - Each occupies X bytes, where X is the minimum amount of bytes
