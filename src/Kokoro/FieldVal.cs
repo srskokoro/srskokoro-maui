@@ -49,9 +49,9 @@ public sealed class FieldVal {
 	// --
 
 	public void WriteTo(Stream destination) {
-		FieldTypeHint typeHint = _TypeHint;
-		if (typeHint != FieldTypeHint.Null) {
-			destination.WriteVarInt((FieldTypeHintInt)typeHint);
+		FieldTypeHintInt typeHint = (FieldTypeHintInt)_TypeHint;
+		if (typeHint != (FieldTypeHintInt)FieldTypeHint.Null) {
+			destination.WriteVarInt(typeHint);
 			destination.Write(_Data);
 		}
 	}
