@@ -204,6 +204,9 @@ internal struct FieldsReader : IDisposable {
 			return new(stream, st._FieldValListPos + fOffset, fValLen);
 		}
 
+	Fail:
+		return LatentFieldVal.Null;
+
 	CheckIndex:
 		if ((uint)index < (uint)st._FieldCount) {
 			goto DoLoad;
@@ -221,9 +224,6 @@ internal struct FieldsReader : IDisposable {
 		stream = _Owner.GetColdData(Db);
 		st = new(stream);
 		goto CheckIndex;
-
-	Fail:
-		return LatentFieldVal.Null;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -319,8 +319,10 @@ internal struct FieldsReader : IDisposable {
 					return new(typeHint, data);
 				}
 			}
-			return FieldVal.Null;
 		}
+
+	Fail:
+		return FieldVal.Null;
 
 	CheckIndex:
 		if ((uint)index < (uint)st._FieldCount) {
@@ -339,8 +341,5 @@ internal struct FieldsReader : IDisposable {
 		stream = _Owner.GetColdData(Db);
 		st = new(stream);
 		goto CheckIndex;
-
-	Fail:
-		return FieldVal.Null;
 	}
 }
