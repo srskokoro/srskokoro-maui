@@ -17,13 +17,13 @@ internal struct FieldsReader : IDisposable {
 	public FieldsReader(FieldedEntity entity) {
 		_Owner = entity;
 		var db = entity.Host.DbOrNull!;
-		_HotState = new(entity.GetHotData(Db = db));
+		_HotState = new(entity.ReadHotStore(Db = db));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsReader(FieldedEntity entity, KokoroSqliteDb db) {
 		_Owner = entity;
-		_HotState = new(entity.GetHotData(Db = db));
+		_HotState = new(entity.ReadHotStore(Db = db));
 	}
 
 	private readonly struct State {
@@ -216,12 +216,12 @@ internal struct FieldsReader : IDisposable {
 		}
 
 	InitSchemaState:
-		stream = _Owner.GetSchemaData(Db);
+		stream = _Owner.ReadSchemaStore(Db);
 		st = new(stream);
 		goto CheckIndex;
 
 	InitColdState:
-		stream = _Owner.GetColdData(Db);
+		stream = _Owner.ReadColdStore(Db);
 		st = new(stream);
 		goto CheckIndex;
 	}
@@ -334,12 +334,12 @@ internal struct FieldsReader : IDisposable {
 		}
 
 	InitSchemaState:
-		stream = _Owner.GetSchemaData(Db);
+		stream = _Owner.ReadSchemaStore(Db);
 		st = new(stream);
 		goto CheckIndex;
 
 	InitColdState:
-		stream = _Owner.GetColdData(Db);
+		stream = _Owner.ReadColdStore(Db);
 		st = new(stream);
 		goto CheckIndex;
 	}

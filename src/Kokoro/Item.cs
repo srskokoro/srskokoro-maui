@@ -112,13 +112,13 @@ public sealed class Item : FieldedEntity {
 	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
 
 
-	internal sealed override Stream GetHotData(KokoroSqliteDb db) {
+	internal sealed override Stream ReadHotStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
 			tableName: "Item", columnName: "data", rowid: _RowId,
 			canWrite: false, throwOnAccessFail: true)!;
 	}
 
-	internal sealed override Stream GetColdData(KokoroSqliteDb db) {
+	internal sealed override Stream ReadColdStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
 			tableName: "ItemToColdField", columnName: "data", rowid: _RowId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;

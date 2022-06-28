@@ -112,10 +112,10 @@ public abstract class FieldedEntity : DataEntity {
 
 	// --
 
-	internal abstract Stream GetHotData(KokoroSqliteDb db);
+	internal abstract Stream ReadHotStore(KokoroSqliteDb db);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal Stream GetSchemaData(KokoroSqliteDb db) {
+	internal Stream ReadSchemaStore(KokoroSqliteDb db) {
 		// NOTE: It's possible for the schema to not exist (in that case, the
 		// following will throw) due to either the schema rowid being invalid
 		// (e.g., if the fielded entity is yet to load it) or the schema no
@@ -133,7 +133,7 @@ public abstract class FieldedEntity : DataEntity {
 			canWrite: false, throwOnAccessFail: true)!;
 	}
 
-	internal virtual Stream GetColdData(KokoroSqliteDb db) => Stream.Null;
+	internal virtual Stream ReadColdStore(KokoroSqliteDb db) => Stream.Null;
 
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
