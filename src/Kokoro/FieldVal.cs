@@ -36,13 +36,12 @@ public sealed class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public uint CountEncodeLength() {
-		FieldTypeHint typeHint = _TypeHint;
-		if (typeHint != FieldTypeHint.Null) {
-			Debug.Assert(typeof(FieldTypeHintInt) == typeof(uint));
+		FieldTypeHintInt typeHint = (FieldTypeHintInt)_TypeHint;
+		if (typeHint != (FieldTypeHintInt)FieldTypeHint.Null) {
 			// Given that we're returning a `uint`, the following computation is
 			// guaranteed to not overflow, since `Array.Length` is limited to
 			// `int.MaxValue` (which is ~2GiB).
-			return (uint)VarInts.Length((uint)typeHint) + (uint)_Data.Length;
+			return (uint)VarInts.Length(typeHint) + (uint)_Data.Length;
 		}
 		return 0;
 	}
