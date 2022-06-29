@@ -31,19 +31,26 @@ internal readonly struct FieldsDesc {
 		get => (int)(Value >> 3);
 	}
 
+	public const byte DescArea_HasColdData_Set = 1 << 2;
+
+	public byte DescArea_HasColdData {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => (byte)Value;
+	}
+
 	public bool HasColdData {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => BitHelper.HasFlag(Value, 2);
 	}
 
-	public int FOffsetSize {
+	public byte FOffsetSize {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => FOffsetSizeM1Or0 + 1;
+		get => (byte)((Value & 0b11) + 1);
 	}
 
-	public int FOffsetSizeM1Or0 {
+	public byte FOffsetSizeM1Or0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)Value & 0b11;
+		get => (byte)(Value & 0b11);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -28,7 +28,11 @@ internal struct FieldsReader : IDisposable {
 
 	private readonly struct State {
 		internal readonly Stream? _Stream;
-		internal readonly int _FieldCount, _FOffsetSize;
+
+		internal readonly int _FieldCount;
+		internal readonly byte _FOffsetSize;
+		internal readonly byte _FDescArea_HasColdData;
+
 		internal readonly int _FOffsetListPos, _FieldValListPos;
 
 		[Obsolete("Shouldn't use.", error: true)]
@@ -56,6 +60,9 @@ internal struct FieldsReader : IDisposable {
 
 					fDesc = (uint)fDescU64;
 				}
+
+				// Only really relevant to the hot store
+				_FDescArea_HasColdData = fDesc.DescArea_HasColdData;
 
 				// Get the field count, field offset integer size, and the size
 				// in bytes of the entire field offset list
@@ -136,16 +143,15 @@ internal struct FieldsReader : IDisposable {
 
 		Stream? stream;
 		int index = fspec.Index;
-		var sto = fspec.StoreType;
 
-		if (sto != FieldStoreType.Shared) {
+		if (fspec.StoreType != FieldStoreType.Shared) {
 			// Case: local field
 			if ((uint)index < (uint)st._FieldCount) {
 				// Case: hot field
 				stream = st._Stream!;
 				goto DoLoad;
-			} else if (sto != FieldStoreType.Hot) {
-				// Case: cold field
+			} else if ((st._FDescArea_HasColdData & FieldsDesc.DescArea_HasColdData_Set) != 0) {
+				// Case: cold field (because there's a cold store)
 				index -= st._FieldCount;
 
 				st = ref _ColdState;
@@ -158,7 +164,7 @@ internal struct FieldsReader : IDisposable {
 					goto InitColdState;
 				}
 			} else {
-				// Case: hot field (but out of bounds)
+				// Case: hot field (because there's no cold store)
 				// This becomes a conditional jump forward to not favor it
 				goto Fail;
 			}
@@ -237,16 +243,15 @@ internal struct FieldsReader : IDisposable {
 
 		Stream? stream;
 		int index = fspec.Index;
-		var sto = fspec.StoreType;
 
-		if (sto != FieldStoreType.Shared) {
+		if (fspec.StoreType != FieldStoreType.Shared) {
 			// Case: local field
 			if ((uint)index < (uint)st._FieldCount) {
 				// Case: hot field
 				stream = st._Stream!;
 				goto DoLoad;
-			} else if (sto != FieldStoreType.Hot) {
-				// Case: cold field
+			} else if ((st._FDescArea_HasColdData & FieldsDesc.DescArea_HasColdData_Set) != 0) {
+				// Case: cold field (because there's a cold store)
 				index -= st._FieldCount;
 
 				st = ref _ColdState;
@@ -259,7 +264,7 @@ internal struct FieldsReader : IDisposable {
 					goto InitColdState;
 				}
 			} else {
-				// Case: hot field (but out of bounds)
+				// Case: hot field (because there's no cold store)
 				// This becomes a conditional jump forward to not favor it
 				goto Fail;
 			}
