@@ -1,12 +1,10 @@
 ﻿namespace Kokoro.Internal;
-using CommunityToolkit.HighPerformance.Helpers;
 
 internal readonly struct FieldsDesc {
 	// Expected bit layout:
 	// - The 2 LSBs represent the number of bytes used to store a field offset
 	// integer, with `0b00` (or `0x0`) meaning 1 byte, `0b11` (or `0x3`) meaning
 	// 4 bytes, etc. -- a field offset is expected to be 32-bit integer.
-	// - The 3rd LSB (at bit index 2) is set if there's a separate cold data.
 	// - The remaining bits indicate the number of fields (and field offset
 	// integers) in the fielded data.
 	//
@@ -19,38 +17,25 @@ internal readonly struct FieldsDesc {
 	public const int MaxFOffsetSizeM1Or0 = 0b11; // 3
 	public const int MaxFOffsetSize = 0b11 + 1; // 3 + 1 == 4
 
-	/// 3 bits == 2 bits for <see cref="FOffsetSizeM1Or0"/> + 1 bit for <see cref="HasColdData"/>
-	public const int MaxFieldCount = int.MaxValue >> 3;
+	public const int MaxFieldCount = int.MaxValue / MaxFOffsetSize; // Same as `>> 2`
 
-	public const int MaxValue = int.MaxValue;
+	public const int MaxValue = MaxFieldCount << 2 | MaxFOffsetSizeM1Or0; // Same as `int.MaxValue`
 
 	// --
 
 	public int FieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)(Value >> 3);
+		get => (int)(Value >> 2);
 	}
 
-	public const byte DescArea_HasColdData_Set = 1 << 2;
-
-	public byte DescArea_HasColdData {
+	public int FOffsetSize {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (byte)Value;
+		get => FOffsetSizeM1Or0 + 1;
 	}
 
-	public bool HasColdData {
+	public int FOffsetSizeM1Or0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => BitHelper.HasFlag(Value, 2);
-	}
-
-	public byte FOffsetSize {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (byte)((Value & 0b11) + 1);
-	}
-
-	public byte FOffsetSizeM1Or0 {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (byte)(Value & 0b11);
+		get => (int)Value & 0b11;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -77,15 +62,7 @@ internal readonly struct FieldsDesc {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsDesc(int fCount, int fOffsetSizeM1Or0) {
-		Value = (uint)fCount << 3 | (uint)fOffsetSizeM1Or0;
-
-		Debug.Assert(FieldCount == fCount);
-		Debug.Assert(FOffsetSizeM1Or0 == fOffsetSizeM1Or0);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldsDesc(int fCount, bool fHasCold, int fOffsetSizeM1Or0) {
-		Value = (uint)fCount << 3 | (uint)fHasCold.ToByte() << 2 | (uint)fOffsetSizeM1Or0;
+		Value = (uint)fCount << 2 | (uint)fOffsetSizeM1Or0;
 
 		Debug.Assert(FieldCount == fCount);
 		Debug.Assert(FOffsetSizeM1Or0 == fOffsetSizeM1Or0);
