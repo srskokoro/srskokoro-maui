@@ -243,6 +243,57 @@ internal struct FieldsReader : IDisposable {
 	}
 
 
+	public void InitSharedStore() {
+		if (_SchemaState.Stream != null) return; // Early exit
+		_SchemaState = new(_Owner.ReadSchemaStore(Db));
+	}
+
+	public bool InitRealSharedStore() {
+		Stream? stream = _SchemaState.Stream;
+		if (stream == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto InitState;
+		}
+
+	CheckStream:
+		// The following produces more efficient asm for the likely (true) case
+		// than simply returning the boolean result of the expression.
+		if (stream != Stream.Null)
+			return true;
+		return false;
+
+	InitState:
+		stream = _Owner.ReadSchemaStore(Db);
+		_SchemaState = new(stream);
+		goto CheckStream;
+	}
+
+	public void InitColdStore() {
+		if (_ColdState.Stream != null) return; // Early exit
+		_ColdState = new(_Owner.ReadColdStore(Db));
+	}
+
+	public bool InitRealColdStore() {
+		Stream? stream = _ColdState.Stream;
+		if (stream == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto InitState;
+		}
+
+	CheckStream:
+		// The following produces more efficient asm for the likely (true) case
+		// than simply returning the boolean result of the expression.
+		if (stream != Stream.Null)
+			return true;
+		return false;
+
+	InitState:
+		stream = _Owner.ReadColdStore(Db);
+		_ColdState = new(stream);
+		goto CheckStream;
+	}
+
+
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public LatentFieldVal ReadLater(FieldSpec fspec) {
