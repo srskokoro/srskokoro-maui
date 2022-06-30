@@ -27,9 +27,9 @@ internal struct FieldsReader : IDisposable {
 	}
 
 	private readonly struct State {
-		public readonly Stream? _Stream;
-		public readonly int _FieldCount, _FOffsetSize;
-		public readonly int _FOffsetListPos, _FieldValListPos;
+		public readonly Stream? Stream;
+		public readonly int FieldCount, FOffsetSize;
+		public readonly int FOffsetListPos, FieldValListPos;
 
 		[Obsolete("Shouldn't use.", error: true)]
 		public State() => throw new NotSupportedException("Shouldn't use.");
@@ -41,7 +41,7 @@ internal struct FieldsReader : IDisposable {
 			// SQLite doesn't support BLOBs > 2147483647 (i.e., `int.MaxValue`)
 			Debug.Assert(stream.Length <= int.MaxValue);
 
-			_Stream = stream;
+			Stream = stream;
 
 			try {
 				// --
@@ -60,14 +60,14 @@ internal struct FieldsReader : IDisposable {
 				// Get the field count, field offset integer size, and the size
 				// in bytes of the entire field offset list
 				int fieldOffsetListSize =
-					(_FieldCount = fDesc.FieldCount) *
-					(_FOffsetSize = fDesc.FOffsetSize);
+					(FieldCount = fDesc.FieldCount) *
+					(FOffsetSize = fDesc.FOffsetSize);
 
 				// --
 
 				uint u_fieldValListPos = (uint)checked(
-					_FieldValListPos = (
-						_FOffsetListPos = unchecked((int)stream.Position)
+					FieldValListPos = (
+						FOffsetListPos = unchecked((int)stream.Position)
 					) + fieldOffsetListSize
 				);
 
@@ -96,30 +96,30 @@ internal struct FieldsReader : IDisposable {
 				// after construction, to properly dispose the state along with
 				// the stream, all in one go.
 
-				_FieldCount = 0;
-				_FOffsetSize = 1;
-				_FieldValListPos = _FOffsetListPos = 0;
+				FieldCount = 0;
+				FOffsetSize = 1;
+				FieldValListPos = FOffsetListPos = 0;
 			}
 		}
 	}
 
 	public void Dispose() {
-		_HotState._Stream!.Dispose();
-		_SchemaState._Stream?.Dispose();
-		_ColdState._Stream?.Dispose();
+		_HotState.Stream!.Dispose();
+		_SchemaState.Stream?.Dispose();
+		_ColdState.Stream?.Dispose();
 	}
 
 	// --
 
 	public FieldedEntity Owner => _Owner;
 
-	public int HotFieldCount => _HotState._FieldCount;
+	public int HotFieldCount => _HotState.FieldCount;
 
 	public int HotFieldValsLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			ref State st = ref _HotState;
-			int n = (int)st._Stream!.Length - st._FieldValListPos;
+			int n = (int)st.Stream!.Length - st.FieldValListPos;
 			Debug.Assert(n >= 0, "Constructor should've ensured this to be non-negative.");
 			return n;
 		}
@@ -140,16 +140,16 @@ internal struct FieldsReader : IDisposable {
 
 		if (sto != FieldStoreType.Shared) {
 			// Case: local field
-			if ((uint)index < (uint)st._FieldCount) {
+			if ((uint)index < (uint)st.FieldCount) {
 				// Case: hot field
-				stream = st._Stream!;
+				stream = st.Stream!;
 				goto DoLoad;
 			} else if (sto != FieldStoreType.Hot) {
 				// Case: cold field
-				index -= st._FieldCount;
+				index -= st.FieldCount;
 
 				st = ref _ColdState;
-				stream = st._Stream;
+				stream = st.Stream;
 
 				if (stream != null) {
 					goto CheckIndex;
@@ -165,7 +165,7 @@ internal struct FieldsReader : IDisposable {
 		} else {
 			// Case: shared field (located at the schema-level)
 			st = ref _SchemaState;
-			stream = st._Stream;
+			stream = st.Stream;
 
 			if (stream != null) {
 				goto CheckIndex;
@@ -181,14 +181,14 @@ internal struct FieldsReader : IDisposable {
 			// - Simply check the index for zero, and if so, skip loading for
 			// the offset, and make the offset `0` instead.
 			//   - The common case should be the index being nonzero.
-			int fOffsetSize = st._FOffsetSize;
-			stream.Position = st._FOffsetListPos + index * fOffsetSize;
+			int fOffsetSize = st.FOffsetSize;
+			stream.Position = st.FOffsetListPos + index * fOffsetSize;
 
 			int fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
 
 			int fValLen;
-			if ((uint)index + 1u < (uint)st._FieldCount) {
+			if ((uint)index + 1u < (uint)st.FieldCount) {
 				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: {(uint)fOffsetNext:X}");
 
@@ -201,14 +201,14 @@ internal struct FieldsReader : IDisposable {
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
 
-			return new(stream, st._FieldValListPos + fOffset, fValLen);
+			return new(stream, st.FieldValListPos + fOffset, fValLen);
 		}
 
 	Fail:
 		return LatentFieldVal.Null;
 
 	CheckIndex:
-		if ((uint)index < (uint)st._FieldCount) {
+		if ((uint)index < (uint)st.FieldCount) {
 			goto DoLoad;
 		} else {
 			// This becomes a conditional jump forward to not favor it
@@ -241,16 +241,16 @@ internal struct FieldsReader : IDisposable {
 
 		if (sto != FieldStoreType.Shared) {
 			// Case: local field
-			if ((uint)index < (uint)st._FieldCount) {
+			if ((uint)index < (uint)st.FieldCount) {
 				// Case: hot field
-				stream = st._Stream!;
+				stream = st.Stream!;
 				goto DoLoad;
 			} else if (sto != FieldStoreType.Hot) {
 				// Case: cold field
-				index -= st._FieldCount;
+				index -= st.FieldCount;
 
 				st = ref _ColdState;
-				stream = st._Stream;
+				stream = st.Stream;
 
 				if (stream != null) {
 					goto CheckIndex;
@@ -266,7 +266,7 @@ internal struct FieldsReader : IDisposable {
 		} else {
 			// Case: shared field (located at the schema-level)
 			st = ref _SchemaState;
-			stream = st._Stream;
+			stream = st.Stream;
 
 			if (stream != null) {
 				goto CheckIndex;
@@ -282,14 +282,14 @@ internal struct FieldsReader : IDisposable {
 			// - Simply check the index for zero, and if so, skip loading for
 			// the offset, and make the offset `0` instead.
 			//   - The common case should be the index being nonzero.
-			int fOffsetSize = st._FOffsetSize;
-			stream.Position = st._FOffsetListPos + index * fOffsetSize;
+			int fOffsetSize = st.FOffsetSize;
+			stream.Position = st.FOffsetListPos + index * fOffsetSize;
 
 			int fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 			Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
 
 			int fValLen;
-			if ((uint)index + 1u < (uint)st._FieldCount) {
+			if ((uint)index + 1u < (uint)st.FieldCount) {
 				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 				Debug.Assert(fOffsetNext < 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: {(uint)fOffsetNext:X}");
 
@@ -304,7 +304,7 @@ internal struct FieldsReader : IDisposable {
 
 			if (fValLen > 0) {
 				// Seek to the target field's value bytes
-				stream.Position = st._FieldValListPos + fOffset;
+				stream.Position = st.FieldValListPos + fOffset;
 
 				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
 				Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
@@ -326,7 +326,7 @@ internal struct FieldsReader : IDisposable {
 		return FieldVal.Null;
 
 	CheckIndex:
-		if ((uint)index < (uint)st._FieldCount) {
+		if ((uint)index < (uint)st.FieldCount) {
 			goto DoLoad;
 		} else {
 			// This becomes a conditional jump forward to not favor it
