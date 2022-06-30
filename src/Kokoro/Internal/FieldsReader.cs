@@ -27,9 +27,9 @@ internal struct FieldsReader : IDisposable {
 	}
 
 	private readonly struct State {
-		internal readonly Stream? _Stream;
-		internal readonly int _FieldCount, _FOffsetSize;
-		internal readonly int _FOffsetListPos, _FieldValListPos;
+		public readonly Stream? _Stream;
+		public readonly int _FieldCount, _FOffsetSize;
+		public readonly int _FOffsetListPos, _FieldValListPos;
 
 		[Obsolete("Shouldn't use.", error: true)]
 		public State() => throw new NotSupportedException("Shouldn't use.");
