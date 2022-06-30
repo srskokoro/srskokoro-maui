@@ -23,4 +23,9 @@ internal static class EnumUtils {
 	public static void DAssert_Defined<TEnum>(this TEnum enumValue) where TEnum : struct, Enum {
 		Debug.Assert(IsDefined(enumValue), $"Undefined enum (for `{typeof(TEnum)}`): {enumValue}");
 	}
+
+	[Conditional("DEBUG")]
+	public static void DAssert_NotDefined<TEnum>(this TEnum enumValue) where TEnum : struct, Enum {
+		Debug.Assert(!IsDefined(enumValue), $"Expecting undefined enum (for `{typeof(TEnum)}`) but instead got: {enumValue}");
+	}
 }
