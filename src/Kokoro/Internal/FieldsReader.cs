@@ -120,7 +120,7 @@ internal struct FieldsReader : IDisposable {
 		get {
 			ref State st = ref _HotState;
 			int n = (int)st._Stream!.Length - st._FieldValListPos;
-			Debug.Assert(n >= 0, "Constructor should've ensured this to be never negative.");
+			Debug.Assert(n >= 0, "Constructor should've ensured this to be non-negative.");
 			return n;
 		}
 	}
