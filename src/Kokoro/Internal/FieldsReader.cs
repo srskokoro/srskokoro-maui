@@ -113,7 +113,10 @@ internal struct FieldsReader : IDisposable {
 
 	public FieldedEntity Owner => _Owner;
 
-	public int HotFieldCount => _HotState.FieldCount;
+	public int HotFieldCount {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _HotState.FieldCount;
+	}
 
 	public int HotFieldValsLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
