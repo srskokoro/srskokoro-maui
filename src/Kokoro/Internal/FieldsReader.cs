@@ -126,11 +126,48 @@ internal struct FieldsReader : IDisposable {
 			}
 		}
 
+		public readonly int StreamLengthOrThrow {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get {
+				long n = Stream!.Length;
+				DAssert_PosInt32(n);
+				return (int)n;
+			}
+		}
+
+		public readonly int StreamLengthOr0 {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get {
+				Stream? s = Stream;
+				if (s != null) {
+					long n = s.Length;
+					DAssert_PosInt32(n);
+					return (int)n;
+				}
+				return 0;
+			}
+		}
+
+		public readonly bool HasRealStream {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get {
+				Stream? s = Stream;
+				if (s != null && s != Stream.Null)
+					return true;
+				return false;
+			}
+		}
+
 		// --
 
 		[Conditional("DEBUG")]
 		private static void DAssert_NonNegByConstruction(int n)
 			=> Debug.Assert(n >= 0, "Constructor should've ensured this to be non-negative.");
+
+		[Conditional("DEBUG")]
+		private static void DAssert_PosInt32(long n)
+			=> Debug.Assert((ulong)n < (ulong)int.MaxValue,
+				"Constructor should've ensured that `0 <= n <= int.MaxValue` for `n`.");
 	}
 
 	public void Dispose() {
@@ -148,6 +185,7 @@ internal struct FieldsReader : IDisposable {
 		get => _HotState.FieldCount;
 	}
 
+
 	public int HotFieldValsLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _HotState.FieldValsLengthOrThrow;
@@ -162,6 +200,48 @@ internal struct FieldsReader : IDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _ColdState.FieldValsLengthOr0;
 	}
+
+
+	public int HotStoreLength {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _HotState.StreamLengthOrThrow;
+	}
+
+	public int SharedStoreLengthOr0 {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _SchemaState.StreamLengthOr0;
+	}
+
+	public int ColdStoreLengthOr0 {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _ColdState.StreamLengthOr0;
+	}
+
+
+	public bool HasSharedStoreLoaded {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		get => _SchemaState.Stream == null ? false : true;
+	}
+
+	public bool HasRealSharedStoreLoaded {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _SchemaState.HasRealStream;
+	}
+
+	public bool HasColdStoreLoaded {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		get => _ColdState.Stream == null ? false : true;
+	}
+
+	public bool HasRealColdStoreLoaded {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _ColdState.HasRealStream;
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
