@@ -29,7 +29,7 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
-	public static ulong ReadVarIntOrZero(this Stream stream) {
+	public static ulong ReadVarIntOr0(this Stream stream) {
 		Span<byte> buffer = stackalloc byte[VarInts.MaxLength64];
 		int sread = stream.Read(buffer);
 

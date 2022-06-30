@@ -51,7 +51,7 @@ internal struct FieldsReader : IDisposable {
 					const uint MaxDesc = FieldsDesc.MaxValue;
 					Debug.Assert(MaxDesc == int.MaxValue);
 
-					ulong fDescU64 = stream.ReadVarIntOrZero();
+					ulong fDescU64 = stream.ReadVarIntOr0();
 					Debug.Assert(fDescU64 <= MaxDesc, $"`{nameof(fDescU64)}` too large: {fDescU64:X}");
 
 					fDesc = (uint)fDescU64;
