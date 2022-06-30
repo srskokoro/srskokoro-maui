@@ -17,6 +17,7 @@
 
     <Using Include="Kokoro.Common.Blake2Fast.Extensions" />
     <Using Include="Kokoro.Common.Buffers.Extensions" />
+    <Using Include="Kokoro.Common.IO.Extensions" />
     <Using Include="Kokoro.Common.Sqlite.Extensions" />
 
     <Using Include="System.Runtime.CompilerServices.Unsafe" Alias="U" />
