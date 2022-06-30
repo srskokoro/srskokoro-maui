@@ -101,6 +101,36 @@ internal struct FieldsReader : IDisposable {
 				FieldValListPos = FOffsetListPos = 0;
 			}
 		}
+
+		// --
+
+		public readonly int FieldValsLengthOrThrow {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get {
+				int n = (int)Stream!.Length - FieldValListPos;
+				DAssert_NonNegByConstruction(n);
+				return n;
+			}
+		}
+
+		public readonly int FieldValsLengthOr0 {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get {
+				Stream? s = Stream;
+				if (s != null) {
+					int n = (int)s.Length - FieldValListPos;
+					DAssert_NonNegByConstruction(n);
+					return n;
+				}
+				return 0;
+			}
+		}
+
+		// --
+
+		[Conditional("DEBUG")]
+		private static void DAssert_NonNegByConstruction(int n)
+			=> Debug.Assert(n >= 0, "Constructor should've ensured this to be non-negative.");
 	}
 
 	public void Dispose() {
@@ -120,12 +150,17 @@ internal struct FieldsReader : IDisposable {
 
 	public int HotFieldValsLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get {
-			ref State st = ref _HotState;
-			int n = (int)st.Stream!.Length - st.FieldValListPos;
-			Debug.Assert(n >= 0, "Constructor should've ensured this to be non-negative.");
-			return n;
-		}
+		get => _HotState.FieldValsLengthOrThrow;
+	}
+
+	public int SharedFieldValsLengthOr0 {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _SchemaState.FieldValsLengthOr0;
+	}
+
+	public int ColdFieldValsLengthOr0 {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _ColdState.FieldValsLengthOr0;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
