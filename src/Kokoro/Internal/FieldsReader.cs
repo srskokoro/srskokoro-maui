@@ -373,16 +373,14 @@ internal struct FieldsReader : IDisposable {
 			return new(stream, st.FieldValListPos + fOffset, fValLen);
 		}
 
-	Fail:
-		return LatentFieldVal.Null;
-
 	CheckIndex:
 		if ((uint)index < (uint)st.FieldCount) {
+			// This becomes a conditional jump backward to favor it
 			goto DoLoad;
-		} else {
-			// This becomes a conditional jump forward to not favor it
-			goto Fail;
 		}
+
+	Fail:
+		return LatentFieldVal.Null;
 
 	InitSchemaState:
 		stream = _Owner.ReadSchemaStore(Db);
@@ -488,19 +486,17 @@ internal struct FieldsReader : IDisposable {
 					return new(typeHint, data);
 				}
 			}
-			// Fallthrough
+			goto Fail;
+		}
+
+	CheckIndex:
+		if ((uint)index < (uint)st.FieldCount) {
+			// This becomes a conditional jump backward to favor it
+			goto DoLoad;
 		}
 
 	Fail:
 		return FieldVal.Null;
-
-	CheckIndex:
-		if ((uint)index < (uint)st.FieldCount) {
-			goto DoLoad;
-		} else {
-			// This becomes a conditional jump forward to not favor it
-			goto Fail;
-		}
 
 	InitSchemaState:
 		stream = _Owner.ReadSchemaStore(Db);
