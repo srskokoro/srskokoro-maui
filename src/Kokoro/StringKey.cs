@@ -55,7 +55,6 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// favor that instead of the early outs leading to the not-equals case.
 
 		if (obj is not StringKey other) goto NE; // A conditional jump forward to not favor it
-		if (other is null) goto NE; // A conditional jump forward to not favor it
 
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
 		// returned its boolean result or a corresponding boolean result.
