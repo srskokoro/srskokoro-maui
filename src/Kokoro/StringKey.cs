@@ -48,20 +48,19 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		}
 	EQ:
 		return true;
-	NE:
-		return false;
 
 	CmpStr:
 		// NOTE: The longest execution is when the sequence is equal. So we
 		// favor that instead of the early outs leading to the not-equals case.
 
-		if (obj is not StringKey other) goto NE; // A conditional jump to not favor it
-		if (other is null) goto NE; // A conditional jump to not favor it
+		if (obj is not StringKey other) goto NE; // A conditional jump forward to not favor it
+		if (other is null) goto NE; // A conditional jump forward to not favor it
 
 		if (string.Equals(Value, other.Value)) {
-			goto EQ; // This becomes an unconditional jump
-		} else
-			goto NE; // This becomes a conditional jump to not favor it
+			goto EQ; // This becomes a conditional jump backward to favor it
+		}
+	NE:
+		return false;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -74,19 +73,18 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		}
 	EQ:
 		return true;
-	NE:
-		return false;
 
 	CmpStr:
 		// NOTE: The longest execution is when the sequence is equal. So we
 		// favor that instead of the early outs leading to the not-equals case.
 
-		if (other is null) goto NE; // A conditional jump to not favor it
+		if (other is null) goto NE; // A conditional jump forward to not favor it
 
 		if (string.Equals(Value, other.Value)) {
-			goto EQ; // This becomes an unconditional jump
-		} else
-			goto NE; // This becomes a conditional jump to not favor it
+			goto EQ; // This becomes a conditional jump backward to favor it
+		}
+	NE:
+		return false;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -99,20 +97,19 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		}
 	EQ:
 		return true;
-	NE:
-		return false;
 
 	CmpStr:
 		// NOTE: The longest execution is when the sequence is equal. So we
 		// favor that instead of the early outs leading to the not-equals case.
 
-		if (a is null) goto NE; // A conditional jump to not favor it
+		if (a is null) goto NE; // A conditional jump forward to not favor it
 		if (b is null) goto NE; // ^
 
 		if (string.Equals(a.Value, b.Value)) {
-			goto EQ; // This becomes an unconditional jump
-		} else
-			goto NE; // This becomes a conditional jump to not favor it
+			goto EQ; // This becomes a conditional jump backward to favor it
+		}
+	NE:
+		return false;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -125,20 +122,19 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		}
 	EQ:
 		return false;
-	NE:
-		return true;
 
 	CmpStr:
 		// NOTE: The longest execution is when the sequence is equal. So we
 		// favor that instead of the early outs leading to the not-equals case.
 
-		if (a is null) goto NE; // A conditional jump to not favor it
+		if (a is null) goto NE; // A conditional jump forward to not favor it
 		if (b is null) goto NE; // ^
 
 		if (string.Equals(a.Value, b.Value)) {
-			goto EQ; // This becomes an unconditional jump
-		} else
-			goto NE; // This becomes a conditional jump to not favor it
+			goto EQ; // This becomes a conditional jump backward to favor it
+		}
+	NE:
+		return true;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
