@@ -44,7 +44,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// while also producing a decent asm output.
 
 		if ((object)this != obj) {
-			goto CmpStr; // This becomes a conditional jump
+			// This becomes a conditional jump forward to not favor it
+			goto CmpStr;
 		}
 	EQ:
 		return true;
@@ -56,6 +57,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		if (obj is not StringKey other) goto NE; // A conditional jump forward to not favor it
 		if (other is null) goto NE; // A conditional jump forward to not favor it
 
+		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
+		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(Value, other.Value)) {
 			goto EQ; // This becomes a conditional jump backward to favor it
 		}
@@ -69,7 +72,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// while also producing a decent asm output.
 
 		if ((object)this != other) {
-			goto CmpStr; // This becomes a conditional jump
+			// This becomes a conditional jump forward to not favor it
+			goto CmpStr;
 		}
 	EQ:
 		return true;
@@ -80,6 +84,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 
 		if (other is null) goto NE; // A conditional jump forward to not favor it
 
+		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
+		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(Value, other.Value)) {
 			goto EQ; // This becomes a conditional jump backward to favor it
 		}
@@ -93,7 +99,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// while also producing a decent asm output.
 
 		if ((object?)a != b) {
-			goto CmpStr; // This becomes a conditional jump
+			// This becomes a conditional jump forward to not favor it
+			goto CmpStr;
 		}
 	EQ:
 		return true;
@@ -105,6 +112,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		if (a is null) goto NE; // A conditional jump forward to not favor it
 		if (b is null) goto NE; // ^
 
+		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
+		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(a.Value, b.Value)) {
 			goto EQ; // This becomes a conditional jump backward to favor it
 		}
@@ -118,7 +127,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// while also producing a decent asm output.
 
 		if ((object?)a != b) {
-			goto CmpStr; // This becomes a conditional jump
+			// This becomes a conditional jump forward to not favor it
+			goto CmpStr;
 		}
 	EQ:
 		return false;
@@ -130,6 +140,8 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		if (a is null) goto NE; // A conditional jump forward to not favor it
 		if (b is null) goto NE; // ^
 
+		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
+		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(a.Value, b.Value)) {
 			goto EQ; // This becomes a conditional jump backward to favor it
 		}
