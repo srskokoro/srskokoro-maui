@@ -57,7 +57,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: This explicit null-check seems to produce better asm (for now)
 		// than without it.
 		if (obj is null) goto NE; // A conditional jump forward to not favor it
-		if (obj is not StringKey other) goto NE; // A conditional jump forward to not favor it
+		if (obj is not StringKey other) goto NE; // ^
 
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
 		// returned its boolean result or a corresponding boolean result.
