@@ -50,10 +50,9 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	EQ:
 		return true;
 
+	// NOTE: The longest execution is when the strings are equal. So we favor
+	// that instead of the early outs leading to the not-equals case.
 	CmpStr:
-		// NOTE: The longest execution is when the sequence is equal. So we
-		// favor that instead of the early outs leading to the not-equals case.
-
 		// NOTE: This explicit null-check seems to produce better asm (for now)
 		// than without it.
 		if (obj is null) goto NE; // A conditional jump forward to not favor it
@@ -80,10 +79,9 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	EQ:
 		return true;
 
+	// NOTE: The longest execution is when the strings are equal. So we favor
+	// that instead of the early outs leading to the not-equals case.
 	CmpStr:
-		// NOTE: The longest execution is when the sequence is equal. So we
-		// favor that instead of the early outs leading to the not-equals case.
-
 		if (other is null) goto NE; // A conditional jump forward to not favor it
 
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
@@ -107,10 +105,9 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	EQ:
 		return true;
 
+	// NOTE: The longest execution is when the strings are equal. So we favor
+	// that instead of the early outs leading to the not-equals case.
 	CmpStr:
-		// NOTE: The longest execution is when the sequence is equal. So we
-		// favor that instead of the early outs leading to the not-equals case.
-
 		if (a is null) goto NE; // A conditional jump forward to not favor it
 		if (b is null) goto NE; // ^
 
@@ -135,10 +132,9 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 	EQ:
 		return false;
 
+	// NOTE: The longest execution is when the strings are equal. So we favor
+	// that instead of the early outs leading to the not-equals case.
 	CmpStr:
-		// NOTE: The longest execution is when the sequence is equal. So we
-		// favor that instead of the early outs leading to the not-equals case.
-
 		if (a is null) goto NE; // A conditional jump forward to not favor it
 		if (b is null) goto NE; // ^
 
