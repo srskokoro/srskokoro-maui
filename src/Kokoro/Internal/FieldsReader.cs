@@ -7,7 +7,7 @@ internal struct FieldsReader : IDisposable {
 	internal readonly KokoroSqliteDb Db;
 
 	private State _HotState;
-	private State _SchemaState;
+	private State _SharedState;
 	private State _ColdState;
 
 	[Obsolete("Shouldn't use.", error: true)]
@@ -150,7 +150,7 @@ internal struct FieldsReader : IDisposable {
 
 	public void Dispose() {
 		_HotState.Stream!.Dispose();
-		_SchemaState.Stream?.Dispose();
+		_SharedState.Stream?.Dispose();
 		_ColdState.Stream?.Dispose();
 	}
 
@@ -171,7 +171,7 @@ internal struct FieldsReader : IDisposable {
 
 	public int SharedFieldValsLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _SchemaState.FieldValsLengthOr0;
+		get => _SharedState.FieldValsLengthOr0;
 	}
 
 	public int ColdFieldValsLengthOr0 {
@@ -187,7 +187,7 @@ internal struct FieldsReader : IDisposable {
 
 	public long SharedStoreLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _SchemaState.StreamLengthOr0;
+		get => _SharedState.StreamLengthOr0;
 	}
 
 	public long ColdStoreLengthOr0 {
@@ -200,12 +200,12 @@ internal struct FieldsReader : IDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		get => _SchemaState.Stream == null ? false : true;
+		get => _SharedState.Stream == null ? false : true;
 	}
 
 	public bool HasRealSharedStoreLoaded {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _SchemaState.HasRealStream;
+		get => _SharedState.HasRealStream;
 	}
 
 	public bool HasColdStoreLoaded {
@@ -222,12 +222,12 @@ internal struct FieldsReader : IDisposable {
 
 
 	public void InitSharedStore() {
-		if (_SchemaState.Stream != null) return; // Early exit
-		_SchemaState = new(_Owner.ReadSchemaStore(Db));
+		if (_SharedState.Stream != null) return; // Early exit
+		_SharedState = new(_Owner.ReadSharedStore(Db));
 	}
 
 	public bool InitRealSharedStore() {
-		Stream? stream = _SchemaState.Stream;
+		Stream? stream = _SharedState.Stream;
 		if (stream == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitState;
@@ -241,8 +241,8 @@ internal struct FieldsReader : IDisposable {
 		return false;
 
 	InitState:
-		stream = _Owner.ReadSchemaStore(Db);
-		_SchemaState = new(stream);
+		stream = _Owner.ReadSharedStore(Db);
+		_SharedState = new(stream);
 		goto CheckStream;
 	}
 
@@ -310,15 +310,15 @@ internal struct FieldsReader : IDisposable {
 				goto Fail;
 			}
 		} else {
-			// Case: shared field (located at the schema-level)
-			st = ref _SchemaState;
+			// Case: shared field
+			st = ref _SharedState;
 			stream = st.Stream;
 
 			if (stream != null) {
 				goto CheckIndex;
 			} else {
 				// This becomes a conditional jump forward to not favor it
-				goto InitSchemaState;
+				goto InitSharedState;
 			}
 		}
 
@@ -360,8 +360,8 @@ internal struct FieldsReader : IDisposable {
 	Fail:
 		return LatentFieldVal.Null;
 
-	InitSchemaState:
-		stream = _Owner.ReadSchemaStore(Db);
+	InitSharedState:
+		stream = _Owner.ReadSharedStore(Db);
 		st = new(stream);
 		goto CheckIndex;
 
@@ -409,15 +409,15 @@ internal struct FieldsReader : IDisposable {
 				goto Fail;
 			}
 		} else {
-			// Case: shared field (located at the schema-level)
-			st = ref _SchemaState;
+			// Case: shared field
+			st = ref _SharedState;
 			stream = st.Stream;
 
 			if (stream != null) {
 				goto CheckIndex;
 			} else {
 				// This becomes a conditional jump forward to not favor it
-				goto InitSchemaState;
+				goto InitSharedState;
 			}
 		}
 
@@ -476,8 +476,8 @@ internal struct FieldsReader : IDisposable {
 	Fail:
 		return FieldVal.Null;
 
-	InitSchemaState:
-		stream = _Owner.ReadSchemaStore(Db);
+	InitSharedState:
+		stream = _Owner.ReadSharedStore(Db);
 		st = new(stream);
 		goto CheckIndex;
 

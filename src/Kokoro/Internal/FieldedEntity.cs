@@ -115,7 +115,7 @@ public abstract class FieldedEntity : DataEntity {
 	internal abstract Stream ReadHotStore(KokoroSqliteDb db);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal Stream ReadSchemaStore(KokoroSqliteDb db) {
+	internal Stream ReadSharedStore(KokoroSqliteDb db) {
 		// NOTE: It's possible for the schema to not exist (in that case, the
 		// following will throw) due to either the schema rowid being invalid
 		// (e.g., if the fielded entity is yet to load it) or the schema no
