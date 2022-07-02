@@ -365,7 +365,7 @@ internal struct FieldsReader : IDisposable {
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
 			} else {
-				fValLen = (int)(stream.Length - fOffset);
+				fValLen = (int)stream.Length - fOffset;
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
@@ -464,7 +464,7 @@ internal struct FieldsReader : IDisposable {
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
 			} else {
-				fValLen = (int)(stream.Length - fOffset);
+				fValLen = (int)stream.Length - fOffset;
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
