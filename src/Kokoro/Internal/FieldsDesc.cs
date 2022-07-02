@@ -4,7 +4,7 @@ internal readonly struct FieldsDesc {
 	// Expected bit layout:
 	// - The 2 LSBs represent the number of bytes used to store a field offset
 	// integer, with `0b00` (or `0x0`) meaning 1 byte, `0b11` (or `0x3`) meaning
-	// 4 bytes, etc. -- a field offset is expected to be 32-bit integer.
+	// 4 bytes, etc. -- a field offset is expected to be a 32-bit integer.
 	// - The remaining bits indicate the number of fields (and field offset
 	// integers) in the fielded data.
 	//
