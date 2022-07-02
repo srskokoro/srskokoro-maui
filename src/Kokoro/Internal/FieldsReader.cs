@@ -65,36 +65,34 @@ internal struct FieldsReader : IDisposable {
 
 				// --
 
-				uint u_fieldValListPos = (uint)checked(
-					FieldValListPos = (
-						FOffsetListPos = unchecked((int)stream.Position)
-					) + fieldOffsetListSize
-				);
+				// Let other parts of the codebase deal with the fact that the
+				// following may result in offset values out of bounds.
+				FieldValListPos = (
+					FOffsetListPos = (int)stream.Position
+				) + fieldOffsetListSize;
 
-				// NOTE: If the following won't throw, the `(int)stream.Position`
-				// before us was truncated as a positve integer successfully.
-				uint u_streamLength = (uint)checked((int)unchecked((ulong)stream.Length));
-
-				/// Ensure <see cref="FieldValListPos"/> is never greater than
-				/// the stream length.
-				_ = checked(u_streamLength - u_fieldValListPos);
+				Debug.Assert(FieldValListPos <= stream.Length,
+					$"`{nameof(FieldValListPos)}` ({FieldValListPos}) > the stream length ({stream.Length})");
 
 			} catch (Exception ex) when (
-				ex is OverflowException || stream == null ||
+				stream == null ||
 				(ex is NotSupportedException && (!stream.CanRead || !stream.CanSeek))
 			) {
 				// NOTE: We ensure that the constructor never throws under
 				// normal circumstances: if we simply couldn't read the needed
 				// data to complete initialization, then we should just swallow
-				// the exception, and initialize with reasonable defaults. Other
-				// than the overflow check, the only other exception we must
-				// guard against for now is the one thrown when the stream does
-				// not support reading or seeking (as the code in the above
-				// try-block requires it).
+				// the exception, and initialize with reasonable defaults.
 				//
-				// That way, a try-finally or `using` block can be set up right
-				// after construction, to properly dispose the state along with
-				// the stream, all in one go.
+				// That way, a `try…finally` or `using` block can be set up
+				// right after construction, to properly dispose the state along
+				// with the stream, all in one go.
+				//
+				// Now, we only guard against exceptions we expect as normal,
+				// such as when the passed stream isn't supported (i.e., it
+				// doesn't support reading and seeking, when the code in the
+				// above `try` block requires it). Other exceptions, such as
+				// those related to IO, may still be thrown, but that should be
+				// regarded as outside of normal operation.
 
 				FieldCount = 0;
 				FOffsetSize = 1;
@@ -108,8 +106,8 @@ internal struct FieldsReader : IDisposable {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get {
 				int n = (int)Stream!.Length - FieldValListPos;
-				DAssert_NonNegByConstruction(n);
-				return n;
+				if (n >= 0) return n;
+				return 0;
 			}
 		}
 
@@ -119,31 +117,22 @@ internal struct FieldsReader : IDisposable {
 				Stream? s = Stream;
 				if (s != null) {
 					int n = (int)s.Length - FieldValListPos;
-					DAssert_NonNegByConstruction(n);
-					return n;
+					if (n >= 0) return n;
 				}
 				return 0;
 			}
 		}
 
-		public readonly int StreamLengthOrThrow {
+		public readonly long StreamLengthOrThrow {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get {
-				long n = Stream!.Length;
-				DAssert_PosInt32(n);
-				return (int)n;
-			}
+			get => Stream!.Length;
 		}
 
-		public readonly int StreamLengthOr0 {
+		public readonly long StreamLengthOr0 {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get {
 				Stream? s = Stream;
-				if (s != null) {
-					long n = s.Length;
-					DAssert_PosInt32(n);
-					return (int)n;
-				}
+				if (s != null) return s.Length;
 				return 0;
 			}
 		}
@@ -157,17 +146,6 @@ internal struct FieldsReader : IDisposable {
 				return false;
 			}
 		}
-
-		// --
-
-		[Conditional("DEBUG")]
-		private static void DAssert_NonNegByConstruction(int n)
-			=> Debug.Assert(n >= 0, "Constructor should've ensured this to be non-negative.");
-
-		[Conditional("DEBUG")]
-		private static void DAssert_PosInt32(long n)
-			=> Debug.Assert((ulong)n < (ulong)int.MaxValue,
-				"Constructor should've ensured that `0 <= n <= int.MaxValue` for `n`.");
 	}
 
 	public void Dispose() {
@@ -202,17 +180,17 @@ internal struct FieldsReader : IDisposable {
 	}
 
 
-	public int HotStoreLength {
+	public long HotStoreLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _HotState.StreamLengthOrThrow;
 	}
 
-	public int SharedStoreLengthOr0 {
+	public long SharedStoreLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _SchemaState.StreamLengthOr0;
 	}
 
-	public int ColdStoreLengthOr0 {
+	public long ColdStoreLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _ColdState.StreamLengthOr0;
 	}
