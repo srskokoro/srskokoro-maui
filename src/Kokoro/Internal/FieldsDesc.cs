@@ -78,5 +78,14 @@ internal readonly struct FieldsDesc {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public FieldsDesc(int fCount, bool fHasCold, int fOffsetSizeM1Or0) {
+		Value = (uint)fCount << 3 | (uint)fHasCold.ToByte() << 2 | (uint)fOffsetSizeM1Or0;
+
+		Debug.Assert(FieldCount == fCount);
+		Debug.Assert(HasColdComplement == fHasCold);
+		Debug.Assert(FOffsetSizeM1Or0 == fOffsetSizeM1Or0);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override string ToString() => Value.ToString();
 }
