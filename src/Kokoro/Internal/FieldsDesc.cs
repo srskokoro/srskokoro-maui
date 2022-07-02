@@ -1,10 +1,14 @@
 ﻿namespace Kokoro.Internal;
+using CommunityToolkit.HighPerformance.Helpers;
 
 internal readonly struct FieldsDesc {
 	// Expected bit layout:
 	// - The 2 LSBs represent the number of bytes used to store a field offset
 	// integer, with `0b00` (or `0x0`) meaning 1 byte, `0b11` (or `0x3`) meaning
 	// 4 bytes, etc. -- a field offset is expected to be a 32-bit integer.
+	// - The 3rd LSB (at bit index 2) is set if the descriptor is for the hot
+	// store and there's cold data kept in a separate cold store. That is, the
+	// field store is a hot store with a non-empty cold store counterpart.
 	// - The remaining bits indicate the number of fields (and field offset
 	// integers) in the fielded data.
 	//
@@ -17,15 +21,20 @@ internal readonly struct FieldsDesc {
 	public const int MaxFOffsetSizeM1Or0 = 0b11; // 3
 	public const int MaxFOffsetSize = 0b11 + 1; // 3 + 1 == 4
 
-	public const int MaxFieldCount = int.MaxValue / MaxFOffsetSize; // Same as `>> 2`
+	public const int MaxFieldCount = (int.MaxValue >> 1) / MaxFOffsetSize; // Same as `>> 3`
 
-	public const int MaxValue = MaxFieldCount << 2 | MaxFOffsetSizeM1Or0; // Same as `int.MaxValue`
+	public const int MaxValue = MaxFieldCount << 3 | (1 << 2) | MaxFOffsetSizeM1Or0; // Same as `int.MaxValue`
 
 	// --
 
 	public int FieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)(Value >> 2);
+		get => (int)(Value >> 3);
+	}
+
+	public bool HasColdComplement {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => BitHelper.HasFlag(Value, 2);
 	}
 
 	public int FOffsetSize {
@@ -62,7 +71,7 @@ internal readonly struct FieldsDesc {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsDesc(int fCount, int fOffsetSizeM1Or0) {
-		Value = (uint)fCount << 2 | (uint)fOffsetSizeM1Or0;
+		Value = (uint)fCount << 3 | (uint)fOffsetSizeM1Or0;
 
 		Debug.Assert(FieldCount == fCount);
 		Debug.Assert(FOffsetSizeM1Or0 == fOffsetSizeM1Or0);
