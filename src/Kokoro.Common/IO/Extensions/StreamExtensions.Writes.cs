@@ -42,9 +42,8 @@ internal static partial class StreamExtensions {
 				}
 			}
 		Done:
-			// ^ Label must still be within the `try…finally` block -- since,
-			// `goto` statements exiting a `try…finally` block cannot become
-			// conditional jump forwards on non-empty `finally` blocks.
+			// ^ Label must still be within the `try…finally` block, so that the
+			// `goto` statement can simply become a conditional jump forward.
 			;
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
@@ -79,9 +78,8 @@ internal static partial class StreamExtensions {
 				}
 			}
 		Done:
-			// ^ Label must still be within the `try…finally` block -- since,
-			// `goto` statements exiting a `try…finally` block cannot become
-			// conditional jump forwards on non-empty `finally` blocks.
+			// ^ Label must still be within the `try…finally` block, so that the
+			// `goto` statement can simply become a conditional jump forward.
 			;
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
