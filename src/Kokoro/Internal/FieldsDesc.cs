@@ -25,6 +25,8 @@ internal readonly struct FieldsDesc {
 
 	public const int MaxValue = MaxFieldCount << 3 | (1 << 2) | MaxFOffsetSizeM1Or0; // Same as `int.MaxValue`
 
+	public const byte ByteArea_HasColdComplement_Bit = 1 << 2;
+
 	// --
 
 	public int FieldCount {
@@ -35,6 +37,11 @@ internal readonly struct FieldsDesc {
 	public bool HasColdComplement {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => BitHelper.HasFlag(Value, 2);
+	}
+
+	public byte ByteArea_HasColdComplement {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => (byte)Value;
 	}
 
 	public int FOffsetSize {
