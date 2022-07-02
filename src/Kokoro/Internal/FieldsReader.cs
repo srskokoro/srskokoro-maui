@@ -153,6 +153,18 @@ internal struct FieldsReader : IDisposable {
 				return false;
 			}
 		}
+
+		public readonly bool HasColdComplement {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get {
+				// Returning true/false prevents redundant asm generation:
+				// See, https://github.com/dotnet/runtime/issues/4207
+
+				if ((FDescArea_HasColdComplement & FieldsDesc.ByteArea_HasColdComplement_Bit) != 0)
+					return true;
+				return false;
+			}
+		}
 	}
 
 	public readonly void Dispose() {
@@ -227,6 +239,11 @@ internal struct FieldsReader : IDisposable {
 		get => _ColdState.HasRealStream;
 	}
 
+	public readonly bool HasRealColdStore {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _HotState.HasColdComplement;
+	}
+
 
 	public void InitSharedStore() {
 		if (_SharedState.Stream != null) return; // Early exit
@@ -297,7 +314,7 @@ internal struct FieldsReader : IDisposable {
 				// Case: hot field
 				stream = st.Stream!;
 				goto DoLoad;
-			} else if ((st.FDescArea_HasColdComplement & FieldsDesc.ByteArea_HasColdComplement_Bit) != 0) {
+			} else if (st.HasColdComplement) {
 				// Case: cold field (because there's a cold store)
 				index -= st.FieldCount;
 
@@ -395,7 +412,7 @@ internal struct FieldsReader : IDisposable {
 				// Case: hot field
 				stream = st.Stream!;
 				goto DoLoad;
-			} else if ((st.FDescArea_HasColdComplement & FieldsDesc.ByteArea_HasColdComplement_Bit) != 0) {
+			} else if (st.HasColdComplement) {
 				// Case: cold field (because there's a cold store)
 				index -= st.FieldCount;
 
