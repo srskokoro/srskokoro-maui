@@ -75,8 +75,8 @@ internal struct FieldsReader : IDisposable {
 				// before us was truncated as a positve integer successfully.
 				uint u_streamLength = (uint)checked((int)unchecked((ulong)stream.Length));
 
-				/// Ensure <see cref="HotFieldValsLength"/> will never return a
-				/// negative value.
+				/// Ensure <see cref="FieldValListPos"/> is never greater than
+				/// the stream length.
 				_ = checked(u_streamLength - u_fieldValListPos);
 
 			} catch (Exception ex) when (
