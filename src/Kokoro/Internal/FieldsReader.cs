@@ -155,7 +155,7 @@ internal struct FieldsReader : IDisposable {
 		}
 	}
 
-	public void Dispose() {
+	public readonly void Dispose() {
 		_HotState.Stream!.Dispose();
 		_SharedState.Stream?.Dispose();
 		_ColdState.Stream?.Dispose();
@@ -163,66 +163,66 @@ internal struct FieldsReader : IDisposable {
 
 	// --
 
-	public FieldedEntity Owner => _Owner;
+	public readonly FieldedEntity Owner => _Owner;
 
-	public int HotFieldCount {
+	public readonly int HotFieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _HotState.FieldCount;
 	}
 
 
-	public int HotFieldValsLength {
+	public readonly int HotFieldValsLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _HotState.FieldValsLengthOrThrow;
 	}
 
-	public int SharedFieldValsLengthOr0 {
+	public readonly int SharedFieldValsLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _SharedState.FieldValsLengthOr0;
 	}
 
-	public int ColdFieldValsLengthOr0 {
+	public readonly int ColdFieldValsLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _ColdState.FieldValsLengthOr0;
 	}
 
 
-	public long HotStoreLength {
+	public readonly long HotStoreLength {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _HotState.StreamLengthOrThrow;
 	}
 
-	public long SharedStoreLengthOr0 {
+	public readonly long SharedStoreLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _SharedState.StreamLengthOr0;
 	}
 
-	public long ColdStoreLengthOr0 {
+	public readonly long ColdStoreLengthOr0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _ColdState.StreamLengthOr0;
 	}
 
 
-	public bool HasSharedStoreLoaded {
+	public readonly bool HasSharedStoreLoaded {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		get => _SharedState.Stream == null ? false : true;
 	}
 
-	public bool HasRealSharedStoreLoaded {
+	public readonly bool HasRealSharedStoreLoaded {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _SharedState.HasRealStream;
 	}
 
-	public bool HasColdStoreLoaded {
+	public readonly bool HasColdStoreLoaded {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		get => _ColdState.Stream == null ? false : true;
 	}
 
-	public bool HasRealColdStoreLoaded {
+	public readonly bool HasRealColdStoreLoaded {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _ColdState.HasRealStream;
 	}
