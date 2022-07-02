@@ -61,7 +61,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
 		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(Value, other.Value)) {
-			goto EQ; // This becomes a conditional jump backward to favor it
+			goto EQ; // This becomes a conditional jump backward which favors it
 		}
 	NE:
 		return false;
@@ -87,7 +87,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
 		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(Value, other.Value)) {
-			goto EQ; // This becomes a conditional jump backward to favor it
+			goto EQ; // This becomes a conditional jump backward which favors it
 		}
 	NE:
 		return false;
@@ -114,7 +114,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
 		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(a.Value, b.Value)) {
-			goto EQ; // This becomes a conditional jump backward to favor it
+			goto EQ; // This becomes a conditional jump backward which favors it
 		}
 	NE:
 		return false;
@@ -141,7 +141,7 @@ public sealed class StringKey : IComparable, IComparable<StringKey>, IEquatable<
 		// NOTE: Strangely, `string.Equals()` doesn't get inlined if we simply
 		// returned its boolean result or a corresponding boolean result.
 		if (string.Equals(a.Value, b.Value)) {
-			goto EQ; // This becomes a conditional jump backward to favor it
+			goto EQ; // This becomes a conditional jump backward which favors it
 		}
 	NE:
 		return true;

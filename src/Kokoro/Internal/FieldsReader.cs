@@ -375,7 +375,7 @@ internal struct FieldsReader : IDisposable {
 
 	CheckIndex:
 		if ((uint)index < (uint)st.FieldCount) {
-			// This becomes a conditional jump backward to favor it
+			// This becomes a conditional jump backward which favors it
 			goto DoLoad;
 		}
 
@@ -491,7 +491,7 @@ internal struct FieldsReader : IDisposable {
 
 	CheckIndex:
 		if ((uint)index < (uint)st.FieldCount) {
-			// This becomes a conditional jump backward to favor it
+			// This becomes a conditional jump backward which favors it
 			goto DoLoad;
 		}
 
