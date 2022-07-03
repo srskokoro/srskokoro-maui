@@ -12,18 +12,39 @@ internal readonly struct BufferRenter<T> : IDisposable {
 
 	public readonly T[] Array;
 
+
 	[Obsolete("Shouldn't use.", error: true)]
 	public BufferRenter() => throw new NotSupportedException("Shouldn't use.");
 
+	#region Private constructors
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public BufferRenter(int length) {
+	private BufferRenter(int length) {
 		Array = ArrayPool<T>.Shared.Rent(length);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public BufferRenter(int length, out Span<T> span) {
+	private BufferRenter(int length, out T[] array) {
+		array = Array = ArrayPool<T>.Shared.Rent(length);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private BufferRenter(int length, out Span<T> span) {
 		span = (Array = ArrayPool<T>.Shared.Rent(length)).AsDangerousSpanShortened(length);
 	}
+
+	#endregion
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static BufferRenter<T> Create(int length) => new(length);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static BufferRenter<T> Create(int length, out T[] array) => new(length, out array);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static BufferRenter<T> CreateSpan(int length, out Span<T> span) => new(length, out span);
+
 
 	/// <inheritdoc/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
