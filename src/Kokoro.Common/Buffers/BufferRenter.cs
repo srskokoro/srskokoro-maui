@@ -19,19 +19,16 @@ internal readonly struct BufferRenter<T> : IDisposable {
 	#region Private constructors
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private BufferRenter(int length) {
-		Array = ArrayPool<T>.Shared.Rent(length);
-	}
+	private BufferRenter(int length)
+		=> Array = ArrayPool<T>.Shared.Rent(length);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private BufferRenter(int length, out T[] array) {
-		array = Array = ArrayPool<T>.Shared.Rent(length);
-	}
+	private BufferRenter(int length, out T[] array)
+		=> array = Array = ArrayPool<T>.Shared.Rent(length);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private BufferRenter(int length, out Span<T> span) {
-		span = (Array = ArrayPool<T>.Shared.Rent(length)).AsDangerousSpanShortened(length);
-	}
+	private BufferRenter(int length, out Span<T> span)
+		=> span = (Array = ArrayPool<T>.Shared.Rent(length)).AsDangerousSpanShortened(length);
 
 	#endregion
 
