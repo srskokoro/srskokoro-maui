@@ -12,6 +12,9 @@ internal readonly struct BufferRenter<T> : IDisposable {
 
 	public readonly T[] Array;
 
+	[Obsolete("Shouldn't use.", error: true)]
+	public BufferRenter() => throw new NotSupportedException("Shouldn't use.");
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public BufferRenter(int length) {
 		Array = ArrayPool<T>.Shared.Rent(length);
