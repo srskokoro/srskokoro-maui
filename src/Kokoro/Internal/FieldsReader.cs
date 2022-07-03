@@ -309,13 +309,13 @@ internal struct FieldsReader : IDisposable {
 		int index = fspec.Index;
 
 		if (fspec.StoreType!= FieldStoreType.Shared) {
-			// Case: local field
+			// Case: Local field
 			if ((uint)index < (uint)st.FieldCount) {
-				// Case: hot field
+				// Case: Hot field
 				stream = st.Stream!;
 				goto DoLoad;
 			} else if (st.HasColdComplement) {
-				// Case: cold field (because there's a cold store)
+				// Case: Cold field (because there's a cold store)
 				index -= st.FieldCount;
 
 				st = ref _ColdState;
@@ -328,12 +328,12 @@ internal struct FieldsReader : IDisposable {
 					goto InitColdState;
 				}
 			} else {
-				// Case: hot field (because there's no cold store)
+				// Case: Hot field (because there's no cold store)
 				// This becomes a conditional jump forward to not favor it
 				goto Fail;
 			}
 		} else {
-			// Case: shared field
+			// Case: Shared field
 			st = ref _SharedState;
 			stream = st.Stream;
 
@@ -407,13 +407,13 @@ internal struct FieldsReader : IDisposable {
 		int index = fspec.Index;
 
 		if (fspec.StoreType!= FieldStoreType.Shared) {
-			// Case: local field
+			// Case: Local field
 			if ((uint)index < (uint)st.FieldCount) {
-				// Case: hot field
+				// Case: Hot field
 				stream = st.Stream!;
 				goto DoLoad;
 			} else if (st.HasColdComplement) {
-				// Case: cold field (because there's a cold store)
+				// Case: Cold field (because there's a cold store)
 				index -= st.FieldCount;
 
 				st = ref _ColdState;
@@ -426,12 +426,12 @@ internal struct FieldsReader : IDisposable {
 					goto InitColdState;
 				}
 			} else {
-				// Case: hot field (because there's no cold store)
+				// Case: Hot field (because there's no cold store)
 				// This becomes a conditional jump forward to not favor it
 				goto Fail;
 			}
 		} else {
-			// Case: shared field
+			// Case: Shared field
 			st = ref _SharedState;
 			stream = st.Stream;
 
