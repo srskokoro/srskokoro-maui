@@ -167,7 +167,7 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE ItemToFatField(" +
+		db.Exec("CREATE TABLE ItemToFloatingField(" +
 
 			"item INTEGER NOT NULL REFERENCES Item" + OnRowIdFkCascDel + WithFkDfr + "," +
 

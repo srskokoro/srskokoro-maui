@@ -188,7 +188,7 @@ public abstract class FieldedEntity : DataEntity {
 
 	WithoutFieldSpec:
 		{
-			fval = OnLoadFatField(db, fld);
+			fval = OnLoadFloatingField(db, fld);
 			if (fval != null) {
 				goto Found;
 			} else {
@@ -197,7 +197,7 @@ public abstract class FieldedEntity : DataEntity {
 		}
 	}
 
-	private protected abstract FieldVal? OnLoadFatField(KokoroSqliteDb db, long fieldId);
+	private protected abstract FieldVal? OnLoadFloatingField(KokoroSqliteDb db, long fieldId);
 
 	private protected void UnloadField(StringKey fieldName) {
 		var fields = _Fields;

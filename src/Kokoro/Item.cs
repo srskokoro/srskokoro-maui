@@ -355,13 +355,13 @@ public sealed class Item : FieldedEntity {
 		}
 	}
 
-	private protected sealed override FieldVal? OnLoadFatField(KokoroSqliteDb db, long fieldId) {
+	private protected sealed override FieldVal? OnLoadFloatingField(KokoroSqliteDb db, long fieldId) {
 		Span<byte> encoded;
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set("""
 				SELECT data
-				FROM ItemToFatField
+				FROM ItemToFloatingField
 				WHERE (item,fld)=($item,$fld)
 				""");
 
