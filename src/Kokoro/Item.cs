@@ -120,7 +120,7 @@ public sealed class Item : FieldedEntity {
 
 	internal sealed override Stream ReadColdStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
-			tableName: "ItemToColdField", columnName: "data", rowid: _RowId,
+			tableName: "ItemToColdStore", columnName: "data", rowid: _RowId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 

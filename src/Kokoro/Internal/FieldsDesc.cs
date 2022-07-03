@@ -13,7 +13,7 @@ internal readonly struct FieldsDesc {
 	// integers) in the fielded data.
 	//
 	// This corresponds to the data descriptor stored in columns like `Item.data`,
-	// `ItemToColdField.data` and `Schema.data` in the collection's SQLite DB.
+	// `ItemToColdStore.data` and `Schema.data` in the collection's SQLite DB.
 	public readonly uint Value;
 
 	// --

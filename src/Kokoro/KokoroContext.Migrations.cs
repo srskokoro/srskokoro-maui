@@ -146,7 +146,7 @@ partial class KokoroContext {
 
 		")");
 
-		db.Exec("CREATE TABLE ItemToColdField(" +
+		db.Exec("CREATE TABLE ItemToColdStore(" +
 
 			RowIdPk + " REFERENCES Item" + OnRowIdFkCascDel + WithFkDfr + "," +
 
