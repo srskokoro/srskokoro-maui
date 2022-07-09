@@ -122,7 +122,7 @@ partial class FieldedEntity {
 				ArrayPool<Entry>.Shared.ReturnClearingReferences(entries);
 				_Entries = null!;
 
-				ArrayPool<int>.Shared.Return(_Offsets, clearArray: false);
+				ArrayPool<int>.Shared.ReturnClearingReferences(_Offsets);
 				_Offsets = null!;
 			}
 		}
