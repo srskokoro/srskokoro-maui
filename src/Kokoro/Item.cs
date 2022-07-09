@@ -484,4 +484,8 @@ public sealed class Item : FieldedEntity {
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();
 	}
+
+	// --
+
+	internal override string GetDebugLabel() => $"Item {_RowId} (uid: {_Uid})";
 }

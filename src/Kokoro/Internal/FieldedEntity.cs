@@ -214,4 +214,8 @@ public abstract class FieldedEntity : DataEntity {
 			_FieldChanges = null;
 		}
 	}
+
+	// --
+
+	internal abstract string GetDebugLabel();
 }
