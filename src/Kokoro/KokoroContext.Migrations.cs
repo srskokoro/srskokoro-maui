@@ -212,22 +212,22 @@ partial class KokoroContext {
 			// considered a draft, yet to be finalized and not yet immutable.
 			"usum BLOB NOT NULL UNIQUE," +
 
-			// The expected number of field data in the fielded entity where the
-			// schema is applied.
+			// The maximum number of field data expected to be in the fielded
+			// entity where the schema is applied.
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToField` table.
 			$"lfld_count INTEGER NOT NULL CHECK(lfld_count {BetweenInt32RangeGE0}) AS (hfld_count + cfld_count)," +
 
-			// The expected number of hot field data in the fielded entity where
-			// the schema is applied.
+			// The maximum number of hot field data expected to be in the
+			// fielded entity where the schema is applied.
 			//
 			// This should always be equal to the number of hot fields defined
 			// by the schema -- see `SchemaToField` table.
 			$"hfld_count INTEGER NOT NULL CHECK(hfld_count {BetweenInt32RangeGE0})," +
 
-			// The expected number of cold field data in the fielded entity
-			// where the schema is applied.
+			// The maximum number of cold field data expected to be in the
+			// fielded entity where the schema is applied.
 			//
 			// This should always be equal to the number of cold fields defined
 			// by the schema -- see `SchemaToField` table.
