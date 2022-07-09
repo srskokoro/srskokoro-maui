@@ -3,7 +3,7 @@ using Kokoro.Common.Sqlite;
 using Kokoro.Internal.Sqlite;
 using System.Runtime.InteropServices;
 
-public abstract class FieldedEntity : DataEntity {
+public abstract partial class FieldedEntity : DataEntity {
 
 	private protected long _SchemaRowId;
 
