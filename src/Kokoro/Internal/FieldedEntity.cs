@@ -13,7 +13,7 @@ public abstract class FieldedEntity : DataEntity {
 	public long SchemaRowId => _SchemaRowId;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldedEntity(KokoroCollection host) : base(host) { }
+	internal FieldedEntity(KokoroCollection host) : base(host) { }
 
 	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
 
