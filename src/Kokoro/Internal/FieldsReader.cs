@@ -260,49 +260,9 @@ internal struct FieldsReader : IDisposable {
 			_SharedState = new(_Owner.ReadSharedStore(Db));
 	}
 
-	public bool InitRealSharedStore() {
-		Stream? stream = _SharedState.Stream;
-		if (stream == null) {
-			// This becomes a conditional jump forward to not favor it
-			goto InitState;
-		}
-
-	CheckStream:
-		// The following produces more efficient asm for the likely (true) case
-		// than simply returning the boolean result of the expression.
-		if (stream != Stream.Null)
-			return true;
-		return false;
-
-	InitState:
-		stream = _Owner.ReadSharedStore(Db);
-		_SharedState = new(stream);
-		goto CheckStream;
-	}
-
 	public void InitColdStore() {
 		if (_ColdState.Stream == null)
 			_ColdState = new(_Owner.ReadColdStore(Db));
-	}
-
-	public bool InitRealColdStore() {
-		Stream? stream = _ColdState.Stream;
-		if (stream == null) {
-			// This becomes a conditional jump forward to not favor it
-			goto InitState;
-		}
-
-	CheckStream:
-		// The following produces more efficient asm for the likely (true) case
-		// than simply returning the boolean result of the expression.
-		if (stream != Stream.Null)
-			return true;
-		return false;
-
-	InitState:
-		stream = _Owner.ReadColdStore(Db);
-		_ColdState = new(stream);
-		goto CheckStream;
 	}
 
 
