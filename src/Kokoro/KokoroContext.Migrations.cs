@@ -201,7 +201,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid` and `lfld_count`.
+			// `rowid`, `lfld_count`, `hfld_count` and `cfld_count`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -217,7 +217,21 @@ partial class KokoroContext {
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"lfld_count INTEGER NOT NULL CHECK(lfld_count {BetweenInt32RangeGE0})," +
+			$"lfld_count INTEGER NOT NULL CHECK(lfld_count {BetweenInt32RangeGE0}) AS (hfld_count + cfld_count)," +
+
+			// The expected number of hot field data in the fielded entity where
+			// the schema is applied.
+			//
+			// This should always be equal to the number of hot fields defined
+			// by the schema -- see `SchemaToField` table.
+			$"hfld_count INTEGER NOT NULL CHECK(hfld_count {BetweenInt32RangeGE0})," +
+
+			// The expected number of cold field data in the fielded entity
+			// where the schema is applied.
+			//
+			// This should always be equal to the number of cold fields defined
+			// by the schema -- see `SchemaToField` table.
+			$"cfld_count INTEGER NOT NULL CHECK(cfld_count {BetweenInt32RangeGE0})," +
 
 			// The BLOB comprising the list of field offsets and field values
 			// for shared fields.
