@@ -119,16 +119,11 @@ partial class FieldedEntity {
 		public void Dispose() {
 			var entries = _Entries;
 			if (entries != null) {
-				{
-					bool MayLeakMemory = RuntimeHelpers.IsReferenceOrContainsReferences<Entry>();
-					ArrayPool<Entry>.Shared.Return(entries, clearArray: MayLeakMemory);
-					_Entries = null!;
-				}
-				{
-					const bool MayLeakMemory = false;
-					ArrayPool<int>.Shared.Return(_Offsets, clearArray: MayLeakMemory);
-					_Offsets = null!;
-				}
+				ArrayPool<Entry>.Shared.ReturnClearingReferences(entries);
+				_Entries = null!;
+
+				ArrayPool<int>.Shared.Return(_Offsets, clearArray: false);
+				_Offsets = null!;
 			}
 		}
 	}
