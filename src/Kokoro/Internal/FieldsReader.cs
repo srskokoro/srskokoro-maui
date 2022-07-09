@@ -256,8 +256,8 @@ internal struct FieldsReader : IDisposable {
 
 
 	public void InitSharedStore() {
-		if (_SharedState.Stream != null) return; // Early exit
-		_SharedState = new(_Owner.ReadSharedStore(Db));
+		if (_SharedState.Stream == null)
+			_SharedState = new(_Owner.ReadSharedStore(Db));
 	}
 
 	public bool InitRealSharedStore() {
@@ -281,8 +281,8 @@ internal struct FieldsReader : IDisposable {
 	}
 
 	public void InitColdStore() {
-		if (_ColdState.Stream != null) return; // Early exit
-		_ColdState = new(_Owner.ReadColdStore(Db));
+		if (_ColdState.Stream == null)
+			_ColdState = new(_Owner.ReadColdStore(Db));
 	}
 
 	public bool InitRealColdStore() {
