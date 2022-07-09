@@ -177,9 +177,19 @@ internal struct FieldsReader : IDisposable {
 
 	public readonly FieldedEntity Owner => _Owner;
 
+	public readonly int LocalFieldCountOrUND {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _HotState.FieldCount + _ColdState.FieldCount;
+	}
+
 	public readonly int HotFieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _HotState.FieldCount;
+	}
+
+	public readonly int ColdFieldCountOrUND {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _ColdState.FieldCount;
 	}
 
 
