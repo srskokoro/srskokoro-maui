@@ -45,10 +45,5 @@ internal readonly struct BufferRenter<T> : IDisposable {
 
 	/// <inheritdoc/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void Dispose() {
-		ArrayPool<T>.Shared.Return(
-			Array,
-			clearArray: RuntimeHelpers.IsReferenceOrContainsReferences<T>()
-		);
-	}
+	public void Dispose() => ArrayPool<T>.Shared.ReturnClearingReferences(Array);
 }
