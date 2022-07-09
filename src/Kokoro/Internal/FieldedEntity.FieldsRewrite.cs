@@ -73,6 +73,104 @@ partial class FieldedEntity {
 		internal readonly int LoadHot(ref FieldsReader fr, int end)
 			=> Load(ref fr, nextOffset: 0, start: 0, end);
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal readonly int LoadHotNoOverride(ref FieldsReader fr, int end) {
+			int nextOffset = 0;
+			try {
+				Debug.Assert(end <= Offsets?.Length); // `false` on null array
+				Debug.Assert(end <= Entries?.Length);
+
+				// Get references to avoid unnecessary range checking
+				ref var entries_r0 = ref Entries.DangerousGetReference();
+				ref var offsets_r0 = ref Offsets.DangerousGetReference();
+
+				Types.DAssert_IsReferenceOrContainsReferences(entries_r0);
+
+				for (int i = 0; i < end; i++) {
+					U.Add(ref offsets_r0, i) = nextOffset;
+					ref var entry = ref U.Add(ref entries_r0, i);
+
+					FieldSpec fspec = new(i, FieldStoreType.Cold);
+					LatentFieldVal lfval = fr.ReadLater(fspec);
+					entry.OrigValue = lfval;
+
+					// It's a reference type: it should've been
+					// automatically initialized to null.
+					Debug.Assert(entry.Override == null);
+
+					int nextLength = lfval.Length;
+					if (nextLength >= 0) {
+						checked { nextOffset += nextLength; }
+					} else {
+						entry.Override = FieldVal.Null;
+					}
+				}
+			} catch (OverflowException) {
+				goto E_FieldValsLengthTooLarge;
+			}
+
+			// NOTE: Given that everything was loaded from the old field stores,
+			// we won't check whether or not the loaded data is within the
+			// maximum allowed length.
+			return nextOffset; // Early exit
+
+		E_FieldValsLengthTooLarge:
+			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal readonly int LoadColdNoRead(int nextOffset, int start, int end) {
+			try {
+				Debug.Assert(end <= Offsets?.Length); // `false` on null array
+				Debug.Assert(end <= Entries?.Length);
+				Debug.Assert(FOverrides != null);
+
+				// Get references to avoid unnecessary range checking
+				ref var foverride = ref FOverrides.DangerousGetReference();
+				ref var entries_r0 = ref Entries.DangerousGetReference();
+				ref var offsets_r0 = ref Offsets.DangerousGetReference();
+
+				Types.DAssert_IsReferenceOrContainsReferences(entries_r0);
+
+				for (int i = start; i < end; i++) {
+					U.Add(ref offsets_r0, i) = nextOffset;
+					ref var entry = ref U.Add(ref entries_r0, i);
+
+					FieldSpec fspec = new(i, FieldStoreType.Cold);
+					if (foverride.FSpec != fspec) {
+						entry.OrigValue = LatentFieldVal.Null;
+
+						// Assert that we don't have to adjust the next offset
+						Debug.Assert(entry.OrigValue.Length == 0);
+
+						// It's a reference type: it should've been
+						// automatically initialized to null.
+						Debug.Assert(entry.Override == null);
+
+					} else {
+						FieldVal fval = foverride.FVal;
+						foverride = ref U.Add(ref foverride, 1);
+						entry.Override = fval;
+
+						checked {
+							nextOffset += (int)fval.CountEncodeLength();
+						}
+					}
+				}
+			} catch (OverflowException) {
+				goto E_FieldValsLengthTooLarge;
+			}
+
+			if (nextOffset <= MaxFieldValsLength) {
+				return nextOffset; // Early exit
+			}
+
+		E_FieldValsLengthTooLarge:
+			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
+		}
+
 		// --
 
 		[DoesNotReturn]
