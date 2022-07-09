@@ -318,7 +318,7 @@ internal struct FieldsReader : IDisposable {
 		Stream? stream;
 		int index = fspec.Index;
 
-		if (fspec.StoreType!= FieldStoreType.Shared) {
+		if (fspec.StoreType != FieldStoreType.Shared) {
 			// Case: Local field
 			if ((uint)index < (uint)st.FieldCount) {
 				// Case: Field in hot store
@@ -416,7 +416,7 @@ internal struct FieldsReader : IDisposable {
 		Stream? stream;
 		int index = fspec.Index;
 
-		if (fspec.StoreType!= FieldStoreType.Shared) {
+		if (fspec.StoreType != FieldStoreType.Shared) {
 			// Case: Local field
 			if ((uint)index < (uint)st.FieldCount) {
 				// Case: Field in hot store
