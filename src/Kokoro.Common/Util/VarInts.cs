@@ -13,6 +13,8 @@ internal static class VarInts {
 	public const int MaxLength64 = 9;
 	public const int MaxLength32 = 5;
 
+	public const int LengthForZero = 1;
+
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
 	[SkipLocalsInit]
 	public static int Read(ReadOnlySpan<byte> src, out ulong result) {

@@ -29,6 +29,11 @@ internal readonly struct FieldsDesc {
 
 	// --
 
+	public static FieldsDesc Empty {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => default;
+	}
+
 	public int FieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => (int)(Value >> 3);

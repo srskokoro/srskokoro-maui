@@ -11,6 +11,8 @@ internal readonly struct FieldSpec {
 	// in the collection's SQLite DB.
 	public readonly uint Value;
 
+	public const uint IndexIncrement = 1 << 3;
+
 	public int Index {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => (int)(Value >> 3);
