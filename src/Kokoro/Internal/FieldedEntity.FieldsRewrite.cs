@@ -581,6 +581,34 @@ partial class FieldedEntity {
 
 			DInit_StoreLengthsAndFDescs(ref fw);
 
+			Debug.Assert(fwc.FOverrides != null); // Already assigned before
+			fw._Entries = fwc.Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(xlc);
+			ref var offsets_r0 = ref (
+				fw._Offsets = fwc.Offsets = ArrayPool<int>.Shared.Rent(xlc)
+			).DangerousGetReference();
+
+			int ohc = fr.HotFieldCount;
+
+			int ldn;
+			int fValsSize;
+			int hotFValsSize;
+
+			if (!fr.HasRealColdStore) {
+				// Case: No real cold store (at least according to the flag)
+
+			} else if (xhc == ohc) {
+				// Case: Has real cold store, with hot store uncorrupted.
+				// - It should be that `xhc == ohc` whenever the "has real cold
+				// store" flag is set in the hot store. Otherwise, the hot store
+				// is considered corrupted.
+
+			} else {
+				// Case: Has real cold store, but hot store is corrupted.
+				// - Expecting `xhc == ohc` whenever the "has real cold store"
+				// flag is set in the hot store. But this isn't the case.
+				// - A full rewrite should fix the issue.
+
+			}
 
 		Done:
 			DAssert_StoreLengthsAndFDescs(ref fw);
