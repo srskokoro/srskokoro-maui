@@ -171,6 +171,87 @@ partial class FieldedEntity {
 			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal readonly int TrimNullFValsFromEnd(int end) {
+			// Ensure caller passed valid arguments
+			Debug.Assert((uint)end <= (uint?)Entries?.Length);
+
+			// Get a reference to avoid unnecessary range checking
+			ref var entries_r0 = ref Entries.DangerousGetReference();
+
+			// NOTE: `end` is excluded, as you'll see later below
+			int i = end;
+
+			for (; ; ) {
+				if (--i < 0) break;
+				// ^- Better IL & asm than `while` loop equivalent. The `while`
+				// loop would get inverted, with the condition at the loop's
+				// footer. But, we want the `continue` statements (see below) to
+				// be the loop footer, to make more compact asm. Thus, we didn't
+				// use a `while` loop.
+				//
+				// See also, https://stackoverflow.com/q/47783926
+
+				ref var entry = ref U.Add(ref entries_r0, i);
+				FieldVal? fval = entry.Override;
+				if (fval == null) {
+					if (entry.OrigValue.Length > 0) break;
+					else continue;
+				} else {
+					if (fval.TypeHint != FieldTypeHint.Null) break;
+					else continue;
+				}
+			}
+
+			int n = i + 1;
+			Debug.Assert(n >= 0);
+			// Assert that it's also useable with `Offsets` array
+			Debug.Assert((uint)n <= (uint?)Offsets?.Length);
+			return n;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal readonly int TrimNullFValsFromEndToStart(int end, int start) {
+			// Ensure caller passed valid arguments
+			Debug.Assert(start >= 0); // `start` can be `>= end` though
+			Debug.Assert((uint)end <= (uint?)Entries?.Length);
+
+			// Get a reference to avoid unnecessary range checking
+			ref var entries_r0 = ref Entries.DangerousGetReference();
+
+			// NOTE: `end` is excluded, as you'll see later below
+			int i = end;
+
+			for (; ; ) {
+				if (--i < start) break;
+				// ^- Better IL & asm than `while` loop equivalent. The `while`
+				// loop would get inverted, with the condition at the loop's
+				// footer. But, we want the `continue` statements (see below) to
+				// be the loop footer, to make more compact asm. Thus, we didn't
+				// use a `while` loop.
+				//
+				// See also, https://stackoverflow.com/q/47783926
+
+				ref var entry = ref U.Add(ref entries_r0, i);
+				FieldVal? fval = entry.Override;
+				if (fval == null) {
+					if (entry.OrigValue.Length > 0) break;
+					else continue;
+				} else {
+					if (fval.TypeHint != FieldTypeHint.Null) break;
+					else continue;
+				}
+			}
+
+			int n = i + 1;
+			Debug.Assert(n >= start);
+			// Assert that it's also useable with `Offsets` array
+			Debug.Assert((uint)n <= (uint?)Offsets?.Length);
+			return n;
+		}
+
 		// --
 
 		[DoesNotReturn]
