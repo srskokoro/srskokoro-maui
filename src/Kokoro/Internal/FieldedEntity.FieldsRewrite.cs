@@ -410,6 +410,35 @@ partial class FieldedEntity {
 
 			// -=-
 
+			Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
+
+			if (foverrides_n != 0) {
+				// Order by field spec
+				MemoryMarshal.CreateSpan(ref foverrides_r0, foverrides_n)
+					.Sort(static (a, b) => a.FSpec.Value.CompareTo(b.FSpec.Value));
+
+				// Set up sentinel value
+				ref var foverrides_r_sentinel = ref U.Add(ref foverrides_r0, foverrides_n);
+				foverrides_r_sentinel = (-1, null!);
+
+				// Assert that the sentinel won't match any field spec
+				Debug.Assert((uint)foverrides_r_sentinel.FSpec.Index >= (uint)MaxFieldCount);
+			} else {
+				// It's important that we don't proceed any further if we have
+				// an empty list of field changes (as the code after assumes
+				// that we have at least 1 field change).
+
+				// This becomes a conditional jump forward to not favor it
+				goto NoCoreFieldChanges_0;
+			}
+
+
+		NoCoreFieldChanges_0:
+			// ^ Label must still be within the `using` block, so that the
+			// `goto` statement jumping into this can simply be a direct jump or
+			// a conditional jump forward, while the `goto` here will take care
+			// of the elaborate step of actually leaving the `using` block.
+			goto NoCoreFieldChanges;
 		}
 
 	NoCoreFieldChanges:
