@@ -553,6 +553,39 @@ partial class FieldedEntity {
 			}
 
 
+			[Conditional("DEBUG")]
+			static void DInit_StoreLengthsAndFDescs(ref FieldsWriter fw) {
+				fw._ColdStoreLength = fw._HotStoreLength = -2;
+				fw._ColdFieldsDesc = fw._HotFieldsDesc = -1;
+			}
+
+			[Conditional("DEBUG")]
+			static void DAssert_StoreLengthsAndFDescs(ref FieldsWriter fw) {
+				Debug.Assert(fw._HotStoreLength >= -1);
+				Debug.Assert(fw._ColdStoreLength >= -1);
+
+				// Necessary for the corrrectness of the code after
+				Debug.Assert(FieldsDesc.MaxValue == int.MaxValue);
+
+				Debug.Assert(
+					(fw._HotStoreLength <= 0 && fw._ColdStoreLength <= 0) ||
+					(uint)fw._HotFieldsDesc <= (uint)FieldsDesc.MaxValue
+				);
+				Debug.Assert(
+					fw._ColdStoreLength <= 0 ||
+					(uint)fw._ColdFieldsDesc <= (uint)FieldsDesc.MaxValue
+				);
+			}
+
+			// -=-
+
+			DInit_StoreLengthsAndFDescs(ref fw);
+
+
+		Done:
+			DAssert_StoreLengthsAndFDescs(ref fw);
+			return; // ---
+
 		NoCoreFieldChanges_0:
 			// ^ Label must still be within the `using` block, so that the
 			// `goto` statement jumping into this can simply be a direct jump or
