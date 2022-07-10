@@ -494,6 +494,29 @@ partial class FieldedEntity {
 			//
 			// -=-
 
+			int fmi = U.Add(ref foverrides_r0, 0).FSpec.Index;
+			int lmn = U.Add(ref foverrides_r0, foverrides_n - 1).FSpec.Index + 1;
+
+			int xlc, xhc;
+			using (var cmd = db.CreateCommand()) {
+				cmd.Set("""
+					SELECT hfld_count,cfld_count FROM Schema
+					WHERE rowid=$rowid
+					"""
+				).AddParams(new("$rowid", _SchemaRowId));
+
+				using var r = cmd.ExecuteReader();
+				if (r.Read()) {
+					r.DAssert_Name(0, "hfld_count"); // The max hot field count
+					xhc = r.GetInt32(0); // The expected max hot count
+
+					r.DAssert_Name(1, "cfld_count"); // The max cold field count
+					xlc = r.GetInt32(1) + xhc; // The expected max local count
+				} else {
+					xlc = xhc = 0;
+				}
+			}
+
 
 		NoCoreFieldChanges_0:
 			// ^ Label must still be within the `using` block, so that the
