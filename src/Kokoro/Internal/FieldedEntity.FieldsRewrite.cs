@@ -17,8 +17,8 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		internal readonly int Load(ref FieldsReader fr, int nextOffset, int start, int end) {
 			try {
-				Debug.Assert(end <= Offsets?.Length); // `false` on null array
-				Debug.Assert(end <= Entries?.Length);
+				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
+				Debug.Assert((uint)end <= (uint?)Entries?.Length);
 				Debug.Assert(FOverrides != null);
 
 				// Get references to avoid unnecessary range checking
@@ -78,8 +78,8 @@ partial class FieldedEntity {
 		internal readonly int LoadHotNoOverride(ref FieldsReader fr, int end) {
 			int nextOffset = 0;
 			try {
-				Debug.Assert(end <= Offsets?.Length); // `false` on null array
-				Debug.Assert(end <= Entries?.Length);
+				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
+				Debug.Assert((uint)end <= (uint?)Entries?.Length);
 
 				// Get references to avoid unnecessary range checking
 				ref var entries_r0 = ref Entries.DangerousGetReference();
@@ -123,8 +123,8 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		internal readonly int LoadColdNoRead(int nextOffset, int start, int end) {
 			try {
-				Debug.Assert(end <= Offsets?.Length); // `false` on null array
-				Debug.Assert(end <= Entries?.Length);
+				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
+				Debug.Assert((uint)end <= (uint?)Entries?.Length);
 				Debug.Assert(FOverrides != null);
 
 				// Get references to avoid unnecessary range checking
