@@ -432,6 +432,68 @@ partial class FieldedEntity {
 				goto NoCoreFieldChanges_0;
 			}
 
+			// -=-
+			//
+			// Legend:
+			//
+			// `fmi` -- first modification index; the index of the first field change
+			// `lmi` -- last modification index; the index of the last field change
+			// `lmn` -- last modification end; `lmi + 1`
+			//
+			// `ohc` -- old hot count; the number of fields in the old hot store
+			// `occ` -- old cold count; the number of fields in the old cold store
+			// `olc` -- old local count; `ohc + occ`
+			//
+			// `xhc` -- expected maximum hot count, as defined by the schema
+			// `xlc` -- expected maximum local count, as defined by the schema
+			//
+			// `ldn` -- 1 + the index of the last field entry loaded
+			//
+			//
+			// As to why we're preferring shorter variable names, here's a good
+			// rationale from, https://math.stackexchange.com/q/24241/#comment52289_24241
+			//
+			//   > Because it's long, it makes it hard to see patterns, and it
+			//   > makes you think about interpretation when you should be
+			//   > thinking about form.
+			//
+			// Actually, the above isn't really the exact reasoning :P -- those
+			// were simply the variable names while the algorithm was being
+			// designed, so as to make it easier to see patterns and coalesce
+			// common code paths, or something like that.
+			//
+			// However, the variable names were preserved here mainly because
+			// verbose variables just add too much clutter. It was decided that
+			// the comments should already be more than sufficient to convey the
+			// intention, as the comments were necesary anyway to help make
+			// sense of the algorithm's design.
+			//
+			// -=-
+			//
+			// Nomenclature:
+			//
+			// - "hot store" -- the hot field store :P
+			// - "cold store" -- the cold field store :P
+			// - "cold data" means cold fields' data, which can exist in either
+			// the hot store or the cold store.
+			// - "hot data" means hot fields' data, which can only exist in the
+			// hot store.
+			// - "hot limit" means "hot store limit" -- the maximum amount of
+			// data (in bytes) imposed over the hot store.
+			// - "hot zone" and "cold zone"
+			//   - All hot data may exist only in the hot zone. The hot zone
+			//   exists exclusively in the hot store.
+			//   - All cold data may exist only in the cold zone. The cold zone
+			//   may be located in either the hot store or the cold store, but
+			//   never in both stores.
+			//   - The cold zone can be found in the hot store when both hot and
+			//   cold data are within the hot limit, i.e., all of the data fits
+			//   in the hot store.
+			//   - The indices that lead to the hot zone is always `< xhc`
+			//   - The indices that lead to the cold zone is always `>= xhc`
+			//
+			// -=-
+
 
 		NoCoreFieldChanges_0:
 			// ^ Label must still be within the `using` block, so that the
