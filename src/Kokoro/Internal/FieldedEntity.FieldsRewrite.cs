@@ -354,6 +354,62 @@ partial class FieldedEntity {
 			ref var foverrides_r0 = ref fwc.FOverrides.DangerousGetReference();
 			int foverrides_n = 0;
 
+			// Convert the field changes into pairs of field spec and value
+			var db = fr.Db;
+			using (var cmd = db.CreateCommand()) {
+				SqliteParameter cmd_fld;
+				cmd.Set("""
+					SELECT idx_a_sto FROM SchemaToField
+					WHERE (schema,fld)=($schema,$fld)
+					"""
+				).AddParams(
+					new("$schema", _SchemaRowId),
+					cmd_fld = new() { ParameterName = "$fld" }
+				);
+
+				do {
+					var (fname, fval) = fchanges_iter.Current;
+					cmd_fld.Value = db.LoadFieldId(fname);
+
+					using var r = cmd.ExecuteReader();
+					if (r.Read()) {
+						// Case: local field
+
+						r.DAssert_Name(0, "idx_a_sto");
+						FieldSpec fspec = r.GetInt32(0);
+
+						Debug.Assert(fspec.Index >= 0);
+						fspec.StoreType.DAssert_Defined();
+
+						// TODO-XXX If there are any schema field changes, end here and perform a schema rewrite instead
+
+						Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
+						U.Add(ref foverrides_r0, foverrides_n++) = (fspec, fval);
+					} else {
+						// Case: floating field -- a field not defined by the schema
+
+						var floatingFields = fw._FloatingFields;
+						if (floatingFields == null) {
+							// This becomes a conditional jump forward to not favor it
+							goto InitFloatingFields;
+						}
+
+					AddFloatingField:
+						floatingFields.Add((fname, fval));
+						goto DoneFloatingField;
+
+					InitFloatingFields:
+						fw._FloatingFields = floatingFields = new();
+						goto AddFloatingField;
+
+					DoneFloatingField:
+						;
+					}
+				} while (fchanges_iter.MoveNext());
+			}
+
+			// -=-
+
 		}
 
 	NoCoreFieldChanges:
