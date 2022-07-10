@@ -336,4 +336,27 @@ partial class FieldedEntity {
 			}
 		}
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	private protected void CompileFieldChanges(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
+		Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
+		if (fchanges == null) goto NoCoreFieldChanges;
+
+		var fchanges_iter = fchanges.GetEnumerator();
+		if (!fchanges_iter.MoveNext()) goto NoCoreFieldChanges;
+
+		FieldsWriterCore fwc;
+		int foverrides_n_max = fchanges.Count + 1; // Extra 1 for sentinel value
+
+		using (BufferRenter<(FieldSpec FSpec, FieldVal FVal)>.Create(foverrides_n_max, out fwc.FOverrides)) {
+			// Get a reference to avoid unnecessary range checking
+			ref var foverrides_r0 = ref fwc.FOverrides.DangerousGetReference();
+			int foverrides_n = 0;
+
+		}
+
+	NoCoreFieldChanges:
+		fw._ColdStoreLength = fw._HotStoreLength = -1;
+	}
 }
