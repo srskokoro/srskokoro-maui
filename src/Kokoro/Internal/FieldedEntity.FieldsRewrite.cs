@@ -126,61 +126,6 @@ partial class FieldedEntity {
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]
-		internal readonly int LoadColdNoRead(int nextOffset, int start, int end) {
-			try {
-				Debug.Assert((uint)end <= (uint)MaxFieldCount);
-
-				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
-				Debug.Assert((uint)end <= (uint?)Entries?.Length);
-				Debug.Assert(FOverrides != null);
-
-				// Get references to avoid unnecessary range checking
-				ref var foverride = ref FOverrides.DangerousGetReference();
-				ref var entries_r0 = ref Entries.DangerousGetReference();
-				ref var offsets_r0 = ref Offsets.DangerousGetReference();
-
-				Types.DAssert_IsReferenceOrContainsReferences(entries_r0);
-
-				for (int i = start; i < end; i++) {
-					U.Add(ref offsets_r0, i) = nextOffset;
-					ref var entry = ref U.Add(ref entries_r0, i);
-
-					if (foverride.FSpec.Index != i) {
-						entry.OrigValue = LatentFieldVal.Null;
-
-						// Assert that we don't have to adjust the next offset
-						Debug.Assert(entry.OrigValue.Length == 0);
-
-						// It's a reference type: it should've been
-						// automatically initialized to null.
-						Debug.Assert(entry.Override == null);
-
-					} else {
-						FieldVal fval = foverride.FVal;
-						entry.Override = fval;
-
-						do foverride = ref U.Add(ref foverride, 1);
-						while (foverride.FSpec.Index != i);
-
-						checked {
-							nextOffset += (int)fval.CountEncodeLength();
-						}
-					}
-				}
-			} catch (OverflowException) {
-				goto E_FieldValsLengthTooLarge;
-			}
-
-			if (nextOffset <= MaxFieldValsLength) {
-				return nextOffset; // Early exit
-			}
-
-		E_FieldValsLengthTooLarge:
-			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
-		[SkipLocalsInit]
 		internal readonly int TrimNullFValsFromEnd(int end) {
 			// Ensure caller passed valid arguments
 			Debug.Assert((uint)end <= (uint?)Entries?.Length);
