@@ -239,7 +239,7 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		public readonly void WriteHotStore(Stream destination) {
 #if DEBUG
-			Debug.Assert(_HotStoreLength > 0, $"Shouldn't be called while data length <= 0");
+			Debug.Assert(_HotStoreLength > 0, $"Shouldn't be called while data length <= 0 (currently {_HotStoreLength})");
 			long expectedEndPos = destination.Position + _HotStoreLength;
 #endif
 			FieldsDesc fDesc = _HotFieldsDesc;
@@ -281,7 +281,7 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		public readonly void WriteColdStore(Stream destination) {
 #if DEBUG
-			Debug.Assert(_ColdStoreLength > 0, $"Shouldn't be called while data length <= 0");
+			Debug.Assert(_ColdStoreLength > 0, $"Shouldn't be called while data length <= 0 (currently {_ColdStoreLength})");
 			long expectedEndPos = destination.Position + _ColdStoreLength;
 #endif
 			FieldsDesc fDesc = _ColdFieldsDesc;
