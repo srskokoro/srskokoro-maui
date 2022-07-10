@@ -517,6 +517,41 @@ partial class FieldedEntity {
 				}
 			}
 
+			Debug.Assert(0 <= fmi && fmi < lmn);
+
+			// The check below also makes sure `xlc > 0` since `0 <= fmi < lmn`
+			// (implying `lmn >= 1`) and we want `lmn <= xlc` to hold or throw.
+			// - Though `xlc` can be zero, we shouldn't be here then, as no
+			// local field may change in that case.
+			// - The check also ensures `xlc` is never negative, or we throw.
+			if (lmn > xlc) {
+				E_IndexBeyondLocalFieldCount(_SchemaRowId, lmn: lmn, xlc: xlc);
+			}
+
+			Debug.Assert(xlc > 0);
+
+			// Ensures `0 <= xhc <= xlc` presuming `xlc >= 0`
+			if ((uint)xhc > (uint)xlc) {
+				E_InvalidHotFieldCount(_SchemaRowId, xhc: xhc, xlc: xlc);
+			}
+
+			[DoesNotReturn]
+			static void E_IndexBeyondLocalFieldCount(long schemaRowId, int lmn, int xlc) {
+				Debug.Assert(lmn > xlc);
+				throw new InvalidDataException(
+					$"Schema (with rowid {schemaRowId}) gave a local field " +
+					$"index (which is {lmn-1}) not under the expected maximum " +
+					$"number of local fields it defined (which is {xlc}).");
+			}
+
+			[DoesNotReturn]
+			static void E_InvalidHotFieldCount(long schemaRowId, int xhc, int xlc) {
+				throw new InvalidDataException(
+					$"Schema (with rowid {schemaRowId}) has {xhc} as its " +
+					$"maximum hot field count while having {xlc} as its " +
+					$"maximum local field count.");
+			}
+
 
 		NoCoreFieldChanges_0:
 			// ^ Label must still be within the `using` block, so that the
