@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
+	private const int MaxFieldCount = byte.MaxValue + 1;
 	private const int MaxFieldValsLength = 0xFF_FFFF;
 
 	private struct FieldsWriterCore {
@@ -17,6 +18,8 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		internal readonly int Load(ref FieldsReader fr, int nextOffset, int start, int end) {
 			try {
+				Debug.Assert((uint)end <= (uint)MaxFieldCount);
+
 				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
 				Debug.Assert((uint)end <= (uint?)Entries?.Length);
 				Debug.Assert(FOverrides != null);
@@ -32,9 +35,8 @@ partial class FieldedEntity {
 					U.Add(ref offsets_r0, i) = nextOffset;
 					ref var entry = ref U.Add(ref entries_r0, i);
 
-					FieldSpec fspec = new(i, FieldStoreType.Cold);
-					if (foverride.FSpec != fspec) {
-						LatentFieldVal lfval = fr.ReadLater(fspec);
+					if (foverride.FSpec.Index != i) {
+						LatentFieldVal lfval = fr.ReadLater(new(i, FieldStoreType.Cold));
 						entry.OrigValue = lfval;
 
 						// It's a reference type: it should've been
@@ -78,6 +80,8 @@ partial class FieldedEntity {
 		internal readonly int LoadHotNoOverride(ref FieldsReader fr, int end) {
 			int nextOffset = 0;
 			try {
+				Debug.Assert((uint)end <= (uint)MaxFieldCount);
+
 				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
 				Debug.Assert((uint)end <= (uint?)Entries?.Length);
 
@@ -91,8 +95,7 @@ partial class FieldedEntity {
 					U.Add(ref offsets_r0, i) = nextOffset;
 					ref var entry = ref U.Add(ref entries_r0, i);
 
-					FieldSpec fspec = new(i, FieldStoreType.Cold);
-					LatentFieldVal lfval = fr.ReadLater(fspec);
+					LatentFieldVal lfval = fr.ReadLater(new(i, FieldStoreType.Cold));
 					entry.OrigValue = lfval;
 
 					// It's a reference type: it should've been
@@ -123,6 +126,8 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		internal readonly int LoadColdNoRead(int nextOffset, int start, int end) {
 			try {
+				Debug.Assert((uint)end <= (uint)MaxFieldCount);
+
 				Debug.Assert((uint)end <= (uint?)Offsets?.Length); // `false` on null array
 				Debug.Assert((uint)end <= (uint?)Entries?.Length);
 				Debug.Assert(FOverrides != null);
@@ -138,8 +143,7 @@ partial class FieldedEntity {
 					U.Add(ref offsets_r0, i) = nextOffset;
 					ref var entry = ref U.Add(ref entries_r0, i);
 
-					FieldSpec fspec = new(i, FieldStoreType.Cold);
-					if (foverride.FSpec != fspec) {
+					if (foverride.FSpec.Index != i) {
 						entry.OrigValue = LatentFieldVal.Null;
 
 						// Assert that we don't have to adjust the next offset
