@@ -51,8 +51,10 @@ partial class FieldedEntity {
 						}
 					} else {
 						FieldVal fval = foverride.FVal;
-						foverride = ref U.Add(ref foverride, 1);
 						entry.Override = fval;
+
+						do foverride = ref U.Add(ref foverride, 1);
+						while (foverride.FSpec.Index != i);
 
 						checked {
 							nextOffset += (int)fval.CountEncodeLength();
@@ -155,8 +157,10 @@ partial class FieldedEntity {
 
 					} else {
 						FieldVal fval = foverride.FVal;
-						foverride = ref U.Add(ref foverride, 1);
 						entry.Override = fval;
+
+						do foverride = ref U.Add(ref foverride, 1);
+						while (foverride.FSpec.Index != i);
 
 						checked {
 							nextOffset += (int)fval.CountEncodeLength();
