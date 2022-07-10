@@ -614,6 +614,46 @@ partial class FieldedEntity {
 			DAssert_StoreLengthsAndFDescs(ref fw);
 			return; // ---
 
+		RewriteHotOnly_HotLoaded_NoCold:
+			{
+				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
+				Debug.Assert(ldn > 0);
+
+				goto Done;
+			}
+
+		RewriteHotOnly_HotLoadedFull_HasCold:
+			{
+				Debug.Assert(fw._ColdStoreLength == -1);
+				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
+				Debug.Assert(xhc > 0);
+
+				goto Done;
+			}
+
+		RewriteColdOnly_ColdLoaded_HasCold:
+			{
+				Debug.Assert(fw._HotStoreLength == -1);
+				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
+				Debug.Assert(ldn - xhc > 0);
+
+				goto Done;
+			}
+
+		RewriteHotColdSplit_ColdLoaded:
+			{
+				Debug.Assert(ldn - xhc > 0);
+
+				goto Done;
+			}
+
+		ClearHotOnly_NoCold:
+			{
+				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
+
+				goto Done;
+			}
+
 		NoCoreFieldChanges_0:
 			// ^ Label must still be within the `using` block, so that the
 			// `goto` statement jumping into this can simply be a direct jump or
