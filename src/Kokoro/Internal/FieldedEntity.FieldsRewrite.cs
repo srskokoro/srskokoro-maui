@@ -65,7 +65,7 @@ partial class FieldedEntity {
 				goto E_FieldValsLengthTooLarge;
 			}
 
-			if (nextOffset <= MaxFieldValsLength) {
+			if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
 				return nextOffset; // Early exit
 			}
 
