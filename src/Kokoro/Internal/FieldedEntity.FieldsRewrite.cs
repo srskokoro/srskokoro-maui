@@ -530,7 +530,9 @@ partial class FieldedEntity {
 
 			Debug.Assert(xlc > 0);
 
-			// Ensures `0 <= xhc <= xlc` presuming `xlc >= 0`
+			// The check below ensures `0 <= xhc <= xlc` presuming `xlc >= 0`.
+			// - Necessary for when we finally allocate the buffers later below,
+			// which would be `xlc` in length each, to be cut by `xhc`.
 			if ((uint)xhc > (uint)xlc) {
 				E_InvalidHotFieldCount(_SchemaRowId, xhc: xhc, xlc: xlc);
 			}
