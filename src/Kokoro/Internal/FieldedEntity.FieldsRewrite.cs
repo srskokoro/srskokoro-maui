@@ -708,6 +708,9 @@ partial class FieldedEntity {
 			{
 				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
 
+				fw._HotFieldsDesc = FieldsDesc.Empty;
+				fw._HotStoreLength = FieldsDesc.VarIntLengthForEmpty;
+
 				goto Done;
 			}
 

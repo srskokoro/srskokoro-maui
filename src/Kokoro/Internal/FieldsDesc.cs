@@ -1,5 +1,6 @@
 ﻿namespace Kokoro.Internal;
 using CommunityToolkit.HighPerformance.Helpers;
+using Kokoro.Common.Util;
 
 internal readonly struct FieldsDesc {
 	// Expected bit layout:
@@ -28,6 +29,8 @@ internal readonly struct FieldsDesc {
 	public const byte ByteArea_HasColdComplement_Bit = 1 << 2;
 
 	// --
+
+	public const int VarIntLengthForEmpty = VarInts.LengthForZero;
 
 	public static FieldsDesc Empty {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
