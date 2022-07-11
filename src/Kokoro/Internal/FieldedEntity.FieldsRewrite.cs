@@ -705,6 +705,36 @@ partial class FieldedEntity {
 			{
 				Debug.Assert(ldn - xhc > 0, $"Needs at least 1 cold field loaded");
 
+				int hotFOffsetSizeM1Or0 = xhc == 0 ? 0 : (
+					(uint)U.Add(ref offsets_r0, xhc-1)
+				).CountBytesNeededM1Or0();
+
+				FieldsDesc hotFDesc = new(
+					fCount: xhc,
+					fHasCold: true,
+					fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+				);
+
+				fw._HotFieldsDesc = hotFDesc;
+				fw._HotStoreLength = VarInts.Length(hotFDesc)
+					+ xhc * (hotFOffsetSizeM1Or0 + 1)
+					+ hotFValsSize;
+
+				int coldFOffsetSizeM1Or0 = (
+					(uint)(U.Add(ref offsets_r0, ldn-1) - hotFValsSize)
+				).CountBytesNeededM1Or0();
+
+				int ncc = ldn - xhc;
+				FieldsDesc coldFDesc = new(
+					fCount: ncc,
+					fOffsetSizeM1Or0: coldFOffsetSizeM1Or0
+				);
+
+				fw._ColdFieldsDesc = coldFDesc;
+				fw._ColdStoreLength = VarInts.Length(coldFDesc)
+					+ ncc * (coldFOffsetSizeM1Or0 + 1)
+					+ (fValsSize - hotFValsSize);
+
 				goto Done;
 			}
 
