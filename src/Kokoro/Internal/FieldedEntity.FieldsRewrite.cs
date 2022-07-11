@@ -632,7 +632,8 @@ partial class FieldedEntity {
 					goto RewriteHotColdSplit_ColdLoaded;
 				}
 			} else if (xhc == ohc) {
-				// Case: Has real cold store, with hot store uncorrupted.
+				// Case: Has real cold store (at least according to the flag),
+				// with hot store uncorrupted.
 				// - It should be that `xhc == ohc` whenever the "has real cold
 				// store" flag is set in the hot store. Otherwise, the hot store
 				// is considered corrupted.
@@ -678,7 +679,8 @@ partial class FieldedEntity {
 
 				}
 			} else {
-				// Case: Has real cold store, but hot store is corrupted.
+				// Case: Has real cold store (at least according to the flag),
+				// but hot store is corrupted.
 				// - Expecting `xhc == ohc` whenever the "has real cold store"
 				// flag is set in the hot store. But this isn't the case.
 				// - A full rewrite should fix the issue.
