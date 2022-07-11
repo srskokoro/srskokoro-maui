@@ -653,6 +653,10 @@ partial class FieldedEntity {
 
 			}
 
+#pragma warning disable CS0162 // Unreachable code detected
+			Debug.Fail("This point should be unreachable.");
+#pragma warning restore CS0162
+
 		Done:
 			DAssert_StoreLengthsAndFDescs(ref fw);
 			return; // ---
