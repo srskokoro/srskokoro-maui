@@ -528,7 +528,7 @@ partial class FieldedEntity {
 				E_IndexBeyondLocalFieldCount(_SchemaRowId, lmn: lmn, xlc: xlc);
 			}
 
-			Debug.Assert(xlc > 0);
+			Debug.Assert(xlc > 0); // Assured by the above
 
 			// The check below ensures `0 <= xhc <= xlc` presuming `xlc >= 0`.
 			// - Necessary for when we finally allocate the buffers later below,
@@ -650,7 +650,7 @@ partial class FieldedEntity {
 		RewriteHotOnly_HotLoaded_NoCold:
 			{
 				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
-				Debug.Assert(ldn > 0);
+				Debug.Assert(ldn > 0, $"Needs at least 1 field loaded");
 
 				goto Done;
 			}
@@ -659,7 +659,7 @@ partial class FieldedEntity {
 			{
 				Debug.Assert(fw._ColdStoreLength == -1);
 				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
-				Debug.Assert(xhc > 0);
+				Debug.Assert(xhc > 0, $"Needs at least 1 field in the hot zone");
 
 				goto Done;
 			}
@@ -668,14 +668,14 @@ partial class FieldedEntity {
 			{
 				Debug.Assert(fw._HotStoreLength == -1);
 				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
-				Debug.Assert(ldn - xhc > 0);
+				Debug.Assert(ldn - xhc > 0, $"Needs at least 1 cold field loaded");
 
 				goto Done;
 			}
 
 		RewriteHotColdSplit_ColdLoaded:
 			{
-				Debug.Assert(ldn - xhc > 0);
+				Debug.Assert(ldn - xhc > 0, $"Needs at least 1 cold field loaded");
 
 				goto Done;
 			}
