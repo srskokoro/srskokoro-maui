@@ -674,6 +674,21 @@ partial class FieldedEntity {
 			DAssert_StoreLengthsAndFDescs(ref fw);
 			return; // ---
 
+		ClearCold_TryRewriteHot:
+			{
+				// Plan: Clear the cold store and rewrite the hot store (to also
+				// unset the "has real cold store" flag if set).
+
+				// Clear the old cold store
+				fw._ColdStoreLength = 0;
+
+				if (ldn != 0) {
+					// Case: Stil got fields loaded
+					goto RewriteHotOnly_HotLoaded_NoCold;
+				} else
+					goto ClearHotOnly_NoCold;
+			}
+
 		RewriteHotOnly_HotLoaded_NoCold:
 			{
 				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
