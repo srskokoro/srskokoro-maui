@@ -671,6 +671,21 @@ partial class FieldedEntity {
 
 					if (fValsSize > hotStoreLimit) {
 						// Case: Beyond the hot limit
+
+						ldn = fwc.TrimNullFValsFromEndToStart(end: ldn, start: xhc);
+						Debug.Assert(ldn >= xhc);
+
+						if (ldn != xhc) {
+							// Case: Still got cold fields loaded
+
+							// Leave old hot store as is. Don't rewrite it.
+							fw._HotStoreLength = -1;
+
+							goto RewriteColdOnly_ColdLoaded_HasCold;
+						} else {
+							// Case: No cold fields at all
+							// - Perhaps all were null fields and got cleared
+						}
 					} else {
 						// Case: Within the hot limit
 					}
