@@ -635,6 +635,16 @@ partial class FieldedEntity {
 				// store" flag is set in the hot store. Otherwise, the hot store
 				// is considered corrupted.
 
+				if (lmn <= xhc) {
+					// Case: All changes are in the hot zone only
+
+				} else if (xhc <= fmi) {
+					// Case: All changes are in the cold zone only
+
+				} else {
+					// Case: Changes in both hot and cold zones
+
+				}
 			} else {
 				// Case: Has real cold store, but hot store is corrupted.
 				// - Expecting `xhc == ohc` whenever the "has real cold store"
