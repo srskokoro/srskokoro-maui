@@ -696,14 +696,14 @@ partial class FieldedEntity {
 			{
 				Debug.Assert(fw._HotStoreLength == -1);
 				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
-				Debug.Assert(ldn - xhc > 0, $"Needs at least 1 cold field loaded");
+				Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
 
 				goto Done;
 			}
 
 		RewriteHotColdSplit_ColdLoaded:
 			{
-				Debug.Assert(ldn - xhc > 0, $"Needs at least 1 cold field loaded");
+				Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
 
 				int hotFOffsetSizeM1Or0 = xhc == 0 ? 0 : (
 					(uint)U.Add(ref offsets_r0, xhc-1)
