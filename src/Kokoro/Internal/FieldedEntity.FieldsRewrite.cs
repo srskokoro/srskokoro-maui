@@ -662,6 +662,20 @@ partial class FieldedEntity {
 				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
 				Debug.Assert(ldn > 0, $"Needs at least 1 field loaded");
 
+				int hotFOffsetSizeM1Or0 = (
+					(uint)U.Add(ref offsets_r0, ldn-1)
+				).CountBytesNeededM1Or0();
+
+				FieldsDesc hotFDesc = new(
+					fCount: ldn,
+					fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+				);
+
+				fw._HotFieldsDesc = hotFDesc;
+				fw._HotStoreLength = VarInts.Length(hotFDesc)
+					+ ldn * (hotFOffsetSizeM1Or0 + 1)
+					+ fValsSize;
+
 				goto Done;
 			}
 
