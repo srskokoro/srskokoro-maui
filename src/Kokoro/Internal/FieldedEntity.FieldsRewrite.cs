@@ -588,6 +588,7 @@ partial class FieldedEntity {
 			).DangerousGetReference();
 
 			int ohc = fr.HotFieldCount;
+			Debug.Assert(ohc >= 0); // Code below assumes this
 
 			int ldn;
 			int fValsSize;
