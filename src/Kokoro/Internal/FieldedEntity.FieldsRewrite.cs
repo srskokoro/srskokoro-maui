@@ -537,6 +537,8 @@ partial class FieldedEntity {
 				E_InvalidHotFieldCount(_SchemaRowId, xhc: xhc, xlc: xlc);
 			}
 
+			// -=-
+
 			[DoesNotReturn]
 			static void E_IndexBeyondLocalFieldCount(long schemaRowId, int lmn, int xlc) {
 				Debug.Assert(lmn > xlc);
@@ -554,6 +556,7 @@ partial class FieldedEntity {
 					$"maximum local field count.");
 			}
 
+			// -=-
 
 			[Conditional("DEBUG")]
 			static void DInit_StoreLengthsAndFDescs(ref FieldsWriter fw) {
