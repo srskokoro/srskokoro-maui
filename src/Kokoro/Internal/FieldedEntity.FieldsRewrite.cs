@@ -704,6 +704,21 @@ partial class FieldedEntity {
 				Debug.Assert(xhc > 0, $"Needs at least 1 field in the hot zone");
 				Debug.Assert(fValsSize >= 0);
 
+				int hotFOffsetSizeM1Or0 = (
+					(uint)U.Add(ref offsets_r0, xhc-1)
+				).CountBytesNeededM1Or0();
+
+				FieldsDesc hotFDesc = new(
+					fCount: xhc,
+					fHasCold: true,
+					fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+				);
+
+				fw._HotFieldsDesc = hotFDesc;
+				fw._HotStoreLength = VarInts.Length(hotFDesc)
+					+ xhc * (hotFOffsetSizeM1Or0 + 1)
+					+ fValsSize;
+
 				goto Done;
 			}
 
