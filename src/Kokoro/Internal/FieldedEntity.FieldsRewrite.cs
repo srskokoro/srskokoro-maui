@@ -640,6 +640,17 @@ partial class FieldedEntity {
 				if (lmn <= xhc) {
 					// Case: All changes are in the hot zone only
 
+					// Leave old cold store as is. Don't rewrite it.
+					fw._ColdStoreLength = -1;
+
+					// This becomes a conditional jump forward to not favor it
+					if (xhc > MaxFieldCount) goto LoadHotOnlyFull__E_TooManyFields;
+
+					// Rewrite hot store only, without trimming null fields
+					fValsSize = fwc.LoadHot(ref fr, end: xhc);
+
+					goto RewriteHotOnly_HotLoadedFull_HasCold;
+
 				} else if (xhc <= fmi) {
 					// Case: All changes are in the cold zone only
 
@@ -760,6 +771,10 @@ partial class FieldedEntity {
 			// a conditional jump forward, while the `goto` here will take care
 			// of the elaborate step of actually leaving the `using` block.
 			goto NoCoreFieldChanges;
+
+		LoadHotOnlyFull__E_TooManyFields:
+			ldn = xhc;
+			goto Load__E_TooManyFields;
 
 		Load__E_TooManyFields:
 			E_TooManyFields(this, ldn);
