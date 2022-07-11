@@ -596,6 +596,33 @@ partial class FieldedEntity {
 			if (!fr.HasRealColdStore) {
 				// Case: No real cold store (at least according to the flag)
 
+				ldn = Math.Max(lmn, ohc);
+
+				// This becomes a conditional jump forward to not favor it
+				if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
+
+				fValsSize = fwc.LoadHot(ref fr, end: ldn);
+				ldn = fwc.TrimNullFValsFromEnd(end: ldn);
+
+				if (fValsSize <= hotStoreLimit || ldn <= xhc) {
+					// Case: Either within the hot limit or no cold data
+
+					// Leave old cold store as is. No real cold store anyway.
+					fw._ColdStoreLength = -1;
+
+					if (ldn != 0) {
+						// Case: Stil got fields loaded
+						goto RewriteHotOnly_HotLoaded_NoCold;
+					} else
+						goto ClearHotOnly_NoCold;
+
+				} else {
+					// Case: Beyond the hot limit with cold data
+					Debug.Assert(fValsSize > hotStoreLimit && ldn > xhc);
+
+					hotFValsSize = U.Add(ref offsets_r0, xhc);
+					goto RewriteHotColdSplit_ColdLoaded;
+				}
 			} else if (xhc == ohc) {
 				// Case: Has real cold store, with hot store uncorrupted.
 				// - It should be that `xhc == ohc` whenever the "has real cold
@@ -660,6 +687,19 @@ partial class FieldedEntity {
 			// a conditional jump forward, while the `goto` here will take care
 			// of the elaborate step of actually leaving the `using` block.
 			goto NoCoreFieldChanges;
+
+		Load__E_TooManyFields:
+			E_TooManyFields(this, ldn);
+
+			[DoesNotReturn]
+			static void E_TooManyFields(FieldedEntity entity, int currentCount) {
+				Debug.Assert(currentCount > MaxFieldCount);
+				throw new InvalidOperationException(
+					$"Total number of fields (currently {currentCount}) " +
+					$"shouldn't exceed {MaxFieldCount};" +
+					$"{Environment.NewLine}Entity: {entity.GetDebugLabel()};" +
+					$"{Environment.NewLine}Schema: {entity._SchemaRowId};");
+			}
 		}
 
 	NoCoreFieldChanges:
