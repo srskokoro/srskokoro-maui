@@ -115,6 +115,8 @@ partial class FieldedEntity {
 				goto E_FieldValsLengthTooLarge;
 			}
 
+			Debug.Assert(nextOffset >= 0); // Assured by the loading logic above
+
 			// NOTE: Given that everything was loaded from the old field stores,
 			// we won't check whether or not the loaded data is within the
 			// maximum allowed length.
@@ -665,6 +667,7 @@ partial class FieldedEntity {
 			{
 				Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
 				Debug.Assert(ldn > 0, $"Needs at least 1 field loaded");
+				Debug.Assert(fValsSize >= 0);
 
 				int hotFOffsetSizeM1Or0 = (
 					(uint)U.Add(ref offsets_r0, ldn-1)
@@ -688,6 +691,7 @@ partial class FieldedEntity {
 				Debug.Assert(fw._ColdStoreLength == -1);
 				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
 				Debug.Assert(xhc > 0, $"Needs at least 1 field in the hot zone");
+				Debug.Assert(fValsSize >= 0);
 
 				goto Done;
 			}
@@ -697,6 +701,7 @@ partial class FieldedEntity {
 				Debug.Assert(fw._HotStoreLength == -1);
 				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
 				Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
+				Debug.Assert(fValsSize > hotFValsSize && hotFValsSize >= 0);
 
 				goto Done;
 			}
@@ -704,6 +709,7 @@ partial class FieldedEntity {
 		RewriteHotColdSplit_ColdLoaded:
 			{
 				Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
+				Debug.Assert(fValsSize > hotFValsSize && hotFValsSize >= 0);
 
 				int hotFOffsetSizeM1Or0 = xhc == 0 ? 0 : (
 					(uint)U.Add(ref offsets_r0, xhc-1)
