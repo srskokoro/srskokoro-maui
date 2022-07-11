@@ -654,6 +654,25 @@ partial class FieldedEntity {
 				} else if (xhc <= fmi) {
 					// Case: All changes are in the cold zone only
 
+					fr.InitColdStore();
+
+					Debug.Assert(xhc == ohc); // Future-proofing
+					int olc = xhc + fr.ColdFieldCountOrUND;
+					ldn = Math.Max(lmn, olc);
+
+					// This becomes a conditional jump forward to not favor it
+					if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
+
+					// Load only cold fields (for now)
+					fValsSize = fwc.Load(ref fr,
+						nextOffset: hotFValsSize = fr.HotFieldValsLength,
+						start: xhc, end: ldn);
+
+					if (fValsSize > hotStoreLimit) {
+						// Case: Beyond the hot limit
+					} else {
+						// Case: Within the hot limit
+					}
 				} else {
 					// Case: Changes in both hot and cold zones
 
