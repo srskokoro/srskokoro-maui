@@ -685,9 +685,12 @@ partial class FieldedEntity {
 						} else {
 							// Case: No cold fields at all
 							// - Perhaps all were null fields and got cleared
+							Debug.Assert(ldn == xhc); // Future-proofing
+							goto LoadHotOnPartialLoad_ClearCold_TryRewriteHot;
 						}
 					} else {
 						// Case: Within the hot limit
+						goto LoadHotOnPartialLoad_ClearCold_TryRewriteHot;
 					}
 				} else {
 					// Case: Changes in both hot and cold zones
@@ -705,6 +708,56 @@ partial class FieldedEntity {
 #pragma warning disable CS0162 // Unreachable code detected
 			Debug.Fail("This point should be unreachable.");
 #pragma warning restore CS0162
+
+		LoadHotOnPartialLoad_ClearCold_TryRewriteHot:
+			{
+				// Plan: Load hot data, clear the cold store, and rewrite the
+				// hot store to unset the "has real cold store" flag.
+
+				Debug.Assert(xhc == ohc && fr.HasRealColdStore);
+				// Assert that there're no field changes in the hot zone
+				Debug.Assert(xhc <= fmi);
+				// Prior code leading to this code path should've ensured that
+				// we'll load fields within the max field count.
+				Debug.Assert(xhc <= ldn && ldn <= MaxFieldCount);
+
+				int newHotFValsSize = fwc.LoadHotNoOverride(ref fr, end: xhc);
+				if (newHotFValsSize != hotFValsSize) {
+					// Case: Hot store corrupted
+					// - Expected hot data size doesn't match the actual
+					// recomputed size.
+					// - Cold data offsets already loaded will have to be
+					// re-adjusted before we can proceed.
+					//   - Reloading them should fix the issue.
+
+					// This becomes a conditional jump forward to not favor it
+					goto OnCorruptedHotFValsSize_ReloadColdData;
+				}
+
+			TrimFull_ClearCold_TryRewriteHot:
+				{
+					ldn = fwc.TrimNullFValsFromEnd(end: ldn);
+					goto ClearCold_TryRewriteHot;
+				}
+
+			OnCorruptedHotFValsSize_ReloadColdData:
+				{
+					Debug.Assert(newHotFValsSize < hotFValsSize,
+						"Should've been true if loading logic is correctly implemented.");
+
+					Debug.Fail(
+						$"Invalid: Entity found with expected hot data size " +
+						$"different from when actually loaded." +
+						$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
+						$"{Environment.NewLine}Schema: {_SchemaRowId}; " +
+						$"{Environment.NewLine}Expected hot data size: {hotFValsSize};" +
+						$"{Environment.NewLine}Actual hot data size:   {newHotFValsSize};");
+
+					Debug.Assert(xhc == ohc); // Future-proofing
+					fValsSize = fwc.Load(ref fr, nextOffset: newHotFValsSize, start: xhc, end: ldn);
+					goto TrimFull_ClearCold_TryRewriteHot;
+				}
+			}
 
 		Done:
 			DAssert_StoreLengthsAndFDescs(ref fw);
