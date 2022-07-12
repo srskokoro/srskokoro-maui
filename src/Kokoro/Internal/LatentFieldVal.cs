@@ -22,7 +22,16 @@ internal readonly record struct LatentFieldVal {
 		}
 	}
 
+	/// <remarks>
+	/// WARNING: Bogus and noncompliant data sources may cause this to have a
+	/// negative value.
+	/// </remarks>
 	public readonly int Offset => _Offset;
+
+	/// <remarks>
+	/// WARNING: Bogus and noncompliant data sources may cause this to have a
+	/// negative value.
+	/// </remarks>
 	public readonly int Length => _Length;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,6 +41,9 @@ internal readonly record struct LatentFieldVal {
 		_Length = Length;
 	}
 
+	/// <param name="Stream">Will contain the same value as <see cref="Stream"/></param>
+	/// <param name="Offset">Will contain the same value as <see cref="Offset"/></param>
+	/// <param name="Length">Will contain the same value as <see cref="Length"/></param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public readonly void Deconstruct(out Stream Stream, out int Offset, out int Length) {
 		Stream = this.Stream;
