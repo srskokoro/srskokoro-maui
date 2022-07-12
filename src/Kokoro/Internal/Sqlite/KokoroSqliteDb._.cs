@@ -148,7 +148,7 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
 	private void OnSqliteRollback(object user_data) => ClearCaches();
 
-	public void OnNestingWriteRollback() => ClearCaches();
+	internal void OnNestingWriteRollback() => ClearCaches();
 
 	internal void ClearCaches() {
 		// NOTE: We should ensure that the field name caches are never stale by
