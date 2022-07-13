@@ -20,6 +20,8 @@ partial class FieldedEntity {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private protected void RewriteSchema(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
+		DAssert_FieldsWriterPriorRewrite(ref fw);
+
 		var clsSet = _AddedClasses;
 		clsSet = clsSet != null ? new(clsSet) : new();
 
