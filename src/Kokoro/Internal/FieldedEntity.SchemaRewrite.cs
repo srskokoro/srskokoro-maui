@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal;
+using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 
 partial class FieldedEntity {
@@ -137,7 +138,10 @@ partial class FieldedEntity {
 			do {
 				var (fname, fval) = fchanges_iter.Current;
 				long fld = db.LoadStaleOrEnsureFieldId(fname);
-				foverrides.Add(fld, fval);
+
+				bool added = foverrides.TryAdd(fld, fval);
+				Debug.Assert(added, $"Shouldn't happen if running in a " +
+					$"`{nameof(NestingWriteTransaction)}` or equivalent");
 			} while (fchanges_iter.MoveNext());
 
 			Debug.Assert(foverrides.Count == fchanges.Count);
