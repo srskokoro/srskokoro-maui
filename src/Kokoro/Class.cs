@@ -475,7 +475,7 @@ public sealed class Class : DataEntity {
 		try {
 			using var tx = new NestingWriteTransaction(db);
 			// Save field infos
-			// -=-
+			// --
 			{
 				var fieldChanges = _FieldInfoChanges;
 				if (fieldChanges != null)
@@ -483,7 +483,7 @@ public sealed class Class : DataEntity {
 			}
 
 			// Save core state
-			// -=-
+			// --
 
 			using var cmd = db.Cmd(
 				"INSERT INTO Class" +
@@ -558,7 +558,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db; // Throws if host is already disposed
 		using (var tx = new NestingWriteTransaction(db)) {
 			// Save field infos
-			// -=-
+			// --
 			{
 				var fieldChanges = _FieldInfoChanges;
 				if (fieldChanges != null)
@@ -566,7 +566,7 @@ public sealed class Class : DataEntity {
 			}
 
 			// Save core state
-			// -=-
+			// --
 
 			using var cmd = db.CreateCommand();
 			var cmdParams = cmd.Parameters;

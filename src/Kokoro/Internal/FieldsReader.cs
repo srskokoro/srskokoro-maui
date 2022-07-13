@@ -49,7 +49,7 @@ internal struct FieldsReader : IDisposable {
 
 			try {
 				// Read the descriptor for the list of field offsets
-				// -=-
+				// --
 
 				FieldsDesc fDesc;
 				{
