@@ -140,6 +140,8 @@ partial class FieldedEntity {
 				foverrides.Add(fld, fval);
 			} while (fchanges_iter.MoveNext());
 
+			Debug.Assert(foverrides.Count == fchanges.Count);
+
 			// --
 			goto DoneWithFieldChanges;
 
