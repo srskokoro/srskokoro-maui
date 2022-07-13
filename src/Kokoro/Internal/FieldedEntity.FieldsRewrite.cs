@@ -961,20 +961,19 @@ partial class FieldedEntity {
 			goto Load__E_TooManyFields;
 
 		Load__E_TooManyFields:
-			E_TooManyFields(this, ldn);
-
-			[DoesNotReturn]
-			static void E_TooManyFields(FieldedEntity entity, int currentCount) {
-				Debug.Assert(currentCount > MaxFieldCount);
-				throw new InvalidOperationException(
-					$"Total number of fields (currently {currentCount}) " +
-					$"shouldn't exceed {MaxFieldCount};" +
-					$"{Environment.NewLine}Entity: {entity.GetDebugLabel()};" +
-					$"{Environment.NewLine}Schema: {entity._SchemaRowId};");
-			}
+			E_TooManyFields(ldn);
 		}
 
 	NoCoreFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
+	}
+
+	[DoesNotReturn]
+	private void E_TooManyFields(int currentCount) {
+		Debug.Assert(currentCount > MaxFieldCount);
+		throw new InvalidOperationException(
+			$"Total number of fields (currently {currentCount}) shouldn't exceed {MaxFieldCount};" +
+			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
+			$"{Environment.NewLine}Schema: {_SchemaRowId};");
 	}
 }
