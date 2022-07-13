@@ -28,9 +28,8 @@ partial class FieldedEntity {
 		var remClsSet = _RemovedClasses;
 		remClsSet = remClsSet != null ? new(remClsSet) : clsSet;
 
-		var db = fr.Db;
-
 		// Get the old schema's direct classes
+		var db = fr.Db;
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set("SELECT cls FROM SchemaToDirectClass WHERE schema=$schema")
 				.AddParams(new("$schema", _SchemaRowId));
