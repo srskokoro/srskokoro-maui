@@ -47,12 +47,14 @@ partial class FieldedEntity {
 		if (dclsCount > MaxClassCount) E_TooManyClasses(dclsCount);
 		List<SchemaRewrite.ClassInfo> clsList = new(dclsCount);
 
-		// Get the needed info for each class
+		// Get the needed info for each class while also gathering all the
+		// indirect classes
 		using (var clsCmd = db.CreateCommand()) {
 			SqliteParameter clsCmd_rowid;
 			clsCmd.Set("SELECT uid,csum,ord FROM Class WHERE rowid=$rowid")
 				.AddParams(clsCmd_rowid = new() { ParameterName = "$rowid" });
 
+			// Get the needed info for each direct class
 			foreach (var cls in clsSet) {
 				clsCmd_rowid.Value = cls;
 
@@ -73,7 +75,49 @@ partial class FieldedEntity {
 					// Ignore it then.
 				}
 			}
+
+			SqliteParameter inclCmd_cls;
+			using var inclCmd = db.Cmd("SELECT incl FROM ClassToInclude WHERE cls=$cls")
+				.AddParams(inclCmd_cls = new() { ParameterName = "$cls" });
+
+			// Recursively get all included classes, skipping already seen
+			// classes to prevent infinite recursion
+			for (int i = 0; i < clsList.Count; i++) {
+				ref var cls = ref clsList.AsSpan().DangerousGetReferenceAt(i);
+				inclCmd_cls.Value = cls.rowid;
+
+				using var inclCmd_r = inclCmd.ExecuteReader();
+				while (inclCmd_r.Read()) {
+					inclCmd_r.DAssert_Name(0, "incl");
+					long incl = inclCmd_r.GetInt64(0);
+
+					if (clsSet.Add(incl)) {
+						// Get the needed info for the indirect class
+						// --
+						clsCmd_rowid.Value = incl;
+
+						using var r = clsCmd.ExecuteReader();
+						if (r.Read()) {
+							r.DAssert_Name(0, "uid");
+							UniqueId uid = r.GetUniqueId(0);
+
+							r.DAssert_Name(1, "csum");
+							byte[] csum = r.GetBytes(1);
+
+							r.DAssert_Name(2, "ord");
+							int ord = r.GetInt32(2);
+
+							clsList.Add(new(rowid: incl, uid, csum, ord));
+						} else {
+							Debug.Fail("An FK constraint should've been " +
+								"enforced to ensure this doesn't happen.");
+						}
+					}
+				}
+			}
 		}
+
+		if (clsSet.Count > MaxClassCount) E_TooManyClasses(clsSet.Count);
 
 		// TODO-XXX Finish implementation
 	}
