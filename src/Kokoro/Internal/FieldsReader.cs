@@ -15,6 +15,7 @@ internal struct FieldsReader : IDisposable {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsReader(FieldedEntity entity) {
+		U.SkipInit(out this);
 		_Owner = entity;
 		var db = entity.Host.DbOrNull!;
 		_HotState = new(entity.ReadHotStore(Db = db));
@@ -22,6 +23,7 @@ internal struct FieldsReader : IDisposable {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsReader(FieldedEntity entity, KokoroSqliteDb db) {
+		U.SkipInit(out this);
 		_Owner = entity;
 		_HotState = new(entity.ReadHotStore(Db = db));
 	}
