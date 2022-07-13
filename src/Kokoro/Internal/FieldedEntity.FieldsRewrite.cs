@@ -383,10 +383,15 @@ partial class FieldedEntity {
 						Debug.Assert(fspec.Index >= 0);
 						fspec.StoreType.DAssert_Defined();
 
-						// TODO-XXX If there are any schema field changes, end here and perform a schema rewrite instead
-
-						Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
-						U.Add(ref foverrides_r0, foverrides_n++) = (fspec, fval);
+						if (fspec.StoreType != FieldStoreType.Shared) {
+							Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
+							U.Add(ref foverrides_r0, foverrides_n++) = (fspec, fval);
+						} else {
+							// If there are any schema field changes, end here
+							// and perform a schema rewrite instead.
+							RewriteSchema(ref fr, hotStoreLimit, ref fw);
+							return;
+						}
 					} else {
 						// Case: floating field -- a field not defined by the schema
 
