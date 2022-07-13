@@ -120,6 +120,36 @@ partial class FieldedEntity {
 
 		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
 
+		// Convert the field changes into pairs of field id and value
+		// --
+
+		Dictionary<long, FieldVal> foverrides;
+		{
+			Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
+			if (fchanges == null) goto NoFieldChanges;
+
+			var fchanges_iter = fchanges.GetEnumerator();
+			if (!fchanges_iter.MoveNext()) goto NoFieldChanges;
+
+			foverrides = new(fchanges.Count);
+
+			db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+			do {
+				var (fname, fval) = fchanges_iter.Current;
+				long fld = db.LoadStaleOrEnsureFieldId(fname);
+				foverrides.Add(fld, fval);
+			} while (fchanges_iter.MoveNext());
+
+			// --
+			goto DoneWithFieldChanges;
+
+		NoFieldChanges:
+			foverrides = new();
+
+		DoneWithFieldChanges:
+			;
+		}
+
 		// TODO-XXX Finish implementation
 
 		return; // ---
