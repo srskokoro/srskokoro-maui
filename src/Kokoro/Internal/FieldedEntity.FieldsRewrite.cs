@@ -389,8 +389,11 @@ partial class FieldedEntity {
 						} else {
 							// If there are any schema field changes, end here
 							// and perform a schema rewrite instead.
-							RewriteSchema(ref fr, hotStoreLimit, ref fw);
-							return;
+							goto RewriteSchema;
+							// ^- NOTE: We'll perform the schema rewrite outside
+							// the scope of any `using` statement, in order to
+							// first dispose any guarded disposable, before
+							// proceeding with the planned operation.
 						}
 					} else {
 						// Case: floating field -- a field not defined by the schema
@@ -966,6 +969,10 @@ partial class FieldedEntity {
 
 	NoCoreFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
+		return;
+
+	RewriteSchema:
+		RewriteSchema(ref fr, hotStoreLimit, ref fw);
 	}
 
 	[DoesNotReturn]
