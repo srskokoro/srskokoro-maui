@@ -230,12 +230,12 @@ partial class FieldedEntity {
 		internal int _HotStoreLength, _ColdStoreLength; // -1 if should skip
 		internal FieldsDesc _HotFieldsDesc, _ColdFieldsDesc;
 
-		internal List<(StringKey Name, FieldVal Value)>? _FloatingFields;
+		internal List<(long Id, FieldVal Value)>? _FloatingFields;
 
 		public readonly int HotStoreLength => _HotStoreLength;
 		public readonly int ColdStoreLength => _ColdStoreLength;
 
-		public readonly List<(StringKey Name, FieldVal Value)>? FloatingFields => _FloatingFields;
+		public readonly List<(long Id, FieldVal Value)>? FloatingFields => _FloatingFields;
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]
@@ -388,7 +388,8 @@ partial class FieldedEntity {
 
 				do {
 					var (fname, fval) = fchanges_iter.Current;
-					cmd_fld.Value = db.LoadStaleFieldId(fname);
+					long fld = db.LoadStaleOrEnsureFieldId(fname);
+					cmd_fld.Value = fld;
 
 					using var r = cmd.ExecuteReader();
 					if (r.Read()) {
@@ -422,7 +423,7 @@ partial class FieldedEntity {
 						}
 
 					AddFloatingField:
-						floatingFields.Add((fname, fval));
+						floatingFields.Add((fld, fval));
 						goto DoneFloatingField;
 
 					InitFloatingFields:
