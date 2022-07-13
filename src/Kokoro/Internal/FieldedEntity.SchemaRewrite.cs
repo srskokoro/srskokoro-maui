@@ -44,7 +44,7 @@ partial class FieldedEntity {
 		}
 
 		int dclsCount = clsSet.Count;
-		if (dclsCount > MaxClassCount) E_TooManyClasses(dclsCount);
+		if (dclsCount > MaxClassCount) E_TooManyClasses(clsSet.Count);
 		List<SchemaRewrite.ClassInfo> clsList = new(dclsCount);
 
 		// Get the needed info for each class while also gathering all the
