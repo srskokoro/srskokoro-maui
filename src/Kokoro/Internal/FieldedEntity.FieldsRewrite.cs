@@ -1,4 +1,4 @@
-namespace Kokoro.Internal;
+﻿namespace Kokoro.Internal;
 using Kokoro.Common.Buffers;
 using Kokoro.Common.Util;
 using Microsoft.Data.Sqlite;
@@ -383,9 +383,12 @@ partial class FieldedEntity {
 					cmd_fld = new() { ParameterName = "$fld" }
 				);
 
+				// Needed by `db.LoadStale…()` below
+				db.ReloadFieldNameCaches();
+
 				do {
 					var (fname, fval) = fchanges_iter.Current;
-					cmd_fld.Value = db.LoadFieldId(fname);
+					cmd_fld.Value = db.LoadStaleFieldId(fname);
 
 					using var r = cmd.ExecuteReader();
 					if (r.Read()) {
