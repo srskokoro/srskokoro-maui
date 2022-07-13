@@ -1,4 +1,7 @@
-﻿namespace Kokoro;
+﻿// TODO-XXX Move back to `Kokoro` project once C# adds support for the `unscoped` keyword
+// - See, https://github.com/dotnet/runtime/issues/72074
+// - See also, https://github.com/dotnet/csharplang/blob/main/proposals/low-level-struct-improvements.md#violating-scoped
+namespace Kokoro;
 using Kokoro.Common.Util;
 using System.Buffers;
 using System.Buffers.Binary;
