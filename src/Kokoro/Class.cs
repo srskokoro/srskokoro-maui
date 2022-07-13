@@ -233,7 +233,7 @@ public sealed class Class : DataEntity {
 			_Uid = r.GetUniqueId(0);
 
 			r.DAssert_Name(1, "csum");
-			_CachedCsum = r.GetBytesOrNull(1);
+			_CachedCsum = r.GetBytes(1);
 
 			r.DAssert_Name(2, "ord");
 			_Ordinal = r.GetInt32(2);
