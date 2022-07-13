@@ -44,7 +44,7 @@ partial class FieldedEntity {
 		}
 
 		int dclsCount = clsSet.Count;
-		if (dclsCount > MaxClassCount) E_TooManyClasses(clsSet.Count);
+		if (dclsCount > MaxClassCount) goto E_TooManyClasses;
 		List<SchemaRewrite.ClassInfo> clsList = new(dclsCount);
 
 		// Get the needed info for each class while also gathering all the
@@ -117,9 +117,14 @@ partial class FieldedEntity {
 			}
 		}
 
-		if (clsSet.Count > MaxClassCount) E_TooManyClasses(clsSet.Count);
+		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
 
 		// TODO-XXX Finish implementation
+
+		return; // ---
+
+	E_TooManyClasses:
+		E_TooManyClasses(clsSet.Count);
 	}
 
 	[DoesNotReturn]
