@@ -1,4 +1,4 @@
-namespace Kokoro.Internal;
+﻿namespace Kokoro.Internal;
 using Microsoft.Data.Sqlite;
 
 partial class FieldedEntity {
