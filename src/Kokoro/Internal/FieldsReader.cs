@@ -48,8 +48,9 @@ internal struct FieldsReader : IDisposable {
 			Stream = stream;
 
 			try {
-				// --
 				// Read the descriptor for the list of field offsets
+				// -=-
+
 				FieldsDesc fDesc;
 				{
 					const uint MaxDesc = FieldsDesc.MaxValue;

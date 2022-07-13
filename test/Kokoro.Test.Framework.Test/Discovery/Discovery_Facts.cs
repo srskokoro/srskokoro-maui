@@ -21,8 +21,8 @@ public class Discovery_Facts {
 				$"legibility bad)");
 		}
 
-		// --
 		// Guard against namespace refactorings
+		// --
 
 		typeof(TestFactDiscoverer).ToString().Should()
 			.Be(TestFactDiscoverer.TypeName);
