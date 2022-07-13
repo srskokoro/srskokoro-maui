@@ -357,10 +357,10 @@ partial class FieldedEntity {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
-		if (fchanges == null) goto NoCoreFieldChanges;
+		if (fchanges == null) goto NoFieldChanges;
 
 		var fchanges_iter = fchanges.GetEnumerator();
-		if (!fchanges_iter.MoveNext()) goto NoCoreFieldChanges;
+		if (!fchanges_iter.MoveNext()) goto NoFieldChanges;
 
 		FieldsWriterCore fwc;
 		int foverrides_n_max = fchanges.Count + 1; // Extra 1 for sentinel value
@@ -981,6 +981,7 @@ partial class FieldedEntity {
 			E_TooManyFields(ldn);
 		}
 
+	NoFieldChanges:
 	NoCoreFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
 		return;
