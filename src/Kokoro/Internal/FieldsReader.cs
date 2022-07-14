@@ -104,6 +104,7 @@ internal struct FieldsReader : IDisposable {
 				// those related to IO, may still be thrown, but that should be
 				// regarded as outside of normal operation.
 
+				FDescArea_HasColdComplement = 0;
 				FieldCount = 0;
 				FOffsetSize = 1;
 				FieldValListPos = FOffsetListPos = 0;
