@@ -8,7 +8,7 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
 
     <!--<EnablePreviewFeatures>True</EnablePreviewFeatures>-->
-    <!--<LangVersion>preview</LangVersion>-->
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <!--
