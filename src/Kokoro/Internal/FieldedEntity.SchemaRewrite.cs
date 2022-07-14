@@ -85,7 +85,8 @@ partial class FieldedEntity {
 			}
 
 			SqliteParameter inclCmd_cls;
-			using var inclCmd = db.Cmd("SELECT incl FROM ClassToInclude WHERE cls=$cls")
+			using var inclCmd = db.CreateCommand();
+			inclCmd.Set("SELECT incl FROM ClassToInclude WHERE cls=$cls")
 				.AddParams(inclCmd_cls = new() { ParameterName = "$cls" });
 
 			// Recursively get all included classes, skipping already seen

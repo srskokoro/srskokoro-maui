@@ -210,15 +210,17 @@ public sealed class Class : DataEntity {
 	public static long LoadRowId(KokoroCollection host, UniqueId uid)
 		=> LoadRowId(host.Db, uid);
 
-	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.Cmd("SELECT rowid FROM Class WHERE uid=$uid")
+	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid) {
+		using var cmd = db.CreateCommand();
+		return cmd.Set("SELECT rowid FROM Class WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
-			.ConsumeScalar<long>();
-
+			.ExecScalar<long>();
+	}
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.Cmd(
+		using var cmd = db.CreateCommand();
+		cmd.Set(
 			"SELECT uid,csum,ord,ifnull(grp,0)AS grp,name FROM Class\n" +
 			"WHERE rowid=$rowid"
 		);
@@ -485,11 +487,13 @@ public sealed class Class : DataEntity {
 			// Save core state
 			// --
 
-			using var cmd = db.Cmd(
+			using var cmd = db.CreateCommand();
+			cmd.Set(
 				"INSERT INTO Class" +
 				"(rowid,uid,csum,ord,grp,name)" +
 				" VALUES" +
-				$"($rowid,$uid,$csum,$ord,$grp,$name)");
+				$"($rowid,$uid,$csum,$ord,$grp,$name)"
+			);
 
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$rowid", rowid));
@@ -602,7 +606,8 @@ public sealed class Class : DataEntity {
 			int hasher_debug_i = 0; // Used only to help assert the above
 
 			// TODO Avoid creating this when it won't be used at all
-			using var cmd_old = db.Cmd(
+			using var cmd_old = db.CreateCommand();
+			cmd_old.Set(
 				"SELECT uid,ord FROM Class\n" +
 				"WHERE rowid=$rowid"
 			);
@@ -692,7 +697,8 @@ public sealed class Class : DataEntity {
 		const int hasher_flds_dlen = 64; // 512-bit hash
 		var hasher_flds = Blake2b.CreateIncrementalHasher(hasher_flds_dlen);
 
-		using var cmd = db.Cmd(
+		using var cmd = db.CreateCommand();
+		cmd.Set(
 			"SELECT cls2fld.csum AS csum\n" +
 			"FROM ClassToField AS cls2fld,FieldName AS fld\n" +
 			"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
@@ -717,7 +723,8 @@ public sealed class Class : DataEntity {
 		const int hasher_incls_dlen = 64; // 512-bit hash
 		var hasher_incls = Blake2b.CreateIncrementalHasher(hasher_incls_dlen);
 
-		using var cmd = db.Cmd(
+		using var cmd = db.CreateCommand();
+		cmd.Set(
 			"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
 			"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
 			"ORDER BY uid"
@@ -905,9 +912,10 @@ public sealed class Class : DataEntity {
 
 		int updated;
 		try {
-			updated = db.Cmd("UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
+			using var cmd = db.CreateCommand();
+			updated = cmd.Set("UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
-				.Consume();
+				.Exec();
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
@@ -935,8 +943,12 @@ public sealed class Class : DataEntity {
 
 	public static bool DeleteFrom(KokoroCollection host, long rowid) {
 		var db = host.Db;
-		int deleted = db.Cmd("DELETE FROM Class WHERE rowid=$rowid")
-			.AddParams(new("$rowid", rowid)).Consume();
+
+		int deleted;
+		using (var cmd = db.CreateCommand()) {
+			deleted = cmd.Set("DELETE FROM Class WHERE rowid=$rowid")
+				.AddParams(new("$rowid", rowid)).Exec();
+		}
 
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();
@@ -944,8 +956,12 @@ public sealed class Class : DataEntity {
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
 		var db = host.Db;
-		int deleted = db.Cmd("DELETE FROM Class WHERE uid=$uid")
-			.AddParams(new("$uid", uid)).Consume();
+
+		int deleted;
+		using (var cmd = db.CreateCommand()) {
+			deleted = cmd.Set("DELETE FROM Class WHERE uid=$uid")
+				.AddParams(new("$uid", uid)).Exec();
+		}
 
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();

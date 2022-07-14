@@ -130,15 +130,17 @@ public sealed class Item : FieldedEntity {
 	public static long LoadRowId(KokoroCollection host, UniqueId uid)
 		=> LoadRowId(host.Db, uid);
 
-	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid)
-		=> db.Cmd("SELECT rowid FROM Item WHERE uid=$uid")
+	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid) {
+		using var cmd = db.CreateCommand();
+		return cmd.Set("SELECT rowid FROM Item WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
-			.ConsumeScalar<long>();
-
+			.ExecScalar<long>();
+	}
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.Cmd(
+		using var cmd = db.CreateCommand();
+		cmd.Set(
 			"SELECT uid,ifnull(parent,0)AS parent,ord,ord_modst,schema,data_modst FROM Item\n" +
 			"WHERE rowid=$rowid"
 		);
@@ -438,9 +440,10 @@ public sealed class Item : FieldedEntity {
 
 		int updated;
 		try {
-			updated = db.Cmd("UPDATE Item SET rowid=$newRowId WHERE rowid=$oldRowId")
+			using var cmd = db.CreateCommand();
+			updated = cmd.Set("UPDATE Item SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
-				.Consume();
+				.Exec();
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
@@ -468,8 +471,12 @@ public sealed class Item : FieldedEntity {
 
 	public static bool DeleteFrom(KokoroCollection host, long rowid) {
 		var db = host.Db;
-		int deleted = db.Cmd("DELETE FROM Item WHERE rowid=$rowid")
-			.AddParams(new("$rowid", rowid)).Consume();
+
+		int deleted;
+		using (var cmd = db.CreateCommand()) {
+			deleted = cmd.Set("DELETE FROM Item WHERE rowid=$rowid")
+				.AddParams(new("$rowid", rowid)).Exec();
+		}
 
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();
@@ -477,8 +484,12 @@ public sealed class Item : FieldedEntity {
 
 	public static bool DeleteFrom(KokoroCollection host, UniqueId uid) {
 		var db = host.Db;
-		int deleted = db.Cmd("DELETE FROM Item WHERE uid=$uid")
-			.AddParams(new("$uid", uid)).Consume();
+
+		int deleted;
+		using (var cmd = db.CreateCommand()) {
+			deleted = cmd.Set("DELETE FROM Item WHERE uid=$uid")
+				.AddParams(new("$uid", uid)).Exec();
+		}
 
 		Debug.Assert(deleted is 1 or 0);
 		return ((byte)deleted).ToUnsafeBool();
