@@ -114,6 +114,8 @@ public abstract partial class FieldedEntity : DataEntity {
 
 	internal abstract Stream ReadHotStore(KokoroSqliteDb db);
 
+	internal virtual Stream ReadColdStore(KokoroSqliteDb db) => Stream.Null;
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal Stream ReadSharedStore(KokoroSqliteDb db) {
 		// NOTE: It's possible for the schema to not exist (in that case, the
@@ -132,8 +134,6 @@ public abstract partial class FieldedEntity : DataEntity {
 			tableName: "Schema", columnName: "data", rowid: _SchemaRowId,
 			canWrite: false, throwOnAccessFail: true)!;
 	}
-
-	internal virtual Stream ReadColdStore(KokoroSqliteDb db) => Stream.Null;
 
 	// --
 
