@@ -147,11 +147,10 @@ public abstract partial class FieldedEntity : DataEntity {
 		if (fld == 0) goto NotFound;
 
 		using (var cmd = db.CreateCommand()) {
-			cmd.Set("""
-				SELECT idx_a_sto FROM SchemaToField
-				WHERE schema=$schema AND fld=$fld
-				""");
-
+			cmd.Set(
+				"SELECT idx_a_sto FROM SchemaToField\n" +
+				"WHERE schema=$schema AND fld=$fld"
+			);
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$schema", _SchemaRowId));
 			cmdParams.Add(new("$fld", fld));

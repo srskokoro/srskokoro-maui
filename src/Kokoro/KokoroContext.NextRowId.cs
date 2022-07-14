@@ -14,15 +14,15 @@ partial class KokoroContext {
 	// to rollbacks of transactions (or savepoints) undoing insertions.
 
 	private void LoadNextRowIdsFrom(KokoroSqliteDb db) {
-		using var cmd = db.CreateCommand("""
-			SELECT ifnull(max(rowid), 0) FROM Item
-			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM Schema
-			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM Class
-			UNION ALL
-			SELECT ifnull(max(rowid), 0) FROM FieldName
-			""");
+		using var cmd = db.CreateCommand(
+			"SELECT ifnull(max(rowid), 0) FROM Item\n" +
+			"UNION ALL\n" +
+			"SELECT ifnull(max(rowid), 0) FROM Schema\n" +
+			"UNION ALL\n" +
+			"SELECT ifnull(max(rowid), 0) FROM Class\n" +
+			"UNION ALL\n" +
+			"SELECT ifnull(max(rowid), 0) FROM FieldName"
+		);
 
 		using var reader = cmd.ExecuteReader();
 		reader.Read(); _NextItemRowId = reader.GetInt64(0);

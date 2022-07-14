@@ -138,10 +138,10 @@ public sealed class Item : FieldedEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.Cmd("""
-			SELECT uid,ifnull(parent,0)AS parent,ord,ord_modst,schema,data_modst FROM Item
-			WHERE rowid=$rowid
-			""");
+		using var cmd = db.Cmd(
+			"SELECT uid,ifnull(parent,0)AS parent,ord,ord_modst,schema,data_modst FROM Item\n" +
+			"WHERE rowid=$rowid"
+		);
 		cmd.Parameters.Add(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
@@ -359,12 +359,11 @@ public sealed class Item : FieldedEntity {
 		Span<byte> encoded;
 
 		using (var cmd = db.CreateCommand()) {
-			cmd.Set("""
-				SELECT data
-				FROM ItemToFloatingField
-				WHERE (item,fld)=($item,$fld)
-				""");
-
+			cmd.Set(
+				"SELECT data\n" +
+				"FROM ItemToFloatingField\n" +
+				"WHERE (item,fld)=($item,$fld)"
+			);
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$item", _RowId));
 			cmdParams.Add(new("$fld", fieldId));

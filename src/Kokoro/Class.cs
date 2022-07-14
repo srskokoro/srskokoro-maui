@@ -218,10 +218,10 @@ public sealed class Class : DataEntity {
 
 	public void Load() {
 		var db = Host.Db;
-		using var cmd = db.Cmd("""
-			SELECT uid,csum,ord,ifnull(grp,0)AS grp,name FROM Class
-			WHERE rowid=$rowid
-			""");
+		using var cmd = db.Cmd(
+			"SELECT uid,csum,ord,ifnull(grp,0)AS grp,name FROM Class\n" +
+			"WHERE rowid=$rowid"
+		);
 		cmd.Parameters.Add(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
@@ -390,10 +390,10 @@ public sealed class Class : DataEntity {
 
 		// Load field info
 		using (var cmd = db.CreateCommand()) {
-			cmd.Set("""
-				SELECT ord,ifnull(sto,0)AS sto,ifnull(atarg,0)AS atarg FROM ClassToField
-				WHERE cls=$cls AND fld=$fld
-				""");
+			cmd.Set(
+				"SELECT ord,ifnull(sto,0)AS sto,ifnull(atarg,0)AS atarg FROM ClassToField\n" +
+				"WHERE cls=$cls AND fld=$fld"
+			);
 			var cmdParams = cmd.Parameters;
 			cmdParams.Add(new("$cls", _RowId));
 			cmdParams.Add(new("$fld", fld));
@@ -602,10 +602,10 @@ public sealed class Class : DataEntity {
 			int hasher_debug_i = 0; // Used only to help assert the above
 
 			// TODO Avoid creating this when it won't be used at all
-			using var cmd_old = db.Cmd("""
-					SELECT uid,ord FROM Class
-					WHERE rowid=$rowid
-					""");
+			using var cmd_old = db.Cmd(
+					"SELECT uid,ord FROM Class\n" +
+					"WHERE rowid=$rowid"
+				);
 			cmd_old.Parameters.Add(new("$rowid", _RowId));
 			using var r = cmd_old.ExecuteReader();
 			if (!r.Read()) goto Missing;
@@ -692,11 +692,11 @@ public sealed class Class : DataEntity {
 		const int hasher_flds_dlen = 64; // 512-bit hash
 		var hasher_flds = Blake2b.CreateIncrementalHasher(hasher_flds_dlen);
 
-		using var cmd = db.Cmd("""
-			SELECT cls2fld.csum AS csum FROM ClassToField AS cls2fld,FieldName AS fld
-			WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld
-			ORDER BY cls2fld.ord,fld.name
-			""");
+		using var cmd = db.Cmd(
+			"SELECT cls2fld.csum AS csum FROM ClassToField AS cls2fld,FieldName AS fld\n" +
+			"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
+			"ORDER BY cls2fld.ord,fld.name"
+		);
 		var cmdParams = cmd.Parameters;
 		cmdParams.Add(new("$cls", clsRowId));
 
@@ -716,11 +716,11 @@ public sealed class Class : DataEntity {
 		const int hasher_incls_dlen = 64; // 512-bit hash
 		var hasher_incls = Blake2b.CreateIncrementalHasher(hasher_incls_dlen);
 
-		using var cmd = db.Cmd("""
-			SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls
-			WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl
-			ORDER BY uid
-			""");
+		using var cmd = db.Cmd(
+			"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
+			"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
+			"ORDER BY uid"
+		);
 		var cmdParams = cmd.Parameters;
 		cmdParams.Add(new("$cls", clsRowId));
 
@@ -786,12 +786,12 @@ public sealed class Class : DataEntity {
 				hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
 				Debug.Assert(0 == hasher_fld_debug_i++);
 
-				cmd.Reset("""
-					INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)
-					VALUES($cls,$fld,$csum,$ord,$sto,$atarg)
-					ON CONFLICT DO UPDATE
-					SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg
-					""");
+				cmd.Reset(
+					"INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)\n" +
+					"VALUES($cls,$fld,$csum,$ord,$sto,$atarg)\n" +
+					"ON CONFLICT DO UPDATE\n" +
+					"SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg"
+				);
 				cmdParams.Clear();
 				cmdParams.Add(new("$cls", clsRowId));
 				cmdParams.Add(new("$fld", fld));
