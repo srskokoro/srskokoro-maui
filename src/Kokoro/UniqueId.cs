@@ -1,7 +1,4 @@
-﻿// TODO-XXX Move back to `Kokoro` project once C# adds support for the `unscoped` keyword
-// - See, https://github.com/dotnet/runtime/issues/72074
-// - See also, https://github.com/dotnet/csharplang/blob/main/proposals/low-level-struct-improvements.md#violating-scoped
-namespace Kokoro;
+﻿namespace Kokoro;
 using Kokoro.Common.Util;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -253,6 +250,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	#endregion
 
+	// TODO Use either `unscoped` or the attribute equivalent once available, so
+	// that we can upgrade to C# 11 or beyond.
+	// - See, https://github.com/dotnet/runtime/issues/72074
+	// - See also, https://github.com/dotnet/csharplang/blob/main/proposals/low-level-struct-improvements.md#violating-scoped
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	private static ref TElement UnsafeElementRef<TFrom, TElement>(in TFrom from, int elementOffset) {
 		return ref U.Add(ref U.As<TFrom, TElement>(ref U.AsRef(in from)), elementOffset);
