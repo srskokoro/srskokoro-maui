@@ -337,6 +337,14 @@ partial class FieldedEntity {
 
 		if (fldList.Count > MaxFieldCount) goto E_TooManyFields;
 
+		// The remaining field changes are floating fields -- i.e., fields not
+		// defined by the schema.
+		if (foverrides.Count != 0) {
+			fw._FloatingFields = foverrides
+				.Select(entry => (entry.Key, entry.Value))
+				.ToList();
+		}
+
 		// TODO-XXX Finish implementation
 
 		return; // ---
