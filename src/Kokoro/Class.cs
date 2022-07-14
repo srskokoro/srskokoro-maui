@@ -764,143 +764,144 @@ public sealed class Class : DataEntity {
 			updCmd_csum = null!;
 
 		try {
-		Loop: // NOTE: Same IL as `do…while` loop, but without the indentation.
-			var (fieldName, info) = fieldInfoChanges_iter.Current;
-			long fld;
-			if (!info._IsDeleted) {
-				fld = db.LoadStaleOrEnsureFieldId(fieldName);
-				if (updCmd != null) {
-					goto UpdateFieldInfo;
-				} else
-					goto InitToUpdateFieldInfo;
-			} else {
-				fld = db.LoadStaleFieldId(fieldName);
-				if (fld != 0) {
-					if (delCmd != null) {
-						goto DeleteFieldInfo;
+			do {
+				var (fieldName, info) = fieldInfoChanges_iter.Current;
+				long fld;
+				if (!info._IsDeleted) {
+					fld = db.LoadStaleOrEnsureFieldId(fieldName);
+					if (updCmd != null) {
+						goto UpdateFieldInfo;
 					} else
-						goto InitToDeleteFieldInfo;
+						goto InitToUpdateFieldInfo;
 				} else {
-					// Deletion requested, but there's nothing to delete, as the
-					// field is nonexistent.
-					goto Continue;
-				}
-			}
-
-		InitToUpdateFieldInfo:
-			{
-				updCmd = db.CreateCommand();
-				updCmd.Set(
-					"INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)\n" +
-					"VALUES($cls,$fld,$csum,$ord,$sto,$atarg)\n" +
-					"ON CONFLICT DO UPDATE\n" +
-					"SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg"
-				).AddParams(
-					cmd_cls, cmd_fld,
-					updCmd_ord = new() { ParameterName = "$ord" },
-					updCmd_sto = new() { ParameterName = "$sto" },
-					updCmd_atarg = new() { ParameterName = "$atarg" },
-					updCmd_csum = new() { ParameterName = "$csum" }
-				);
-				Debug.Assert(
-					cmd_cls.Value != null
-				);
-				goto UpdateFieldInfo;
-			}
-
-		UpdateFieldInfo:
-			{
-				var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
-				// WARNING: The expected order of inputs to be fed to the above
-				// hasher must be strictly as follows:
-				//
-				// 0. `fieldName` in UTF8 with length prepended
-				// 1. `info.Ordinal`
-				// 2. `info.StoreType`
-				// 3. `info.AliasTarget` in UTF8 with length prepended
-				//
-				// The resulting hash BLOB shall be prepended with a version
-				// varint. Should any of the following happens, the version
-				// varint must change:
-				//
-				// - The resulting hash BLOB length changes.
-				// - The algorithm for the resulting hash BLOB changes.
-				// - An input entry (from the list of inputs above) was removed.
-				// - The order of an input entry (from the list of inputs above)
-				// was changed or shifted.
-				//
-				// The version varint needs not to change if further input
-				// entries were to be appended (from the list of inputs above).
-				//
-				int hasher_fld_debug_i = 0; // Used only to help assert the above
-
-				hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
-				Debug.Assert(0 == hasher_fld_debug_i++);
-
-				cmd_fld.Value = fld;
-
-				updCmd_ord.Value = info.Ordinal;
-				hasher_fld.UpdateLE(info.Ordinal);
-				Debug.Assert(1 == hasher_fld_debug_i++);
-
-				var aliasTarget = info.AliasTarget;
-				if (aliasTarget is null) {
-					updCmd_sto.Value = info.StoreType;
-					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
-					hasher_fld.UpdateLE((int)info.StoreType);
-					Debug.Assert(2 == hasher_fld_debug_i++);
-
-					updCmd_atarg.Value = DBNull.Value;
-					hasher_fld.UpdateLE(0); // Zero-length
-					Debug.Assert(3 == hasher_fld_debug_i++);
-				} else {
-					updCmd_sto.Value = DBNull.Value;
-					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
-					hasher_fld.UpdateLE((int)default(FieldStoreType));
-					Debug.Assert(2 == hasher_fld_debug_i++);
-
-					updCmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
-					hasher_fld.UpdateWithLELength(aliasTarget.Value.ToUTF8Bytes());
-					Debug.Assert(3 == hasher_fld_debug_i++);
+					fld = db.LoadStaleFieldId(fieldName);
+					if (fld != 0) {
+						if (delCmd != null) {
+							goto DeleteFieldInfo;
+						} else
+							goto InitToDeleteFieldInfo;
+					} else {
+						// Deletion requested, but there's nothing to delete, as
+						// the field is nonexistent.
+						continue;
+					}
 				}
 
-				byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
-				updCmd_csum.Value = csum;
+			InitToUpdateFieldInfo:
+				{
+					updCmd = db.CreateCommand();
+					updCmd.Set(
+						"INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)\n" +
+						"VALUES($cls,$fld,$csum,$ord,$sto,$atarg)\n" +
+						"ON CONFLICT DO UPDATE\n" +
+						"SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg"
+					).AddParams(
+						cmd_cls, cmd_fld,
+						updCmd_ord = new() { ParameterName = "$ord" },
+						updCmd_sto = new() { ParameterName = "$sto" },
+						updCmd_atarg = new() { ParameterName = "$atarg" },
+						updCmd_csum = new() { ParameterName = "$csum" }
+					);
+					Debug.Assert(
+						cmd_cls.Value != null
+					);
+					goto UpdateFieldInfo;
+				}
 
-				int updated = updCmd.ExecuteNonQuery();
-				Debug.Assert(updated == 1, $"Updated: {updated}");
+			UpdateFieldInfo:
+				{
+					var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
+					// WARNING: The expected order of inputs to be fed to the
+					// above hasher must be strictly as follows:
+					//
+					// 0. `fieldName` in UTF8 with length prepended
+					// 1. `info.Ordinal`
+					// 2. `info.StoreType`
+					// 3. `info.AliasTarget` in UTF8 with length prepended
+					//
+					// The resulting hash BLOB shall be prepended with a version
+					// varint. Should any of the following happens, the version
+					// varint must change:
+					//
+					// - The resulting hash BLOB length changes.
+					// - The algorithm for the resulting hash BLOB changes.
+					// - An input entry (from the list of inputs above) was
+					// removed.
+					// - The order of an input entry (from the list of inputs
+					// above) was changed or shifted.
+					//
+					// The version varint needs not to change if further input
+					// entries were to be appended (from the list of inputs
+					// above).
+					//
+					int hasher_fld_debug_i = 0; // Used only to help assert the above
 
-				goto Continue;
-			}
+					hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
+					Debug.Assert(0 == hasher_fld_debug_i++);
 
-		InitToDeleteFieldInfo:
-			{
-				delCmd = db.CreateCommand();
-				delCmd.Set(
-					"DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)"
-				).AddParams(
-					cmd_cls, cmd_fld
-				);
-				Debug.Assert(
-					cmd_cls.Value != null
-				);
-				goto DeleteFieldInfo;
-			}
+					cmd_fld.Value = fld;
 
-		DeleteFieldInfo:
-			{
-				cmd_fld.Value = fld;
+					updCmd_ord.Value = info.Ordinal;
+					hasher_fld.UpdateLE(info.Ordinal);
+					Debug.Assert(1 == hasher_fld_debug_i++);
 
-				int deleted = delCmd.ExecuteNonQuery();
-				// NOTE: It's possible for nothing to be deleted, for when the
-				// field info didn't exist in the first place.
-				Debug.Assert(deleted is 1 or 0);
+					var aliasTarget = info.AliasTarget;
+					if (aliasTarget is null) {
+						updCmd_sto.Value = info.StoreType;
+						Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
+						hasher_fld.UpdateLE((int)info.StoreType);
+						Debug.Assert(2 == hasher_fld_debug_i++);
 
-				goto Continue;
-			}
+						updCmd_atarg.Value = DBNull.Value;
+						hasher_fld.UpdateLE(0); // Zero-length
+						Debug.Assert(3 == hasher_fld_debug_i++);
+					} else {
+						updCmd_sto.Value = DBNull.Value;
+						Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
+						hasher_fld.UpdateLE((int)default(FieldStoreType));
+						Debug.Assert(2 == hasher_fld_debug_i++);
 
-		Continue:
-			if (fieldInfoChanges_iter.MoveNext()) goto Loop;
+						updCmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
+						hasher_fld.UpdateWithLELength(aliasTarget.Value.ToUTF8Bytes());
+						Debug.Assert(3 == hasher_fld_debug_i++);
+					}
+
+					byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
+					updCmd_csum.Value = csum;
+
+					int updated = updCmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+
+					continue;
+				}
+
+			InitToDeleteFieldInfo:
+				{
+					delCmd = db.CreateCommand();
+					delCmd.Set(
+						"DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)"
+					).AddParams(
+						cmd_cls, cmd_fld
+					);
+					Debug.Assert(
+						cmd_cls.Value != null
+					);
+					goto DeleteFieldInfo;
+				}
+
+			DeleteFieldInfo:
+				{
+					cmd_fld.Value = fld;
+
+					int deleted = delCmd.ExecuteNonQuery();
+					// NOTE: It's possible for nothing to be deleted, for when
+					// the field info didn't exist in the first place.
+					Debug.Assert(deleted is 1 or 0);
+
+					continue;
+				}
+
+			} while (fieldInfoChanges_iter.MoveNext());
 
 		} finally {
 			updCmd?.Dispose();
