@@ -343,13 +343,13 @@ partial class FieldedEntity {
 	[Conditional("DEBUG")]
 	private static void DAssert_FieldsWriterPriorRewrite(ref FieldsWriter fw) {
 		Debug.Assert(fw._Offsets == null,
-			$"{nameof(fw._Offsets)} must be null prior a fields rewrite");
+			$"`{nameof(fw._Offsets)}` must be null prior a fields rewrite");
 
 		Debug.Assert(fw._Entries == null,
-			$"{nameof(fw._Entries)} must be null prior a fields rewrite");
+			$"`{nameof(fw._Entries)}` must be null prior a fields rewrite");
 
 		Debug.Assert(fw._FloatingFields is null or { Count: 0 },
-			$"{nameof(fw._FloatingFields)} must be null or empty prior a fields rewrite");
+			$"`{nameof(fw._FloatingFields)}` must be null or empty prior a fields rewrite");
 	}
 
 	/// <remarks>
