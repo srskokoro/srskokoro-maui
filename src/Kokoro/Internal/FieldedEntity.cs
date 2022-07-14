@@ -135,7 +135,18 @@ public abstract partial class FieldedEntity : DataEntity {
 
 	internal virtual Stream ReadColdStore(KokoroSqliteDb db) => Stream.Null;
 
+	// --
 
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
+	/// or <see cref="NestingWriteTransaction"/>).
+	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
+	/// beforehand, at least once, while inside a transaction.
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private protected void InternalLoadField(ref FieldsReader fr, StringKey fieldName) {

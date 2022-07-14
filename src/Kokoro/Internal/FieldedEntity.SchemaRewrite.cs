@@ -18,6 +18,12 @@ partial class FieldedEntity {
 		);
 	}
 
+	/// <remarks>
+	/// CONTRACT: Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private protected void RewriteSchema(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {

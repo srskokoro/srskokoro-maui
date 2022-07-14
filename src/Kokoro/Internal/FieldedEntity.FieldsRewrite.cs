@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Internal;
 using Kokoro.Common.Buffers;
 using Kokoro.Common.Util;
+using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -351,6 +352,12 @@ partial class FieldedEntity {
 			$"{nameof(fw._FloatingFields)} must be null or empty prior a fields rewrite");
 	}
 
+	/// <remarks>
+	/// CONTRACT: Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private protected void CompileFieldChanges(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
