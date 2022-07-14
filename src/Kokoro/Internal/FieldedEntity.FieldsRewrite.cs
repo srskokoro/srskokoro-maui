@@ -352,8 +352,16 @@ partial class FieldedEntity {
 			$"`{nameof(fw._FloatingFields)}` must be null or empty prior a fields rewrite");
 	}
 
+	/// <seealso cref="ClearFieldChangeStatuses()"/>
+	private protected bool MayCompileFieldChanges {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _FieldChanges == null ? false : true;
+	}
+
 	/// <remarks>
-	/// CONTRACT: Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <br/>- Must be called while <see cref="MayCompileFieldChanges"/> is <see langword="true"/>.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
@@ -364,7 +372,8 @@ partial class FieldedEntity {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
-		if (fchanges == null) goto NoFieldChanges;
+		Debug.Assert(fchanges != null, $"`{nameof(_FieldChanges)}` must be non-null " +
+			$"prior to calling this method (see also, `{nameof(MayCompileFieldChanges)}`)");
 
 		var fchanges_iter = fchanges.GetEnumerator();
 		if (!fchanges_iter.MoveNext()) goto NoFieldChanges;
