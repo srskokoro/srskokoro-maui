@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
 	private const int MaxClassCount = byte.MaxValue + 1;
@@ -15,6 +16,12 @@ partial class FieldedEntity {
 
 		internal record struct ClassInfo(
 			long rowid, UniqueId uid, byte[] csum, int ord
+		);
+
+		internal record struct FieldInfo(
+			long rowid,
+			int cls_ord, FieldStoreType sto, int ord, FieldSpec old_idx_a_sto,
+			long atarg, string name, FieldVal? new_fval, UniqueId cls_uid
 		);
 	}
 
@@ -163,9 +170,179 @@ partial class FieldedEntity {
 			;
 		}
 
+		// Gather the fields associated with each class, skipping duplicates,
+		// while also fetching any needed info
+		// --
+
+		List<SchemaRewrite.FieldInfo> fldList = new();
+
+		int fldAliasCount = 0;
+		int fldSharedCount = 0;
+		int fldHotCount = 0;
+
+		// Used to spot duplicate entries and to resolve field alias targets
+		Dictionary<long, int> fldMap = new();
+
+		using (var cmd = db.CreateCommand()) {
+			SqliteParameter cmd_cls;
+			cmd.Set(
+				"SELECT\n" +
+					"fld.rowid AS fld,\n" +
+					"fld.name AS name,\n" +
+					"cls2fld.ord AS ord,\n" +
+					"ifnull(cls2fld.sto,-1) AS sto,\n" +
+					"ifnull(cls2fld.atarg,0) AS atarg,\n" +
+					"ifnull(sch2fld.idx_a_sto,-1) AS old_idx_a_sto\n" +
+				"FROM ClassToField AS cls2fld,FieldName AS fld LEFT JOIN SchemaToField AS sch2fld\n" +
+					"ON sch2fld.schema=$oldSchema AND sch2fld.fld=cls2fld.fld\n" +
+				"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld"
+			).AddParams(
+				new("$oldSchema", _SchemaRowId),
+				cmd_cls = new() { ParameterName = "$cls" }
+			);
+
+			foreach (ref var cls in clsList.AsSpan()) {
+				cmd_cls.Value = cls.rowid;
+
+				using var r = cmd.ExecuteReader();
+				while (r.Read()) {
+					r.DAssert_Name(0, "fld");
+					long fld = r.GetInt64(0);
+
+					r.DAssert_Name(1, "name");
+					string name = r.GetString(1);
+
+					r.DAssert_Name(2, "ord");
+					int ord = r.GetInt32(2);
+
+					r.DAssert_Name(3, "sto");
+					FieldStoreType sto = (FieldStoreType)r.GetInt32(3);
+
+					r.DAssert_Name(4, "atarg");
+					long atarg = r.GetInt64(4);
+
+					r.DAssert_Name(5, "old_idx_a_sto");
+					FieldSpec old_idx_a_sto = r.GetInt32(5);
+
+					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(fldMap, fld, out bool exists);
+					if (!exists) {
+						if (!foverrides.Remove(fld, out var new_fval) && (int)old_idx_a_sto < 0) {
+							// Case: Field not defined by the old schema
+							new_fval = OnLoadFloatingField(db, fld) ?? FieldVal.Null;
+						}
+
+						i = fldList.Count; // The new entry's index in the list
+
+						// Add the new entry
+						fldList.Add(new(
+							rowid: fld,
+							cls_ord: cls.ord, sto, ord, old_idx_a_sto,
+							atarg, name, new_fval, cls_uid: cls.uid
+						));
+					} else {
+						// Get a `ref` to the already existing entry
+						ref var entry = ref fldList.AsSpan().DangerousGetReferenceAt(i);
+
+						Debug.Assert(name == entry.name, $"Impossible! " +
+							$"Two fields have the same rowid (which is {fld}) but different names:{Environment.NewLine}" +
+							$"Name of 1st instance: {name}{Environment.NewLine}" +
+							$"Name of 2nd instance: {entry.name}");
+
+						Debug.Assert(old_idx_a_sto == entry.old_idx_a_sto, $"Impossible! " +
+							$"Two fields have the same rowid (which is {fld}) and same old schema (which is {_SchemaRowId})" +
+							$" but different `old_idx_a_sto` value:{Environment.NewLine}" +
+							$"Value of 1st instance: {old_idx_a_sto}{Environment.NewLine}" +
+							$"Value of 2nd instance: {entry.old_idx_a_sto}");
+
+						// Attempt to replace existing entry
+						// --
+						{
+							var a = cls.ord; var b = entry.cls_ord;
+							if (a != b) {
+								if (a < b) goto ReplaceEntry;
+								else goto LeaveEntry;
+							}
+						}
+						{
+							var a = sto; var b = entry.sto;
+							if (a != b) {
+								if (a < b) goto ReplaceEntry;
+								else goto LeaveEntry;
+							}
+						}
+						{
+							var a = ord; var b = entry.ord;
+							if (a != b) {
+								if (a < b) goto ReplaceEntry;
+								else goto LeaveEntry;
+							}
+						}
+						// `atarg` may be different at this point: the class
+						// with the lowest UID gets to define `atarg`
+						{
+							var a = cls.uid; var b = entry.cls_uid;
+							if (a != b) {
+								if (a < b) goto ReplaceEntry;
+								else goto LeaveEntry;
+							}
+						}
+						{
+							// Same field. Same class. It's the same entry.
+							Debug.Fail($"Unexpected! Duplicate rows returned for class-and-field pair:{Environment.NewLine}" +
+								$"Class UID: {cls.uid}{Environment.NewLine}" +
+								$"Field Name: {name}{Environment.NewLine}" +
+								$"Field ROWID: {fld}");
+
+							// It's the same entry anyway.
+							goto LeaveEntry;
+						}
+
+					ReplaceEntry:
+						{
+							var entry_sto = entry.sto;
+							if (entry_sto != FieldStoreType.Shared) {
+								if (entry_sto == FieldStoreType.Hot) {
+									fldHotCount--;
+								} else if ((FieldStoreTypeInt)entry_sto < 0) {
+									fldAliasCount--;
+								}
+							} else {
+								fldSharedCount--;
+							}
+						}
+						entry = new(
+							rowid: fld,
+							cls_ord: cls.ord, sto, ord, old_idx_a_sto,
+							atarg, name, entry.new_fval, cls_uid: cls.uid
+						);
+					}
+
+					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
+
+					if (sto != FieldStoreType.Shared) {
+						if (sto == FieldStoreType.Hot) {
+							fldHotCount++;
+						} else if ((FieldStoreTypeInt)sto < 0) {
+							fldAliasCount++;
+						}
+					} else {
+						fldSharedCount++;
+					}
+
+				LeaveEntry:
+					;
+				}
+			}
+		}
+
+		if (fldList.Count > MaxFieldCount) goto E_TooManyFields;
+
 		// TODO-XXX Finish implementation
 
 		return; // ---
+
+	E_TooManyFields:
+		E_TooManyFields(fldList.Count);
 
 	E_TooManyClasses:
 		E_TooManyClasses(clsSet.Count);
