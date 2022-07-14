@@ -603,9 +603,9 @@ public sealed class Class : DataEntity {
 
 			// TODO Avoid creating this when it won't be used at all
 			using var cmd_old = db.Cmd(
-					"SELECT uid,ord FROM Class\n" +
-					"WHERE rowid=$rowid"
-				);
+				"SELECT uid,ord FROM Class\n" +
+				"WHERE rowid=$rowid"
+			);
 			cmd_old.Parameters.Add(new("$rowid", _RowId));
 			using var r = cmd_old.ExecuteReader();
 			if (!r.Read()) goto Missing;
@@ -693,7 +693,8 @@ public sealed class Class : DataEntity {
 		var hasher_flds = Blake2b.CreateIncrementalHasher(hasher_flds_dlen);
 
 		using var cmd = db.Cmd(
-			"SELECT cls2fld.csum AS csum FROM ClassToField AS cls2fld,FieldName AS fld\n" +
+			"SELECT cls2fld.csum AS csum\n" +
+			"FROM ClassToField AS cls2fld,FieldName AS fld\n" +
 			"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
 			"ORDER BY cls2fld.ord,fld.name"
 		);
