@@ -1122,8 +1122,8 @@ public partial class KokoroContext : IDisposable {
 
 	[Conditional("DEBUG")]
 	private void DAssert_UsageMarkedExclusivelyForDispose()
-		=> Debug.Assert(IsDisposeRequestHandled_NV, $"Shouldn't be called {(UsageMarked_NV
-			? "while usage is marked" : "when not marked exclusively for disposal")}");
+		=> Debug.Assert(IsDisposeRequestHandled_NV, $"Shouldn't be called " + (UsageMarked_NV
+			? "while usage is marked" : "when not marked exclusively for disposal"));
 
 	#endregion
 
