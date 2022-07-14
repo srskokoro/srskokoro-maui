@@ -744,25 +744,68 @@ public sealed class Class : DataEntity {
 
 	[SkipLocalsInit]
 	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsRowId) {
-		db.ReloadFieldNameCaches();
+		var fieldInfoChanges_iter = fieldInfoChanges.GetEnumerator();
+		if (!fieldInfoChanges_iter.MoveNext()) goto NoFieldInfoChanges;
 
-		using var cmd = db.CreateCommand();
-		var cmdParams = cmd.Parameters;
+		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
 
-		foreach (var (fieldName, info) in fieldInfoChanges) {
+		SqliteCommand?
+			updCmd = null,
+			delCmd = null;
+
+		SqliteParameter
+			cmd_cls = new("$cls", clsRowId),
+			cmd_fld = new() { ParameterName = "$fld" };
+
+		SqliteParameter
+			updCmd_ord = null!,
+			updCmd_sto = null!,
+			updCmd_atarg = null!,
+			updCmd_csum = null!;
+
+		try {
+		Loop: // NOTE: Same IL as `do…while` loop, but without the indentation.
+			var (fieldName, info) = fieldInfoChanges_iter.Current;
 			long fld;
 			if (!info._IsDeleted) {
 				fld = db.LoadStaleOrEnsureFieldId(fieldName);
-				goto UpdateFieldInfo;
+				if (updCmd != null) {
+					goto UpdateFieldInfo;
+				} else
+					goto InitToUpdateFieldInfo;
 			} else {
 				fld = db.LoadStaleFieldId(fieldName);
 				if (fld != 0) {
-					goto DeleteFieldInfo;
+					if (delCmd != null) {
+						goto DeleteFieldInfo;
+					} else
+						goto InitToDeleteFieldInfo;
 				} else {
 					// Deletion requested, but there's nothing to delete, as the
 					// field is nonexistent.
-					continue;
+					goto Continue;
 				}
+			}
+
+		InitToUpdateFieldInfo:
+			{
+				updCmd = db.CreateCommand();
+				updCmd.Set(
+					"INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)\n" +
+					"VALUES($cls,$fld,$csum,$ord,$sto,$atarg)\n" +
+					"ON CONFLICT DO UPDATE\n" +
+					"SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg"
+				).AddParams(
+					cmd_cls, cmd_fld,
+					updCmd_ord = new() { ParameterName = "$ord" },
+					updCmd_sto = new() { ParameterName = "$sto" },
+					updCmd_atarg = new() { ParameterName = "$atarg" },
+					updCmd_csum = new() { ParameterName = "$csum" }
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto UpdateFieldInfo;
 			}
 
 		UpdateFieldInfo:
@@ -794,67 +837,78 @@ public sealed class Class : DataEntity {
 				hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
 				Debug.Assert(0 == hasher_fld_debug_i++);
 
-				cmd.Reset(
-					"INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)\n" +
-					"VALUES($cls,$fld,$csum,$ord,$sto,$atarg)\n" +
-					"ON CONFLICT DO UPDATE\n" +
-					"SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg"
-				);
-				cmdParams.Clear();
-				cmdParams.Add(new("$cls", clsRowId));
-				cmdParams.Add(new("$fld", fld));
+				cmd_fld.Value = fld;
 
-				cmdParams.Add(new("$ord", info.Ordinal));
+				updCmd_ord.Value = info.Ordinal;
 				hasher_fld.UpdateLE(info.Ordinal);
 				Debug.Assert(1 == hasher_fld_debug_i++);
 
-				var cmd_sto = cmdParams.Add(new() { ParameterName = "$sto" });
-				var cmd_atarg = cmdParams.Add(new() { ParameterName = "$atarg" });
-
 				var aliasTarget = info.AliasTarget;
 				if (aliasTarget is null) {
-					cmd_sto.Value = info.StoreType;
+					updCmd_sto.Value = info.StoreType;
 					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
 					hasher_fld.UpdateLE((int)info.StoreType);
 					Debug.Assert(2 == hasher_fld_debug_i++);
 
-					cmd_atarg.Value = DBNull.Value;
+					updCmd_atarg.Value = DBNull.Value;
 					hasher_fld.UpdateLE(0); // Zero-length
 					Debug.Assert(3 == hasher_fld_debug_i++);
 				} else {
-					cmd_sto.Value = DBNull.Value;
+					updCmd_sto.Value = DBNull.Value;
 					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
 					hasher_fld.UpdateLE((int)default(FieldStoreType));
 					Debug.Assert(2 == hasher_fld_debug_i++);
 
-					cmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
+					updCmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
 					hasher_fld.UpdateWithLELength(aliasTarget.Value.ToUTF8Bytes());
 					Debug.Assert(3 == hasher_fld_debug_i++);
 				}
 
 				byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
-				cmdParams.Add(new("$csum", csum));
+				updCmd_csum.Value = csum;
 
-				int updated = cmd.ExecuteNonQuery();
+				int updated = updCmd.ExecuteNonQuery();
 				Debug.Assert(updated == 1, $"Updated: {updated}");
 
-				continue;
+				goto Continue;
+			}
+
+		InitToDeleteFieldInfo:
+			{
+				delCmd = db.CreateCommand();
+				delCmd.Set(
+					"DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)"
+				).AddParams(
+					cmd_cls, cmd_fld
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto DeleteFieldInfo;
 			}
 
 		DeleteFieldInfo:
 			{
-				cmd.Reset("DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)");
-				cmdParams.Clear();
-				cmdParams.Add(new("$cls", clsRowId));
-				cmdParams.Add(new("$fld", fld));
+				cmd_fld.Value = fld;
 
-				int deleted = cmd.ExecuteNonQuery();
+				int deleted = delCmd.ExecuteNonQuery();
 				// NOTE: It's possible for nothing to be deleted, for when the
 				// field info didn't exist in the first place.
 				Debug.Assert(deleted is 1 or 0);
+
+				goto Continue;
 			}
+
+		Continue:
+			if (fieldInfoChanges_iter.MoveNext()) goto Loop;
+
+		} finally {
+			updCmd?.Dispose();
+			delCmd?.Dispose();
 		}
-		// Loop end
+
+	NoFieldInfoChanges:
+		;
 	}
 
 	private const int ClassCsumDigestLength = 31; // 248-bit hash
