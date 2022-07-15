@@ -1,4 +1,5 @@
 ﻿global using FieldStoreTypeInt = System.Int32;
+global using FieldStoreTypeUInt = System.UInt32;
 
 namespace Kokoro;
 

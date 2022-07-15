@@ -266,7 +266,10 @@ partial class FieldedEntity {
 							}
 						}
 						{
-							var a = sto; var b = entry.sto;
+							// Cast to unsigned so that "field alias" entries
+							// appear at the end of the list instead.
+							var a = (FieldStoreTypeUInt)sto;
+							var b = (FieldStoreTypeUInt)entry.sto;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
@@ -380,11 +383,11 @@ partial class FieldedEntity {
 					int cmp;
 					// Partition the sorted array by field store type
 					{
-						// NOTE: Using `Enum.CompareTo()` has a boxing cost,
-						// which sadly, JIT doesn't optimize out (for now). So
-						// we must cast the enums to their int counterparts to
-						// avoid the unnecessary box.
-						cmp = ((FieldStoreTypeInt)a.sto).CompareTo((FieldStoreTypeInt)b.sto);
+						// Cast to unsigned so that "field alias" entries appear
+						// at the end of the list instead.
+						var a_sto = (FieldStoreTypeUInt)a.sto;
+						var b_sto = (FieldStoreTypeUInt)b.sto;
+						cmp = a_sto.CompareTo(b_sto);
 						if (cmp != 0) goto Return;
 					}
 					{
