@@ -266,7 +266,11 @@ partial class FieldedEntity {
 							}
 						}
 						{
-							var a = sto; var b = entry.sto;
+							// Cast to signed, to give field alias entries
+							// higher priority when it comes to replacing
+							// existing entries.
+							var a = (FieldStoreTypeSInt)sto;
+							var b = (FieldStoreTypeSInt)entry.sto;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
