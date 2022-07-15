@@ -266,10 +266,7 @@ partial class FieldedEntity {
 							}
 						}
 						{
-							// Cast to unsigned so that "field alias" entries
-							// appear at the end of the list instead.
-							var a = (FieldStoreTypeUInt)sto;
-							var b = (FieldStoreTypeUInt)entry.sto;
+							var a = sto; var b = entry.sto;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
@@ -308,7 +305,7 @@ partial class FieldedEntity {
 							if (entry_sto != FieldStoreType.Shared) {
 								if (entry_sto == FieldStoreType.Hot) {
 									fldHotCount--;
-								} else if ((FieldStoreTypeInt)entry_sto >= 0) {
+								} else if ((FieldStoreTypeSInt)entry_sto >= 0) {
 									fldColdCount--;
 								}
 							} else {
@@ -322,12 +319,12 @@ partial class FieldedEntity {
 						);
 					}
 
-					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(int));
+					Debug.Assert(typeof(FieldStoreTypeInt) == typeof(FieldStoreTypeUInt));
 
 					if (sto != FieldStoreType.Shared) {
 						if (sto == FieldStoreType.Hot) {
 							fldHotCount++;
-						} else if ((FieldStoreTypeInt)sto >= 0) {
+						} else if ((FieldStoreTypeSInt)sto >= 0) {
 							fldColdCount++;
 						}
 					} else {
@@ -383,10 +380,12 @@ partial class FieldedEntity {
 					int cmp;
 					// Partition the sorted array by field store type
 					{
-						// Cast to unsigned so that "field alias" entries appear
-						// at the end of the list instead.
-						var a_sto = (FieldStoreTypeUInt)a.sto;
-						var b_sto = (FieldStoreTypeUInt)b.sto;
+						// NOTE: Using `Enum.CompareTo()` has a boxing cost,
+						// which sadly, JIT doesn't optimize out (for now). So
+						// we must cast the enums to their int counterparts to
+						// avoid the unnecessary box.
+						var a_sto = (FieldStoreTypeInt)a.sto;
+						var b_sto = (FieldStoreTypeInt)b.sto;
 						cmp = a_sto.CompareTo(b_sto);
 						if (cmp != 0) goto Return;
 					}
