@@ -848,8 +848,8 @@ public sealed class Class : DataEntity {
 					var aliasTarget = info.AliasTarget;
 					if (aliasTarget is null) {
 						updCmd_sto.Value = info.StoreType;
-						Debug.Assert(typeof(FieldStoreTypeInt) == typeof(uint));
-						hasher_fld.UpdateLE((uint)info.StoreType);
+						Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
+						hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
 						Debug.Assert(2 == hasher_fld_debug_i++);
 
 						updCmd_atarg.Value = DBNull.Value;
@@ -857,8 +857,8 @@ public sealed class Class : DataEntity {
 						Debug.Assert(3 == hasher_fld_debug_i++);
 					} else {
 						updCmd_sto.Value = DBNull.Value;
-						Debug.Assert(typeof(FieldStoreTypeInt) == typeof(uint));
-						hasher_fld.UpdateLE((uint)default(FieldStoreType));
+						Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
+						hasher_fld.UpdateLE((FieldStoreTypeInt)default(FieldStoreType));
 						Debug.Assert(2 == hasher_fld_debug_i++);
 
 						updCmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
