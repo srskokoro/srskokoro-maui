@@ -137,39 +137,68 @@ partial class FieldedEntity {
 
 		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
 
-		// Convert the field changes into pairs of field id and value
+		// Gather old field mappings from the old schema, by mapping a field id
+		// to a pair of field change value and old field spec.
 		// --
 
-		Dictionary<long, FieldVal> foverrides;
+		Dictionary<long, (FieldVal? FVal, FieldSpec FSpec)> fldMapOld;
 		{
+			// Process the field changes
+			// --
+
 			Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
 			if (fchanges == null) goto NoFieldChanges;
 
 			var fchanges_iter = fchanges.GetEnumerator();
 			if (!fchanges_iter.MoveNext()) goto NoFieldChanges;
 
-			foverrides = new(fchanges.Count);
+			fldMapOld = new(fchanges.Count);
 
 			db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
 			do {
 				var (fname, fval) = fchanges_iter.Current;
 				long fld = db.LoadStaleOrEnsureFieldId(fname);
 
-				bool added = foverrides.TryAdd(fld, fval);
+				bool added = fldMapOld.TryAdd(fld, (fval, -1));
 				Debug.Assert(added, $"Shouldn't happen if running in a " +
 					$"`{nameof(NestingWriteTransaction)}` or equivalent");
 			} while (fchanges_iter.MoveNext());
 
-			Debug.Assert(foverrides.Count == fchanges.Count);
+			Debug.Assert(fldMapOld.Count == fchanges.Count);
 
 			// --
 			goto DoneWithFieldChanges;
 
 		NoFieldChanges:
-			foverrides = new();
+			fldMapOld = new();
 
 		DoneWithFieldChanges:
 			;
+
+			// Retrieve the field specs from the old schema
+			// --
+
+			using (var cmd = db.CreateCommand()) {
+				cmd.Set("SELECT fld,idx_a_sto FROM SchemaToField WHERE schema=$schema")
+					.AddParams(new("$schema", _SchemaRowId));
+
+				using var r = cmd.ExecuteReader();
+				while (r.Read()) {
+					r.DAssert_Name(0, "fld");
+					long fld = r.GetInt64(0);
+
+					r.DAssert_Name(1, "idx_a_sto");
+					FieldSpec fspec = r.GetInt32(1);
+					Debug.Assert(fspec >= (int)0);
+
+					ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(
+						fldMapOld, fld, out bool exists
+					);
+					entry.FSpec = fspec;
+
+					Debug.Assert(exists || entry.FVal == null);
+				}
+			}
 		}
 
 		// Gather the fields associated with each class, skipping duplicates,
@@ -193,13 +222,10 @@ partial class FieldedEntity {
 					"fld.name AS name,\n" +
 					"cls2fld.ord AS ord,\n" +
 					"ifnull(cls2fld.sto,-1) AS sto,\n" +
-					"ifnull(cls2fld.atarg,0) AS atarg,\n" +
-					"ifnull(sch2fld.idx_a_sto,-1) AS old_idx_a_sto\n" +
-				"FROM ClassToField AS cls2fld,FieldName AS fld LEFT JOIN SchemaToField AS sch2fld\n" +
-					"ON sch2fld.schema=$oldSchema AND sch2fld.fld=cls2fld.fld\n" +
+					"ifnull(cls2fld.atarg,0) AS atarg\n" +
+				"FROM ClassToField AS cls2fld,FieldName AS fld\n" +
 				"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld"
 			).AddParams(
-				new("$oldSchema", _SchemaRowId),
 				cmd_cls = new() { ParameterName = "$cls" }
 			);
 
@@ -223,14 +249,18 @@ partial class FieldedEntity {
 					r.DAssert_Name(4, "atarg");
 					long atarg = r.GetInt64(4);
 
-					r.DAssert_Name(5, "old_idx_a_sto");
-					FieldSpec src_idx_a_sto = r.GetInt32(5);
-
 					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(fldMap, fld, out bool exists);
 					if (!exists) {
-						if (!foverrides.Remove(fld, out var new_fval) && (int)src_idx_a_sto < 0) {
+						FieldVal? new_fval;
+						FieldSpec src_idx_a_sto;
+
+						if (fldMapOld.Remove(fld, out var oldMapping)) {
+							(new_fval, src_idx_a_sto) = oldMapping;
+							Debug.Assert(src_idx_a_sto >= (int)0 || new_fval != null);
+						} else {
 							// Case: Field not defined by the old schema
 							new_fval = OnLoadFloatingField(db, fld) ?? FieldVal.Null;
+							src_idx_a_sto = -1;
 						}
 
 						i = fldList.Count; // The new entry's index in the list
@@ -249,12 +279,6 @@ partial class FieldedEntity {
 							$"Two fields have the same rowid (which is {fld}) but different names:{Environment.NewLine}" +
 							$"Name of 1st instance: {name}{Environment.NewLine}" +
 							$"Name of 2nd instance: {entry.name}");
-
-						Debug.Assert(src_idx_a_sto == entry.src_idx_a_sto, $"Impossible! " +
-							$"Two fields have the same rowid (which is {fld}) and same old schema (which is {_SchemaRowId})" +
-							$" but different `src_idx_a_sto` value:{Environment.NewLine}" +
-							$"Value of 1st instance: {src_idx_a_sto}{Environment.NewLine}" +
-							$"Value of 2nd instance: {entry.src_idx_a_sto}");
 
 						// Attempt to replace existing entry
 						// --
@@ -318,7 +342,7 @@ partial class FieldedEntity {
 						}
 						entry = new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, src_idx_a_sto,
+							cls_ord: cls.ord, sto, ord, entry.src_idx_a_sto,
 							atarg, name, entry.new_fval, cls_uid: cls.uid
 						);
 					}
@@ -343,12 +367,16 @@ partial class FieldedEntity {
 
 		if (fldList.Count > MaxFieldCount) goto E_TooManyFields;
 
-		// The remaining field changes are floating fields -- i.e., fields not
-		// defined by the schema.
-		if (foverrides.Count != 0) {
-			fw._FloatingFields = foverrides
-				.Select(entry => (entry.Key, entry.Value))
-				.ToList();
+		// The remaining old field mappings will become floating fields -- i.e.,
+		// fields not defined by the (new) schema.
+		{
+			int fldMapOldCount = fldMapOld.Count;
+			if (fldMapOldCount != 0) {
+				var floFlds = fw._FloatingFields = new(fldMapOldCount);
+				foreach (var (fld, entry) in fldMapOld) {
+					floFlds.Add((fld, entry.FVal ?? fr.Read(entry.FSpec)));
+				}
+			}
 		}
 
 		// -=-
