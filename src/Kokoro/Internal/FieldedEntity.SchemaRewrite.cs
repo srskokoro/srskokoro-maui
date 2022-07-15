@@ -21,7 +21,7 @@ partial class FieldedEntity {
 
 		internal record struct FieldInfo(
 			long rowid,
-			int cls_ord, FieldStoreType sto, int ord, FieldSpec old_idx_a_sto,
+			int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_a_sto,
 			long atarg, string name, FieldVal? new_fval, UniqueId cls_uid
 		);
 	}
@@ -224,11 +224,11 @@ partial class FieldedEntity {
 					long atarg = r.GetInt64(4);
 
 					r.DAssert_Name(5, "old_idx_a_sto");
-					FieldSpec old_idx_a_sto = r.GetInt32(5);
+					FieldSpec src_idx_a_sto = r.GetInt32(5);
 
 					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(fldMap, fld, out bool exists);
 					if (!exists) {
-						if (!foverrides.Remove(fld, out var new_fval) && (int)old_idx_a_sto < 0) {
+						if (!foverrides.Remove(fld, out var new_fval) && (int)src_idx_a_sto < 0) {
 							// Case: Field not defined by the old schema
 							new_fval = OnLoadFloatingField(db, fld) ?? FieldVal.Null;
 						}
@@ -238,7 +238,7 @@ partial class FieldedEntity {
 						// Add the new entry
 						fldList.Add(new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, old_idx_a_sto,
+							cls_ord: cls.ord, sto, ord, src_idx_a_sto,
 							atarg, name, new_fval, cls_uid: cls.uid
 						));
 					} else {
@@ -250,11 +250,11 @@ partial class FieldedEntity {
 							$"Name of 1st instance: {name}{Environment.NewLine}" +
 							$"Name of 2nd instance: {entry.name}");
 
-						Debug.Assert(old_idx_a_sto == entry.old_idx_a_sto, $"Impossible! " +
+						Debug.Assert(src_idx_a_sto == entry.src_idx_a_sto, $"Impossible! " +
 							$"Two fields have the same rowid (which is {fld}) and same old schema (which is {_SchemaRowId})" +
-							$" but different `old_idx_a_sto` value:{Environment.NewLine}" +
-							$"Value of 1st instance: {old_idx_a_sto}{Environment.NewLine}" +
-							$"Value of 2nd instance: {entry.old_idx_a_sto}");
+							$" but different `src_idx_a_sto` value:{Environment.NewLine}" +
+							$"Value of 1st instance: {src_idx_a_sto}{Environment.NewLine}" +
+							$"Value of 2nd instance: {entry.src_idx_a_sto}");
 
 						// Attempt to replace existing entry
 						// --
@@ -318,7 +318,7 @@ partial class FieldedEntity {
 						}
 						entry = new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, old_idx_a_sto,
+							cls_ord: cls.ord, sto, ord, src_idx_a_sto,
 							atarg, name, entry.new_fval, cls_uid: cls.uid
 						);
 					}
