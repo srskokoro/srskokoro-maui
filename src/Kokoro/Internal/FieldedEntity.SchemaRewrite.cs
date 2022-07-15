@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal;
+using Kokoro.Common.Buffers;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
@@ -344,6 +345,88 @@ partial class FieldedEntity {
 			fw._FloatingFields = foverrides
 				.Select(entry => (entry.Key, entry.Value))
 				.ToList();
+		}
+
+		// -=-
+		{
+			Debug.Assert(fldList.Count <= byte.MaxValue + 1);
+			Debug.Assert(clsList.Count <= byte.MaxValue + 1);
+
+			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+			static void InitWithIndices(Span<byte> span) {
+				ref var r0 = ref span.DangerousGetReference();
+				for (int i = span.Length; --i >= 0;) {
+					U.Add(ref r0, i) = (byte)i;
+				}
+			}
+
+			using var renter_fldListIdxs = BufferRenter<byte>
+				.CreateSpan(fldList.Count, out var fldListIdxs);
+			InitWithIndices(fldListIdxs);
+
+			using var renter_clsListIdxs = BufferRenter<byte>
+				.CreateSpan(clsList.Count, out var clsListIdxs);
+			InitWithIndices(clsListIdxs);
+
+			// Sort the gathered lists by sorting their indices instead
+			{
+				// Sort the list of fields
+				var fldList_capture = fldList;
+				fldListIdxs.Sort(int (byte x, byte y) => {
+					ref var r0 = ref fldList_capture.AsSpan().DangerousGetReference();
+					ref var a = ref U.Add(ref r0, x);
+					ref var b = ref U.Add(ref r0, y);
+
+					int cmp;
+					// Partition the sorted array by field store type
+					{
+						// NOTE: Using `Enum.CompareTo()` has a boxing cost,
+						// which sadly, JIT doesn't optimize out (for now). So
+						// we must cast the enums to their int counterparts to
+						// avoid the unnecessary box.
+						cmp = ((FieldStoreTypeInt)a.sto).CompareTo((FieldStoreTypeInt)b.sto);
+						if (cmp != 0) goto Return;
+					}
+					{
+						cmp = a.cls_ord.CompareTo(b.cls_ord);
+						if (cmp != 0) goto Return;
+					}
+					{
+						cmp = a.ord.CompareTo(b.ord);
+						if (cmp != 0) goto Return;
+					}
+					{
+						Debug.Assert(a.rowid != b.rowid, $"Expecting no " +
+							$"duplicates but found a duplicate field entry " +
+							$"with rowid {a.rowid}");
+					}
+					{
+						cmp = string.CompareOrdinal(a.name, b.name);
+						Debug.Assert(cmp != 0, $"Impossible! Two fields have " +
+							$"different rowids ({a.rowid} and {b.rowid}) but " +
+							$"same name: {a.name}");
+					}
+				Return:
+					return cmp;
+				});
+
+				// Partition the list of classes into two, direct and indirect
+				// classes, then sort each partition separately.
+				// --
+
+				var clsList_capture = clsList;
+
+				int clsList_comparison(byte x, byte y) {
+					ref var r0 = ref clsList_capture.AsSpan().DangerousGetReference();
+					return U.Add(ref r0, x).uid.CompareTo(U.Add(ref r0, y).uid);
+				}
+
+				// Sort the list of direct classes
+				clsListIdxs[..dclsCount].Sort(clsList_comparison);
+
+				// Sort the list of indirect classes
+				clsListIdxs[dclsCount..].Sort(clsList_comparison);
+			}
 		}
 
 		// TODO-XXX Finish implementation
