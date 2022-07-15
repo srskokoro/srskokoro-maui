@@ -599,6 +599,8 @@ public sealed class Class : DataEntity {
 			// - An input entry (from the list of inputs above) was removed.
 			// - The order of an input entry (from the list of inputs above) was
 			// changed or shifted.
+			// - An input entry's size (in bytes) changed while it's expected to
+			// be fixed-size (e.g., not length prepended).
 			//
 			// The version varint needs not to change if further input entries
 			// were to be appended (from the list of inputs above).
@@ -829,6 +831,8 @@ public sealed class Class : DataEntity {
 					// removed.
 					// - The order of an input entry (from the list of inputs
 					// above) was changed or shifted.
+					// - An input entry's size (in bytes) changed while it's
+					// expected to be fixed-size (e.g., not length prepended).
 					//
 					// The version varint needs not to change if further input
 					// entries were to be appended (from the list of inputs
