@@ -178,9 +178,9 @@ partial class FieldedEntity {
 
 		List<SchemaRewrite.FieldInfo> fldList = new();
 
-		int fldAliasCount = 0;
 		int fldSharedCount = 0;
 		int fldHotCount = 0;
+		int fldColdCount = 0;
 
 		// Used to spot duplicate entries and to resolve field alias targets
 		Dictionary<long, int> fldMap = new();
@@ -305,8 +305,8 @@ partial class FieldedEntity {
 							if (entry_sto != FieldStoreType.Shared) {
 								if (entry_sto == FieldStoreType.Hot) {
 									fldHotCount--;
-								} else if ((FieldStoreTypeInt)entry_sto < 0) {
-									fldAliasCount--;
+								} else if ((FieldStoreTypeInt)entry_sto >= 0) {
+									fldColdCount--;
 								}
 							} else {
 								fldSharedCount--;
@@ -324,8 +324,8 @@ partial class FieldedEntity {
 					if (sto != FieldStoreType.Shared) {
 						if (sto == FieldStoreType.Hot) {
 							fldHotCount++;
-						} else if ((FieldStoreTypeInt)sto < 0) {
-							fldAliasCount++;
+						} else if ((FieldStoreTypeInt)sto >= 0) {
+							fldColdCount++;
 						}
 					} else {
 						fldSharedCount++;
