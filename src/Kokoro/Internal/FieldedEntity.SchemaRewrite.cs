@@ -260,7 +260,8 @@ partial class FieldedEntity {
 						} else {
 							// Case: Field not defined by the old schema
 							new_fval = OnLoadFloatingField(db, fld) ?? FieldVal.Null;
-							src_idx_a_sto = -1;
+							// Indicate that it was a floating field
+							src_idx_a_sto = -2;
 						}
 
 						i = fldList.Count; // The new entry's index in the list
