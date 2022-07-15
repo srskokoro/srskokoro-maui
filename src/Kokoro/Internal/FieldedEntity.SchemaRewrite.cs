@@ -362,6 +362,11 @@ partial class FieldedEntity {
 				for (int i = span.Length; --i >= 0;) {
 					U.Add(ref r0, i) = (byte)i;
 				}
+				Debug.Assert(span.Length <= 0 || (
+					U.Add(ref r0, 0) == 0 &&
+					U.Add(ref r0, span.Length/2) == span.Length/2 &&
+					U.Add(ref r0, span.Length-1) == span.Length-1
+				));
 			}
 
 			using var renter_fldListIdxs = BufferRenter<byte>
