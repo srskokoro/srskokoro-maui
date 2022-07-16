@@ -298,6 +298,8 @@ partial class FieldedEntity {
 
 					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(fldMap, fld, out bool exists);
 					if (!exists) {
+						i = fldList.Count; // The new entry's index in the list
+
 						FieldVal? new_fval;
 						FieldSpec src_idx_a_sto;
 
@@ -310,8 +312,6 @@ partial class FieldedEntity {
 							// Indicate that it was a floating field
 							src_idx_a_sto = -2;
 						}
-
-						i = fldList.Count; // The new entry's index in the list
 
 						// Add the new entry
 						fldList.Add(new(
