@@ -381,17 +381,7 @@ public sealed class Item : FieldedEntity {
 		}
 
 	Found:
-		{
-			int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
-			Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
-
-			FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
-			if (typeHint != FieldTypeHint.Null) {
-				byte[] data = encoded[fValSpecLen..].ToArray();
-				return new(typeHint, data);
-			}
-			return FieldVal.Null;
-		}
+		return DecodeFloatingFieldVal(encoded);
 
 	NotFound:
 		return null;
@@ -421,20 +411,22 @@ public sealed class Item : FieldedEntity {
 		}
 
 	Found:
-		{
-			int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
-			Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
-
-			FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
-			if (typeHint != FieldTypeHint.Null) {
-				byte[] data = encoded[fValSpecLen..].ToArray();
-				return new(typeHint, data);
-			}
-			return FieldVal.Null;
-		}
+		return DecodeFloatingFieldVal(encoded);
 
 	NotFound:
 		return null;
+	}
+
+	private static FieldVal DecodeFloatingFieldVal(Span<byte> encoded) {
+		int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
+		Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
+
+		FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
+		if (typeHint != FieldTypeHint.Null) {
+			byte[] data = encoded[fValSpecLen..].ToArray();
+			return new(typeHint, data);
+		}
+		return FieldVal.Null;
 	}
 
 
