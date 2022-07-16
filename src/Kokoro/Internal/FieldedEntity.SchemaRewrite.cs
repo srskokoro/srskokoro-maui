@@ -515,6 +515,26 @@ partial class FieldedEntity {
 				// Sort the list of indirect classes
 				clsListIdxs[dclsCount..].Sort(clsList_comparison);
 			}
+
+			[Conditional("DEBUG")]
+			static void DAssert_fldListIdxs_AssumedLayoutIsCorrect() {
+				Span<FieldStoreType> expected = stackalloc FieldStoreType[] {
+					FieldStoreType.Shared,
+					FieldStoreType.Hot,
+					FieldStoreType.Cold,
+					unchecked((FieldStoreType)(-1)),
+				};
+
+				Span<FieldStoreType> actual = stackalloc FieldStoreType[expected.Length];
+				expected.CopyTo(actual);
+
+				actual.Sort();
+
+				bool eq = expected.SequenceEqual(actual);
+				Debug.Assert(eq, $"Arrangement of values in `{nameof(fldListIdxs)}` may not be as expected.");
+			}
+
+			DAssert_fldListIdxs_AssumedLayoutIsCorrect(); // Future-proofing
 		}
 
 		// TODO-XXX Finish implementation
