@@ -463,27 +463,28 @@ partial class FieldedEntity {
 				// Order by field spec
 				MemoryMarshal.CreateSpan(
 					ref foverrides_r0, foverrides_n
-				).Sort(static (a, b) => {
-					int cmp;
-					{
-						cmp = a.FSpec.Value.CompareTo(b.FSpec.Value);
-						if (cmp != 0) goto Return;
-					}
-					{
-						// NOTE: Using `Enum.CompareTo()` has a boxing cost,
-						// which sadly, JIT doesn't optimize out (for now). So
-						// we must cast the enums to their int counterparts to
-						// avoid the unnecessary box.
-						var x = (FieldStoreTypeInt)a.FVal.TypeHint;
-						var y = (FieldStoreTypeInt)b.FVal.TypeHint;
-						cmp = x.CompareTo(y);
-						if (cmp != 0) goto Return;
-					}
-					{
-						cmp = a.FVal.Data.SequenceCompareTo(b.FVal.Data);
-					}
-				Return:
-					return cmp;
+				).Sort([SkipLocalsInit] static (a, b) => {
+					uint x, y;
+
+					x = a.FSpec.Value;
+					y = b.FSpec.Value;
+
+					if (x == y) { goto CompareTypeHints; }
+
+				UIntsNEQ:
+					return x > y ? 1 : -1;
+
+				CompareTypeHints:
+					// NOTE: Using `Enum.CompareTo()` has a boxing cost, which
+					// sadly, JIT doesn't optimize out (for now). So we must
+					// cast the enums to their int counterparts to avoid the
+					// unnecessary box.
+					x = (FieldStoreTypeInt)a.FVal.TypeHint;
+					y = (FieldStoreTypeInt)b.FVal.TypeHint;
+
+					if (x != y) { goto UIntsNEQ; }
+
+					return a.FVal.Data.SequenceCompareTo(b.FVal.Data);
 				});
 
 				// Set up sentinel value
