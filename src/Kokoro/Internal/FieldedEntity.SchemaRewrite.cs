@@ -37,10 +37,6 @@ partial class FieldedEntity {
 			public int cls_ord;
 			public FieldStoreType sto;
 			public Union u;
-			public int ord {
-				readonly get => u.ord;
-				set => u.ord = value;
-			}
 			public FieldSpec src_idx_a_sto;
 
 			public long atarg;
@@ -353,7 +349,7 @@ partial class FieldedEntity {
 							}
 						}
 						{
-							var a = ord; var b = entry.ord;
+							var a = ord; var b = entry.u.ord;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
@@ -483,7 +479,7 @@ partial class FieldedEntity {
 						if (cmp != 0) goto Return;
 					}
 					{
-						cmp = a.ord.CompareTo(b.ord);
+						cmp = a.u.ord.CompareTo(b.u.ord);
 						if (cmp != 0) goto Return;
 					}
 					{
