@@ -55,7 +55,7 @@ partial class FieldedEntity {
 						entry.Override = fval;
 
 						do foverride = ref U.Add(ref foverride, 1);
-						while (foverride.FSpec.Index != i);
+						while (foverride.FSpec.Index == i);
 
 						checked {
 							nextOffset += (int)fval.CountEncodeLength();
