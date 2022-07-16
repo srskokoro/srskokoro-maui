@@ -310,7 +310,7 @@ partial class FieldedEntity {
 							Debug.Assert(src_idx_a_sto >= (int)0 || new_fval != null);
 						} else {
 							// Case: Field not defined by the old schema
-							new_fval = OnLoadFloatingField(db, fld) ?? FieldVal.Null;
+							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
 							// Indicate that it was a floating field
 							src_idx_a_sto = -2;
 						}
