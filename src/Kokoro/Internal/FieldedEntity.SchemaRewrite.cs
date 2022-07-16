@@ -47,7 +47,7 @@ partial class FieldedEntity {
 
 			// TODO Consider putting these in a union
 			public int atarg_i;
-			public int atarg_bak;
+			public int atarg_bt;
 
 			public FieldInfo(
 				long rowid,
