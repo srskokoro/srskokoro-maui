@@ -36,7 +36,7 @@ partial class FieldedEntity {
 
 			public int cls_ord;
 			public FieldStoreType sto;
-			public Union u;
+			public int ord;
 			public FieldSpec src_idx_a_sto;
 
 			public long atarg;
@@ -44,6 +44,10 @@ partial class FieldedEntity {
 
 			public FieldVal? new_fval;
 			public UniqueId cls_uid;
+
+			// TODO Consider putting these in a union
+			public int atarg_i;
+			public int atarg_bak;
 
 			public FieldInfo(
 				long rowid,
@@ -55,7 +59,7 @@ partial class FieldedEntity {
 
 				this.cls_ord = cls_ord;
 				this.sto = sto;
-				this.u.ord = ord;
+				this.ord = ord;
 				this.src_idx_a_sto = src_idx_a_sto;
 
 				this.atarg = atarg;
@@ -66,9 +70,7 @@ partial class FieldedEntity {
 
 			[StructLayout(LayoutKind.Explicit)]
 			internal struct Union {
-				[FieldOffset(0)] public int ord;
-				[FieldOffset(0)] public int atarg_i;
-				[FieldOffset(0)] public int atarg_bak;
+				// TODO-XXX Eventually use to reduce outer `struct` size
 			}
 		}
 	}
@@ -349,7 +351,7 @@ partial class FieldedEntity {
 							}
 						}
 						{
-							var a = ord; var b = entry.u.ord;
+							var a = ord; var b = entry.ord;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
@@ -479,7 +481,7 @@ partial class FieldedEntity {
 						if (cmp != 0) goto Return;
 					}
 					{
-						cmp = a.u.ord.CompareTo(b.u.ord);
+						cmp = a.ord.CompareTo(b.ord);
 						if (cmp != 0) goto Return;
 					}
 					{
