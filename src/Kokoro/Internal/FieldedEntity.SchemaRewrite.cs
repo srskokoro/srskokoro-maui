@@ -36,7 +36,8 @@ partial class FieldedEntity {
 
 			public int cls_ord;
 			public FieldStoreType sto;
-			public int ord;
+			public Union u;
+			public int ord { readonly get => u.ord; set => u.ord = value; }
 			public FieldSpec src_idx_a_sto;
 
 			public long atarg;
@@ -55,13 +56,20 @@ partial class FieldedEntity {
 
 				this.cls_ord = cls_ord;
 				this.sto = sto;
-				this.ord = ord;
+				this.u.ord = ord;
 				this.src_idx_a_sto = src_idx_a_sto;
 
 				this.atarg = atarg;
 				this.name = name;
 				this.new_fval = new_fval;
 				this.cls_uid = cls_uid;
+			}
+
+			[StructLayout(LayoutKind.Explicit)]
+			internal struct Union {
+				[FieldOffset(0)] public int ord;
+				[FieldOffset(0)] public int atarg_i;
+				[FieldOffset(0)] public int atarg_bak;
 			}
 		}
 	}
