@@ -37,7 +37,10 @@ partial class FieldedEntity {
 			public int cls_ord;
 			public FieldStoreType sto;
 			public Union u;
-			public int ord { readonly get => u.ord; set => u.ord = value; }
+			public int ord {
+				readonly get => u.ord;
+				set => u.ord = value;
+			}
 			public FieldSpec src_idx_a_sto;
 
 			public long atarg;
