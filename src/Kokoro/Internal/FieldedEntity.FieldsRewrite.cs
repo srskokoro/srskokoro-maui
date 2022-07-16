@@ -221,9 +221,15 @@ partial class FieldedEntity {
 
 	private protected struct FieldsWriter {
 
-		internal record struct Entry(
-			FieldVal? Override, LatentFieldVal OrigValue
-		);
+		internal struct Entry {
+			public FieldVal? Override;
+			public LatentFieldVal OrigValue;
+
+			public Entry(FieldVal? Override, LatentFieldVal OrigValue) {
+				this.Override = Override;
+				this.OrigValue = OrigValue;
+			}
+		}
 
 		internal int[] _Offsets;
 		internal Entry[] _Entries;

@@ -15,15 +15,55 @@ partial class FieldedEntity {
 	[SuppressMessage("Style", "IDE1006:Naming Styles")]
 	private static class SchemaRewrite {
 
-		internal record struct ClassInfo(
-			long rowid, UniqueId uid, byte[] csum, int ord
-		);
+		internal struct ClassInfo {
+			public long rowid;
+			public UniqueId uid;
+			public byte[] csum;
+			public int ord;
 
-		internal record struct FieldInfo(
-			long rowid,
-			int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_a_sto,
-			long atarg, string name, FieldVal? new_fval, UniqueId cls_uid
-		);
+			public ClassInfo(
+				long rowid, UniqueId uid, byte[] csum, int ord
+			) {
+				this.rowid = rowid;
+				this.uid = uid;
+				this.csum = csum;
+				this.ord = ord;
+			}
+		}
+
+		internal struct FieldInfo {
+			public long rowid;
+
+			public int cls_ord;
+			public FieldStoreType sto;
+			public int ord;
+			public FieldSpec src_idx_a_sto;
+
+			public long atarg;
+			public string name;
+
+			public FieldVal? new_fval;
+			public UniqueId cls_uid;
+
+			public FieldInfo(
+				long rowid,
+				int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_a_sto,
+				long atarg, string name, FieldVal? new_fval, UniqueId cls_uid
+			) {
+				U.SkipInit(out this);
+				this.rowid = rowid;
+
+				this.cls_ord = cls_ord;
+				this.sto = sto;
+				this.ord = ord;
+				this.src_idx_a_sto = src_idx_a_sto;
+
+				this.atarg = atarg;
+				this.name = name;
+				this.new_fval = new_fval;
+				this.cls_uid = cls_uid;
+			}
+		}
 	}
 
 	/// <remarks>
