@@ -461,8 +461,30 @@ partial class FieldedEntity {
 
 			if (foverrides_n != 0) {
 				// Order by field spec
-				MemoryMarshal.CreateSpan(ref foverrides_r0, foverrides_n)
-					.Sort(static (a, b) => a.FSpec.Value.CompareTo(b.FSpec.Value));
+				MemoryMarshal.CreateSpan(
+					ref foverrides_r0, foverrides_n
+				).Sort(static (a, b) => {
+					int cmp;
+					{
+						cmp = a.FSpec.Value.CompareTo(b.FSpec.Value);
+						if (cmp != 0) goto Return;
+					}
+					{
+						// NOTE: Using `Enum.CompareTo()` has a boxing cost,
+						// which sadly, JIT doesn't optimize out (for now). So
+						// we must cast the enums to their int counterparts to
+						// avoid the unnecessary box.
+						var x = (FieldStoreTypeInt)a.FVal.TypeHint;
+						var y = (FieldStoreTypeInt)b.FVal.TypeHint;
+						cmp = x.CompareTo(y);
+						if (cmp != 0) goto Return;
+					}
+					{
+						cmp = a.FVal.Data.SequenceCompareTo(b.FVal.Data);
+					}
+				Return:
+					return cmp;
+				});
 
 				// Set up sentinel value
 				ref var foverrides_r_sentinel = ref U.Add(ref foverrides_r0, foverrides_n);
