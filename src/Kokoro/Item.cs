@@ -397,7 +397,7 @@ public sealed class Item : FieldedEntity {
 		return null;
 	}
 
-	private protected sealed override FieldVal? OnRetireFloatingField(KokoroSqliteDb db, long fieldId) {
+	private protected sealed override FieldVal? OnSupplantFloatingField(KokoroSqliteDb db, long fieldId) {
 		Span<byte> encoded;
 
 		using (var cmd = db.CreateCommand()) {

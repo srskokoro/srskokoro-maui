@@ -209,7 +209,7 @@ public abstract partial class FieldedEntity : DataEntity {
 
 	private protected abstract FieldVal? OnLoadFloatingField(KokoroSqliteDb db, long fieldId);
 
-	private protected abstract FieldVal? OnRetireFloatingField(KokoroSqliteDb db, long fieldId);
+	private protected abstract FieldVal? OnSupplantFloatingField(KokoroSqliteDb db, long fieldId);
 
 	private protected void UnloadField(StringKey fieldName) {
 		var fields = _Fields;
