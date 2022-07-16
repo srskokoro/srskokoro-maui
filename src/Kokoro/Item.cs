@@ -397,6 +397,46 @@ public sealed class Item : FieldedEntity {
 		return null;
 	}
 
+	private protected sealed override FieldVal? OnRetireFloatingField(KokoroSqliteDb db, long fieldId) {
+		Span<byte> encoded;
+
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set(
+				"DELETE FROM ItemToFloatingField\n" +
+				"WHERE (item,fld)=($item,$fld)\n" +
+				"RETURNING data"
+			);
+			var cmdParams = cmd.Parameters;
+			cmdParams.Add(new("$item", _RowId));
+			cmdParams.Add(new("$fld", fieldId));
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "data");
+				encoded = r.GetBytesOrEmpty(0);
+				goto Found;
+			} else {
+				goto NotFound;
+			}
+		}
+
+	Found:
+		{
+			int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
+			Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
+
+			FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
+			if (typeHint != FieldTypeHint.Null) {
+				byte[] data = encoded[fValSpecLen..].ToArray();
+				return new(typeHint, data);
+			}
+			return FieldVal.Null;
+		}
+
+	NotFound:
+		return null;
+	}
+
 
 	public void Unload() {
 		UnloadCoreState();
