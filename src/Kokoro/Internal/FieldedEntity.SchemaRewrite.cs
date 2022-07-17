@@ -563,7 +563,7 @@ partial class FieldedEntity {
 				int k = fldBaseCount;
 				int n = fldList.Count;
 
-				Debug.Assert(k <= n);
+				Debug.Assert((uint)k <= (uint)n);
 				if (k >= n) goto FieldAliasesResolved;
 
 				Debug.Assert(fldList.Count == fldListIdxs.Length);
