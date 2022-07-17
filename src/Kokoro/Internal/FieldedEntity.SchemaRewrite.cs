@@ -608,7 +608,6 @@ partial class FieldedEntity {
 
 				TargetResolved:
 					// Case: Field alias target resolved
-					;
 
 					// Propagate any field change to the target
 					if (alias.src_idx_a_sto != -2) {
