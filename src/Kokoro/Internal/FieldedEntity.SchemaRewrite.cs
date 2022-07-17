@@ -626,6 +626,7 @@ partial class FieldedEntity {
 
 					Backtrack:
 						Debug.Assert(!U.AreSame(ref init_alias, ref alias));
+						alias.sto = FieldStoreType_Alias_Resolved;
 						alias = ref U.Add(ref flds_r0, p); // Go back in chain
 
 					SetResolution:
@@ -634,6 +635,12 @@ partial class FieldedEntity {
 
 						if (p < 0) {
 							Debug.Assert(U.AreSame(ref init_alias, ref alias));
+							if ((FieldStoreTypeSInt)alias.sto < 0) {
+								Debug.Assert(alias.sto == FieldStoreType_Alias_Resolving);
+								alias.sto = FieldStoreType_Alias_Resolved;
+							} else {
+								Debug.Assert(alias.sto == FieldStoreType.Cold);
+							}
 							goto NextFieldAlias; // We're done!
 						} else {
 							// This becomes a conditional jump backward --
