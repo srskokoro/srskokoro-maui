@@ -621,6 +621,32 @@ partial class FieldedEntity {
 						// preserve/propagate the value from when that field
 						// wasn't a field alias.
 
+						var a_fval = alias.new_fval;
+						if (a_fval == null) {
+							// Case: Nothing to propagate
+							goto FieldChangeResolved;
+						}
+
+						if (target.src_idx_a_sto == -2) {
+							// Case: Target has no own field change value
+							Debug.Assert(target.new_fval != null);
+							goto PropagateWithFloatingStatusCleared;
+						}
+
+						if (target.new_fval == null) {
+							// Case: Target has no own field change value
+							goto PropagateFieldChange;
+						} else {
+							// Case: Target has its own field change value
+							goto FieldChangeResolved; // Preserve it then
+						}
+
+					PropagateWithFloatingStatusCleared:
+						target.src_idx_a_sto = -1;
+					PropagateFieldChange:
+						target.new_fval = a_fval;
+					FieldChangeResolved:
+						;
 					}
 
 					// Backtrack as much as possible in the chain of references,
@@ -678,6 +704,50 @@ partial class FieldedEntity {
 							// change value (that didn't come from its old
 							// floating field store).
 
+							var a_fval = alias.new_fval;
+							if (a_fval == null) {
+								// Case: Nothing to propagate
+								goto FieldChangeResolved;
+							}
+
+							if (target.src_idx_a_sto == -2) {
+								// Case: Target has no own field change value
+								Debug.Assert(target.new_fval != null);
+								goto PropagateWithFloatingStatusCleared;
+							}
+
+							var x_fval = target.new_fval;
+							if (x_fval == null) {
+								// Case: Target has no own field change value
+								goto PropagateFieldChange;
+							}
+
+							// Case: Conflict as two field alias entries each
+							// have its own field change value.
+							// - Resolve conflict by mimicking the behavior when
+							// rewriting local fields.
+
+							// Compare the type hints of the field values
+							{
+								var a_fval_type = a_fval.TypeHint;
+								var x_fval_type = x_fval.TypeHint;
+
+								if (a_fval_type < x_fval_type) goto PropagateFieldChange; // Alias won
+								if (a_fval_type > x_fval_type) goto FieldChangeResolved; // Target won
+							}
+							// Compare the data bytes of the field values
+							if (a_fval.Data.SequenceCompareTo(x_fval.Data) < 0) {
+								goto PropagateFieldChange; // Alias won
+							}
+							// Either the target won or it's a tie
+							goto FieldChangeResolved; // Skip below
+
+						PropagateWithFloatingStatusCleared:
+							target.src_idx_a_sto = -1;
+						PropagateFieldChange:
+							target.new_fval = a_fval;
+						FieldChangeResolved:
+							;
 						}
 
 						alias = ref target;
