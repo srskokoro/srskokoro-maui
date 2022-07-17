@@ -669,6 +669,17 @@ partial class FieldedEntity {
 						// Save to backtrack chain of references
 						target.atarg_x = i;
 
+						// Ensure correct field change would be propagated.
+						// - Ensure a deterministic, well-defined behavior when
+						// two or more field aliases are mapped to the same
+						// target while each may have its own field change.
+						if (alias.src_idx_a_sto != -2) {
+							// Case: The field alias might have an actual field
+							// change value (that didn't come from its old
+							// floating field store).
+
+						}
+
 						alias = ref target;
 						i = x;
 
