@@ -583,6 +583,65 @@ partial class FieldedEntity {
 					ref var alias = ref init_alias;
 					int i = init_i;
 
+				ResolveFieldAlias:
+					// --
+
+					if (!fldMap.TryGetValue(alias.atarg, out int x)) {
+						// Case: Target not found
+
+						// This becomes a conditional jump forward to not favor it
+						goto Fallback;
+					}
+
+					Debug.Assert((uint)x < (uint)n);
+					ref var target = ref U.Add(ref flds_r0, x);
+
+					if ((FieldStoreTypeSInt)target.sto < 0) {
+						// Case: Target is also a field alias
+
+						// This becomes a conditional jump forward to not favor it
+						goto TargetNeedsResolution;
+					}
+
+				TargetResolved:
+					// Case: Field alias target resolved
+					;
+
+					// Propagate any field change to the target
+					if (target.new_fval == null || target.src_idx_a_sto == -2) {
+						// Case: The target field either doesn't have its own
+						// field value or it was a floating field value.
+
+					}
+
+					// Backtrack as much as possible in the chain of references,
+					// assigning the resolved index to all field alias entries
+					// encountered and marking each as concluded.
+					{
+
+					}
+
+				TargetNeedsResolution:
+					if (target.sto == FieldStoreType_Alias_Unresolved) {
+						// Case: It's another unresolved field alias
+
+					} else if (target.sto != FieldStoreType_Alias_Resolving) {
+						// Case: It's an already resolved field alias
+						Debug.Assert(target.sto == FieldStoreType_Alias_Resolved);
+
+					} else {
+						// Case: Resulted in a circular reference
+						Debug.Assert(target.sto == FieldStoreType_Alias_Resolving); // Future-proofing
+
+					}
+
+				Fallback:
+					{
+						// Convert the field alias that initiated all this into
+						// a cold field, then make that the target of all field
+						// alias entries in the chain of references.
+
+					}
 
 				NextFieldAlias:
 					;
