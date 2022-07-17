@@ -583,6 +583,8 @@ partial class FieldedEntity {
 					ref var alias = ref init_alias;
 					int i = init_i;
 
+					alias.atarg_x = -1;
+
 				ResolveFieldAlias:
 					// --
 
@@ -618,7 +620,29 @@ partial class FieldedEntity {
 					// assigning the resolved index to all field alias entries
 					// encountered and marking each as concluded.
 					{
+						U.SkipInit(out int p);
+						goto SetResolution; // Skip below
 
+					Backtrack:
+						Debug.Assert(!U.AreSame(ref init_alias, ref alias));
+						alias = ref U.Add(ref flds_r0, p); // Go back in chain
+
+					SetResolution:
+						p = alias.atarg_x; // Get as the backtrack index
+						alias.atarg_x = x; // Set as the resolved index
+
+						if (p < 0) {
+							Debug.Assert(U.AreSame(ref init_alias, ref alias));
+							goto NextFieldAlias; // We're done!
+						} else {
+							// This becomes a conditional jump backward --
+							// similar to a `do…while` loop.
+							goto Backtrack;
+						}
+
+#pragma warning disable CS0162 // Unreachable code detected
+						Debug.Fail("This point should be unreachable.");
+#pragma warning restore CS0162
 					}
 
 				TargetNeedsResolution:
