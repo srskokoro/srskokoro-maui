@@ -611,9 +611,10 @@ partial class FieldedEntity {
 					;
 
 					// Propagate any field change to the target
-					if (target.new_fval == null || target.src_idx_a_sto == -2) {
-						// Case: The target field either doesn't have its own
-						// field value or it was a floating field value.
+					if (alias.src_idx_a_sto != -2) {
+						// Case: The field alias might have an actual field
+						// change value (that didn't come from its old floating
+						// field store).
 
 					}
 
