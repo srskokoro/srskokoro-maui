@@ -259,6 +259,10 @@ partial class FieldedEntity {
 		int fldHotCount = 0;
 		int fldColdCount = 0;
 
+		const FieldStoreType FieldStoreType_Alias_Resolved = unchecked((FieldStoreType)(-3));
+		const FieldStoreType FieldStoreType_Alias_Resolving = unchecked((FieldStoreType)(-2));
+		const FieldStoreType FieldStoreType_Alias_Unresolved = unchecked((FieldStoreType)(-1));
+
 		// Used to spot duplicate entries and to resolve field alias targets
 		Dictionary<long, int> fldMap = new();
 
@@ -294,8 +298,20 @@ partial class FieldedEntity {
 					r.DAssert_Name(3, "sto");
 					FieldStoreType sto = (FieldStoreType)r.GetInt32(3);
 
-					r.DAssert_Name(4, "atarg");
-					long atarg = r.GetInt64(4);
+					long atarg;
+					if ((FieldStoreTypeSInt)sto >= 0) {
+						sto.DAssert_Defined();
+						atarg = 0;
+					} else {
+						Debug.Assert(sto == FieldStoreType_Alias_Unresolved);
+
+						// Avoid bogus data on release builds as this will be
+						// used to maneuver unsafe constructs.
+						sto = FieldStoreType_Alias_Unresolved;
+
+						r.DAssert_Name(4, "atarg");
+						atarg = r.GetInt64(4);
+					}
 
 					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(fldMap, fld, out bool exists);
 					if (!exists) {
@@ -522,7 +538,9 @@ partial class FieldedEntity {
 					FieldStoreType.Shared,
 					FieldStoreType.Hot,
 					FieldStoreType.Cold,
-					unchecked((FieldStoreType)(-1)),
+					FieldStoreType_Alias_Resolved,
+					FieldStoreType_Alias_Resolving,
+					FieldStoreType_Alias_Unresolved,
 				};
 
 				Span<FieldStoreType> actual = stackalloc FieldStoreType[expected.Length];
@@ -535,6 +553,54 @@ partial class FieldedEntity {
 			}
 
 			DAssert_fldListIdxs_AssumedLayoutIsCorrect(); // Future-proofing
+
+			// -=-
+
+			int fldBaseCount = fldSharedCount + fldHotCount + fldColdCount;
+
+			// Resolve field aliases and propagate field changes to their target
+			{
+				int k = fldBaseCount;
+				int n = fldList.Count;
+
+				Debug.Assert(k <= n);
+				if (k >= n) goto FieldAliasesResolved;
+
+				Debug.Assert(fldList.Count == fldListIdxs.Length);
+				ref var flds_r0 = ref fldList.AsSpan().DangerousGetReference();
+				ref byte fldIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+
+				int fldAliasAsColdCount = 0;
+				do {
+					int init_i = U.Add(ref fldIdxs_r0, k);
+					ref var init_alias = ref U.Add(ref flds_r0, init_i);
+
+					if (init_alias.sto == FieldStoreType_Alias_Resolved) {
+						// Case: Field alias has already been resolved before
+						continue;
+					}
+
+					ref var alias = ref init_alias;
+					int i = init_i;
+
+
+				NextFieldAlias:
+					;
+
+				} while (++k < n);
+
+				// If there were any field aliases that are now cold fields, we
+				// must sort the list of indices again.
+				if (fldAliasAsColdCount > 0) {
+					fldBaseCount += fldAliasAsColdCount;
+					fldColdCount += fldAliasAsColdCount;
+					// TODO-XXX Implement sorting
+				}
+
+			FieldAliasesResolved:
+				;
+			}
+
 		}
 
 		// TODO-XXX Finish implementation
