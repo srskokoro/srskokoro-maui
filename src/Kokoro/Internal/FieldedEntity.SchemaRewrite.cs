@@ -647,9 +647,19 @@ partial class FieldedEntity {
 					}
 
 				TargetNeedsResolution:
+					// Mark in case of circular reference or self-reference
+					alias.sto = FieldStoreType_Alias_Resolving;
+
 					if (target.sto == FieldStoreType_Alias_Unresolved) {
 						// Case: It's another unresolved field alias
 
+						// Save to backtrack chain of references
+						target.atarg_x = i;
+
+						alias = ref target;
+						i = x;
+
+						goto ResolveFieldAlias;
 					} else if (target.sto != FieldStoreType_Alias_Resolving) {
 						// Case: It's an already resolved field alias
 						Debug.Assert(target.sto == FieldStoreType_Alias_Resolved);
@@ -658,6 +668,7 @@ partial class FieldedEntity {
 						// Case: Resulted in a circular reference
 						Debug.Assert(target.sto == FieldStoreType_Alias_Resolving); // Future-proofing
 
+						goto Fallback;
 					}
 
 				Fallback:
