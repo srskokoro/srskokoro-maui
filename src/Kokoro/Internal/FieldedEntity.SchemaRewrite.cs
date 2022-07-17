@@ -45,9 +45,8 @@ partial class FieldedEntity {
 			public FieldVal? new_fval;
 			public UniqueId cls_uid;
 
-			// TODO Consider putting these in a union
-			public int atarg_i;
-			public int atarg_bt;
+			// TODO Consider putting this in a union
+			public int atarg_x;
 
 			public FieldInfo(
 				long rowid,
