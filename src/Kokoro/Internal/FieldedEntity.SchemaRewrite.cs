@@ -616,6 +616,11 @@ partial class FieldedEntity {
 						// change value (that didn't come from its old floating
 						// field store).
 
+						// NOTE: The old field value is always discarded
+						// whenever a field becomes a field alias. We never
+						// preserve/propagate the value from when that field
+						// wasn't a field alias.
+
 					}
 
 					// Backtrack as much as possible in the chain of references,
