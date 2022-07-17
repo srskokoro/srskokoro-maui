@@ -665,7 +665,18 @@ partial class FieldedEntity {
 						// Convert the field alias that initiated all this into
 						// a cold field, then make that the target of all field
 						// alias entries in the chain of references.
+						init_alias.sto = FieldStoreType.Cold;
+						// ^- NOTE: The above won't conflict with the opening
+						// check for already resolved field aliases, since we're
+						// converting only the initial field alias, which we'll
+						// skip eventually as we advance to the next field in
+						// the list of field aliases.
 
+						target = ref init_alias;
+						x = init_i;
+
+						fldAliasAsColdCount++;
+						goto TargetResolved;
 					}
 
 				NextFieldAlias:
