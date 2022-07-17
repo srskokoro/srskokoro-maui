@@ -573,6 +573,7 @@ partial class FieldedEntity {
 				int fldAliasAsColdCount = 0;
 				do {
 					int init_i = U.Add(ref fldIdxs_r0, k);
+					Debug.Assert((uint)init_i < (uint)n);
 					ref var init_alias = ref U.Add(ref flds_r0, init_i);
 
 					if (init_alias.sto == FieldStoreType_Alias_Resolved) {
