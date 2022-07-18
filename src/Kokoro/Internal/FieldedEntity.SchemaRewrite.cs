@@ -683,7 +683,10 @@ partial class FieldedEntity {
 						if (p < 0) {
 							Debug.Assert(U.AreSame(ref init_alias, ref alias));
 							if ((FieldStoreTypeSInt)alias.sto < 0) {
-								Debug.Assert(alias.sto == FieldStoreType_Alias_Resolving);
+								Debug.Assert(alias.sto
+									is FieldStoreType_Alias_Unresolved
+									or FieldStoreType_Alias_Resolving
+								);
 								alias.sto = FieldStoreType_Alias_Resolved;
 							} else {
 								Debug.Assert(alias.sto == FieldStoreType.Cold);
