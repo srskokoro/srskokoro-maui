@@ -773,8 +773,9 @@ partial class FieldedEntity {
 						// Case: It's an already resolved field alias
 						Debug.Assert(target.sto == FieldStoreType_Alias_Resolved);
 
-						// Make its target the target of the current field alias
-						// and all field alias entries in the reference chain.
+						// Take its target and make that the target of the
+						// current field alias and all field alias entries in
+						// the reference chain.
 						x = target.atarg_x;
 						Debug.Assert((uint)x < (uint)n);
 						target = ref U.Add(ref flds_r0, x);
