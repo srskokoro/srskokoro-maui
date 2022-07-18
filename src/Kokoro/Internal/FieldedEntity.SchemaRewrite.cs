@@ -645,7 +645,7 @@ partial class FieldedEntity {
 						if (target.src_idx_a_sto == -2) {
 							// Case: Target has no own field change value
 							Debug.Assert(target.new_fval != null);
-							goto PropagateWithFloatingStatusCleared;
+							goto PropagateClearingFloatingStatus;
 						}
 
 						if (target.new_fval == null) {
@@ -656,7 +656,7 @@ partial class FieldedEntity {
 							goto FieldChangeResolved; // Preserve it then
 						}
 
-					PropagateWithFloatingStatusCleared:
+					PropagateClearingFloatingStatus:
 						target.src_idx_a_sto = -1;
 					PropagateFieldChange:
 						target.new_fval = a_fval;
@@ -728,7 +728,7 @@ partial class FieldedEntity {
 							if (target.src_idx_a_sto == -2) {
 								// Case: Target has no own field change value
 								Debug.Assert(target.new_fval != null);
-								goto PropagateWithFloatingStatusCleared;
+								goto PropagateClearingFloatingStatus;
 							}
 
 							var x_fval = target.new_fval;
@@ -757,7 +757,7 @@ partial class FieldedEntity {
 							// Either the target won or it's a tie
 							goto FieldChangeResolved; // Skip below
 
-						PropagateWithFloatingStatusCleared:
+						PropagateClearingFloatingStatus:
 							target.src_idx_a_sto = -1;
 						PropagateFieldChange:
 							target.new_fval = a_fval;
