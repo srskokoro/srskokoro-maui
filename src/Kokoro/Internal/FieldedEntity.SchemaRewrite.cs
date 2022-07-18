@@ -547,6 +547,8 @@ partial class FieldedEntity {
 				clsListIdxs[dclsCount..].Sort(comparisons.clsList_comparison);
 			}
 
+			DAssert_fldListIdxs_AssumedLayoutIsCorrect(); // Future-proofing
+
 			[Conditional("DEBUG")]
 			static void DAssert_fldListIdxs_AssumedLayoutIsCorrect() {
 				Span<FieldStoreType> expected = stackalloc FieldStoreType[] {
@@ -566,8 +568,6 @@ partial class FieldedEntity {
 				bool eq = expected.SequenceEqual(actual);
 				Debug.Assert(eq, $"Arrangement of values in `{nameof(fldListIdxs)}` may not be as expected.");
 			}
-
-			DAssert_fldListIdxs_AssumedLayoutIsCorrect(); // Future-proofing
 
 			// -=-
 
