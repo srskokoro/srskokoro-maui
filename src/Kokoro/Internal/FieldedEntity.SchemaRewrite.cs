@@ -77,7 +77,7 @@ partial class FieldedEntity {
 			public List<FieldInfo> fldList;
 			public List<ClassInfo> clsList;
 
-			public int fldList_comparison(byte x, byte y) {
+			public int fldList_compare(byte x, byte y) {
 				ref var r0 = ref fldList.AsSpan().DangerousGetReference();
 				ref var a = ref U.Add(ref r0, x);
 				ref var b = ref U.Add(ref r0, y);
@@ -117,7 +117,7 @@ partial class FieldedEntity {
 				return cmp;
 			}
 
-			public int clsList_comparison(byte x, byte y) {
+			public int clsList_compare(byte x, byte y) {
 				ref var r0 = ref clsList.AsSpan().DangerousGetReference();
 				return U.Add(ref r0, x).uid.CompareTo(U.Add(ref r0, y).uid);
 			}
@@ -533,19 +533,19 @@ partial class FieldedEntity {
 
 				// Assumed implementation: The sorted array will be partitioned
 				// by field store type.
-				fldListIdxs.Sort(comparisons.fldList_comparison);
+				fldListIdxs.Sort(comparisons.fldList_compare);
 
 				// Partition the list of classes into two, direct and indirect
 				// classes, then sort each partition separately.
 				// --
 
-				Comparison<byte> clsList_comparison = comparisons.clsList_comparison;
+				Comparison<byte> clsList_compare = comparisons.clsList_compare;
 
 				// Sort the list of direct classes
-				clsListIdxs[..dclsCount].Sort(clsList_comparison);
+				clsListIdxs[..dclsCount].Sort(clsList_compare);
 
 				// Sort the list of indirect classes
-				clsListIdxs[dclsCount..].Sort(clsList_comparison);
+				clsListIdxs[dclsCount..].Sort(clsList_compare);
 			}
 
 			DAssert_fldListIdxs_AssumedLayoutIsCorrect(); // Future-proofing
