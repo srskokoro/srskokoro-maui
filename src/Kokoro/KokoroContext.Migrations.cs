@@ -368,7 +368,7 @@ partial class KokoroContext {
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the field definition's primary
-			// data, which includes the `FieldName.Name` of this field and that
+			// data, which includes the `FieldName.name` of this field and that
 			// of the `atarg`, but excludes the `rowid` columns (i.e., `cls`,
 			// `fld` and `atarg`).
 			//
