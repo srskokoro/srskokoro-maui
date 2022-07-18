@@ -523,12 +523,13 @@ partial class FieldedEntity {
 			// Sort the gathered lists by sorting their indices instead
 			{
 				// TODO Perhaps utilize `[ThreadStatic]` to avoid allocations
-				SchemaRewrite.Comparisons comparisons = new();
+				SchemaRewrite.Comparisons comparisons = new() {
+					fldList = fldList,
+					clsList = clsList
+				};
 
 				// Sort the list of fields
 				// --
-
-				comparisons.fldList = fldList;
 
 				// Assumed implementation: The sorted array will be partitioned
 				// by field store type.
@@ -537,8 +538,6 @@ partial class FieldedEntity {
 				// Partition the list of classes into two, direct and indirect
 				// classes, then sort each partition separately.
 				// --
-
-				comparisons.clsList = clsList;
 
 				// Sort the list of direct classes
 				clsListIdxs[..dclsCount].Sort(comparisons.clsList_comparison);
