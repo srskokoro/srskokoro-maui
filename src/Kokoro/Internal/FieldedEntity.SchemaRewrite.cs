@@ -374,7 +374,7 @@ partial class FieldedEntity {
 
 						if (fldMapOld.Remove(fld, out var oldMapping)) {
 							(new_fval, src_idx_a_sto) = oldMapping;
-							Debug.Assert((int)src_idx_a_sto >= 0 || new_fval != null);
+							Debug.Assert(new_fval != null || (int)src_idx_a_sto >= 0);
 						} else {
 							// Case: Field not defined by the old schema
 							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
