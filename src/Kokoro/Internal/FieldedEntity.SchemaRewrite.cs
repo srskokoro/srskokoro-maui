@@ -816,7 +816,14 @@ partial class FieldedEntity {
 				if (fldAliasAsColdCount > 0) {
 					fldBaseCount += fldAliasAsColdCount;
 					fldColdCount += fldAliasAsColdCount;
-					// TODO-XXX Implement sorting
+
+					// Need to sort only for the list of field aliases, as some
+					// of them are now cold fields.
+					fldListIdxs[fldBaseCount..].Sort(
+						new SchemaRewrite.Comparisons() {
+							fldList = fldList
+						}.fldList_compare
+					);
 				}
 
 			FieldAliasesResolved:
