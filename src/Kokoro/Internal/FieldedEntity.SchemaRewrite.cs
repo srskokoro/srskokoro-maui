@@ -539,11 +539,13 @@ partial class FieldedEntity {
 				// classes, then sort each partition separately.
 				// --
 
+				Comparison<byte> clsList_comparison = comparisons.clsList_comparison;
+
 				// Sort the list of direct classes
-				clsListIdxs[..dclsCount].Sort(comparisons.clsList_comparison);
+				clsListIdxs[..dclsCount].Sort(clsList_comparison);
 
 				// Sort the list of indirect classes
-				clsListIdxs[dclsCount..].Sort(comparisons.clsList_comparison);
+				clsListIdxs[dclsCount..].Sort(clsList_comparison);
 			}
 
 			DAssert_fldListIdxs_AssumedLayoutIsCorrect(); // Future-proofing
