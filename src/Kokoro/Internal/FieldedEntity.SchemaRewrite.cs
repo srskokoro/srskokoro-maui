@@ -309,9 +309,13 @@ partial class FieldedEntity {
 		int fldHotCount = 0;
 		int fldColdCount = 0;
 
-		const FieldStoreType FieldStoreType_Alias_Resolved = unchecked((FieldStoreType)(-3));
-		const FieldStoreType FieldStoreType_Alias_Resolving = unchecked((FieldStoreType)(-2));
-		const FieldStoreType FieldStoreType_Alias_Unresolved = unchecked((FieldStoreType)(-1));
+		const FieldStoreTypeSInt FieldStoreType_Alias_Resolved_SInt = -3;
+		const FieldStoreTypeSInt FieldStoreType_Alias_Resolving_SInt = -2;
+		const FieldStoreTypeSInt FieldStoreType_Alias_Unresolved_SInt = -1;
+
+		const FieldStoreType FieldStoreType_Alias_Resolved = unchecked((FieldStoreType)FieldStoreType_Alias_Resolved_SInt);
+		const FieldStoreType FieldStoreType_Alias_Resolving = unchecked((FieldStoreType)FieldStoreType_Alias_Resolving_SInt);
+		const FieldStoreType FieldStoreType_Alias_Unresolved = unchecked((FieldStoreType)FieldStoreType_Alias_Unresolved_SInt);
 
 		// Used to spot duplicate entries and to resolve field alias targets
 		Dictionary<long, int> fldMap = new();
@@ -592,7 +596,8 @@ partial class FieldedEntity {
 					Debug.Assert((uint)init_i < (uint)n);
 					ref var init_alias = ref U.Add(ref flds_r0, init_i);
 
-					if (init_alias.sto == FieldStoreType_Alias_Resolved) {
+					if ((FieldStoreTypeSInt)init_alias.sto <= FieldStoreType_Alias_Resolved_SInt) {
+						Debug.Assert(init_alias.sto == FieldStoreType_Alias_Resolved);
 						// Case: Field alias has already been resolved before
 						continue;
 					}
