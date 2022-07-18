@@ -580,7 +580,7 @@ partial class FieldedEntity {
 				int n = fldList.Count;
 
 				Debug.Assert((uint)k <= (uint)n);
-				if (k >= n) goto FieldAliasesResolved;
+				if ((uint)k >= (uint)n) goto FieldAliasesResolved;
 
 				Debug.Assert(fldList.Count == fldListIdxs.Length);
 				ref var flds_r0 = ref fldList.AsSpan().DangerousGetReference();
