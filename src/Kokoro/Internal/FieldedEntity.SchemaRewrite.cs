@@ -287,7 +287,7 @@ partial class FieldedEntity {
 
 					r.DAssert_Name(1, "idx_a_sto");
 					FieldSpec fspec = r.GetInt32(1);
-					Debug.Assert(fspec >= (int)0);
+					Debug.Assert((int)fspec >= 0);
 
 					ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(
 						fldMapOld, fld, out bool exists
@@ -372,7 +372,7 @@ partial class FieldedEntity {
 
 						if (fldMapOld.Remove(fld, out var oldMapping)) {
 							(new_fval, src_idx_a_sto) = oldMapping;
-							Debug.Assert(src_idx_a_sto >= (int)0 || new_fval != null);
+							Debug.Assert((int)src_idx_a_sto >= 0 || new_fval != null);
 						} else {
 							// Case: Field not defined by the old schema
 							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
