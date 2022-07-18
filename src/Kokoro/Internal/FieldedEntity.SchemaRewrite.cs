@@ -290,11 +290,9 @@ partial class FieldedEntity {
 					Debug.Assert((int)fspec >= 0);
 
 					ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(
-						fldMapOld, fld, out bool exists
+						fldMapOld, fld, out _
 					);
 					entry.FSpec = fspec;
-
-					Debug.Assert(exists || entry.FVal == null);
 				}
 			}
 		}
