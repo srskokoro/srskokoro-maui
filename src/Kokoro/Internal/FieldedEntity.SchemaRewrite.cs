@@ -596,7 +596,7 @@ partial class FieldedEntity {
 					Debug.Assert((uint)init_i < (uint)n);
 					ref var init_alias = ref U.Add(ref flds_r0, init_i);
 
-					if ((FieldStoreTypeSInt)init_alias.sto <= FieldStoreType_Alias_Resolved_SInt) {
+					if ((FieldStoreTypeSInt)init_alias.sto < FieldStoreType_Alias_Unresolved_SInt) {
 						Debug.Assert(init_alias.sto == FieldStoreType_Alias_Resolved);
 						// Case: Field alias has already been resolved before
 						continue;
