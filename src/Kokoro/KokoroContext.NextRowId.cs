@@ -1,4 +1,4 @@
-namespace Kokoro;
+﻿namespace Kokoro;
 using Kokoro.Internal.Sqlite;
 
 partial class KokoroContext {
@@ -48,7 +48,7 @@ partial class KokoroContext {
 		// The following trick won't work if the user somehow ran this with 2^63
 		// threads, either in parallel or with threads suspended at unfortunate
 		// moments. That should be deemed impossible due to resource limits, but
-		// who knows? Perhaps some high-tech futuristic civilization knows� :P
+		// who knows? Perhaps some high-tech futuristic civilization knows… :P
 		long nextRowId = Interlocked.Increment(ref nextRowIdFieldRef);
 		if (nextRowId <= 0) {
 			Interlocked.Decrement(ref nextRowIdFieldRef);
