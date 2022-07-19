@@ -304,6 +304,7 @@ public sealed class Class : DataEntity {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				U.SkipInit(out FieldInfo info);
+				info._IsDeleted = false;
 
 				r.DAssert_Name(0, "ord");
 				info.Ordinal = r.GetInt32(0);
