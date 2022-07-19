@@ -411,7 +411,7 @@ partial class FieldedEntity {
 
 					using var r = cmd.ExecuteReader();
 					if (r.Read()) {
-						// Case: local field
+						// Case: core field
 
 						r.DAssert_Name(0, "idx_sto");
 						FieldSpec fspec = r.GetInt32(0);
