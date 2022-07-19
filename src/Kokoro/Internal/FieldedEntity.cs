@@ -159,7 +159,7 @@ public abstract partial class FieldedEntity : DataEntity {
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				"SELECT idx_a_sto FROM SchemaToField\n" +
+				"SELECT idx_sto FROM SchemaToField\n" +
 				"WHERE schema=$schema AND fld=$fld"
 			);
 			var cmdParams = cmd.Parameters;
@@ -168,7 +168,7 @@ public abstract partial class FieldedEntity : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "idx_a_sto");
+				r.DAssert_Name(0, "idx_sto");
 				fspec = r.GetInt32(0);
 				Debug.Assert(fspec.Index >= 0);
 				fspec.StoreType.DAssert_Defined();

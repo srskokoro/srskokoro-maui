@@ -247,38 +247,29 @@ partial class KokoroContext {
 
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
-			$"idx_a_sto INTEGER NOT NULL CHECK(idx_a_sto {BetweenInt32RangeGE0})," +
+			$"idx_sto INTEGER NOT NULL CHECK(idx_sto {BetweenInt32RangeGE0})," +
 
-			"idx_loc INTEGER NOT NULL AS (idx << 1 | loc)," +
+			"idx_loc INTEGER NOT NULL AS ((idx_sto >> 1) | (idx_sto & 0x1))," +
 
 			// The field index.
-			"idx INTEGER NOT NULL AS (idx_a_sto >> 3)," +
-
-			// The field alias type:
-			// - 0: Not an alias
-			// - 1: Is an alias
-			"a INTEGER NOT NULL AS ((idx_a_sto & 0x4) != 0)," +
+			"idx INTEGER NOT NULL AS (idx_sto >> 2)," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_a_sto & 0x3)," +
+			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_sto & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
 			"loc INTEGER NOT NULL AS (sto != 0)," +
 
-			"PRIMARY KEY(schema, fld)" +
+			"PRIMARY KEY(schema, fld)," +
+
+			"UNIQUE(schema, idx_loc)" +
 
 		") WITHOUT ROWID");
-
-		db.Exec("CREATE UNIQUE INDEX [" +
-			"UK_SchemaToField_C_schema_C_idx_loc WHERE a=0" +
-		"] ON " +
-			"SchemaToField(schema,idx_loc) WHERE a=0" +
-		"");
 
 		// An entity schema can also be thought of as an entity class set, in
 		// that no data can enter a schema unless defined by an entity class: a
@@ -368,9 +359,8 @@ partial class KokoroContext {
 			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the field definition's primary
-			// data, which includes the `FieldName.name` of this field and that
-			// of the `atarg`, but excludes the `rowid` columns (i.e., `cls`,
-			// `fld` and `atarg`).
+			// data, which includes the `FieldName.name` of this field, but
+			// excludes the `cls` and `fld` columns.
 			//
 			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
 			"csum BLOB NOT NULL," +
@@ -382,21 +372,12 @@ partial class KokoroContext {
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			// - NULL: Alias
-			"sto INTEGER CHECK(sto BETWEEN 0x0 AND 0x2)," +
+			"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2)," +
 
 			// The field locality type:
 			// - 0: Shared
 			// - 1: Local
-			// - NULL: Alias
-			"loc INTEGER AS (sto != 0)," +
-
-			// The field alias target.
-			"atarg INTEGER REFERENCES FieldName" + OnRowIdFk + "," +
-
-			// NOTE: Either `sto` or `atarg` is null, but not both, and neither
-			// can both be nonnull, i.e., this is an "exclusive or" logic.
-			"CHECK((sto ISNULL) IS NOT (atarg ISNULL))," +
+			"loc INTEGER NOT NULL AS (sto != 0)," +
 
 			"PRIMARY KEY(cls, fld)" +
 

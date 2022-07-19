@@ -52,8 +52,6 @@ public sealed class Class : DataEntity {
 		private int _Ordinal;
 		private FieldStoreType _StoreType;
 
-		private StringKey? _AliasTarget;
-
 		public int Ordinal {
 			readonly get => _Ordinal;
 			set => _Ordinal = value;
@@ -62,14 +60,6 @@ public sealed class Class : DataEntity {
 		public FieldStoreType StoreType {
 			readonly get => _StoreType;
 			set => _StoreType = value;
-		}
-
-		/// <remarks>
-		/// If nonnull, <see cref="StoreType"/> can be any value.
-		/// </remarks>
-		public StringKey? AliasTarget {
-			readonly get => _AliasTarget;
-			set => _AliasTarget = value;
 		}
 	}
 
@@ -393,7 +383,7 @@ public sealed class Class : DataEntity {
 		// Load field info
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				"SELECT ord,ifnull(sto,0)AS sto,ifnull(atarg,0)AS atarg FROM ClassToField\n" +
+				"SELECT ord,sto FROM ClassToField\n" +
 				"WHERE cls=$cls AND fld=$fld"
 			);
 			var cmdParams = cmd.Parameters;
@@ -410,10 +400,6 @@ public sealed class Class : DataEntity {
 				r.DAssert_Name(1, "sto");
 				info.StoreType = (FieldStoreType)r.GetInt32(1);
 				info.StoreType.DAssert_Defined();
-
-				r.DAssert_Name(2, "atarg");
-				long atarg = r.GetInt64(2);
-				info.AliasTarget = atarg == 0 ? null : db.LoadStaleFieldName(atarg);
 
 				// Pending changes will be discarded
 				_FieldInfoChanges?.Remove(name);
@@ -762,7 +748,6 @@ public sealed class Class : DataEntity {
 		SqliteParameter
 			updCmd_ord = null!,
 			updCmd_sto = null!,
-			updCmd_atarg = null!,
 			updCmd_csum = null!;
 
 		try {
@@ -793,15 +778,14 @@ public sealed class Class : DataEntity {
 				{
 					updCmd = db.CreateCommand();
 					updCmd.Set(
-						"INSERT INTO ClassToField(cls,fld,csum,ord,sto,atarg)\n" +
-						"VALUES($cls,$fld,$csum,$ord,$sto,$atarg)\n" +
+						"INSERT INTO ClassToField(cls,fld,csum,ord,sto)\n" +
+						"VALUES($cls,$fld,$csum,$ord,$sto)\n" +
 						"ON CONFLICT DO UPDATE\n" +
-						"SET csum=$csum,ord=$ord,sto=$sto,atarg=$atarg"
+						"SET csum=$csum,ord=$ord,sto=$sto"
 					).AddParams(
 						cmd_cls, cmd_fld,
 						updCmd_ord = new() { ParameterName = "$ord" },
 						updCmd_sto = new() { ParameterName = "$sto" },
-						updCmd_atarg = new() { ParameterName = "$atarg" },
 						updCmd_csum = new() { ParameterName = "$csum" }
 					);
 					Debug.Assert(
@@ -819,7 +803,6 @@ public sealed class Class : DataEntity {
 					// 0. `fieldName` in UTF8 with length prepended
 					// 1. `info.Ordinal`
 					// 2. `info.StoreType`
-					// 3. `info.AliasTarget` in UTF8 with length prepended
 					//
 					// The resulting hash BLOB shall be prepended with a version
 					// varint. Should any of the following happens, the version
@@ -849,26 +832,10 @@ public sealed class Class : DataEntity {
 					hasher_fld.UpdateLE(info.Ordinal);
 					Debug.Assert(1 == hasher_fld_debug_i++);
 
-					var aliasTarget = info.AliasTarget;
-					if (aliasTarget is null) {
-						updCmd_sto.Value = info.StoreType;
-						Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
-						hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
-						Debug.Assert(2 == hasher_fld_debug_i++);
-
-						updCmd_atarg.Value = DBNull.Value;
-						hasher_fld.UpdateLE(0); // Zero-length
-						Debug.Assert(3 == hasher_fld_debug_i++);
-					} else {
-						updCmd_sto.Value = DBNull.Value;
-						Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
-						hasher_fld.UpdateLE((FieldStoreTypeInt)default(FieldStoreType));
-						Debug.Assert(2 == hasher_fld_debug_i++);
-
-						updCmd_atarg.Value = db.LoadStaleOrEnsureFieldId(aliasTarget);
-						hasher_fld.UpdateWithLELength(aliasTarget.Value.ToUTF8Bytes());
-						Debug.Assert(3 == hasher_fld_debug_i++);
-					}
+					updCmd_sto.Value = info.StoreType;
+					Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
+					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
+					Debug.Assert(2 == hasher_fld_debug_i++);
 
 					byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
 					updCmd_csum.Value = csum;

@@ -37,21 +37,16 @@ partial class FieldedEntity {
 			public int cls_ord;
 			public FieldStoreType sto;
 			public int ord;
-			public FieldSpec src_idx_a_sto;
+			public FieldSpec src_idx_sto;
 
-			public long atarg;
 			public string name;
-
 			public FieldVal? new_fval;
-			public UniqueId cls_uid;
-
-			// TODO Consider putting this in a union
-			public int atarg_x;
+			public UniqueId cls_uid; // TODO Assess if still necessary
 
 			public FieldInfo(
 				long rowid,
-				int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_a_sto,
-				long atarg, string name, FieldVal? new_fval, UniqueId cls_uid
+				int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_sto,
+				string name, FieldVal? new_fval, UniqueId cls_uid
 			) {
 				U.SkipInit(out this);
 				this.rowid = rowid;
@@ -59,17 +54,11 @@ partial class FieldedEntity {
 				this.cls_ord = cls_ord;
 				this.sto = sto;
 				this.ord = ord;
-				this.src_idx_a_sto = src_idx_a_sto;
+				this.src_idx_sto = src_idx_sto;
 
-				this.atarg = atarg;
 				this.name = name;
 				this.new_fval = new_fval;
 				this.cls_uid = cls_uid;
-			}
-
-			[StructLayout(LayoutKind.Explicit)]
-			internal struct Union {
-				// TODO-XXX Eventually use to reduce outer `struct` size
 			}
 		}
 
@@ -277,7 +266,7 @@ partial class FieldedEntity {
 			// --
 
 			using (var cmd = db.CreateCommand()) {
-				cmd.Set("SELECT fld,idx_a_sto FROM SchemaToField WHERE schema=$schema")
+				cmd.Set("SELECT fld,idx_sto FROM SchemaToField WHERE schema=$schema")
 					.AddParams(new("$schema", _SchemaRowId));
 
 				using var r = cmd.ExecuteReader();
@@ -285,7 +274,7 @@ partial class FieldedEntity {
 					r.DAssert_Name(0, "fld");
 					long fld = r.GetInt64(0);
 
-					r.DAssert_Name(1, "idx_a_sto");
+					r.DAssert_Name(1, "idx_sto");
 					FieldSpec fspec = r.GetInt32(1);
 					Debug.Assert((int)fspec >= 0);
 
@@ -307,17 +296,6 @@ partial class FieldedEntity {
 		int fldHotCount = 0;
 		int fldColdCount = 0;
 
-		const FieldStoreTypeSInt FieldStoreType_Alias_Resolved_SInt = -3;
-		const FieldStoreTypeSInt FieldStoreType_Alias_Resolving_SInt = -2;
-		const FieldStoreTypeSInt FieldStoreType_Alias_Unresolved_SInt = -1;
-
-		const FieldStoreType FieldStoreType_Alias_Resolved = unchecked((FieldStoreType)FieldStoreType_Alias_Resolved_SInt);
-		const FieldStoreType FieldStoreType_Alias_Resolving = unchecked((FieldStoreType)FieldStoreType_Alias_Resolving_SInt);
-		const FieldStoreType FieldStoreType_Alias_Unresolved = unchecked((FieldStoreType)FieldStoreType_Alias_Unresolved_SInt);
-
-		// Used to spot duplicate entries and to resolve field alias targets
-		Dictionary<long, int> fldMap = new();
-
 		using (var cmd = db.CreateCommand()) {
 			SqliteParameter cmd_cls;
 			cmd.Set(
@@ -325,13 +303,15 @@ partial class FieldedEntity {
 					"fld.rowid AS fld,\n" +
 					"fld.name AS name,\n" +
 					"cls2fld.ord AS ord,\n" +
-					"ifnull(cls2fld.sto,-1) AS sto,\n" +
-					"ifnull(cls2fld.atarg,0) AS atarg\n" +
+					"cls2fld.sto AS sto\n" +
 				"FROM ClassToField AS cls2fld,FieldName AS fld\n" +
 				"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld"
 			).AddParams(
 				cmd_cls = new() { ParameterName = "$cls" }
 			);
+
+			// Used only to spot duplicate entries
+			Dictionary<long, int> fldMap = new();
 
 			foreach (ref var cls in clsList.AsSpan()) {
 				cmd_cls.Value = cls.rowid;
@@ -349,44 +329,30 @@ partial class FieldedEntity {
 
 					r.DAssert_Name(3, "sto");
 					FieldStoreType sto = (FieldStoreType)r.GetInt32(3);
-
-					long atarg;
-					if ((FieldStoreTypeSInt)sto >= 0) {
-						sto.DAssert_Defined();
-						atarg = 0;
-					} else {
-						Debug.Assert(sto == FieldStoreType_Alias_Unresolved);
-
-						// Avoid bogus data on release builds as this will be
-						// used to maneuver unsafe constructs.
-						sto = FieldStoreType_Alias_Unresolved;
-
-						r.DAssert_Name(4, "atarg");
-						atarg = r.GetInt64(4);
-					}
+					sto.DAssert_Defined();
 
 					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(fldMap, fld, out bool exists);
 					if (!exists) {
 						i = fldList.Count; // The new entry's index in the list
 
 						FieldVal? new_fval;
-						FieldSpec src_idx_a_sto;
+						FieldSpec src_idx_sto;
 
 						if (fldMapOld.Remove(fld, out var oldMapping)) {
-							(new_fval, src_idx_a_sto) = oldMapping;
-							Debug.Assert(new_fval != null || (int)src_idx_a_sto >= 0);
+							(new_fval, src_idx_sto) = oldMapping;
+							Debug.Assert(new_fval != null || (int)src_idx_sto >= 0);
 						} else {
 							// Case: Field not defined by the old schema
 							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
 							// Indicate that it was a floating field
-							src_idx_a_sto = -2;
+							src_idx_sto = -2;
 						}
 
 						// Add the new entry
 						fldList.Add(new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, src_idx_a_sto,
-							atarg, name, new_fval, cls_uid: cls.uid
+							cls_ord: cls.ord, sto, ord, src_idx_sto,
+							name, new_fval, cls_uid: cls.uid
 						));
 					} else {
 						// Get a `ref` to the already existing entry
@@ -407,11 +373,7 @@ partial class FieldedEntity {
 							}
 						}
 						{
-							// Cast to signed, to give field alias entries
-							// higher priority when it comes to replacing
-							// existing entries.
-							var a = (FieldStoreTypeSInt)sto;
-							var b = (FieldStoreTypeSInt)entry.sto;
+							var a = sto; var b = entry.sto;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
@@ -424,8 +386,6 @@ partial class FieldedEntity {
 								else goto LeaveEntry;
 							}
 						}
-						// `atarg` may be different at this point: the class
-						// with the lowest UID gets to define `atarg`
 						{
 							var a = cls.uid; var b = entry.cls_uid;
 							if (a != b) {
@@ -459,8 +419,8 @@ partial class FieldedEntity {
 						}
 						entry = new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, entry.src_idx_a_sto,
-							atarg, name, entry.new_fval, cls_uid: cls.uid
+							cls_ord: cls.ord, sto, ord, entry.src_idx_sto,
+							name, entry.new_fval, cls_uid: cls.uid
 						);
 					}
 
@@ -558,9 +518,6 @@ partial class FieldedEntity {
 					FieldStoreType.Shared,
 					FieldStoreType.Hot,
 					FieldStoreType.Cold,
-					FieldStoreType_Alias_Resolved,
-					FieldStoreType_Alias_Resolving,
-					FieldStoreType_Alias_Unresolved,
 				};
 
 				Span<FieldStoreType> actual = stackalloc FieldStoreType[expected.Length];
@@ -573,270 +530,6 @@ partial class FieldedEntity {
 			}
 
 			// -=-
-
-			int fldBaseCount = fldSharedCount + fldHotCount + fldColdCount;
-
-			// Resolve field aliases and propagate field changes to their target
-			{
-				int k = fldBaseCount;
-				int n = fldList.Count;
-
-				Debug.Assert((uint)k <= (uint)n);
-				if ((uint)k >= (uint)n) goto FieldAliasesResolved;
-
-				Debug.Assert(fldList.Count == fldListIdxs.Length);
-				ref var flds_r0 = ref fldList.AsSpan().DangerousGetReference();
-				ref byte fldIdxs_r0 = ref fldListIdxs.DangerousGetReference();
-
-				int fldAliasAsColdCount = 0;
-				do {
-					int init_i = U.Add(ref fldIdxs_r0, k);
-					Debug.Assert((uint)init_i < (uint)n);
-					ref var init_alias = ref U.Add(ref flds_r0, init_i);
-
-					if ((FieldStoreTypeSInt)init_alias.sto < FieldStoreType_Alias_Unresolved_SInt) {
-						Debug.Assert(init_alias.sto == FieldStoreType_Alias_Resolved);
-						// Case: Field alias has already been resolved before
-						continue;
-					}
-
-					ref var alias = ref init_alias;
-					int i = init_i;
-
-					alias.atarg_x = -1;
-
-				ResolveFieldAlias:
-					// --
-
-					if (!fldMap.TryGetValue(alias.atarg, out int x)) {
-						// Case: Target not found
-
-						// This becomes a conditional jump forward to not favor it
-						goto Fallback;
-					}
-
-					Debug.Assert((uint)x < (uint)n);
-					ref var target = ref U.Add(ref flds_r0, x);
-
-					if ((FieldStoreTypeSInt)target.sto < 0) {
-						// Case: Target is also a field alias
-
-						// This becomes a conditional jump forward to not favor it
-						goto TargetNeedsResolution;
-					}
-
-				TargetResolved:
-					// Case: Field alias target resolved
-
-					// Propagate any field change to the target
-					if (alias.src_idx_a_sto != -2) {
-						// Case: The field alias might have an actual field
-						// change value (that didn't come from its old floating
-						// field store).
-
-						// NOTE: The old field value is always discarded
-						// whenever a field becomes a field alias. We never
-						// preserve/propagate the value from when that field
-						// wasn't a field alias.
-
-						var a_fval = alias.new_fval;
-						if (a_fval == null) {
-							// Case: Nothing to propagate
-							goto FieldChangeResolved;
-						}
-
-						if (target.src_idx_a_sto == -2) {
-							// Case: Target has no own field change value
-							Debug.Assert(target.new_fval != null);
-							goto PropagateClearingFloatingStatus;
-						}
-
-						if (target.new_fval == null) {
-							// Case: Target has no own field change value
-							goto PropagateFieldChange;
-						} else {
-							// Case: Target has its own field change value
-							goto FieldChangeResolved; // Preserve it then
-						}
-
-					PropagateClearingFloatingStatus:
-						target.src_idx_a_sto = -1;
-					PropagateFieldChange:
-						target.new_fval = a_fval;
-					FieldChangeResolved:
-						;
-					}
-
-					// Backtrack as much as possible in the chain of references,
-					// assigning the resolved index to all field alias entries
-					// encountered and marking each as concluded.
-					{
-						U.SkipInit(out int p);
-						goto SetResolution; // Skip below
-
-					Backtrack:
-						Debug.Assert(!U.AreSame(ref init_alias, ref alias));
-						alias.sto = FieldStoreType_Alias_Resolved;
-						alias = ref U.Add(ref flds_r0, p); // Go back in chain
-
-					SetResolution:
-						p = alias.atarg_x; // Get as the backtrack index
-						alias.atarg_x = x; // Set as the resolved index
-
-						if (p < 0) {
-							Debug.Assert(U.AreSame(ref init_alias, ref alias));
-							if ((FieldStoreTypeSInt)alias.sto < 0) {
-								Debug.Assert(alias.sto
-									is FieldStoreType_Alias_Unresolved
-									or FieldStoreType_Alias_Resolving
-								);
-								alias.sto = FieldStoreType_Alias_Resolved;
-							} else {
-								Debug.Assert(alias.sto == FieldStoreType.Cold);
-							}
-							goto NextFieldAlias; // We're done!
-						} else {
-							// This becomes a conditional jump backward --
-							// similar to a `do…while` loop.
-							goto Backtrack;
-						}
-
-#pragma warning disable CS0162 // Unreachable code detected
-						Debug.Fail("This point should be unreachable.");
-#pragma warning restore CS0162
-					}
-
-				TargetNeedsResolution:
-					// Mark in case of circular reference or self-reference
-					alias.sto = FieldStoreType_Alias_Resolving;
-
-					if (target.sto == FieldStoreType_Alias_Unresolved) {
-						// Case: It's another unresolved field alias
-
-						// Save to backtrack chain of references
-						target.atarg_x = i;
-
-						// Ensure correct field change would be propagated.
-						// - Ensure a deterministic, well-defined behavior when
-						// two or more field aliases are mapped to the same
-						// target while each may have its own field change.
-						if (alias.src_idx_a_sto != -2) {
-							// Case: The field alias might have an actual field
-							// change value (that didn't come from its old
-							// floating field store).
-
-							var a_fval = alias.new_fval;
-							if (a_fval == null) {
-								// Case: Nothing to propagate
-								goto FieldChangeResolved;
-							}
-
-							if (target.src_idx_a_sto == -2) {
-								// Case: Target has no own field change value
-								Debug.Assert(target.new_fval != null);
-								goto PropagateClearingFloatingStatus;
-							}
-
-							var x_fval = target.new_fval;
-							if (x_fval == null) {
-								// Case: Target has no own field change value
-								goto PropagateFieldChange;
-							}
-
-							// Case: Conflict as two field alias entries each
-							// have its own field change value.
-							// - Resolve conflict by mimicking the behavior when
-							// rewriting local fields.
-
-							// Compare the type hints of the field values
-							{
-								var a_fval_type = a_fval.TypeHint;
-								var x_fval_type = x_fval.TypeHint;
-
-								if (a_fval_type < x_fval_type) goto PropagateFieldChange; // Alias won
-								if (a_fval_type > x_fval_type) goto FieldChangeResolved; // Target won
-							}
-							// Compare the data bytes of the field values
-							if (a_fval.Data.SequenceCompareTo(x_fval.Data) < 0) {
-								goto PropagateFieldChange; // Alias won
-							}
-							// Either the target won or it's a tie
-							goto FieldChangeResolved; // Skip below
-
-						PropagateClearingFloatingStatus:
-							target.src_idx_a_sto = -1;
-						PropagateFieldChange:
-							target.new_fval = a_fval;
-						FieldChangeResolved:
-							;
-						}
-
-						alias = ref target;
-						i = x;
-
-						goto ResolveFieldAlias;
-					} else if (target.sto != FieldStoreType_Alias_Resolving) {
-						// Case: It's an already resolved field alias
-						Debug.Assert(target.sto == FieldStoreType_Alias_Resolved);
-
-						// Take its target and make that the target of the
-						// current field alias and all field alias entries in
-						// the reference chain.
-						x = target.atarg_x;
-						Debug.Assert((uint)x < (uint)n);
-						target = ref U.Add(ref flds_r0, x);
-
-						goto TargetResolved;
-					} else {
-						// Case: Resulted in a circular reference
-						Debug.Assert(target.sto == FieldStoreType_Alias_Resolving); // Future-proofing
-
-						goto Fallback;
-					}
-
-				Fallback:
-					{
-						// Convert the field alias that initiated all this into
-						// a cold field, then make that the target of all field
-						// alias entries in the chain of references.
-						init_alias.sto = FieldStoreType.Cold;
-						// ^- NOTE: The above won't conflict with the opening
-						// check for already resolved field aliases, since we're
-						// converting only the initial field alias, which we'll
-						// skip eventually as we advance to the next field in
-						// the list of field aliases.
-
-						target = ref init_alias;
-						x = init_i;
-
-						fldAliasAsColdCount++;
-						goto TargetResolved;
-					}
-
-				NextFieldAlias:
-					;
-
-				} while (++k < n);
-
-				// If there were any field aliases that are now cold fields, we
-				// must sort the list of indices again.
-				if (fldAliasAsColdCount > 0) {
-					fldBaseCount += fldAliasAsColdCount;
-					fldColdCount += fldAliasAsColdCount;
-
-					// Need to sort only for the list of field aliases, as some
-					// of them are now cold fields.
-					fldListIdxs[fldBaseCount..].Sort(
-						new SchemaRewrite.Comparisons() {
-							fldList = fldList
-						}.fldList_compare
-					);
-				}
-
-			FieldAliasesResolved:
-				;
-			}
-
 		}
 
 		// TODO-XXX Finish implementation

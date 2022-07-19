@@ -52,10 +52,9 @@ partial class FieldedEntity {
 						}
 					} else {
 						FieldVal fval = foverride.FVal;
+						foverride = ref U.Add(ref foverride, 1);
 						entry.Override = fval;
 
-						do foverride = ref U.Add(ref foverride, 1);
-						while (foverride.FSpec.Index == i);
 
 						checked {
 							nextOffset += (int)fval.CountEncodeLength();
@@ -397,7 +396,7 @@ partial class FieldedEntity {
 			using (var cmd = db.CreateCommand()) {
 				SqliteParameter cmd_fld;
 				cmd.Set(
-					"SELECT idx_a_sto FROM SchemaToField\n" +
+					"SELECT idx_sto FROM SchemaToField\n" +
 					"WHERE (schema,fld)=($schema,$fld)"
 				).AddParams(
 					new("$schema", _SchemaRowId),
@@ -414,7 +413,7 @@ partial class FieldedEntity {
 					if (r.Read()) {
 						// Case: local field
 
-						r.DAssert_Name(0, "idx_a_sto");
+						r.DAssert_Name(0, "idx_sto");
 						FieldSpec fspec = r.GetInt32(0);
 
 						Debug.Assert(fspec.Index >= 0);
@@ -461,31 +460,8 @@ partial class FieldedEntity {
 
 			if (foverrides_n != 0) {
 				// Order by field spec
-				MemoryMarshal.CreateSpan(
-					ref foverrides_r0, foverrides_n
-				).Sort([SkipLocalsInit] static (a, b) => {
-					uint x, y;
-
-					x = a.FSpec.Value;
-					y = b.FSpec.Value;
-
-					if (x == y) { goto CompareTypeHints; }
-
-				UIntsNEQ:
-					return x > y ? 1 : -1;
-
-				CompareTypeHints:
-					// NOTE: Using `Enum.CompareTo()` has a boxing cost, which
-					// sadly, JIT doesn't optimize out (for now). So we must
-					// cast the enums to their int counterparts to avoid the
-					// unnecessary box.
-					x = (FieldStoreTypeInt)a.FVal.TypeHint;
-					y = (FieldStoreTypeInt)b.FVal.TypeHint;
-
-					if (x != y) { goto UIntsNEQ; }
-
-					return a.FVal.Data.SequenceCompareTo(b.FVal.Data);
-				});
+				MemoryMarshal.CreateSpan(ref foverrides_r0, foverrides_n)
+					.Sort(static (a, b) => a.FSpec.Value.CompareTo(b.FSpec.Value));
 
 				// Set up sentinel value
 				ref var foverrides_r_sentinel = ref U.Add(ref foverrides_r0, foverrides_n);

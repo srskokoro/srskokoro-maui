@@ -1,26 +1,19 @@
 ﻿namespace Kokoro.Internal;
-using CommunityToolkit.HighPerformance.Helpers;
 
 internal readonly struct FieldSpec {
 	// Expected bit layout:
 	// - The 2 LSBs represent the field store type.
-	// - The 3rd LSB (at bit index 2) is set if the field is an alias.
 	// - The remaining bits serve as the index of the field in a field list.
 	//
-	// This corresponds to the `idx_a_sto` column of the `SchemaToField` table
-	// in the collection's SQLite DB.
+	// This corresponds to the `idx_sto` column of the `SchemaToField` table in
+	// the collection's SQLite DB.
 	public readonly uint Value;
 
-	public const uint IndexIncrement = 1 << 3;
+	public const uint IndexIncrement = 1 << 2;
 
 	public int Index {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)(Value >> 3);
-	}
-
-	public bool IsAlias {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => BitHelper.HasFlag(Value, 2);
+		get => (int)(Value >> 2);
 	}
 
 	public FieldStoreType StoreType {
@@ -53,13 +46,7 @@ internal readonly struct FieldSpec {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldSpec(int index, FieldStoreType sto) {
 		Debug.Assert(((FieldStoreTypeInt)sto & 0b11) == (FieldStoreTypeInt)sto);
-		Value = (uint)index << 3 | (uint)sto;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldSpec(int index, bool isAlias, FieldStoreType sto) {
-		Debug.Assert(((FieldStoreTypeInt)sto & 0b11) == (FieldStoreTypeInt)sto);
-		Value = (uint)index << 3 | (uint)isAlias.ToByte() << 2 | (uint)sto;
+		Value = (uint)index << 2 | (uint)sto;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
