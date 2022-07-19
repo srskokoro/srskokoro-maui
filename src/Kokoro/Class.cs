@@ -265,9 +265,17 @@ public sealed class Class : DataEntity {
 			var fieldNames = loadInfo.FieldInfos;
 			if (fieldNames == null) goto Done;
 
-			db.ReloadFieldNameCaches();
-			foreach (var fieldName in fieldNames) {
-				InternalLoadFieldInfo(db, fieldName);
+			var fieldNames_iter = fieldNames.GetEnumerator();
+			try {
+				if (fieldNames_iter.MoveNext()) {
+					db.ReloadFieldNameCaches();
+					do {
+						var fieldName = fieldNames_iter.Current;
+						InternalLoadFieldInfo(db, fieldName);
+					} while (fieldNames_iter.MoveNext());
+				}
+			} finally {
+				fieldNames_iter.Dispose();
 			}
 
 		Done:;
