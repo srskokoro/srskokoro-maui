@@ -244,6 +244,39 @@ public sealed class Class : DataEntity {
 		_State = StateFlags.NotExists;
 	}
 
+	public ref struct LoadInfo {
+
+		public bool Core { readonly get; set; }
+
+		public bool FieldNames { readonly get; set; }
+
+		public IEnumerable<StringKey>? FieldInfos { readonly get; set; }
+	}
+
+	public void Load(LoadInfo loadInfo) {
+		var db = Host.Db;
+		using var tx = new OptionalReadTransaction(db);
+
+		if (loadInfo.Core) Load();
+
+		// Load field infos
+		{
+			var fieldNames = loadInfo.FieldInfos;
+			if (fieldNames == null) goto Done;
+
+			db.ReloadFieldNameCaches();
+			foreach (var fieldName in fieldNames) {
+				InternalLoadFieldInfo(db, fieldName);
+			}
+
+		Done:;
+		}
+
+		if (loadInfo.FieldNames) {
+			// TODO Implement
+		}
+	}
+
 	public void Load(bool core) {
 		if (core) Load();
 	}
