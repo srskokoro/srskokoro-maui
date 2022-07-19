@@ -244,6 +244,7 @@ public sealed class Class : DataEntity {
 		_State = StateFlags.NotExists;
 	}
 
+
 	public ref struct LoadInfo {
 
 		public bool Core { readonly get; set; }
