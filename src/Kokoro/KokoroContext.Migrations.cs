@@ -275,9 +275,9 @@ partial class KokoroContext {
 		") WITHOUT ROWID");
 
 		db.Exec("CREATE UNIQUE INDEX [" +
-			"UK_SchemaToField_C_idx_loc WHERE a=0" +
+			"UK_SchemaToField_C_schema_C_idx_loc WHERE a=0" +
 		"] ON " +
-			"SchemaToField(idx_loc) WHERE a=0" +
+			"SchemaToField(schema,idx_loc) WHERE a=0" +
 		"");
 
 		// An entity schema can also be thought of as an entity class set, in
