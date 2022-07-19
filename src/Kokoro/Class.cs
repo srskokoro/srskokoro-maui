@@ -126,7 +126,7 @@ public sealed class Class : DataEntity {
 		if (infos != null && infos.TryGetValue(name, out info)) {
 			return true;
 		}
-		U.SkipInit(out info);
+		info = default;
 		return false;
 	}
 
