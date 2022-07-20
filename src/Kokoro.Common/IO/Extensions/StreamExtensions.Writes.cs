@@ -13,11 +13,9 @@ internal static partial class StreamExtensions {
 
 	// --
 
-	private const int DefaultCopyBufferSize = 8192;
-
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void CopyPartlyTo(this Stream source, Stream destination, int count)
-		=> source.CopyPartlyTo(destination, count, DefaultCopyBufferSize);
+		=> source.CopyPartlyTo(destination, count, StreamUtils.DefaultCopyBufferSize);
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
@@ -52,7 +50,7 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void CopyPartlyTo(this Stream source, Stream destination, long count)
-		=> source.CopyPartlyTo(destination, count, DefaultCopyBufferSize);
+		=> source.CopyPartlyTo(destination, count, StreamUtils.DefaultCopyBufferSize);
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]

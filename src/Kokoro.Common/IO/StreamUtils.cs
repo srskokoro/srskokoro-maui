@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Common.IO;
 
 internal static class StreamUtils {
+	public const int DefaultCopyBufferSize = 8192;
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	public static InvalidOperationException Ex_EndOfStreamRead_InvOp()
