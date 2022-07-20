@@ -111,6 +111,23 @@ public abstract partial class FieldedEntity : DataEntity {
 	public void ClearFieldChangeStatuses()
 		=> _FieldChanges = null;
 
+
+	private protected void UnloadField(StringKey fieldName) {
+		var fields = _Fields;
+		if (fields != null) {
+			fields.Remove(fieldName);
+			_FieldChanges?.Remove(fieldName);
+		}
+	}
+
+	public void UnloadFields() {
+		var fields = _Fields;
+		if (fields != null) {
+			fields.Clear();
+			_FieldChanges = null;
+		}
+	}
+
 	// --
 
 	internal abstract Stream ReadHotStore(KokoroSqliteDb db);
@@ -211,22 +228,6 @@ public abstract partial class FieldedEntity : DataEntity {
 	private protected abstract FieldVal? OnLoadFloatingField(KokoroSqliteDb db, long fieldId);
 
 	private protected abstract FieldVal? OnSupplantFloatingField(KokoroSqliteDb db, long fieldId);
-
-	private protected void UnloadField(StringKey fieldName) {
-		var fields = _Fields;
-		if (fields != null) {
-			fields.Remove(fieldName);
-			_FieldChanges?.Remove(fieldName);
-		}
-	}
-
-	public void UnloadFields() {
-		var fields = _Fields;
-		if (fields != null) {
-			fields.Clear();
-			_FieldChanges = null;
-		}
-	}
 
 	// --
 

@@ -245,11 +245,20 @@ public sealed class Class : DataEntity {
 	public void ClearFieldInfoChangeStatuses()
 		=> _FieldInfoChanges = null;
 
+
 	public void UnloadFieldInfo(StringKey name) {
 		var infos = _FieldInfos;
 		if (infos != null) {
 			infos.Remove(name);
 			_FieldInfoChanges?.Remove(name);
+		}
+	}
+
+	public void UnloadFieldInfos() {
+		var infos = _FieldInfos;
+		if (infos != null) {
+			infos.Clear();
+			_FieldInfoChanges = null;
 		}
 	}
 
@@ -429,14 +438,6 @@ public sealed class Class : DataEntity {
 		_Ordinal = default;
 		_GrpRowId = default;
 		_Name = default;
-	}
-
-	public void UnloadFieldInfos() {
-		var infos = _FieldInfos;
-		if (infos != null) {
-			infos.Clear();
-			_FieldInfoChanges = null;
-		}
 	}
 
 	// --
