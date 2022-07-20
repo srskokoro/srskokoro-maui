@@ -314,15 +314,15 @@ public sealed class Class : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
+				// Pending changes will be discarded
+				_FieldInfoChanges?.Remove(name);
+
 				r.DAssert_Name(0, "ord");
 				int ordinal = r.GetInt32(0);
 
 				r.DAssert_Name(1, "sto");
 				var storeType = (FieldStoreType)r.GetInt32(1);
 				storeType.DAssert_Defined();
-
-				// Pending changes will be discarded
-				_FieldInfoChanges?.Remove(name);
 
 				FieldInfo info = new(ordinal, storeType);
 				SetCachedFieldInfo(name, info);
