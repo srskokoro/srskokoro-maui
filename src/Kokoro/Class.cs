@@ -160,6 +160,7 @@ public sealed class Class : DataEntity {
 	public void DeleteFieldInfo(StringKey name)
 		=> SetFieldInfo(name, default);
 
+	/// <seealso cref="SetFieldInfoAsLoaded(StringKey, FieldInfo)"/>
 	[SkipLocalsInit]
 	public void SetCachedFieldInfo(StringKey name, FieldInfo info) {
 		var infos = _FieldInfos;
@@ -189,6 +190,34 @@ public sealed class Class : DataEntity {
 		_FieldInfos = infos = new();
 		goto Set;
 	}
+
+	/// <summary>
+	/// Same as <see cref="ClearFieldInfoChangeStatus(StringKey)"/> followed by
+	/// <see cref="SetCachedFieldInfo(StringKey, FieldInfo)"/>.
+	/// </summary>
+	public void SetFieldInfoAsLoaded(StringKey name, FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+		_FieldInfoChanges?.Remove(name);
+
+	Set:
+		infos[name] = info;
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+		goto Set;
+	}
+
+	public void ClearFieldInfoChangeStatus(StringKey name)
+		=> _FieldInfoChanges?.Remove(name);
+
+	public void ClearFieldInfoChangeStatuses()
+		=> _FieldInfoChanges = null;
 
 	public void UnloadFieldInfo(StringKey name) {
 		var infos = _FieldInfos;
@@ -317,9 +346,6 @@ public sealed class Class : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				// Pending changes will be discarded
-				_FieldInfoChanges?.Remove(name);
-
 				r.DAssert_Name(0, "ord");
 				int ordinal = r.GetInt32(0);
 
@@ -328,8 +354,9 @@ public sealed class Class : DataEntity {
 				storeType.DAssert_Defined();
 
 				FieldInfo info = new(ordinal, storeType);
-				SetCachedFieldInfo(name, info);
 
+				// Pending changes will be discarded
+				SetFieldInfoAsLoaded(name, info);
 				return; // Early exit
 			}
 		}
