@@ -121,6 +121,32 @@ public sealed class Class : DataEntity {
 	public void SetCachedName(string? name) => _Name = name;
 
 
+	public ICollection<StringKey> FieldNames {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _FieldInfos?.Keys ?? EmptyFieldNames.Instance;
+	}
+
+	private static class EmptyFieldNames {
+		internal static readonly Dictionary<StringKey, FieldInfo>.KeyCollection Instance = new(new());
+	}
+
+	public void EnsureCachedFieldName(StringKey name) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+	Set:
+		infos.TryAdd(name, default);
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+		goto Set;
+	}
+
+
 	public bool TryGetFieldInfo(StringKey name, [MaybeNullWhen(false)] out FieldInfo info) {
 		var infos = _FieldInfos;
 		if (infos != null) {
@@ -314,9 +340,7 @@ public sealed class Class : DataEntity {
 		Done:;
 		}
 
-		if (loadInfo.FieldNames) {
-			// TODO Implement
-		}
+		if (loadInfo.FieldNames) InternalLoadFieldNames(db);
 	}
 
 	/// <remarks>
@@ -365,6 +389,32 @@ public sealed class Class : DataEntity {
 		// Otherwise, either deleted or never existed.
 		// Let that state materialize here then.
 		UnloadFieldInfo(name);
+	}
+
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
+	/// or <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	private void InternalLoadFieldNames(KokoroSqliteDb db) {
+		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+
+		using var cmd = db.CreateCommand();
+		cmd.Set("SELECT fld FROM ClassToField WHERE cls=$cls")
+			.AddParams(new() { ParameterName = "$cls" });
+
+		using var r = cmd.ExecuteReader();
+		while (r.Read()) {
+			long fld = r.GetInt64(0);
+			var name = db.LoadStaleFieldName(fld);
+			Debug.Assert(name is not null, "An FK constraint should've been " +
+				"enforced to ensure this doesn't happen.");
+			EnsureCachedFieldName(name);
+		}
 	}
 
 
