@@ -63,8 +63,13 @@ partial class FieldedEntity {
 		}
 
 		internal sealed class Comparisons {
-			public List<FieldInfo> fldList;
-			public List<ClassInfo> clsList;
+			private readonly List<FieldInfo> fldList;
+			private readonly List<ClassInfo> clsList;
+
+			public Comparisons(List<FieldInfo> fldList, List<ClassInfo> clsList) {
+				this.fldList = fldList;
+				this.clsList = clsList;
+			}
 
 			public int fldList_compare(byte x, byte y) {
 				ref var r0 = ref fldList.AsSpan().DangerousGetReference();
@@ -486,10 +491,7 @@ partial class FieldedEntity {
 			// Sort the gathered lists by sorting their indices instead
 			{
 				// TODO Perhaps utilize `[ThreadStatic]` to avoid allocations
-				SchemaRewrite.Comparisons comparisons = new() {
-					fldList = fldList,
-					clsList = clsList
-				};
+				SchemaRewrite.Comparisons comparisons = new(fldList, clsList);
 
 				// Sort the list of fields
 				// --
