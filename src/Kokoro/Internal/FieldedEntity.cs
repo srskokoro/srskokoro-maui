@@ -23,7 +23,7 @@ public abstract partial class FieldedEntity : DataEntity {
 		if (fields != null && fields.TryGetValue(name, out value)) {
 			return true;
 		}
-		U.SkipInit(out value);
+		value = default;
 		return false;
 	}
 
