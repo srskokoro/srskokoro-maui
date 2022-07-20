@@ -160,6 +160,7 @@ public sealed class Class : DataEntity {
 	public void DeleteFieldInfo(StringKey name)
 		=> SetFieldInfo(name, default);
 
+	[SkipLocalsInit]
 	public void SetCachedFieldInfo(StringKey name, FieldInfo info) {
 		var infos = _FieldInfos;
 		if (infos == null) {
@@ -172,15 +173,16 @@ public sealed class Class : DataEntity {
 
 		{
 			var changes = _FieldInfoChanges;
-			if (changes != null) {
+			if (changes == null) {
+				return;
+			} else {
 				ref var infoRef = ref CollectionsMarshal.GetValueRefOrNullRef(changes, name);
 				if (!U.IsNullRef(ref infoRef)) {
 					infoRef = info;
 				}
+				return;
 			}
 		}
-
-		return;
 
 	Init:
 		_FieldInfos = infos = new();
