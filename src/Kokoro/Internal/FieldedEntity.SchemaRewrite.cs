@@ -350,8 +350,7 @@ partial class FieldedEntity {
 						} else {
 							// Field not defined by the old schema
 							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
-							// Indicate that it was a floating field
-							src_idx_sto = -2;
+							src_idx_sto = -1;
 						}
 
 						// Add the new entry
