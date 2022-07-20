@@ -343,7 +343,7 @@ partial class FieldedEntity {
 							(new_fval, src_idx_sto) = oldMapping;
 							Debug.Assert(new_fval != null || (int)src_idx_sto >= 0);
 						} else {
-							// Case: Field not defined by the old schema
+							// Field not defined by the old schema
 							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
 							// Indicate that it was a floating field
 							src_idx_sto = -2;
