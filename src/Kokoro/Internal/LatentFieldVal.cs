@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal;
+using Blake2Fast.Implementation;
 using System.IO;
 
 internal readonly record struct LatentFieldVal {
@@ -63,6 +64,20 @@ internal readonly record struct LatentFieldVal {
 				source.CopyPartlyTo(destination, length);
 			}
 		}
+	}
+
+	public void FeedTo(ref Blake2bHashState hasher) {
+		var source = _Stream;
+		if (source != null) {
+			int length = _Length;
+			if (length > 0) {
+				source.Position = _Offset;
+				hasher.UpdateLE((uint)length); // i.e., length-prepended
+				source.FeedPartlyTo(ref hasher, length);
+				return;
+			}
+		}
+		hasher.UpdateLE((uint)0); // i.e., zero length
 	}
 
 	// --

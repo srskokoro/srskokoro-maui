@@ -1,4 +1,5 @@
 ﻿namespace Kokoro;
+using Blake2Fast.Implementation;
 using Kokoro.Common.Util;
 
 public sealed class FieldVal {
@@ -53,6 +54,24 @@ public sealed class FieldVal {
 		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
 			destination.WriteVarInt(typeHint);
 			destination.Write(_Data);
+		}
+	}
+
+	public void FeedTo(ref Blake2bHashState hasher) {
+		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
+		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
+			Span<byte> typeHintBuffer = stackalloc byte[5];
+			int typeHintLength = VarInts.Write(typeHintBuffer, typeHint);
+
+			byte[] data = _Data;
+			uint encodeLength = (uint)typeHintLength + (uint)data.Length;
+			/// See also, <see cref="CountEncodeLength"/>
+
+			hasher.UpdateLE(encodeLength); // i.e., length-prepended
+			hasher.Update(typeHintBuffer[..typeHintLength]);
+			hasher.Update(data);
+		} else {
+			hasher.UpdateLE((uint)0); // i.e., zero length
 		}
 	}
 }
