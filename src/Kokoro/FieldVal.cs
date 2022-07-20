@@ -36,8 +36,8 @@ public sealed class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public uint CountEncodeLength() {
-		FieldTypeHintInt typeHint = (FieldTypeHintInt)_TypeHint;
-		if (typeHint != (FieldTypeHintInt)FieldTypeHint.Null) {
+		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
+		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
 			// Given that we're returning a `uint`, the following computation is
 			// guaranteed to not overflow, since `Array.Length` is limited to
 			// `int.MaxValue` (which is ~2GiB).
@@ -49,8 +49,8 @@ public sealed class FieldVal {
 	// --
 
 	public void WriteTo(Stream destination) {
-		FieldTypeHintInt typeHint = (FieldTypeHintInt)_TypeHint;
-		if (typeHint != (FieldTypeHintInt)FieldTypeHint.Null) {
+		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
+		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
 			destination.WriteVarInt(typeHint);
 			destination.Write(_Data);
 		}
