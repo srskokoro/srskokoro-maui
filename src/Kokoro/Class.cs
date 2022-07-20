@@ -46,20 +46,20 @@ public sealed class Class : DataEntity {
 		NotExists       = 1 << 31,
 	}
 
-	public struct FieldInfo {
-		internal bool _IsDeleted;
+	public readonly struct FieldInfo {
+		internal readonly bool _IsLoaded;
 
-		private int _Ordinal;
-		private FieldStoreType _StoreType;
+		private readonly int _Ordinal;
+		private readonly FieldStoreType _StoreType;
 
-		public int Ordinal {
-			readonly get => _Ordinal;
-			set => _Ordinal = value;
-		}
+		public readonly int Ordinal => _Ordinal;
+		public readonly FieldStoreType StoreType => _StoreType;
 
-		public FieldStoreType StoreType {
-			readonly get => _StoreType;
-			set => _StoreType = value;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public FieldInfo(int ordinal, FieldStoreType storeType) {
+			_IsLoaded = true;
+			_Ordinal = ordinal;
+			_StoreType = storeType;
 		}
 	}
 
@@ -123,8 +123,9 @@ public sealed class Class : DataEntity {
 
 	public bool TryGetFieldInfo(StringKey name, [MaybeNullWhen(false)] out FieldInfo info) {
 		var infos = _FieldInfos;
-		if (infos != null && infos.TryGetValue(name, out info)) {
-			return true;
+		if (infos != null) {
+			infos.TryGetValue(name, out info);
+			return info._IsLoaded;
 		}
 		info = default;
 		return false;
@@ -157,7 +158,7 @@ public sealed class Class : DataEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void DeleteFieldInfo(StringKey name)
-		=> SetFieldInfo(name, new() { _IsDeleted = true });
+		=> SetFieldInfo(name, default);
 
 	public void SetCachedFieldInfo(StringKey name, FieldInfo info) {
 		var infos = _FieldInfos;
@@ -313,19 +314,17 @@ public sealed class Class : DataEntity {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				U.SkipInit(out FieldInfo info);
-				info._IsDeleted = false;
-
 				r.DAssert_Name(0, "ord");
-				info.Ordinal = r.GetInt32(0);
+				int ordinal = r.GetInt32(0);
 
 				r.DAssert_Name(1, "sto");
-				info.StoreType = (FieldStoreType)r.GetInt32(1);
-				info.StoreType.DAssert_Defined();
+				var storeType = (FieldStoreType)r.GetInt32(1);
+				storeType.DAssert_Defined();
 
 				// Pending changes will be discarded
 				_FieldInfoChanges?.Remove(name);
 
+				FieldInfo info = new(ordinal, storeType);
 				SetCachedFieldInfo(name, info);
 
 				return; // Early exit
@@ -676,7 +675,7 @@ public sealed class Class : DataEntity {
 			do {
 				var (fieldName, info) = fieldInfoChanges_iter.Current;
 				long fld;
-				if (!info._IsDeleted) {
+				if (info._IsLoaded) {
 					fld = db.LoadStaleOrEnsureFieldId(fieldName);
 					if (updCmd != null) {
 						goto UpdateFieldInfo;
