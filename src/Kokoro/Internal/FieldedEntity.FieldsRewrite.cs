@@ -52,9 +52,11 @@ partial class FieldedEntity {
 						}
 					} else {
 						FieldVal fval = foverride.FVal;
-						foverride = ref U.Add(ref foverride, 1);
 						entry.Override = fval;
 
+						foverride = ref U.Add(ref foverride, 1);
+						if (foverride.FSpec.Index == i)
+							E_LocalFieldsWithSameIndex(fr.Owner);
 
 						checked {
 							nextOffset += (int)fval.CountEncodeLength();
@@ -215,6 +217,13 @@ partial class FieldedEntity {
 				$"Total number of bytes for fields data " +
 				$"{(currentSize <= MaxFieldValsLength ? "" : $"(currently {currentSize}) ")}" +
 				$"exceeded the limit of {MaxFieldValsLength} bytes.");
+		}
+
+		[DoesNotReturn]
+		private static void E_LocalFieldsWithSameIndex(FieldedEntity owner) {
+			throw new InvalidDataException(
+				$"Schema (with rowid {owner._SchemaRowId}) has local fields " +
+				$"occupying the same index.");
 		}
 	}
 
