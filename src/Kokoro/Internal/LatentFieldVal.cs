@@ -57,8 +57,11 @@ internal readonly record struct LatentFieldVal {
 	public void WriteTo(Stream destination) {
 		var source = _Stream;
 		if (source != null) {
-			source.Position = _Offset;
-			source.CopyPartlyTo(destination, _Length);
+			int length = _Length;
+			if (length > 0) {
+				source.Position = _Offset;
+				source.CopyPartlyTo(destination, length);
+			}
 		}
 	}
 
