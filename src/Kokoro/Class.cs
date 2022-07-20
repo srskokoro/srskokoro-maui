@@ -173,6 +173,7 @@ public sealed class Class : DataEntity {
 
 		{
 			var changes = _FieldInfoChanges;
+			// Optimized for the common case
 			if (changes == null) {
 				return;
 			} else {

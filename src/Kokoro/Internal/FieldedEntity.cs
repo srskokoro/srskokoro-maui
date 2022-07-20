@@ -66,6 +66,7 @@ public abstract partial class FieldedEntity : DataEntity {
 
 		{
 			var changes = _FieldChanges;
+			// Optimized for the common case
 			if (changes == null) {
 				return;
 			} else {
