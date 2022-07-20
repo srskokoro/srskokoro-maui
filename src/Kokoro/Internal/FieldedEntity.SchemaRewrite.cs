@@ -114,7 +114,8 @@ partial class FieldedEntity {
 	}
 
 	/// <remarks>
-	/// CONTRACT: Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
