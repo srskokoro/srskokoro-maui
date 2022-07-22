@@ -718,7 +718,25 @@ partial class FieldedEntity {
 				).ExecScalarOrDefault<long>();
 			}
 
-			goto Done; // ---
+			if (newSchemaRowId != 0) {
+				goto RewriteLocalFields;
+			} else {
+				goto InsertNewSchema;
+			}
+
+		RewriteLocalFields:
+			{
+				// TODO Implement
+
+				goto Done;
+			}
+
+		InsertNewSchema:
+			{
+				// TODO Implement
+
+				goto RewriteLocalFields;
+			}
 
 		E_FieldValsLengthTooLarge:
 			E_FieldValsLengthTooLarge((uint)sharedFValsSize);
