@@ -692,16 +692,17 @@ partial class FieldedEntity {
 					sharedFValsSize = nextOffset;
 				}
 
-				if ((uint)sharedFValsSize > (uint)MaxFieldValsLength) {
+				if ((uint)sharedFValsSize <= (uint)MaxFieldValsLength) {
+					int fldLocalCount = fldHotCount + fldColdCount;
+
+					Debug.Assert(fldLocalCount
+						<= MaxFieldCount && MaxFieldCount
+						<= byte.MaxValue);
+
+					usum = FinishWithSchemaUsum(ref hasher, (byte)fldLocalCount);
+				} else {
 					goto E_FieldValsLengthTooLarge;
 				}
-
-				int fldLocalCount = fldHotCount + fldColdCount;
-				Debug.Assert(fldLocalCount
-					<= MaxFieldCount && MaxFieldCount
-					<= byte.MaxValue);
-
-				usum = FinishWithSchemaUsum(ref hasher, (byte)fldLocalCount);
 			}
 
 			// TODO Look up schema matching `usum`
