@@ -895,12 +895,12 @@ public sealed class Class : DataEntity {
 
 	private static byte[] FinishWithClassCsum(ref Blake2bHashState hasher) {
 		const int CsumVer = 1; // The version varint
-		const int CsumVerLen = 1; // The varint length is a single byte for now
-		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLen);
+		const int CsumVerLength = 1; // The varint length is a single byte for now
+		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLength);
 
-		Span<byte> csum = stackalloc byte[CsumVerLen + ClassCsumDigestLength];
+		Span<byte> csum = stackalloc byte[CsumVerLength + ClassCsumDigestLength];
 		csum[0] = CsumVer; // Prepend version varint
-		hasher.Finish(csum[CsumVerLen..]);
+		hasher.Finish(csum[CsumVerLength..]);
 		return csum.ToArray();
 	}
 
