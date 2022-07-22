@@ -578,6 +578,9 @@ public sealed class Class : DataEntity {
 			// 3. The 512-bit hash of, the list of `uid` data from `Class ON Class.rowid=ClassToInclude.incl`,
 			// ordered by `Class.uid`
 			//
+			// Unless stated otherwise, all integer inputs should be consumed in
+			// their little-endian form.
+			//
 			// The resulting hash BLOB shall be prepended with a version varint.
 			// Should any of the following happens, the version varint must
 			// change:
@@ -805,6 +808,9 @@ public sealed class Class : DataEntity {
 					// 0. `fieldName` in UTF8 with length prepended
 					// 1. `info.Ordinal`
 					// 2. `info.StoreType`
+					//
+					// Unless stated otherwise, all integer inputs should be
+					// consumed in their little-endian form.
 					//
 					// The resulting hash BLOB shall be prepended with a version
 					// varint. Should any of the following happens, the version
