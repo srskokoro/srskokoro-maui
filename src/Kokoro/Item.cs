@@ -134,7 +134,7 @@ public sealed class Item : FieldedEntity {
 		using var cmd = db.CreateCommand();
 		return cmd.Set("SELECT rowid FROM Item WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
-			.ExecScalar<long>();
+			.ExecScalarOrDefault<long>();
 	}
 
 	public void Load() {

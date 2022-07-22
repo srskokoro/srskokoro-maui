@@ -272,7 +272,7 @@ public sealed class Class : DataEntity {
 		using var cmd = db.CreateCommand();
 		return cmd.Set("SELECT rowid FROM Class WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
-			.ExecScalar<long>();
+			.ExecScalarOrDefault<long>();
 	}
 
 	public void Load() {
