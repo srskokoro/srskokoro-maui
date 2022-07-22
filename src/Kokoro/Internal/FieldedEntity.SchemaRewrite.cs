@@ -709,7 +709,7 @@ partial class FieldedEntity {
 
 			long newSchemaRowId;
 
-			// Look up any schema with a matching `usum`
+			// Look up new schema rowid given `usum`
 			using (var cmd = db.CreateCommand()) {
 				newSchemaRowId = cmd.Set(
 					"SELECT rowid FROM Schema WHERE usum=$usum"
