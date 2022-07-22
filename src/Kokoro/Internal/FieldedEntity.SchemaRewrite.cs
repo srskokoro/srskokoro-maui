@@ -577,6 +577,29 @@ partial class FieldedEntity {
 
 				// Hash the list of direct class's `csum`
 				{
+					Debug.Assert(dclsCount >= 0);
+					hasher.UpdateLE(dclsCount); // i.e., length-prepended
+					if (dclsCount == 0) goto Hashed;
+
+					int k = 0;
+					int n = dclsCount;
+
+					Debug.Assert((uint)n <= (uint)clsListIdxs.Length);
+					Debug.Assert(clsList.Count == clsListIdxs.Length);
+					ref var clsList_r0 = ref clsList.AsSpan().DangerousGetReference();
+					ref byte clsListIdxs_r0 = ref clsListIdxs.DangerousGetReference();
+
+					do {
+						int i = U.Add(ref clsListIdxs_r0, k);
+
+						Debug.Assert((uint)i < (uint)clsList.Count);
+						ref var cls = ref U.Add(ref clsList_r0, i);
+
+						hasher.Update(cls.csum);
+					} while (++k < n);
+
+				Hashed:
+					;
 				}
 
 				// Hash the list of indirect class's `csum`
