@@ -546,6 +546,34 @@ partial class FieldedEntity {
 			// Generate the schema `usum`
 			{
 				var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
+				// WARNING: The expected order of inputs to be fed to the above
+				// hasher must be strictly as follows:
+				//
+				// 0. The number of direct classes, as a 32-bit integer.
+				// 1. The list of `csum`s from direct classes, ordered by `uid`.
+				// 2. The number of indirect classes, as a 32-bit integer.
+				// 3. The list of `csum`s from indirect classes, ordered by `uid`.
+				// 4. The number of shared fields, as a 32-bit integer.
+				// 5. The field values of shared fields, each prepended with its
+				// length.
+				//
+				// Unless stated otherwise, all integer inputs should be
+				// consumed in their little-endian form.
+				//
+				// The resulting hash BLOB shall be prepended with a version
+				// varint. Should any of the following happens, the version
+				// varint must change:
+				//
+				// - The resulting hash BLOB length changes.
+				// - The algorithm for the resulting hash BLOB changes.
+				// - An input entry (from the list of inputs above) was removed.
+				// - The order of an input entry (from the list of inputs above)
+				// was changed or shifted.
+				// - An input entry's size (in bytes) changed while it's
+				// expected to be fixed-size (e.g., not length-prepended).
+				//
+				// The version varint needs not to change if further input
+				// entries were to be appended (from the list of inputs above).
 
 				// Hash the list of direct class's `csum`
 				{
