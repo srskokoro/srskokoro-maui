@@ -220,6 +220,10 @@ partial class FieldedEntity {
 	}
 
 	[DoesNotReturn]
+	private static void E_FieldValsLengthTooLarge(uint currentSize)
+		=> E_FieldValsLengthTooLarge<int>(currentSize);
+
+	[DoesNotReturn]
 	private static T E_FieldValsLengthTooLarge<T>(uint currentSize) {
 		throw new InvalidOperationException(
 			$"Total number of bytes for fields data " +

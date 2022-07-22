@@ -638,10 +638,76 @@ partial class FieldedEntity {
 				// Hash the shared fields' values (length-prepend each), while
 				// also gathering the shared fields' offsets.
 				{
+					int nextOffset = 0;
+
+					Debug.Assert(fldSharedCount >= 0);
+					hasher.UpdateLE(fldSharedCount); // i.e., length-prepended
+					if (fldSharedCount == 0) goto Processed;
+
+					int k = 0;
+					int n = fldSharedCount;
+
+					Debug.Assert((uint)n <= (uint)fldListIdxs.Length);
+					Debug.Assert(fldList.Count == fldListIdxs.Length);
+					ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
+					ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+
+					Debug.Assert((uint)n <= (uint)buffer_offsets.Length);
+					ref int offsets_r0 = ref buffer_offsets.DangerousGetReference();
+
+					try {
+						do {
+							U.Add(ref offsets_r0, k) = nextOffset;
+							int i = U.Add(ref fldListIdxs_r0, k);
+
+							Debug.Assert((uint)i < (uint)fldList.Count);
+							ref var fld = ref U.Add(ref fldList_r0, i);
+
+							FieldVal? fval = fld.new_fval;
+							if (fval == null) {
+								LatentFieldVal lfval = fr.ReadLater(fld.src_idx_sto);
+								int nextLength = lfval.Length;
+								if (nextLength >= 0) {
+									checked { nextOffset += nextLength; }
+								}
+								lfval.FeedTo(ref hasher);
+							} else {
+								checked {
+									nextOffset += (int)fval.CountEncodeLength();
+								}
+								fval.FeedTo(ref hasher);
+							}
+						} while (++k < n);
+					} catch (OverflowException) {
+						sharedFValsSize = nextOffset;
+						goto E_FieldValsLengthTooLarge;
+					}
+
+				Processed:
+					sharedFValsSize = nextOffset;
+
+					if ((uint)sharedFValsSize > (uint)MaxFieldValsLength) {
+						goto E_FieldValsLengthTooLarge;
+					}
 				}
+
+				int fldLocalCount = fldHotCount + fldColdCount;
+				Debug.Assert(fldLocalCount
+					<= MaxFieldCount && MaxFieldCount
+					<= byte.MaxValue);
+
+				usum = FinishWithSchemaUsum(ref hasher, (byte)fldLocalCount);
 			}
 
 			// TODO Look up schema matching `usum`
+
+			goto Done; // ---
+
+		E_FieldValsLengthTooLarge:
+			E_FieldValsLengthTooLarge((uint)sharedFValsSize);
+
+		Done:
+			;
 		}
 
 		// TODO-XXX Finish implementation
