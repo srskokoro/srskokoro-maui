@@ -269,10 +269,6 @@ internal static class SqliteCommandExtensions {
 	}
 
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static int ExecuteNonQuery(this SqliteCommand command)
-		=> command.ExecuteNonQuery();
-
 	/// <summary>
 	/// Alias for <see cref="Consume(SqliteCommand)"/>
 	/// </summary>
