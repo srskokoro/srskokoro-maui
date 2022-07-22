@@ -690,10 +690,10 @@ partial class FieldedEntity {
 
 				Processed:
 					sharedFValsSize = nextOffset;
+				}
 
-					if ((uint)sharedFValsSize > (uint)MaxFieldValsLength) {
-						goto E_FieldValsLengthTooLarge;
-					}
+				if ((uint)sharedFValsSize > (uint)MaxFieldValsLength) {
+					goto E_FieldValsLengthTooLarge;
 				}
 
 				int fldLocalCount = fldHotCount + fldColdCount;
