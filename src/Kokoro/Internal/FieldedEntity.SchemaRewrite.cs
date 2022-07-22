@@ -545,7 +545,7 @@ partial class FieldedEntity {
 				Debug.Assert(eq, $"Arrangement of values in `{nameof(fldListIdxs)}` may not be as expected.");
 			}
 
-			// -=-
+			// --
 
 			byte[] usum;
 
