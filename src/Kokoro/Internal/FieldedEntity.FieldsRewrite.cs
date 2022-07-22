@@ -7,7 +7,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
-	private const int MaxFieldCount = byte.MaxValue + 1;
+	private const int MaxFieldCount = byte.MaxValue;
 	private const int MaxFieldValsLength = 0xFF_FFFF;
 
 	private struct FieldsWriterCore {

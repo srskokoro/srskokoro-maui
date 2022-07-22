@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
-	private const int MaxClassCount = byte.MaxValue + 1;
+	private const int MaxClassCount = byte.MaxValue;
 
 	private HashSet<long>? _AddedClasses;
 	private HashSet<long>? _RemovedClasses;
