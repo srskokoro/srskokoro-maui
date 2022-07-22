@@ -419,9 +419,10 @@ public sealed class Item : FieldedEntity {
 
 	private static FieldVal DecodeFloatingFieldVal(Span<byte> encoded) {
 		int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
-		Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
 
+		Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
 		FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
+
 		if (typeHint != FieldTypeHint.Null) {
 			byte[] data = encoded[fValSpecLen..].ToArray();
 			return new(typeHint, data);
