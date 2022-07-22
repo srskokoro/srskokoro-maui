@@ -42,6 +42,13 @@ internal static class SqliteConnectionExtensions {
 		return command.ExecuteScalar();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T? ExecuteScalarOrDefault<T>(this SqliteConnection connection, string commandText) {
+		object? obj = connection.ExecuteScalar(commandText);
+		if (obj != null) return (T)obj;
+		return default;
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int Exec(this SqliteConnection connection, string commandText)
@@ -54,4 +61,8 @@ internal static class SqliteConnectionExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static object? ExecScalar(this SqliteConnection connection, string commandText)
 		=> connection.ExecuteScalar(commandText);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T? ExecScalarOrDefault<T>(this SqliteConnection connection, string commandText)
+		=> connection.ExecuteScalarOrDefault<T>(commandText);
 }
