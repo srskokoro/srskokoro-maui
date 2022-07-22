@@ -1,5 +1,8 @@
 ﻿namespace Kokoro.Internal;
+using Blake2Fast;
+using Blake2Fast.Implementation;
 using Kokoro.Common.Buffers;
+using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
@@ -532,6 +535,33 @@ partial class FieldedEntity {
 			}
 
 			// -=-
+
+			byte[] usum;
+
+			using var renter_offsets = BufferRenter<int>
+				.Create(fldListIdxs.Length, out var buffer_offsets);
+
+			int sharedFValsSize;
+
+			// Generate the schema `usum`
+			{
+				var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
+
+				// Hash the list of direct class's `csum`
+				{
+				}
+
+				// Hash the list of indirect class's `csum`
+				{
+				}
+
+				// Hash the shared fields' values (length-prepend each), while
+				// also gathering the shared fields' offsets.
+				{
+				}
+			}
+
+			// TODO Look up schema matching `usum`
 		}
 
 		// TODO-XXX Finish implementation
@@ -552,5 +582,30 @@ partial class FieldedEntity {
 			$"Total number of classes (currently {currentCount}) shouldn't exceed {MaxClassCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
 			$"{Environment.NewLine}Schema: {_SchemaRowId};");
+	}
+
+	// --
+
+	private const int SchemaUsumDigestLength = 30; // 240-bit hash
+
+	private byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, byte fldLocalCount) {
+		const int UsumVer = 1; // The version varint
+		const int UsumVerLength = 1; // The varint length is a single byte for now
+		Debug.Assert(VarInts.Length(UsumVer) == UsumVerLength);
+
+		const int ExtraBytesNeeded = 1; // To encode `fldLocalCount`
+
+		const int UsumPrefixLength = UsumVerLength + ExtraBytesNeeded;
+		Span<byte> usum = stackalloc byte[UsumPrefixLength + SchemaUsumDigestLength];
+
+		usum[0] = UsumVer; // Prepend version varint
+		usum[1] = fldLocalCount;
+
+		hasher.Finish(usum[UsumPrefixLength..]);
+
+		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
+		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
+		// pass that as a `ReadOnlySpan<byte>` to `sqlite3_bind_blob()`.
+		return usum.ToArray();
 	}
 }
