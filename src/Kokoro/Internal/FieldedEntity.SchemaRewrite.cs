@@ -604,6 +604,29 @@ partial class FieldedEntity {
 
 				// Hash the list of indirect class's `csum`
 				{
+					int k = dclsCount;
+					int n = clsListIdxs.Length;
+
+					int iclsCount = n - k;
+					Debug.Assert(iclsCount >= 0);
+					hasher.UpdateLE(iclsCount); // i.e., length-prepended
+					if (iclsCount == 0) goto Hashed;
+
+					Debug.Assert(clsList.Count == clsListIdxs.Length);
+					ref var clsList_r0 = ref clsList.AsSpan().DangerousGetReference();
+					ref byte clsListIdxs_r0 = ref clsListIdxs.DangerousGetReference();
+
+					do {
+						int i = U.Add(ref clsListIdxs_r0, k);
+
+						Debug.Assert((uint)i < (uint)clsList.Count);
+						ref var cls = ref U.Add(ref clsList_r0, i);
+
+						hasher.Update(cls.csum);
+					} while (++k < n);
+
+				Hashed:
+					;
 				}
 
 				// Hash the shared fields' values (length-prepend each), while
