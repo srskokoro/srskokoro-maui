@@ -705,7 +705,18 @@ partial class FieldedEntity {
 				}
 			}
 
-			// TODO Look up schema matching `usum`
+			// --
+
+			long newSchemaRowId;
+
+			// Look up any schema with a matching `usum`
+			using (var cmd = db.CreateCommand()) {
+				newSchemaRowId = cmd.Set(
+					"SELECT rowid FROM Schema WHERE usum=$usum"
+				).AddParams(
+					new("$usum", usum)
+				).ExecScalarOrDefault<long>();
+			}
 
 			goto Done; // ---
 
