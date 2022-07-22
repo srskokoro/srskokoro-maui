@@ -745,8 +745,6 @@ partial class FieldedEntity {
 			;
 		}
 
-		// TODO-XXX Finish implementation
-
 		return; // ---
 
 	E_TooManyFields:
