@@ -303,7 +303,6 @@ partial class FieldedEntity {
 
 		int fldSharedCount = 0;
 		int fldHotCount = 0;
-		int fldColdCount = 0;
 
 		using (var cmd = db.CreateCommand()) {
 			SqliteParameter cmd_cls;
@@ -418,8 +417,6 @@ partial class FieldedEntity {
 							if (entry_sto != FieldStoreType.Shared) {
 								if (entry_sto == FieldStoreType.Hot) {
 									fldHotCount--;
-								} else if ((FieldStoreTypeSInt)entry_sto >= 0) {
-									fldColdCount--;
 								}
 							} else {
 								fldSharedCount--;
@@ -437,8 +434,6 @@ partial class FieldedEntity {
 					if (sto != FieldStoreType.Shared) {
 						if (sto == FieldStoreType.Hot) {
 							fldHotCount++;
-						} else if ((FieldStoreTypeSInt)sto >= 0) {
-							fldColdCount++;
 						}
 					} else {
 						fldSharedCount++;
@@ -452,9 +447,8 @@ partial class FieldedEntity {
 
 		Debug.Assert(fldSharedCount <= fldList.Count);
 		Debug.Assert(fldHotCount <= fldList.Count);
-		Debug.Assert(fldColdCount <= fldList.Count);
 
-		Debug.Assert(checked(fldSharedCount + fldHotCount + fldColdCount) <= fldList.Count);
+		Debug.Assert(checked(fldSharedCount + fldHotCount) <= fldList.Count);
 
 		if (fldList.Count > MaxFieldCount) goto E_TooManyFields;
 
@@ -693,9 +687,9 @@ partial class FieldedEntity {
 				}
 
 				if ((uint)sharedFValsSize <= (uint)MaxFieldValsLength) {
-					int fldLocalCount = fldHotCount + fldColdCount;
+					int fldLocalCount = fldListIdxs.Length - fldSharedCount;
 
-					Debug.Assert(fldLocalCount
+					Debug.Assert((uint)fldLocalCount
 						<= MaxFieldCount && MaxFieldCount
 						<= byte.MaxValue);
 
