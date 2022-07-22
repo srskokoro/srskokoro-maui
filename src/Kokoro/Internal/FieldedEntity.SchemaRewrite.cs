@@ -728,7 +728,7 @@ partial class FieldedEntity {
 			{
 				// TODO Implement
 
-				goto Done;
+				return;
 			}
 
 		InsertNewSchema:
@@ -740,12 +740,9 @@ partial class FieldedEntity {
 
 		E_FieldValsLengthTooLarge:
 			E_FieldValsLengthTooLarge((uint)sharedFValsSize);
-
-		Done:
-			;
 		}
 
-		return; // ---
+		Debug.Fail("This point should be unreachable.");
 
 	E_TooManyFields:
 		E_TooManyFields(fldList.Count);
