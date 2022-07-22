@@ -463,7 +463,12 @@ partial class FieldedEntity {
 		{
 			int fldMapOldCount = fldMapOld.Count;
 			if (fldMapOldCount != 0) {
-				var floFlds = fw._FloatingFields = new(fldMapOldCount);
+				var floFlds = fw._FloatingFields;
+				if (floFlds == null) {
+					floFlds = new(fldMapOldCount);
+				} else {
+					floFlds.EnsureCapacity(fldMapOldCount);
+				}
 				foreach (var (fld, entry) in fldMapOld) {
 					floFlds.Add((fld, entry.FVal ?? fr.Read(entry.FSpec)));
 				}
