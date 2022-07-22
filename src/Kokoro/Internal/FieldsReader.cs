@@ -73,7 +73,9 @@ internal struct FieldsReader : IDisposable {
 					(FieldCount = fDesc.FieldCount) *
 					(FOffsetSize = (byte)fDesc.FOffsetSize);
 
-				Debug.Assert(FieldsDesc.MaxFOffsetSize <= byte.MaxValue);
+				Debug.Assert(fDesc.FOffsetSize
+					<= FieldsDesc.MaxFOffsetSize && FieldsDesc.MaxFOffsetSize
+					<= byte.MaxValue);
 
 				// Let other parts of the codebase deal with the fact that the
 				// following may result in offset values out of bounds.
