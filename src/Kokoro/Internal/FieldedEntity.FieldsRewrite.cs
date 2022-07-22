@@ -212,19 +212,19 @@ partial class FieldedEntity {
 		// --
 
 		[DoesNotReturn]
-		private static T E_FieldValsLengthTooLarge<T>(uint currentSize) {
-			throw new InvalidOperationException(
-				$"Total number of bytes for fields data " +
-				$"{(currentSize <= MaxFieldValsLength ? "" : $"(currently {currentSize}) ")}" +
-				$"exceeded the limit of {MaxFieldValsLength} bytes.");
-		}
-
-		[DoesNotReturn]
 		private static void E_LocalFieldsWithSameIndex(FieldedEntity owner) {
 			throw new InvalidDataException(
 				$"Schema (with rowid {owner._SchemaRowId}) has local fields " +
 				$"occupying the same index.");
 		}
+	}
+
+	[DoesNotReturn]
+	private static T E_FieldValsLengthTooLarge<T>(uint currentSize) {
+		throw new InvalidOperationException(
+			$"Total number of bytes for fields data " +
+			$"{(currentSize <= MaxFieldValsLength ? "" : $"(currently {currentSize}) ")}" +
+			$"exceeded the limit of {MaxFieldValsLength} bytes.");
 	}
 
 	private protected struct FieldsWriter {
