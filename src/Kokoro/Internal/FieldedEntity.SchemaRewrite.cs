@@ -543,8 +543,8 @@ partial class FieldedEntity {
 
 			byte[] usum;
 
-			using var renter_offsets = BufferRenter<int>
-				.Create(fldListIdxs.Length, out var buffer_offsets);
+			using var renter_fldShared_offsets = BufferRenter<int>
+				.Create(fldSharedCount, out var buffer_fldShared_offsets);
 
 			int sharedFValsSize;
 
@@ -651,8 +651,8 @@ partial class FieldedEntity {
 					ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
 					ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
 
-					Debug.Assert((uint)n <= (uint)buffer_offsets.Length);
-					ref int offsets_r0 = ref buffer_offsets.DangerousGetReference();
+					Debug.Assert((uint)n <= (uint)buffer_fldShared_offsets.Length);
+					ref int offsets_r0 = ref buffer_fldShared_offsets.DangerousGetReference();
 
 					try {
 						do {
