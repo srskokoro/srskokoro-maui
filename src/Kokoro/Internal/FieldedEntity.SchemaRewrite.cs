@@ -450,6 +450,12 @@ partial class FieldedEntity {
 			}
 		}
 
+		Debug.Assert(fldSharedCount <= fldList.Count);
+		Debug.Assert(fldHotCount <= fldList.Count);
+		Debug.Assert(fldColdCount <= fldList.Count);
+
+		Debug.Assert(checked(fldSharedCount + fldHotCount + fldColdCount) <= fldList.Count);
+
 		if (fldList.Count > MaxFieldCount) goto E_TooManyFields;
 
 		// The remaining old field mappings will become floating fields -- i.e.,
