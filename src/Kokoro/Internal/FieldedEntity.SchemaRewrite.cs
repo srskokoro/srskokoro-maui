@@ -546,7 +546,7 @@ partial class FieldedEntity {
 			using var renter_fldShared_offsets = BufferRenter<int>
 				.Create(fldSharedCount, out var buffer_fldShared_offsets);
 
-			int sharedFValsSize;
+			int nextOffset;
 
 			// Generate the schema `usum`
 			{
@@ -637,7 +637,7 @@ partial class FieldedEntity {
 				// Hash the shared fields' values (length-prepend each), while
 				// also gathering the shared fields' offsets.
 				{
-					int nextOffset = 0;
+					nextOffset = 0;
 
 					Debug.Assert(fldSharedCount >= 0);
 					hasher.UpdateLE(fldSharedCount); // i.e., length-prepended
@@ -678,15 +678,14 @@ partial class FieldedEntity {
 							}
 						} while (++k < n);
 					} catch (OverflowException) {
-						sharedFValsSize = nextOffset;
 						goto E_FieldValsLengthTooLarge;
 					}
 
 				Processed:
-					sharedFValsSize = nextOffset;
+					;
 				}
 
-				if ((uint)sharedFValsSize <= (uint)MaxFieldValsLength) {
+				if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
 					int fldLocalCount = fldListIdxs.Length - fldSharedCount;
 
 					Debug.Assert((uint)fldLocalCount
@@ -733,7 +732,7 @@ partial class FieldedEntity {
 			}
 
 		E_FieldValsLengthTooLarge:
-			E_FieldValsLengthTooLarge((uint)sharedFValsSize);
+			E_FieldValsLengthTooLarge((uint)nextOffset);
 		}
 
 		Debug.Fail("This point should be unreachable.");
