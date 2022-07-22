@@ -60,7 +60,8 @@ public sealed class FieldVal {
 	public void FeedTo(ref Blake2bHashState hasher) {
 		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
 		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
-			Span<byte> typeHintBuffer = stackalloc byte[5];
+			Debug.Assert(typeof(FieldTypeHintUInt) == typeof(uint));
+			Span<byte> typeHintBuffer = stackalloc byte[VarInts.MaxLength32];
 			int typeHintLength = VarInts.Write(typeHintBuffer, typeHint);
 
 			byte[] data = _Data;
