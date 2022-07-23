@@ -847,12 +847,22 @@ partial class FieldedEntity {
 
 			// Insert new schema entry
 			{
-				long newSchemaRowId = 0;
+				Debug.Assert(db.Context != null);
+				long newSchemaRowId = db.Context.NextSchemaRowId();
 
-				// TODO Implement
+				try {
+					// TODO Implement
+				} catch (Exception ex) when (
+					ex is not SqliteException sqlex ||
+					sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
+				) {
+					db.Context?.UndoSchemaRowId(newSchemaRowId);
+					throw;
+				}
 
+				// Success!
 				_SchemaRowId = newSchemaRowId;
-				return; // Done!
+				return; // Early exit
 			}
 
 		E_FieldValsLengthTooLarge:
