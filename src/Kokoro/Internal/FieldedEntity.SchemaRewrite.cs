@@ -744,7 +744,35 @@ partial class FieldedEntity {
 				try {
 					int k = 0;
 					do {
-						// TODO Implement
+						U.Add(ref offsets_r0, k) = nextOffset;
+						ref var entry = ref U.Add(ref entries_r0, k);
+
+						int i = U.Add(ref fldListIdxs_r0, k);
+						Debug.Assert((uint)i < (uint)fldList.Count);
+						ref var fld = ref U.Add(ref fldList_r0, i);
+
+						FieldVal? fval = fld.new_fval;
+						if (fval == null) {
+							LatentFieldVal lfval = fr.ReadLater(fld.src_idx_sto);
+							entry.OrigValue = lfval;
+
+							// It's a reference type: it should've been
+							// automatically initialized to null.
+							Debug.Assert(entry.Override == null);
+
+							int nextLength = lfval.Length;
+							if (nextLength >= 0) {
+								checked { nextOffset += nextLength; }
+							} else {
+								entry.Override = FieldVal.Null;
+							}
+						} else {
+							entry.Override = fval;
+
+							checked {
+								nextOffset += (int)fval.CountEncodeLength();
+							}
+						}
 					} while (++k < nlc);
 				} catch (OverflowException) {
 					goto E_FieldValsLengthTooLarge;
