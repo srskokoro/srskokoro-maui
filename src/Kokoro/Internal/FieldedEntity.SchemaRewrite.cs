@@ -446,8 +446,8 @@ partial class FieldedEntity {
 			}
 		}
 
-		Debug.Assert(fldSharedCount <= fldList.Count);
-		Debug.Assert(fldHotCount <= fldList.Count);
+		Debug.Assert((uint)fldSharedCount <= (uint)fldList.Count);
+		Debug.Assert((uint)fldHotCount <= (uint)fldList.Count);
 
 		Debug.Assert(checked(fldSharedCount + fldHotCount) <= fldList.Count);
 
