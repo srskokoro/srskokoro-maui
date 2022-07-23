@@ -347,6 +347,9 @@ partial class FieldedEntity {
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
 		public void Dispose() {
+			// Client code should ensure that we're always disposed, even when
+			// rewriting fails (i.e., even when an exception occurs) and the
+			// buffers were not initialized.
 			var entries = _Entries;
 			if (entries != null) {
 				ArrayPool<Entry>.Shared.ReturnClearingReferences(entries);
@@ -647,6 +650,10 @@ partial class FieldedEntity {
 			DInit_StoreLengthsAndFDescs(ref fw);
 
 			Debug.Assert(fwc.FOverrides != null); // Already assigned before
+
+			// Client code will ensure that the rented buffers are returned,
+			// even when rewriting fails (i.e., even when we don't return
+			// normally).
 			fw._Entries = fwc.Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(xlc);
 			ref var offsets_r0 = ref (
 				fw._Offsets = fwc.Offsets = ArrayPool<int>.Shared.Rent(xlc)
