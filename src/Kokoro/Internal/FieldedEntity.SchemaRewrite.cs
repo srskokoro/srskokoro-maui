@@ -563,7 +563,7 @@ partial class FieldedEntity {
 				Debug.Assert((uint)nlc <= (uint)fldListIdxs.Length);
 				Debug.Assert(fldList.Count == fldListIdxs.Length);
 				ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
-				ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+				ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReferenceAt(fldSharedCount);
 
 				nextOffset = 0;
 				try {
