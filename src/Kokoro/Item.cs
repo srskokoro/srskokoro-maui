@@ -115,7 +115,7 @@ public sealed class Item : FieldedEntity {
 	internal sealed override Stream ReadHotStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
 			tableName: "Item", columnName: "data", rowid: _RowId,
-			canWrite: false, throwOnAccessFail: true)!;
+			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
 	internal sealed override Stream ReadColdStore(KokoroSqliteDb db) {

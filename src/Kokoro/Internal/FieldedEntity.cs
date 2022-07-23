@@ -136,21 +136,9 @@ public abstract partial class FieldedEntity : DataEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal Stream ReadSharedStore(KokoroSqliteDb db) {
-		// NOTE: It's possible for the schema to not exist (in that case, the
-		// following will throw) due to either the schema rowid being invalid
-		// (e.g., if the fielded entity is yet to load it) or the schema no
-		// longer existing. If the latter, then it means that there are no more
-		// references to the schema and it got deleted; additionally, this also
-		// means that the fielded entity no longer exists.
-		//
-		// Any exception that may be thrown because of the above can be
-		// prevented by either making sure that the schema rowid is valid (e.g.,
-		// by loading the fielded entity first) or by not calling this method if
-		// the fielded entity is found to not exist (either because it no longer
-		// exists or it simply didn't exist to begin with).
 		return SqliteBlobSlim.Open(db,
 			tableName: "Schema", columnName: "data", rowid: _SchemaRowId,
-			canWrite: false, throwOnAccessFail: true)!;
+			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
 	// --
