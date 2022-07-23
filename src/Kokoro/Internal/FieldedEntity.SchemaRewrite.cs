@@ -785,7 +785,55 @@ partial class FieldedEntity {
 				nlc = FieldsWriterCore.TrimNullFValsFromEnd(ref entries_r0, nlc);
 				if (nlc == 0) goto ClearLocalFields;
 
-				// TODO Implement
+				int lastFOffsetSizeM1Or0 = (
+					(uint)U.Add(ref offsets_r0, nlc-1)
+				).CountBytesNeededM1Or0();
+
+				int nhc = fldHotCount;
+				Debug.Assert((uint)nhc <= (uint)nlc);
+
+				if ((uint)nhc >= (uint)nlc) {
+					FieldsDesc hotFDesc = new(
+						fCount: nlc,
+						fOffsetSizeM1Or0: lastFOffsetSizeM1Or0
+					);
+
+					fw._HotFieldsDesc = hotFDesc;
+					fw._HotStoreLength = VarInts.Length(hotFDesc)
+						+ nlc * (lastFOffsetSizeM1Or0 + 1)
+						+ nextOffset;
+				} else {
+					int hotFValsSize = U.Add(ref offsets_r0, nhc);
+					int hotFOffsetSizeM1Or0 = nhc == 0 ? 0 : (
+						(uint)U.Add(ref offsets_r0, nhc-1)
+					).CountBytesNeededM1Or0();
+
+					FieldsDesc hotFDesc = new(
+						fCount: nhc,
+						fHasCold: true,
+						fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+					);
+
+					fw._HotFieldsDesc = hotFDesc;
+					fw._HotStoreLength = VarInts.Length(hotFDesc)
+						+ nhc * (hotFOffsetSizeM1Or0 + 1)
+						+ hotFValsSize;
+
+					int coldFOffsetSizeM1Or0 = (
+						(uint)(lastFOffsetSizeM1Or0 - hotFValsSize)
+					).CountBytesNeededM1Or0();
+
+					int ncc = nlc - nhc;
+					FieldsDesc coldFDesc = new(
+						fCount: ncc,
+						fOffsetSizeM1Or0: coldFOffsetSizeM1Or0
+					);
+
+					fw._ColdFieldsDesc = coldFDesc;
+					fw._ColdStoreLength = VarInts.Length(coldFDesc)
+						+ ncc * (coldFOffsetSizeM1Or0 + 1)
+						+ (nextOffset - hotFValsSize);
+				}
 
 				// Done!
 				return;
@@ -793,8 +841,9 @@ partial class FieldedEntity {
 
 		ClearLocalFields:
 			{
-				// TODO Implement
-
+				fw._HotFieldsDesc = FieldsDesc.Empty;
+				fw._HotStoreLength = FieldsDesc.VarIntLengthForEmpty;
+				fw._ColdStoreLength = 0;
 				return;
 			}
 
