@@ -711,7 +711,11 @@ partial class FieldedEntity {
 				).ExecScalarOrDefault<long>();
 			}
 
+			// Init now as we're about to replace the entity's schema rowid
+			fr.InitSharedStore();
+
 			if (newSchemaRowId != 0) {
+				_SchemaRowId = newSchemaRowId;
 				goto RewriteLocalFields;
 			} else {
 				goto InsertNewSchema;
@@ -728,6 +732,7 @@ partial class FieldedEntity {
 			{
 				// TODO Implement
 
+				_SchemaRowId = newSchemaRowId;
 				goto RewriteLocalFields;
 			}
 
