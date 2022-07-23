@@ -137,15 +137,19 @@ partial class FieldedEntity {
 			return n;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[SkipLocalsInit]
 		internal static int TrimNullFValsFromEnd(FieldsWriter.Entry[] entries, int end) {
 			// Ensure caller passed valid arguments
 			Debug.Assert((uint)end <= (uint?)entries?.Length);
-
-			// Get a reference to avoid unnecessary range checking
+			// Method operates on reference to avoid unnecessary range checking
 			ref var entries_r0 = ref entries.DangerousGetReference();
+			return TrimNullFValsFromEnd(ref entries_r0, end);
+		}
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEnd(ref FieldsWriter.Entry entries_r0, int end) {
 			// NOTE: `end` is excluded, as you'll see later below
 			int i = end;
 
@@ -184,16 +188,20 @@ partial class FieldedEntity {
 			return n;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[SkipLocalsInit]
 		internal static int TrimNullFValsFromEndToStart(FieldsWriter.Entry[] entries, int end, int start) {
 			// Ensure caller passed valid arguments
 			Debug.Assert(start >= 0); // `start` can be `>= end` though
 			Debug.Assert((uint)end <= (uint?)entries?.Length);
-
-			// Get a reference to avoid unnecessary range checking
+			// Method operates on reference to avoid unnecessary range checking
 			ref var entries_r0 = ref entries.DangerousGetReference();
+			return TrimNullFValsFromEndToStart(ref entries_r0, end, start);
+		}
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEndToStart(ref FieldsWriter.Entry entries_r0, int end, int start) {
 			// NOTE: `end` is excluded, as you'll see later below
 			int i = end;
 
