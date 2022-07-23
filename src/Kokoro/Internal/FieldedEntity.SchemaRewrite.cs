@@ -5,6 +5,7 @@ using Kokoro.Common.Buffers;
 using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
@@ -723,6 +724,46 @@ partial class FieldedEntity {
 			}
 
 		RewriteLocalFields:
+			{
+				int nlc = fldLocalCount;
+				Debug.Assert(nlc >= 0);
+				if (nlc == 0) goto ClearLocalFields;
+
+				// Client code will ensure that the rented buffers are returned,
+				// even when rewriting fails (i.e., even when we don't return
+				// normally).
+				ref var entries_r0 = ref (fw._Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(nlc)).DangerousGetReference();
+				ref var offsets_r0 = ref (fw._Offsets = ArrayPool<int>.Shared.Rent(nlc)).DangerousGetReference();
+
+				Debug.Assert((uint)nlc <= (uint)fldListIdxs.Length);
+				Debug.Assert(fldList.Count == fldListIdxs.Length);
+				ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
+				ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+
+				nextOffset = 0;
+				try {
+					int k = 0;
+					do {
+						// TODO Implement
+					} while (++k < nlc);
+				} catch (OverflowException) {
+					goto E_FieldValsLengthTooLarge;
+				}
+
+				if ((uint)nextOffset > (uint)MaxFieldValsLength) {
+					goto E_FieldValsLengthTooLarge;
+				}
+
+				nlc = FieldsWriterCore.TrimNullFValsFromEnd(ref entries_r0, nlc);
+				if (nlc == 0) goto ClearLocalFields;
+
+				// TODO Implement
+
+				// Done!
+				return;
+			}
+
+		ClearLocalFields:
 			{
 				// TODO Implement
 
