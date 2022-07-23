@@ -603,11 +603,12 @@ partial class FieldedEntity {
 					goto E_FieldValsLengthTooLarge;
 				}
 
-				if ((uint)nextOffset > (uint)MaxFieldValsLength) {
+				if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
+					nlc = FieldsWriterCore.TrimNullFValsFromEnd(ref entries_r0, nlc);
+				} else {
 					goto E_FieldValsLengthTooLarge;
 				}
 
-				nlc = FieldsWriterCore.TrimNullFValsFromEnd(ref entries_r0, nlc);
 				if (nlc == 0) goto ClearLocalFields;
 
 				int lastFOffsetSizeM1Or0 = (
