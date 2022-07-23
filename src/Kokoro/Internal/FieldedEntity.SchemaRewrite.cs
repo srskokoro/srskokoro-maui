@@ -542,8 +542,9 @@ partial class FieldedEntity {
 
 			// --
 
-			using var renter_fldShared_offsets = BufferRenter<int>
-				.Create(fldSharedCount, out var buffer_fldShared_offsets);
+			// NOTE: The ending portion of this buffer will be used to store the
+			// shared field offsets.
+			ref var offsets_r0 = ref (fw._Offsets = ArrayPool<int>.Shared.Rent(fldListIdxs.Length)).DangerousGetReference();
 
 			int fldLocalCount = fldListIdxs.Length - fldSharedCount;
 			int nextOffset;
@@ -558,7 +559,6 @@ partial class FieldedEntity {
 				// returned, even when rewriting fails (i.e., even when we don't
 				// return normally).
 				ref var entries_r0 = ref (fw._Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(nlc)).DangerousGetReference();
-				ref var offsets_r0 = ref (fw._Offsets = ArrayPool<int>.Shared.Rent(nlc)).DangerousGetReference();
 
 				Debug.Assert((uint)nlc <= (uint)fldListIdxs.Length);
 				Debug.Assert(fldList.Count == fldListIdxs.Length);
@@ -781,12 +781,12 @@ partial class FieldedEntity {
 					ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
 					ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
 
-					Debug.Assert((uint)n <= (uint)buffer_fldShared_offsets.Length);
-					ref int offsets_r0 = ref buffer_fldShared_offsets.DangerousGetReference();
+					// The shared fields' offsets
+					ref int shared_offsets_r0 = ref U.Add(ref offsets_r0, fldListIdxs.Length - fldSharedCount);
 
 					try {
 						do {
-							U.Add(ref offsets_r0, k) = nextOffset;
+							U.Add(ref shared_offsets_r0, k) = nextOffset;
 							int i = U.Add(ref fldListIdxs_r0, k);
 
 							Debug.Assert((uint)i < (uint)fldList.Count);
