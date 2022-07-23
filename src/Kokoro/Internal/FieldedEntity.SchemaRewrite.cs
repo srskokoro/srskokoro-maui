@@ -547,6 +547,7 @@ partial class FieldedEntity {
 				.Create(fldSharedCount, out var buffer_fldShared_offsets);
 
 			int nextOffset;
+			int fldLocalCount;
 
 			// Generate the schema `usum`
 			{
@@ -686,7 +687,7 @@ partial class FieldedEntity {
 				}
 
 				if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
-					int fldLocalCount = fldListIdxs.Length - fldSharedCount;
+					fldLocalCount = fldListIdxs.Length - fldSharedCount;
 
 					Debug.Assert((uint)fldLocalCount
 						<= MaxFieldCount && MaxFieldCount
