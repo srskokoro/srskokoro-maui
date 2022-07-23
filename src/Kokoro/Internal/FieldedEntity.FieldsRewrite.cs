@@ -128,14 +128,23 @@ partial class FieldedEntity {
 			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[SkipLocalsInit]
 		internal readonly int TrimNullFValsFromEnd(int end) {
+			int n = TrimNullFValsFromEnd(Entries, end);
+			// Assert that it's also useable with `Offsets` array
+			Debug.Assert((uint)n <= (uint?)Offsets?.Length);
+			return n;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEnd(FieldsWriter.Entry[] entries, int end) {
 			// Ensure caller passed valid arguments
-			Debug.Assert((uint)end <= (uint?)Entries?.Length);
+			Debug.Assert((uint)end <= (uint?)entries?.Length);
 
 			// Get a reference to avoid unnecessary range checking
-			ref var entries_r0 = ref Entries.DangerousGetReference();
+			ref var entries_r0 = ref entries.DangerousGetReference();
 
 			// NOTE: `end` is excluded, as you'll see later below
 			int i = end;
@@ -163,6 +172,13 @@ partial class FieldedEntity {
 
 			int n = i + 1;
 			Debug.Assert(n >= 0);
+			return n;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		internal readonly int TrimNullFValsFromEndToStart(int end, int start) {
+			int n = TrimNullFValsFromEndToStart(Entries, end, start);
 			// Assert that it's also useable with `Offsets` array
 			Debug.Assert((uint)n <= (uint?)Offsets?.Length);
 			return n;
@@ -170,13 +186,13 @@ partial class FieldedEntity {
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]
-		internal readonly int TrimNullFValsFromEndToStart(int end, int start) {
+		internal static int TrimNullFValsFromEndToStart(FieldsWriter.Entry[] entries, int end, int start) {
 			// Ensure caller passed valid arguments
 			Debug.Assert(start >= 0); // `start` can be `>= end` though
-			Debug.Assert((uint)end <= (uint?)Entries?.Length);
+			Debug.Assert((uint)end <= (uint?)entries?.Length);
 
 			// Get a reference to avoid unnecessary range checking
-			ref var entries_r0 = ref Entries.DangerousGetReference();
+			ref var entries_r0 = ref entries.DangerousGetReference();
 
 			// NOTE: `end` is excluded, as you'll see later below
 			int i = end;
@@ -204,8 +220,6 @@ partial class FieldedEntity {
 
 			int n = i + 1;
 			Debug.Assert(n >= start);
-			// Assert that it's also useable with `Offsets` array
-			Debug.Assert((uint)n <= (uint?)Offsets?.Length);
 			return n;
 		}
 
