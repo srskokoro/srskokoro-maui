@@ -839,6 +839,7 @@ partial class FieldedEntity {
 				if (r.Read()) {
 					r.DAssert_Name(0, "rowid");
 					long newSchemaRowId = r.GetInt64(0);
+					Debug.Assert(newSchemaRowId != 0);
 					_SchemaRowId = newSchemaRowId;
 					return; // Early exit
 				}
