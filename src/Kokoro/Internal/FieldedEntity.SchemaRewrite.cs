@@ -542,13 +542,140 @@ partial class FieldedEntity {
 
 			// --
 
-			byte[] usum;
-
 			using var renter_fldShared_offsets = BufferRenter<int>
 				.Create(fldSharedCount, out var buffer_fldShared_offsets);
 
 			int nextOffset;
-			int fldLocalCount;
+			int fldLocalCount = fldListIdxs.Length - fldSharedCount;
+
+			// Rewrite local fields
+			{
+				int nlc = fldLocalCount;
+				Debug.Assert(nlc >= 0);
+				if (nlc == 0) goto ClearLocalFields;
+
+				// Client code will ensure that the rented buffers are returned,
+				// even when rewriting fails (i.e., even when we don't return
+				// normally).
+				ref var entries_r0 = ref (fw._Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(nlc)).DangerousGetReference();
+				ref var offsets_r0 = ref (fw._Offsets = ArrayPool<int>.Shared.Rent(nlc)).DangerousGetReference();
+
+				Debug.Assert((uint)nlc <= (uint)fldListIdxs.Length);
+				Debug.Assert(fldList.Count == fldListIdxs.Length);
+				ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
+				ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+
+				nextOffset = 0;
+				try {
+					int k = 0;
+					do {
+						U.Add(ref offsets_r0, k) = nextOffset;
+						ref var entry = ref U.Add(ref entries_r0, k);
+
+						int i = U.Add(ref fldListIdxs_r0, k);
+						Debug.Assert((uint)i < (uint)fldList.Count);
+						ref var fld = ref U.Add(ref fldList_r0, i);
+
+						FieldVal? fval = fld.new_fval;
+						if (fval == null) {
+							LatentFieldVal lfval = fr.ReadLater(fld.src_idx_sto);
+							entry.OrigValue = lfval;
+
+							// It's a reference type: it should've been
+							// automatically initialized to null.
+							Debug.Assert(entry.Override == null);
+
+							int nextLength = lfval.Length;
+							if (nextLength >= 0) {
+								checked { nextOffset += nextLength; }
+							} else {
+								entry.Override = FieldVal.Null;
+							}
+						} else {
+							entry.Override = fval;
+
+							checked {
+								nextOffset += (int)fval.CountEncodeLength();
+							}
+						}
+					} while (++k < nlc);
+				} catch (OverflowException) {
+					goto E_FieldValsLengthTooLarge;
+				}
+
+				if ((uint)nextOffset > (uint)MaxFieldValsLength) {
+					goto E_FieldValsLengthTooLarge;
+				}
+
+				nlc = FieldsWriterCore.TrimNullFValsFromEnd(ref entries_r0, nlc);
+				if (nlc == 0) goto ClearLocalFields;
+
+				int lastFOffsetSizeM1Or0 = (
+					(uint)U.Add(ref offsets_r0, nlc-1)
+				).CountBytesNeededM1Or0();
+
+				int nhc = fldHotCount;
+				Debug.Assert((uint)nhc <= (uint)nlc);
+
+				if ((uint)nhc >= (uint)nlc) {
+					FieldsDesc hotFDesc = new(
+						fCount: nlc,
+						fOffsetSizeM1Or0: lastFOffsetSizeM1Or0
+					);
+
+					fw._HotFieldsDesc = hotFDesc;
+					fw._HotStoreLength = VarInts.Length(hotFDesc)
+						+ nlc * (lastFOffsetSizeM1Or0 + 1)
+						+ nextOffset;
+				} else {
+					int hotFValsSize = U.Add(ref offsets_r0, nhc);
+					int hotFOffsetSizeM1Or0 = nhc == 0 ? 0 : (
+						(uint)U.Add(ref offsets_r0, nhc-1)
+					).CountBytesNeededM1Or0();
+
+					FieldsDesc hotFDesc = new(
+						fCount: nhc,
+						fHasCold: true,
+						fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+					);
+
+					fw._HotFieldsDesc = hotFDesc;
+					fw._HotStoreLength = VarInts.Length(hotFDesc)
+						+ nhc * (hotFOffsetSizeM1Or0 + 1)
+						+ hotFValsSize;
+
+					int coldFOffsetSizeM1Or0 = (
+						(uint)(lastFOffsetSizeM1Or0 - hotFValsSize)
+					).CountBytesNeededM1Or0();
+
+					int ncc = nlc - nhc;
+					FieldsDesc coldFDesc = new(
+						fCount: ncc,
+						fOffsetSizeM1Or0: coldFOffsetSizeM1Or0
+					);
+
+					fw._ColdFieldsDesc = coldFDesc;
+					fw._ColdStoreLength = VarInts.Length(coldFDesc)
+						+ ncc * (coldFOffsetSizeM1Or0 + 1)
+						+ (nextOffset - hotFValsSize);
+				}
+
+				// Done!
+				goto DoneWithLocalFields;
+			}
+
+		ClearLocalFields:
+			{
+				fw._HotFieldsDesc = FieldsDesc.Empty;
+				fw._HotStoreLength = FieldsDesc.VarIntLengthForEmpty;
+				fw._ColdStoreLength = 0;
+				goto DoneWithLocalFields;
+			}
+
+		DoneWithLocalFields:
+			;
+
+			byte[] usum;
 
 			// Generate the schema `usum`
 			{
@@ -713,146 +840,21 @@ partial class FieldedEntity {
 				).ExecScalarOrDefault<long>();
 			}
 
-			// Init now as we're about to replace the entity's schema rowid
-			fr.InitSharedStore();
-
 			if (newSchemaRowId != 0) {
 				_SchemaRowId = newSchemaRowId;
-				goto RewriteLocalFields;
-			} else {
-				goto InsertNewSchema;
+				return; // Early exit
 			}
 
-		RewriteLocalFields:
+			// Insert new schema entry
 			{
-				int nlc = fldLocalCount;
-				Debug.Assert(nlc >= 0);
-				if (nlc == 0) goto ClearLocalFields;
-
-				// Client code will ensure that the rented buffers are returned,
-				// even when rewriting fails (i.e., even when we don't return
-				// normally).
-				ref var entries_r0 = ref (fw._Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(nlc)).DangerousGetReference();
-				ref var offsets_r0 = ref (fw._Offsets = ArrayPool<int>.Shared.Rent(nlc)).DangerousGetReference();
-
-				Debug.Assert((uint)nlc <= (uint)fldListIdxs.Length);
-				Debug.Assert(fldList.Count == fldListIdxs.Length);
-				ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
-				ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
-
-				nextOffset = 0;
-				try {
-					int k = 0;
-					do {
-						U.Add(ref offsets_r0, k) = nextOffset;
-						ref var entry = ref U.Add(ref entries_r0, k);
-
-						int i = U.Add(ref fldListIdxs_r0, k);
-						Debug.Assert((uint)i < (uint)fldList.Count);
-						ref var fld = ref U.Add(ref fldList_r0, i);
-
-						FieldVal? fval = fld.new_fval;
-						if (fval == null) {
-							LatentFieldVal lfval = fr.ReadLater(fld.src_idx_sto);
-							entry.OrigValue = lfval;
-
-							// It's a reference type: it should've been
-							// automatically initialized to null.
-							Debug.Assert(entry.Override == null);
-
-							int nextLength = lfval.Length;
-							if (nextLength >= 0) {
-								checked { nextOffset += nextLength; }
-							} else {
-								entry.Override = FieldVal.Null;
-							}
-						} else {
-							entry.Override = fval;
-
-							checked {
-								nextOffset += (int)fval.CountEncodeLength();
-							}
-						}
-					} while (++k < nlc);
-				} catch (OverflowException) {
-					goto E_FieldValsLengthTooLarge;
-				}
-
-				if ((uint)nextOffset > (uint)MaxFieldValsLength) {
-					goto E_FieldValsLengthTooLarge;
-				}
-
-				nlc = FieldsWriterCore.TrimNullFValsFromEnd(ref entries_r0, nlc);
-				if (nlc == 0) goto ClearLocalFields;
-
-				int lastFOffsetSizeM1Or0 = (
-					(uint)U.Add(ref offsets_r0, nlc-1)
-				).CountBytesNeededM1Or0();
-
-				int nhc = fldHotCount;
-				Debug.Assert((uint)nhc <= (uint)nlc);
-
-				if ((uint)nhc >= (uint)nlc) {
-					FieldsDesc hotFDesc = new(
-						fCount: nlc,
-						fOffsetSizeM1Or0: lastFOffsetSizeM1Or0
-					);
-
-					fw._HotFieldsDesc = hotFDesc;
-					fw._HotStoreLength = VarInts.Length(hotFDesc)
-						+ nlc * (lastFOffsetSizeM1Or0 + 1)
-						+ nextOffset;
-				} else {
-					int hotFValsSize = U.Add(ref offsets_r0, nhc);
-					int hotFOffsetSizeM1Or0 = nhc == 0 ? 0 : (
-						(uint)U.Add(ref offsets_r0, nhc-1)
-					).CountBytesNeededM1Or0();
-
-					FieldsDesc hotFDesc = new(
-						fCount: nhc,
-						fHasCold: true,
-						fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
-					);
-
-					fw._HotFieldsDesc = hotFDesc;
-					fw._HotStoreLength = VarInts.Length(hotFDesc)
-						+ nhc * (hotFOffsetSizeM1Or0 + 1)
-						+ hotFValsSize;
-
-					int coldFOffsetSizeM1Or0 = (
-						(uint)(lastFOffsetSizeM1Or0 - hotFValsSize)
-					).CountBytesNeededM1Or0();
-
-					int ncc = nlc - nhc;
-					FieldsDesc coldFDesc = new(
-						fCount: ncc,
-						fOffsetSizeM1Or0: coldFOffsetSizeM1Or0
-					);
-
-					fw._ColdFieldsDesc = coldFDesc;
-					fw._ColdStoreLength = VarInts.Length(coldFDesc)
-						+ ncc * (coldFOffsetSizeM1Or0 + 1)
-						+ (nextOffset - hotFValsSize);
-				}
-
-				// Done!
-				return;
-			}
-
-		ClearLocalFields:
-			{
-				fw._HotFieldsDesc = FieldsDesc.Empty;
-				fw._HotStoreLength = FieldsDesc.VarIntLengthForEmpty;
-				fw._ColdStoreLength = 0;
-				return;
-			}
-
-		InsertNewSchema:
-			{
-				// TODO Implement
+				// Init now as we're about to replace the entity's schema rowid
+				fr.InitSharedStore();
 
 				_SchemaRowId = newSchemaRowId;
-				goto RewriteLocalFields;
+
+				// TODO Implement
+
+				return; // Done!
 			}
 
 		E_FieldValsLengthTooLarge:
