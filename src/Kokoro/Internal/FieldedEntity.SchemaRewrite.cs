@@ -545,8 +545,8 @@ partial class FieldedEntity {
 			using var renter_fldShared_offsets = BufferRenter<int>
 				.Create(fldSharedCount, out var buffer_fldShared_offsets);
 
-			int nextOffset;
 			int fldLocalCount = fldListIdxs.Length - fldSharedCount;
+			int nextOffset;
 
 			// Rewrite local fields
 			{
