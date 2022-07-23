@@ -847,13 +847,9 @@ partial class FieldedEntity {
 
 			// Insert new schema entry
 			{
-				// Init now as we're about to replace the entity's schema rowid
-				fr.InitSharedStore();
-
-				_SchemaRowId = newSchemaRowId;
-
 				// TODO Implement
 
+				_SchemaRowId = newSchemaRowId;
 				return; // Done!
 			}
 
