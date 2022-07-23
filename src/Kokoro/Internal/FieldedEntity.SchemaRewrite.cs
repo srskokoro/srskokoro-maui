@@ -832,13 +832,13 @@ partial class FieldedEntity {
 
 			// Look up new schema rowid given `usum`
 			using (var cmd = db.CreateCommand()) {
-				long newSchemaRowId = cmd.Set(
-					"SELECT rowid FROM Schema WHERE usum=$usum"
-				).AddParams(
-					new("$usum", usum)
-				).ExecScalarOrDefault<long>();
+				cmd.Set("SELECT rowid FROM Schema WHERE usum=$usum")
+					.AddParams(new("$usum", usum));
 
-				if (newSchemaRowId != 0) {
+				using var r = cmd.ExecuteReader();
+				if (r.Read()) {
+					r.DAssert_Name(0, "rowid");
+					long newSchemaRowId = r.GetInt64(0);
 					_SchemaRowId = newSchemaRowId;
 					return; // Early exit
 				}
