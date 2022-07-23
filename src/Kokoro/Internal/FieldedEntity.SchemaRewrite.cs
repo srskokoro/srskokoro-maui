@@ -830,24 +830,24 @@ partial class FieldedEntity {
 
 			// --
 
-			long newSchemaRowId;
-
 			// Look up new schema rowid given `usum`
 			using (var cmd = db.CreateCommand()) {
-				newSchemaRowId = cmd.Set(
+				long newSchemaRowId = cmd.Set(
 					"SELECT rowid FROM Schema WHERE usum=$usum"
 				).AddParams(
 					new("$usum", usum)
 				).ExecScalarOrDefault<long>();
-			}
 
-			if (newSchemaRowId != 0) {
-				_SchemaRowId = newSchemaRowId;
-				return; // Early exit
+				if (newSchemaRowId != 0) {
+					_SchemaRowId = newSchemaRowId;
+					return; // Early exit
+				}
 			}
 
 			// Insert new schema entry
 			{
+				long newSchemaRowId = 0;
+
 				// TODO Implement
 
 				_SchemaRowId = newSchemaRowId;
