@@ -846,6 +846,8 @@ partial class FieldedEntity {
 			}
 
 			// Insert new schema entry
+			// --
+
 			Debug.Assert(db.Context != null);
 			long newSchemaRowId = db.Context.NextSchemaRowId();
 
