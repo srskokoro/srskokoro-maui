@@ -567,14 +567,14 @@ partial class FieldedEntity {
 
 				nextOffset = 0;
 				try {
-					int k = 0;
+					int i = 0;
 					do {
-						U.Add(ref offsets_r0, k) = nextOffset;
-						ref var entry = ref U.Add(ref entries_r0, k);
+						U.Add(ref offsets_r0, i) = nextOffset;
+						ref var entry = ref U.Add(ref entries_r0, i);
 
-						int i = U.Add(ref fldListIdxs_r0, k);
-						Debug.Assert((uint)i < (uint)fldList.Count);
-						ref var fld = ref U.Add(ref fldList_r0, i);
+						int j = U.Add(ref fldListIdxs_r0, i);
+						Debug.Assert((uint)j < (uint)fldList.Count);
+						ref var fld = ref U.Add(ref fldList_r0, j);
 
 						FieldVal? fval = fld.new_fval;
 						if (fval == null) {
@@ -598,7 +598,7 @@ partial class FieldedEntity {
 								nextOffset += (int)fval.CountEncodeLength();
 							}
 						}
-					} while (++k < nlc);
+					} while (++i < nlc);
 				} catch (OverflowException) {
 					goto E_FieldValsLengthTooLarge;
 				}
@@ -716,7 +716,7 @@ partial class FieldedEntity {
 					hasher.UpdateLE(dclsCount); // i.e., length-prepended
 					if (dclsCount == 0) goto Hashed;
 
-					int k = 0;
+					int i = 0;
 					int n = dclsCount;
 
 					Debug.Assert((uint)n <= (uint)clsListIdxs.Length);
@@ -725,13 +725,13 @@ partial class FieldedEntity {
 					ref byte clsListIdxs_r0 = ref clsListIdxs.DangerousGetReference();
 
 					do {
-						int i = U.Add(ref clsListIdxs_r0, k);
+						int j = U.Add(ref clsListIdxs_r0, i);
 
-						Debug.Assert((uint)i < (uint)clsList.Count);
-						ref var cls = ref U.Add(ref clsList_r0, i);
+						Debug.Assert((uint)j < (uint)clsList.Count);
+						ref var cls = ref U.Add(ref clsList_r0, j);
 
 						hasher.Update(cls.csum);
-					} while (++k < n);
+					} while (++i < n);
 
 				Hashed:
 					;
@@ -739,10 +739,10 @@ partial class FieldedEntity {
 
 				// Hash the list of indirect class's `csum`
 				{
-					int k = dclsCount;
+					int i = dclsCount;
 					int n = clsListIdxs.Length;
 
-					int iclsCount = n - k;
+					int iclsCount = n - i;
 					Debug.Assert(iclsCount >= 0);
 					hasher.UpdateLE(iclsCount); // i.e., length-prepended
 					if (iclsCount == 0) goto Hashed;
@@ -752,13 +752,13 @@ partial class FieldedEntity {
 					ref byte clsListIdxs_r0 = ref clsListIdxs.DangerousGetReference();
 
 					do {
-						int i = U.Add(ref clsListIdxs_r0, k);
+						int j = U.Add(ref clsListIdxs_r0, i);
 
-						Debug.Assert((uint)i < (uint)clsList.Count);
-						ref var cls = ref U.Add(ref clsList_r0, i);
+						Debug.Assert((uint)j < (uint)clsList.Count);
+						ref var cls = ref U.Add(ref clsList_r0, j);
 
 						hasher.Update(cls.csum);
-					} while (++k < n);
+					} while (++i < n);
 
 				Hashed:
 					;
@@ -773,7 +773,7 @@ partial class FieldedEntity {
 					hasher.UpdateLE(fldSharedCount); // i.e., length-prepended
 					if (fldSharedCount == 0) goto Processed;
 
-					int k = 0;
+					int i = 0;
 					int n = fldSharedCount;
 
 					Debug.Assert((uint)n <= (uint)fldListIdxs.Length);
@@ -786,11 +786,11 @@ partial class FieldedEntity {
 
 					try {
 						do {
-							U.Add(ref shared_offsets_r0, k) = nextOffset;
-							int i = U.Add(ref fldListIdxs_r0, k);
+							U.Add(ref shared_offsets_r0, i) = nextOffset;
+							int j = U.Add(ref fldListIdxs_r0, i);
 
-							Debug.Assert((uint)i < (uint)fldList.Count);
-							ref var fld = ref U.Add(ref fldList_r0, i);
+							Debug.Assert((uint)j < (uint)fldList.Count);
+							ref var fld = ref U.Add(ref fldList_r0, j);
 
 							FieldVal? fval = fld.new_fval;
 							if (fval == null) {
@@ -806,7 +806,7 @@ partial class FieldedEntity {
 								}
 								fval.FeedTo(ref hasher);
 							}
-						} while (++k < n);
+						} while (++i < n);
 					} catch (OverflowException) {
 						goto E_FieldValsLengthTooLarge;
 					}
