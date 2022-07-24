@@ -9,6 +9,10 @@ internal readonly struct FieldSpec {
 	// the collection's SQLite DB.
 	public readonly uint Value;
 
+	// --
+
+	public const int MaxIndex = int.MaxValue >> 2;
+
 	public const uint IndexIncrement = 1 << 2;
 
 	public int Index {
@@ -45,6 +49,7 @@ internal readonly struct FieldSpec {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldSpec(int index, FieldStoreType sto) {
+		Debug.Assert(index <= MaxIndex);
 		Debug.Assert(((FieldStoreTypeInt)sto & 0b11) == (FieldStoreTypeInt)sto);
 		Value = (uint)index << 2 | (uint)sto;
 	}
