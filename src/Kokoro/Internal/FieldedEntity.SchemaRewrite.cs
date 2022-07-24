@@ -838,32 +838,30 @@ partial class FieldedEntity {
 				using var r = cmd.ExecuteReader();
 				if (r.Read()) {
 					r.DAssert_Name(0, "rowid");
-					long newSchemaRowId = r.GetInt64(0);
-					Debug.Assert(newSchemaRowId != 0);
-					_SchemaRowId = newSchemaRowId;
+					long schemaRowId = r.GetInt64(0);
+					Debug.Assert(schemaRowId != 0);
+					_SchemaRowId = schemaRowId;
 					return; // Early exit
 				}
 			}
 
 			// Insert new schema entry
-			{
-				Debug.Assert(db.Context != null);
-				long newSchemaRowId = db.Context.NextSchemaRowId();
+			Debug.Assert(db.Context != null);
+			long newSchemaRowId = db.Context.NextSchemaRowId();
 
-				try {
-					// TODO Implement
-				} catch (Exception ex) when (
-					ex is not SqliteException sqlex ||
-					sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
-				) {
-					db.Context?.UndoSchemaRowId(newSchemaRowId);
-					throw;
-				}
-
-				// Success!
-				_SchemaRowId = newSchemaRowId;
-				return; // Early exit
+			try {
+				// TODO Implement
+			} catch (Exception ex) when (
+				ex is not SqliteException sqlex ||
+				sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
+			) {
+				db.Context?.UndoSchemaRowId(newSchemaRowId);
+				throw;
 			}
+
+			// Success!
+			_SchemaRowId = newSchemaRowId;
+			return; // Early exit
 
 		E_FieldValsLengthTooLarge:
 			E_FieldValsLengthTooLarge((uint)nextOffset);
