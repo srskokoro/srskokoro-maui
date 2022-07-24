@@ -22,7 +22,7 @@ internal readonly struct FieldSpec {
 
 	public FieldStoreType StoreType {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (FieldStoreType)(Value & 0xb11);
+		get => (FieldStoreType)(Value & 0b11);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
