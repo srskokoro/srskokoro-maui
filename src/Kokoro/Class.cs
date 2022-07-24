@@ -479,7 +479,7 @@ public sealed class Class : DataEntity {
 			cmd.Set(
 				"INSERT INTO Class" +
 				"(rowid,uid,csum,ord,grp,name)" +
-				" VALUES" +
+				"\nVALUES" +
 				$"($rowid,$uid,$csum,$ord,$grp,$name)"
 			);
 
