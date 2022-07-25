@@ -9,20 +9,23 @@ internal readonly struct FieldSpec {
 	// the collection's SQLite DB.
 	public readonly uint Value;
 
+	private const int StoreType_Mask = 0b11;
+	private const int Index_Shift = 2;
+
 	// --
 
-	public const int MaxIndex = int.MaxValue >> 2;
+	public const int MaxIndex = int.MaxValue >> Index_Shift;
 
-	public const uint IndexIncrement = 1 << 2;
+	public const uint IndexIncrement = 1 << Index_Shift;
 
 	public int Index {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)(Value >> 2);
+		get => (int)(Value >> Index_Shift);
 	}
 
 	public FieldStoreType StoreType {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (FieldStoreType)(Value & 0b11);
+		get => (FieldStoreType)(Value & StoreType_Mask);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,8 +53,8 @@ internal readonly struct FieldSpec {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldSpec(int index, FieldStoreType sto) {
 		Debug.Assert(index <= MaxIndex);
-		Debug.Assert(((FieldStoreTypeInt)sto & 0b11) == (FieldStoreTypeInt)sto);
-		Value = (uint)index << 2 | (uint)sto;
+		Debug.Assert(((FieldStoreTypeInt)sto & StoreType_Mask) == (FieldStoreTypeInt)sto);
+		Value = (uint)index << Index_Shift | (uint)sto;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

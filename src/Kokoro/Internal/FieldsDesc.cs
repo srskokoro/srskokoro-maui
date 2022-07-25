@@ -17,16 +17,24 @@ internal readonly struct FieldsDesc {
 	// `ItemToColdStore.data` and `Schema.data` in the collection's SQLite DB.
 	public readonly uint Value;
 
+	private const int FOffsetSizeM1Or0_Mask = 0b11; // 3
+	private const int HasColdComplement_Shift = 2;
+	private const int FieldCount_Shift = 3;
+
 	// --
 
-	public const int MaxFOffsetSizeM1Or0 = 0b11; // 3
-	public const int MaxFOffsetSize = 0b11 + 1; // 3 + 1 == 4
+	public const int MaxFOffsetSizeM1Or0 = FOffsetSizeM1Or0_Mask; // 3
+	public const int MaxFOffsetSize = FOffsetSizeM1Or0_Mask + 1; // 3 + 1 == 4
 
-	public const int MaxFieldCount = (int.MaxValue >> 1) / MaxFOffsetSize; // Same as `>> 3`
+	public const int MaxFieldCount = (int.MaxValue >> 1) / MaxFOffsetSize; // NOTE: `(n >> 1)/4 == n >> 3`
 
-	public const int MaxValue = MaxFieldCount << 3 | (1 << 2) | MaxFOffsetSizeM1Or0; // Same as `int.MaxValue`
+	// NOTE: Resulting constant same as `int.MaxValue`
+	public const int MaxValue =
+		MaxFieldCount << FieldCount_Shift
+			| (1 << HasColdComplement_Shift)
+			| MaxFOffsetSizeM1Or0;
 
-	public const byte ByteArea_HasColdComplement_Bit = 1 << 2;
+	public const byte ByteArea_HasColdComplement_Bit = 1 << HasColdComplement_Shift;
 
 	// --
 
@@ -39,12 +47,12 @@ internal readonly struct FieldsDesc {
 
 	public int FieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)(Value >> 3);
+		get => (int)(Value >> FieldCount_Shift);
 	}
 
 	public bool HasColdComplement {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => BitHelper.HasFlag(Value, 2);
+		get => BitHelper.HasFlag(Value, HasColdComplement_Shift);
 	}
 
 	public byte ByteArea_HasColdComplement {
@@ -59,7 +67,7 @@ internal readonly struct FieldsDesc {
 
 	public int FOffsetSizeM1Or0 {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)Value & 0b11;
+		get => (int)Value & FOffsetSizeM1Or0_Mask;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -86,7 +94,7 @@ internal readonly struct FieldsDesc {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsDesc(int fCount, int fOffsetSizeM1Or0) {
-		Value = (uint)fCount << 3 | (uint)fOffsetSizeM1Or0;
+		Value = (uint)fCount << FieldCount_Shift | (uint)fOffsetSizeM1Or0;
 
 		Debug.Assert(FieldCount == fCount);
 		Debug.Assert(FOffsetSizeM1Or0 == fOffsetSizeM1Or0);
@@ -94,7 +102,9 @@ internal readonly struct FieldsDesc {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsDesc(int fCount, bool fHasCold, int fOffsetSizeM1Or0) {
-		Value = (uint)fCount << 3 | (uint)fHasCold.ToByte() << 2 | (uint)fOffsetSizeM1Or0;
+		Value = (uint)fCount << FieldCount_Shift
+			| (uint)fHasCold.ToByte() << HasColdComplement_Shift
+			| (uint)fOffsetSizeM1Or0;
 
 		Debug.Assert(FieldCount == fCount);
 		Debug.Assert(HasColdComplement == fHasCold);
