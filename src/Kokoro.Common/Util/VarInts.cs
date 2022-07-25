@@ -232,4 +232,22 @@ internal static class VarInts {
 		if (value <= 0xFF_FFFF) return 4;
 		return 5;
 	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static byte[] Bytes(ulong value) {
+		Span<byte> buffer = stackalloc byte[MaxLength64];
+		int len = Write(buffer, value);
+		return buffer[..len].ToArray();
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static byte[] Bytes(uint value) {
+		Span<byte> buffer = stackalloc byte[MaxLength32];
+		int len = Write(buffer, value);
+		return buffer[..len].ToArray();
+	}
 }
