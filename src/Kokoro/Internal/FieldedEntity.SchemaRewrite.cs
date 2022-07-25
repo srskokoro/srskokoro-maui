@@ -860,7 +860,103 @@ partial class FieldedEntity {
 				// Save the field infos for the new schema
 				// --
 
-				// TODO Implement
+				if (fldListIdxs.Length != 0) {
+					using var cmd = db.CreateCommand();
+					SqliteParameter cmd_fld, cmd_idx_sto;
+
+					cmd.Set(
+						"INSERT INTO SchemaToField" +
+						"(schema,fld,idx_sto)" +
+						"\nVALUES" +
+						"($schema,$fld,$idx_sto)"
+					).AddParams(
+						new("$schema", newSchemaRowId),
+						cmd_fld = new() { ParameterName = "$fld" },
+						cmd_idx_sto = new() { ParameterName = "$idx_sto" }
+					);
+
+					Debug.Assert(fldList.Count == fldListIdxs.Length);
+					ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
+					ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+
+					Debug.Assert((uint)fldSharedCount <= (uint)fldListIdxs.Length);
+
+					SaveFieldInfos(
+						cmd,
+						cmd_fld: cmd_fld,
+						cmd_idx_sto: cmd_idx_sto,
+
+						ref fldList_r0,
+						ref fldListIdxs_r0,
+
+						start: 0, end: fldSharedCount,
+						FieldStoreType.Shared
+					);
+
+					fldListIdxs_r0 = ref U.Add(ref fldListIdxs_r0, fldSharedCount);
+					Debug.Assert((uint)(fldSharedCount + fldHotCount) <= (uint)fldListIdxs.Length);
+
+					SaveFieldInfos(
+						cmd,
+						cmd_fld: cmd_fld,
+						cmd_idx_sto: cmd_idx_sto,
+
+						ref fldList_r0,
+						ref fldListIdxs_r0,
+
+						start: 0, end: fldHotCount,
+						FieldStoreType.Hot
+					);
+
+					Debug.Assert((uint)fldHotCount
+						<= (uint)fldLocalCount && (uint)fldLocalCount
+						<= (uint)fldListIdxs.Length);
+
+					SaveFieldInfos(
+						cmd,
+						cmd_fld: cmd_fld,
+						cmd_idx_sto: cmd_idx_sto,
+
+						ref fldList_r0,
+						ref fldListIdxs_r0,
+
+						start: fldHotCount, end: fldLocalCount,
+						FieldStoreType.Cold
+					);
+
+					[MethodImpl(MethodImplOptions.AggressiveInlining)]
+					static void SaveFieldInfos(
+						SqliteCommand cmd,
+						SqliteParameter cmd_fld,
+						SqliteParameter cmd_idx_sto,
+
+						ref SchemaRewrite.FieldInfo fldList_r0,
+						ref byte fldListIdxs_r0,
+
+						int start, int end,
+						FieldStoreType storeType
+					) {
+						if (start < end) {
+							Debug.Assert((uint)end
+								<= (uint)MaxFieldCount && (uint)MaxFieldCount
+								<= (uint)FieldSpec.MaxIndex);
+
+							FieldSpec idx_sto_c = new(start, storeType);
+							FieldSpec idx_sto_n = new(end, storeType);
+
+							do {
+								int j = U.Add(ref fldListIdxs_r0, idx_sto_c.Index);
+
+								cmd_fld.Value = U.Add(ref fldList_r0, j).rowid;
+								cmd_idx_sto.Value = idx_sto_c;
+
+								int updated = cmd.ExecuteNonQuery();
+								Debug.Assert(updated == 1, $"Updated: {updated}");
+
+							} while ((idx_sto_c += FieldSpec.IndexIncrement).Value < idx_sto_n.Value);
+						}
+					}
+				}
 
 				// Establish the new schema entry
 				// --
