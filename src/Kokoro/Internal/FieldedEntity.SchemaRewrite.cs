@@ -852,7 +852,21 @@ partial class FieldedEntity {
 			long newSchemaRowId = db.Context.NextSchemaRowId();
 
 			try {
+				// Save the class entries for the new schema
+				// --
+
 				// TODO Implement
+
+				// Save the field infos for the new schema
+				// --
+
+				// TODO Implement
+
+				// Establish the new schema entry
+				// --
+
+				// TODO Implement
+
 			} catch (Exception ex) when (
 				ex is not SqliteException sqlex ||
 				sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
