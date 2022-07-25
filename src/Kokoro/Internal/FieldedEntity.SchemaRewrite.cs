@@ -815,6 +815,8 @@ partial class FieldedEntity {
 					;
 				}
 
+				// --
+
 				if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
 					fldLocalCount = fldListIdxs.Length - fldSharedCount;
 
