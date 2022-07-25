@@ -819,8 +819,8 @@ partial class FieldedEntity {
 					fldLocalCount = fldListIdxs.Length - fldSharedCount;
 
 					Debug.Assert((uint)fldLocalCount
-						<= MaxFieldCount && MaxFieldCount
-						<= byte.MaxValue);
+						<= (uint)MaxFieldCount && (uint)MaxFieldCount
+						<= (uint)byte.MaxValue);
 
 					usum = FinishWithSchemaUsum(ref hasher, (byte)fldLocalCount);
 				} else {
