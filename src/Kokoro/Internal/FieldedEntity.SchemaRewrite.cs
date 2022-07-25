@@ -839,10 +839,14 @@ partial class FieldedEntity {
 
 				using var r = cmd.ExecuteReader();
 				if (r.Read()) {
+					// Existing schema found!
+
 					r.DAssert_Name(0, "rowid");
 					long schemaRowId = r.GetInt64(0);
+
 					Debug.Assert(schemaRowId != 0);
 					_SchemaRowId = schemaRowId;
+
 					return; // Early exit
 				}
 			}
