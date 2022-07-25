@@ -857,7 +857,95 @@ partial class FieldedEntity {
 				// Save the class entries for the new schema
 				// --
 
-				// TODO Implement
+				// Save the direct classes
+				{
+					Debug.Assert(dclsCount >= 0);
+					if (dclsCount == 0) goto Saved;
+
+					int i = 0;
+					int n = dclsCount;
+
+					Debug.Assert((uint)n <= (uint)clsListIdxs.Length);
+					Debug.Assert(clsList.Count == clsListIdxs.Length);
+					ref var clsList_r0 = ref clsList.AsSpan().DangerousGetReference();
+					ref byte clsListIdxs_r0 = ref clsListIdxs.DangerousGetReference();
+
+					using (var cmd = db.CreateCommand()) {
+						SqliteParameter cmd_cls, cmd_csum;
+
+						cmd.Set(
+							"INSERT INTO SchemaToDirectClass" +
+							"(schema,cls,csum)" +
+							"\nVALUES" +
+							"($schema,$cls,$csum)"
+						).AddParams(
+							new("$schema", newSchemaRowId),
+							cmd_cls = new() { ParameterName = "$cls" },
+							cmd_csum = new() { ParameterName = "$csum" }
+						);
+
+						do {
+							int j = U.Add(ref clsListIdxs_r0, i);
+
+							Debug.Assert((uint)j < (uint)clsList.Count);
+							ref var cls = ref U.Add(ref clsList_r0, j);
+
+							cmd_cls.Value = cls.rowid;
+							cmd_csum.Value = cls.csum;
+
+							int updated = cmd.ExecuteNonQuery();
+							Debug.Assert(updated == 1, $"Updated: {updated}");
+						} while (++i < n);
+					}
+
+				Saved:
+					;
+				}
+
+				// Save the indirect classes
+				{
+					int i = dclsCount;
+					int n = clsListIdxs.Length;
+
+					int iclsCount = n - i;
+					Debug.Assert(iclsCount >= 0);
+					if (iclsCount == 0) goto Saved;
+
+					Debug.Assert(clsList.Count == clsListIdxs.Length);
+					ref var clsList_r0 = ref clsList.AsSpan().DangerousGetReference();
+					ref byte clsListIdxs_r0 = ref clsListIdxs.DangerousGetReference();
+
+					using (var cmd = db.CreateCommand()) {
+						SqliteParameter cmd_cls, cmd_csum;
+
+						cmd.Set(
+							"INSERT INTO SchemaToIndirectClass" +
+							"(schema,cls,csum)" +
+							"\nVALUES" +
+							"($schema,$cls,$csum)"
+						).AddParams(
+							new("$schema", newSchemaRowId),
+							cmd_cls = new() { ParameterName = "$cls" },
+							cmd_csum = new() { ParameterName = "$csum" }
+						);
+
+						do {
+							int j = U.Add(ref clsListIdxs_r0, i);
+
+							Debug.Assert((uint)j < (uint)clsList.Count);
+							ref var cls = ref U.Add(ref clsList_r0, j);
+
+							cmd_cls.Value = cls.rowid;
+							cmd_csum.Value = cls.csum;
+
+							int updated = cmd.ExecuteNonQuery();
+							Debug.Assert(updated == 1, $"Updated: {updated}");
+						} while (++i < n);
+					}
+
+				Saved:
+					;
+				}
 
 				// Save the field infos for the new schema
 				// --
