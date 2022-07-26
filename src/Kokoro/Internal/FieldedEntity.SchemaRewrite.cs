@@ -1165,6 +1165,7 @@ partial class FieldedEntity {
 
 			// Success!
 			_SchemaRowId = newSchemaRowId;
+
 			return; // Early exit
 
 		E_FieldValsLengthTooLarge:
