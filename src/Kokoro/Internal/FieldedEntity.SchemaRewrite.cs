@@ -1088,15 +1088,19 @@ partial class FieldedEntity {
 							fOffsetSizeM1Or0: sharedFOffsetSizeM1Or0
 						);
 
+						Span<byte> buffer_sharedFDesc = stackalloc byte[VarInts.MaxLength32];
+						buffer_sharedFDesc = buffer_sharedFDesc[
+							..VarInts.Write(buffer_sharedFDesc, sharedFDesc)];
+
 						int sharedFOffsetSize = sharedFOffsetSizeM1Or0 + 1;
-						int sharedStoreLength = VarInts.Length(sharedFDesc)
+						int sharedStoreLength = buffer_sharedFDesc.Length
 							+ nsc * sharedFOffsetSize
 							+ sharedFValsSize;
 
 						data = GC.AllocateUninitializedArray<byte>(sharedStoreLength);
 						MemoryStream dest = new(data);
 
-						dest.WriteVarInt(sharedFDesc);
+						dest.Write(buffer_sharedFDesc);
 
 						// Write the field offsets
 						// --
