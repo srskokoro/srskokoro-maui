@@ -19,6 +19,21 @@ partial class FieldedEntity {
 	[SuppressMessage("Style", "IDE1006:Naming Styles")]
 	private static class SchemaRewrite {
 
+		internal static class DataWhenNoSharedFields {
+			public static readonly byte[] ReadOnlyBytes;
+
+			static DataWhenNoSharedFields() {
+				const int length = FieldsDesc.VarIntLengthForEmpty;
+				Debug.Assert(length == VarInts.LengthForZero);
+				Debug.Assert(length == 1);
+
+				var buffer = new byte[length] { 0 };
+				Debug.Assert(buffer.SequenceEqual(VarInts.Bytes(FieldsDesc.Empty)));
+
+				ReadOnlyBytes = buffer;
+			}
+		}
+
 		internal struct ClassInfo {
 			public long rowid;
 			public UniqueId uid;
@@ -830,6 +845,8 @@ partial class FieldedEntity {
 				}
 			}
 
+			int sharedFValsSize = nextOffset;
+
 			// --
 
 			// Look up new schema rowid given `usum`
@@ -1054,6 +1071,89 @@ partial class FieldedEntity {
 
 				// Establish the new schema entry
 				// --
+				{
+					byte[] data;
+
+					if (fldSharedCount > 0) {
+						int nsc = fldSharedCount;
+						Debug.Assert((uint)nsc <= (uint)fldListIdxs.Length);
+						ref int shared_offsets_r0 = ref U.Add(ref offsets_r0, fldListIdxs.Length - nsc);
+
+						int sharedFOffsetSizeM1Or0 = (
+							(uint)U.Add(ref shared_offsets_r0, nsc-1)
+						).CountBytesNeededM1Or0();
+
+						FieldsDesc sharedFDesc = new(
+							fCount: nsc,
+							fOffsetSizeM1Or0: sharedFOffsetSizeM1Or0
+						);
+
+						int sharedFOffsetSize = sharedFOffsetSizeM1Or0 + 1;
+						int sharedStoreLength = VarInts.Length(sharedFDesc)
+							+ nsc * sharedFOffsetSize
+							+ sharedFValsSize;
+
+						data = GC.AllocateUninitializedArray<byte>(sharedStoreLength);
+						MemoryStream dest = new(data);
+
+						dest.WriteVarInt(sharedFDesc);
+
+						// Write the field offsets
+						// --
+
+						int i = 0;
+						do {
+							dest.WriteUInt32AsUIntX(
+								(uint)U.Add(ref shared_offsets_r0, i),
+								sharedFOffsetSize);
+						} while (++i < nsc);
+
+						// Write the field values
+						// --
+
+						Debug.Assert(fldList.Count == fldListIdxs.Length);
+						ref var fldList_r0 = ref fldList.AsSpan().DangerousGetReference();
+						ref byte fldListIdxs_r0 = ref fldListIdxs.DangerousGetReference();
+
+						i = 0;
+						do {
+							int j = U.Add(ref fldListIdxs_r0, i);
+
+							Debug.Assert((uint)j < (uint)fldList.Count);
+							ref var fld = ref U.Add(ref fldList_r0, j);
+
+							FieldVal? fval = fld.new_fval;
+							if (fval == null) {
+								var lfval = fr.Read(fld.src_idx_sto);
+								lfval.WriteTo(dest);
+							} else {
+								fval.WriteTo(dest);
+							}
+						} while (++i < nsc);
+
+					} else {
+						Debug.Assert(fldSharedCount == 0);
+						data = SchemaRewrite.DataWhenNoSharedFields.ReadOnlyBytes;
+					}
+
+					using (var cmd = db.CreateCommand()) {
+						cmd.Set(
+							"INSERT INTO Schema" +
+							"(rowid,usum,hfld_count,cfld_count,data)" +
+							"\nVALUES" +
+							"($rowid,$usum,$hfld_count,$cfld_count,$data)"
+						).AddParams(
+							new("$rowid", newSchemaRowId),
+							new("$usum", usum),
+							new("$hfld_count", fldHotCount),
+							new("$cfld_count", fldLocalCount - fldHotCount),
+							new("$data", data)
+						);
+
+						int updated = cmd.ExecuteNonQuery();
+						Debug.Assert(updated == 1, $"Updated: {updated}");
+					}
+				}
 
 				// TODO Implement
 
