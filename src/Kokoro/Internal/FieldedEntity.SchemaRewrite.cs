@@ -1202,6 +1202,7 @@ partial class FieldedEntity {
 		const int UsumVer = 1; // The version varint
 		const int UsumVerLength = 1; // The varint length is a single byte for now
 		Debug.Assert(VarInts.Length(UsumVer) == UsumVerLength);
+		Debug.Assert(VarInts.Bytes(UsumVer)[0] == UsumVer);
 
 		const int ExtraBytesNeeded = 1; // To encode `fldLocalCount`
 
