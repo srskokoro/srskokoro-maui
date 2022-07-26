@@ -1155,8 +1155,6 @@ partial class FieldedEntity {
 					}
 				}
 
-				// TODO Implement
-
 			} catch (Exception ex) when (
 				ex is not SqliteException sqlex ||
 				sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
