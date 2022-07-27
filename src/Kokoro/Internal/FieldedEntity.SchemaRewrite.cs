@@ -643,6 +643,9 @@ partial class FieldedEntity {
 					fw._HotStoreLength = VarInts.Length(hotFDesc)
 						+ nlc * (lastFOffsetSizeM1Or0 + 1)
 						+ nextOffset;
+
+					fw._ColdStoreLength = 0;
+
 				} else {
 					int hotFValsSize = U.Add(ref offsets_r0, nhc);
 					int hotFOffsetSizeM1Or0 = nhc == 0 ? 0 : (
