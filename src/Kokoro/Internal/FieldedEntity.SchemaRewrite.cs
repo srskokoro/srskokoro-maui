@@ -706,9 +706,10 @@ partial class FieldedEntity {
 				// 1. The list of `csum`s from direct classes, ordered by `uid`.
 				// 2. The number of indirect classes, as a 32-bit integer.
 				// 3. The list of `csum`s from indirect classes, ordered by `uid`.
-				// 4. The number of shared fields, as a 32-bit integer.
-				// 5. The field values of shared fields, each prepended with its
-				// length.
+				// 4. The number of shared fields, including trailing null
+				// fields, as a 32-bit integer.
+				// 5. The field values of shared fields, including trailing null
+				// fields, each prepended with its length.
 				//
 				// Unless stated otherwise, all integer inputs should be
 				// consumed in their little-endian form.
