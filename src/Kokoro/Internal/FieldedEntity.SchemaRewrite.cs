@@ -1078,6 +1078,9 @@ partial class FieldedEntity {
 				{
 					byte[] data;
 
+					// NOTE: In order to simplify implementation, we don't trim
+					// trailing null shared fields.
+
 					if (fldSharedCount > 0) {
 						int nsc = fldSharedCount;
 						Debug.Assert((uint)nsc <= (uint)fldListIdxs.Length);
