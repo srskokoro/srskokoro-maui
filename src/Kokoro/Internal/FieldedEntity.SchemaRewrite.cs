@@ -631,8 +631,8 @@ partial class FieldedEntity {
 				).CountBytesNeededM1Or0();
 
 				int nhc = fldHotCount;
-				Debug.Assert((uint)nhc <= (uint)nlc);
 
+				// NOTE: `nhc > nlc` may happen due to trimmed null fields.
 				if ((uint)nhc >= (uint)nlc) {
 					FieldsDesc hotFDesc = new(
 						fCount: nlc,
