@@ -296,11 +296,18 @@ partial class FieldedEntity {
 			// Get a reference to avoid unnecessary range checking
 			ref int offsets_r0 = ref _Offsets.DangerousGetReference();
 			{
-				int fOffsetSize = fDesc.FOffsetSize;
-				for (int i = 0; i < fCount; i++) {
-					destination.WriteUInt32AsUIntX(
-						(uint)U.Add(ref offsets_r0, i),
-						fOffsetSize);
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				Debug.Assert(fCount <= 0 || offsets_r0 == 0);
+
+				int i = 1; // Skips to the second offset value
+				if (i < fCount) {
+					int fOffsetSize = fDesc.FOffsetSize;
+					do {
+						destination.WriteUInt32AsUIntX(
+							(uint)U.Add(ref offsets_r0, i),
+							fOffsetSize);
+					} while (++i < fCount);
 				}
 			}
 
@@ -339,7 +346,9 @@ partial class FieldedEntity {
 			// Get a reference to avoid unnecessary range checking
 			ref int offsets_r0 = ref _Offsets.DangerousGetReferenceAt(start);
 			{
-				int i = 0;
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				int i = 1; // Skips to the second offset value
 				if (i < fCount) {
 					int offsetAdjustment = offsets_r0;
 					int fOffsetSize = fDesc.FOffsetSize;
@@ -924,8 +933,11 @@ partial class FieldedEntity {
 				);
 
 				fw._HotFieldsDesc = hotFDesc;
+
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
 				fw._HotStoreLength = VarInts.Length(hotFDesc)
-					+ ldn * (hotFOffsetSizeM1Or0 + 1)
+					+ (ldn - 1) * (hotFOffsetSizeM1Or0 + 1)
 					+ fValsSize;
 
 				goto Done;
@@ -949,8 +961,11 @@ partial class FieldedEntity {
 				);
 
 				fw._HotFieldsDesc = hotFDesc;
+
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
 				fw._HotStoreLength = VarInts.Length(hotFDesc)
-					+ xhc * (hotFOffsetSizeM1Or0 + 1)
+					+ (xhc - 1) * (hotFOffsetSizeM1Or0 + 1)
 					+ fValsSize;
 
 				goto Done;
@@ -974,8 +989,11 @@ partial class FieldedEntity {
 				);
 
 				fw._ColdFieldsDesc = coldFDesc;
+
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
 				fw._ColdStoreLength = VarInts.Length(coldFDesc)
-					+ ncc * (coldFOffsetSizeM1Or0 + 1)
+					+ (ncc - 1) * (coldFOffsetSizeM1Or0 + 1)
 					+ (fValsSize - hotFValsSize);
 
 				// In this case, only `fCount` should ever be used
@@ -1000,8 +1018,11 @@ partial class FieldedEntity {
 				);
 
 				fw._HotFieldsDesc = hotFDesc;
+
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
 				fw._HotStoreLength = VarInts.Length(hotFDesc)
-					+ xhc * (hotFOffsetSizeM1Or0 + 1)
+					+ (xhc - 1).PosOrNegate() * (hotFOffsetSizeM1Or0 + 1)
 					+ hotFValsSize;
 
 				int coldFOffsetSizeM1Or0 = (
@@ -1015,8 +1036,11 @@ partial class FieldedEntity {
 				);
 
 				fw._ColdFieldsDesc = coldFDesc;
+
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
 				fw._ColdStoreLength = VarInts.Length(coldFDesc)
-					+ ncc * (coldFOffsetSizeM1Or0 + 1)
+					+ (ncc - 1) * (coldFOffsetSizeM1Or0 + 1)
 					+ (fValsSize - hotFValsSize);
 
 				goto Done;

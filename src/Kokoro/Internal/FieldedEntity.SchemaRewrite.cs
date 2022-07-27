@@ -640,13 +640,19 @@ partial class FieldedEntity {
 					);
 
 					fw._HotFieldsDesc = hotFDesc;
+
+					// NOTE: The first offset value is never stored, as it'll
+					// always be zero otherwise.
+					Debug.Assert(nlc > 0); // Future-proofing
 					fw._HotStoreLength = VarInts.Length(hotFDesc)
-						+ nlc * (lastFOffsetSizeM1Or0 + 1)
+						+ (nlc - 1) * (lastFOffsetSizeM1Or0 + 1)
 						+ nextOffset;
 
 					fw._ColdStoreLength = 0;
 
 				} else {
+					Debug.Assert(nlc > nhc, $"Needs at least 1 cold field loaded"); // Future-proofing
+
 					int hotFValsSize = U.Add(ref offsets_r0, nhc);
 					int hotFOffsetSizeM1Or0 = nhc == 0 ? 0 : (
 						(uint)U.Add(ref offsets_r0, nhc-1)
@@ -659,8 +665,11 @@ partial class FieldedEntity {
 					);
 
 					fw._HotFieldsDesc = hotFDesc;
+
+					// NOTE: The first offset value is never stored, as it'll
+					// always be zero otherwise.
 					fw._HotStoreLength = VarInts.Length(hotFDesc)
-						+ nhc * (hotFOffsetSizeM1Or0 + 1)
+						+ (nhc - 1).PosOrNegate() * (hotFOffsetSizeM1Or0 + 1)
 						+ hotFValsSize;
 
 					int coldFOffsetSizeM1Or0 = (
@@ -674,8 +683,12 @@ partial class FieldedEntity {
 					);
 
 					fw._ColdFieldsDesc = coldFDesc;
+
+					// NOTE: The first offset value is never stored, as it'll
+					// always be zero otherwise.
+					Debug.Assert(ncc > 0); // Future-proofing
 					fw._ColdStoreLength = VarInts.Length(coldFDesc)
-						+ ncc * (coldFOffsetSizeM1Or0 + 1)
+						+ (ncc - 1) * (coldFOffsetSizeM1Or0 + 1)
 						+ (nextOffset - hotFValsSize);
 				}
 
@@ -1100,8 +1113,11 @@ partial class FieldedEntity {
 							..VarInts.Write(buffer_sharedFDesc, sharedFDesc)];
 
 						int sharedFOffsetSize = sharedFOffsetSizeM1Or0 + 1;
+
+						// NOTE: The first offset value is never stored, as
+						// it'll always be zero otherwise.
 						int sharedStoreLength = buffer_sharedFDesc.Length
-							+ nsc * sharedFOffsetSize
+							+ (nsc - 1) * sharedFOffsetSize
 							+ sharedFValsSize;
 
 						data = GC.AllocateUninitializedArray<byte>(sharedStoreLength);
