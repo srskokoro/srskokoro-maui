@@ -97,9 +97,10 @@ partial class FieldedEntity {
 
 				for (int i = 0; i < end; i++) {
 					U.Add(ref offsets_r0, i) = nextOffset;
-					ref var entry = ref U.Add(ref entries_r0, i);
 
 					LatentFieldVal lfval = fr.ReadLater(new(i, FieldStoreType.Cold));
+
+					ref var entry = ref U.Add(ref entries_r0, i);
 					entry.OrigValue = lfval;
 
 					// It's a reference type: it should've been
