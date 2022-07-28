@@ -60,6 +60,8 @@ partial class KokoroContext {
 		const string BetweenInt32Range = $"BETWEEN {Int32MinHex} AND {Int32MaxHex}";
 		const string BetweenInt32RangeGE0 = $"BETWEEN 0 AND {Int32MaxHex}";
 
+		const string IsBool = $"IN (0,1)";
+
 		const string Ord_Int32Nn = $"ord INTEGER NOT NULL CHECK(ord {BetweenInt32Range})";
 		const string Ord_Int64Nn = $"ord INTEGER NOT NULL";
 
@@ -276,9 +278,7 @@ partial class KokoroContext {
 		// schema is composed by the various compiled states of its entity
 		// classes, as each schema is a snapshot of the explicitly bound entity
 		// classes used to assemble the schema.
-		//
-		// This table lists those "explicitly" bound entity classes.
-		db.Exec("CREATE TABLE SchemaToDirectClass(" +
+		db.Exec("CREATE TABLE SchemaToClass(" +
 
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + WithFkDfr + "," +
 
@@ -288,34 +288,28 @@ partial class KokoroContext {
 			// was created.
 			"csum BLOB NOT NULL," +
 
-			"PRIMARY KEY(schema, cls)" +
-
-		") WITHOUT ROWID");
-
-		// The implicitly bound entity classes used to assemble the schema. Such
-		// "indirect" entity classes were "not" directly bound to the schema.
-		// Otherwise, they shouldn't be in this table.
-		//
-		// This table is exactly like `SchemaToDirectClass` except that classes
-		// not in that table goes into this table instead.
-		//
-		// Being able to distinguish between direct and indirect classes can be
-		// useful when trying to copy the classes of one fielded entity to
-		// another without having to copy all classes, as only the direct
-		// classes are needed to be copied.
-		db.Exec("CREATE TABLE SchemaToIndirectClass(" +
-
-			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + WithFkDfr + "," +
-
-			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFk + "," +
-
-			// The cryptographic checksum of the entity class when the schema
-			// was created.
-			"csum BLOB NOT NULL," +
+			// Whether the entity class was bound indirectly (TRUE) or directly
+			// (FALSE).
+			//
+			// The indirect classes are the classes that were implicitly bound
+			// because the directly bound classes included them -- see `ClassToInclude`
+			// table.
+			//
+			// Being able to distinguish between direct and indirect classes can
+			// be useful when trying to copy the classes of one fielded entity
+			// to another without having to copy all classes, as only the direct
+			// classes are needed to be copied.
+			$"ind INTEGER NOT NULL CHECK(ind {IsBool})," +
 
 			"PRIMARY KEY(schema, cls)" +
 
 		") WITHOUT ROWID");
+
+		db.Exec("CREATE INDEX [" +
+			"IX_SchemaToClass_C_ind_C_schema_C_cls" +
+		"] ON " +
+			"SchemaToClass(ind,schema,cls)" +
+		"");
 
 		// -
 		db.Exec("CREATE TABLE Class(" +

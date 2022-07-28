@@ -158,7 +158,7 @@ partial class FieldedEntity {
 		// Get the old schema's direct classes
 		var db = fr.Db;
 		using (var cmd = db.CreateCommand()) {
-			cmd.Set("SELECT cls FROM SchemaToDirectClass WHERE schema=$schema")
+			cmd.Set("SELECT cls FROM SchemaToClass WHERE (ind,schema)=(0,$schema)")
 				.AddParams(new("$schema", _SchemaRowId));
 
 			using var r = cmd.ExecuteReader();
@@ -912,10 +912,10 @@ partial class FieldedEntity {
 						SqliteParameter cmd_cls, cmd_csum;
 
 						cmd.Set(
-							"INSERT INTO SchemaToDirectClass" +
-							"(schema,cls,csum)" +
+							"INSERT INTO SchemaToClass" +
+							"(schema,cls,csum,ind)" +
 							"\nVALUES" +
-							"($schema,$cls,$csum)"
+							"($schema,$cls,$csum,0)"
 						).AddParams(
 							new("$schema", newSchemaRowId),
 							cmd_cls = new() { ParameterName = "$cls" },
@@ -957,10 +957,10 @@ partial class FieldedEntity {
 						SqliteParameter cmd_cls, cmd_csum;
 
 						cmd.Set(
-							"INSERT INTO SchemaToIndirectClass" +
-							"(schema,cls,csum)" +
+							"INSERT INTO SchemaToClass" +
+							"(schema,cls,csum,ind)" +
 							"\nVALUES" +
-							"($schema,$cls,$csum)"
+							"($schema,$cls,$csum,1)"
 						).AddParams(
 							new("$schema", newSchemaRowId),
 							cmd_cls = new() { ParameterName = "$cls" },
