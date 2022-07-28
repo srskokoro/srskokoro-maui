@@ -152,8 +152,7 @@ partial class FieldedEntity {
 		var clsSet = _AddedClasses;
 		clsSet = clsSet != null ? new(clsSet) : new();
 
-		var remClsSet = _RemovedClasses;
-		remClsSet = remClsSet != null ? new(remClsSet) : clsSet;
+		var remClsSet = _RemovedClasses ?? clsSet;
 
 		// Get the old schema's direct classes
 		var db = fr.Db;
