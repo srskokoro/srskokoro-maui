@@ -11,11 +11,6 @@ using System.Runtime.InteropServices;
 partial class FieldedEntity {
 	private const int MaxClassCount = byte.MaxValue;
 
-	private HashSet<long>? _AddedClasses;
-	private HashSet<long>? _RemovedClasses;
-
-	// --
-
 	[SuppressMessage("Style", "IDE1006:Naming Styles")]
 	private static class SchemaRewrite {
 
@@ -149,10 +144,10 @@ partial class FieldedEntity {
 	private protected void RewriteSchema(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
-		var clsSet = _AddedClasses;
+		HashSet<long>? clsSet = _Classes?._Added;
 		clsSet = clsSet != null ? new(clsSet) : new();
 
-		var remClsSet = _RemovedClasses ?? clsSet;
+		HashSet<long>? remClsSet = _Classes?._Added?._Removed ?? clsSet;
 
 		// Get the old schema's direct classes
 		var db = fr.Db;
