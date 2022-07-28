@@ -204,7 +204,7 @@ partial class FieldedEntity {
 				.AddParams(clsCmd_rowid = new() { ParameterName = "$rowid" });
 
 			// Get the needed info for each direct class
-			foreach (var cls in clsSet) {
+			foreach (long cls in clsSet) {
 				clsCmd_rowid.Value = cls;
 
 				using var r = clsCmd.ExecuteReader();
