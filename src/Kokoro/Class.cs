@@ -357,7 +357,7 @@ public sealed class Class : DataEntity {
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
 	/// or <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
-	/// beforehand, at least once, while inside a transaction.
+	/// beforehand, at least once, while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
