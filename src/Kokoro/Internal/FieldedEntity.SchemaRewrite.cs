@@ -144,10 +144,36 @@ partial class FieldedEntity {
 	private protected void RewriteSchema(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
-		HashSet<long>? clsSet = _Classes?._Added;
-		clsSet = clsSet != null ? new(clsSet) : new();
+		var clsSet = _Classes;
+		HashSet<long> remClsSet;
+		{
+			if (clsSet != null) {
+				clsSet.Clear();
 
-		HashSet<long>? remClsSet = _Classes?._Added?._Removed ?? clsSet;
+				var added = clsSet._Added;
+				if (added != null) {
+					clsSet.EnsureCapacity(added.Count);
+					clsSet.UnionWith(added);
+
+					remClsSet = added._Removed!;
+					if (remClsSet == null) {
+						// Favors the case where no classes are pending removal.
+
+						// C# compiler inverts this test, making the outer `goto`
+						// the conditional jump.
+						goto Fallback;
+					}
+					// This becomes a conditional jump forward to not favor it
+					goto Done;
+				}
+			} else {
+				_Classes = clsSet = new();
+			}
+		Fallback:
+			remClsSet = clsSet;
+		Done:
+			;
+		}
 
 		// Get the old schema's direct classes
 		var db = fr.Db;
