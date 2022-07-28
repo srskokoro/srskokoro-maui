@@ -1166,14 +1166,14 @@ partial class FieldedEntity {
 					using (var cmd = db.CreateCommand()) {
 						cmd.Set(
 							"INSERT INTO Schema" +
-							"(rowid,usum,hfld_count,cfld_count,data)" +
+							"(rowid,usum,hotCount,coldCount,data)" +
 							"\nVALUES" +
-							"($rowid,$usum,$hfld_count,$cfld_count,$data)"
+							"($rowid,$usum,$hotCount,$coldCount,$data)"
 						).AddParams(
 							new("$rowid", newSchemaRowId),
 							new("$usum", usum),
-							new("$hfld_count", fldHotCount),
-							new("$cfld_count", fldLocalCount - fldHotCount),
+							new("$hotCount", fldHotCount),
+							new("$coldCount", fldLocalCount - fldHotCount),
 							new("$data", data)
 						);
 

@@ -596,16 +596,16 @@ partial class FieldedEntity {
 			int xlc, xhc;
 			using (var cmd = db.CreateCommand()) {
 				cmd.Set(
-					"SELECT hfld_count,cfld_count FROM Schema\n" +
+					"SELECT hotCount,coldCount FROM Schema\n" +
 					"WHERE rowid=$rowid"
 				).AddParams(new("$rowid", _SchemaRowId));
 
 				using var r = cmd.ExecuteReader();
 				if (r.Read()) {
-					r.DAssert_Name(0, "hfld_count"); // The max hot field count
+					r.DAssert_Name(0, "hotCount"); // The max hot field count
 					xhc = r.GetInt32(0); // The expected max hot count
 
-					r.DAssert_Name(1, "cfld_count"); // The max cold field count
+					r.DAssert_Name(1, "coldCount"); // The max cold field count
 					xlc = r.GetInt32(1) + xhc; // The expected max local count
 				} else {
 					xlc = xhc = 0;

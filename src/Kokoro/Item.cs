@@ -141,7 +141,7 @@ public sealed class Item : FieldedEntity {
 		var db = Host.Db;
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT uid,ifnull(parent,0)AS parent,ord,ord_modst,schema,data_modst FROM Item\n" +
+			"SELECT uid,ifnull(parent,0)AS parent,ord,ordModSt,schema,dataModSt FROM Item\n" +
 			"WHERE rowid=$rowid"
 		);
 		cmd.Parameters.Add(new("$rowid", _RowId));
@@ -160,13 +160,13 @@ public sealed class Item : FieldedEntity {
 			r.DAssert_Name(2, "ord");
 			_Ordinal = r.GetInt32(2);
 
-			r.DAssert_Name(3, "ord_modst");
+			r.DAssert_Name(3, "ordModSt");
 			_OrdModStamp = r.GetInt64(3);
 
 			r.DAssert_Name(4, "schema");
 			_SchemaRowId = r.GetInt64(4);
 
-			r.DAssert_Name(5, "data_modst");
+			r.DAssert_Name(5, "dataModSt");
 			_DataModStamp = r.GetInt64(5);
 
 			return; // Early exit

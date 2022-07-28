@@ -99,7 +99,7 @@ partial class KokoroContext {
 			// item is considered modified for the first time. Note that, this
 			// is independent of item creation due to device syncs, as syncing
 			// should simply keep any existing modstamps on sync.
-			"ord_modst INTEGER NOT NULL," +
+			"ordModSt INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
 			// more other items or fielded entities.
@@ -117,7 +117,7 @@ partial class KokoroContext {
 			// (so as to have a separate sync conflict handling for it), place
 			// the fields in a subrecord instead.
 			// TODO-XXX Implement subrecord mechanics
-			"data_modst INTEGER NOT NULL," +
+			"dataModSt INTEGER NOT NULL," +
 
 			// The BLOB comprising the list of field data.
 			//
@@ -201,7 +201,7 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`, `lfld_count`, `hfld_count` and `cfld_count`.
+			// `rowid`, `localCount`, `hotCount` and `coldCount`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -217,21 +217,21 @@ partial class KokoroContext {
 			//
 			// This should always be equal to the number of local fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"lfld_count INTEGER NOT NULL CHECK(lfld_count {BetweenInt32RangeGE0}) AS (hfld_count + cfld_count)," +
+			$"localCount INTEGER NOT NULL CHECK(localCount {BetweenInt32RangeGE0}) AS (hotCount + coldCount)," +
 
 			// The maximum number of hot field data expected to be in the
 			// fielded entity where the schema is applied.
 			//
 			// This should always be equal to the number of hot fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"hfld_count INTEGER NOT NULL CHECK(hfld_count {BetweenInt32RangeGE0})," +
+			$"hotCount INTEGER NOT NULL CHECK(hotCount {BetweenInt32RangeGE0})," +
 
 			// The maximum number of cold field data expected to be in the
 			// fielded entity where the schema is applied.
 			//
 			// This should always be equal to the number of cold fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"cfld_count INTEGER NOT NULL CHECK(cfld_count {BetweenInt32RangeGE0})," +
+			$"coldCount INTEGER NOT NULL CHECK(coldCount {BetweenInt32RangeGE0})," +
 
 			// The BLOB comprising the list of field offsets and field values
 			// for shared fields.
