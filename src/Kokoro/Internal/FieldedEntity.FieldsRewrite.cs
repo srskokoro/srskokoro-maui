@@ -416,6 +416,8 @@ partial class FieldedEntity {
 	/// <remarks>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// while inside the transaction.
 	/// <br/>- Must be called while <see cref="MayCompileFieldChanges"/> is <see langword="true"/>.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.

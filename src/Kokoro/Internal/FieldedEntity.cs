@@ -149,6 +149,8 @@ public abstract partial class FieldedEntity : DataEntity {
 	/// or <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
 	/// beforehand, at least once, while inside the transaction.
+	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
