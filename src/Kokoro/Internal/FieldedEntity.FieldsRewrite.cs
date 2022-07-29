@@ -1024,7 +1024,7 @@ partial class FieldedEntity {
 				// NOTE: The first offset value is never stored, as it'll always
 				// be zero otherwise.
 				fw._HotStoreLength = VarInts.Length(hotFDesc)
-					+ (xhc - 1).PosOrNegate() * (hotFOffsetSizeM1Or0 + 1)
+					+ (xhc - 1).NonNegOrNegate() * (hotFOffsetSizeM1Or0 + 1)
 					+ hotFValsSize;
 
 				int coldFOffsetSizeM1Or0 = (
