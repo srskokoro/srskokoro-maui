@@ -281,8 +281,7 @@ public sealed class Class : DataEntity {
 		cmd.Set(
 			"SELECT uid,csum,ord,ifnull(grp,0)AS grp,name FROM Class\n" +
 			"WHERE rowid=$rowid"
-		);
-		cmd.Parameters.Add(new("$rowid", _RowId));
+		).AddParams(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
@@ -372,10 +371,10 @@ public sealed class Class : DataEntity {
 			cmd.Set(
 				"SELECT ord,sto FROM ClassToField\n" +
 				"WHERE cls=$cls AND fld=$fld"
+			).AddParams(
+				new("$cls", _RowId),
+				new("$fld", fld)
 			);
-			var cmdParams = cmd.Parameters;
-			cmdParams.Add(new("$cls", _RowId));
-			cmdParams.Add(new("$fld", fld));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -603,8 +602,8 @@ public sealed class Class : DataEntity {
 			cmd_old.Set(
 				"SELECT uid,ord FROM Class\n" +
 				"WHERE rowid=$rowid"
-			);
-			cmd_old.Parameters.Add(new("$rowid", _RowId));
+			).AddParams(new("$rowid", _RowId));
+
 			using var r = cmd_old.ExecuteReader();
 			if (!r.Read()) goto Missing;
 
@@ -696,9 +695,7 @@ public sealed class Class : DataEntity {
 			"FROM ClassToField AS cls2fld,FieldName AS fld\n" +
 			"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
 			"ORDER BY cls2fld.ord,fld.name"
-		);
-		var cmdParams = cmd.Parameters;
-		cmdParams.Add(new("$cls", clsRowId));
+		).AddParams(new("$cls", clsRowId));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
@@ -721,9 +718,7 @@ public sealed class Class : DataEntity {
 			"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
 			"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
 			"ORDER BY uid"
-		);
-		var cmdParams = cmd.Parameters;
-		cmdParams.Add(new("$cls", clsRowId));
+		).AddParams(new("$cls", clsRowId));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {

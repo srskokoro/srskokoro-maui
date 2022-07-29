@@ -169,10 +169,10 @@ public abstract partial class FieldedEntity : DataEntity {
 			cmd.Set(
 				"SELECT idx_sto FROM SchemaToField\n" +
 				"WHERE schema=$schema AND fld=$fld"
+			).AddParams(
+				new("$schema", _SchemaRowId),
+				new("$fld", fld)
 			);
-			var cmdParams = cmd.Parameters;
-			cmdParams.Add(new("$schema", _SchemaRowId));
-			cmdParams.Add(new("$fld", fld));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {

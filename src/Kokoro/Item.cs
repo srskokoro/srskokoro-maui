@@ -143,8 +143,7 @@ public sealed class Item : FieldedEntity {
 		cmd.Set(
 			"SELECT uid,ifnull(parent,0)AS parent,ord,ordModSt,schema,dataModSt FROM Item\n" +
 			"WHERE rowid=$rowid"
-		);
-		cmd.Parameters.Add(new("$rowid", _RowId));
+		).AddParams(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
@@ -365,10 +364,10 @@ public sealed class Item : FieldedEntity {
 				"SELECT data\n" +
 				"FROM ItemToFloatingField\n" +
 				"WHERE (item,fld)=($item,$fld)"
+			).AddParams(
+				new("$item", _RowId),
+				new("$fld", fieldId)
 			);
-			var cmdParams = cmd.Parameters;
-			cmdParams.Add(new("$item", _RowId));
-			cmdParams.Add(new("$fld", fieldId));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -395,10 +394,10 @@ public sealed class Item : FieldedEntity {
 				"DELETE FROM ItemToFloatingField\n" +
 				"WHERE (item,fld)=($item,$fld)\n" +
 				"RETURNING data"
+			).AddParams(
+				new("$item", _RowId),
+				new("$fld", fieldId)
 			);
-			var cmdParams = cmd.Parameters;
-			cmdParams.Add(new("$item", _RowId));
-			cmdParams.Add(new("$fld", fieldId));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
