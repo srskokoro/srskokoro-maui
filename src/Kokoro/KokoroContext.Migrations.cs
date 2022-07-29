@@ -306,9 +306,9 @@ partial class KokoroContext {
 		") WITHOUT ROWID");
 
 		db.Exec("CREATE INDEX [" +
-			"IX_SchemaToClass_C_ind_C_schema_C_cls" +
+			"IX_SchemaToClass_C_schema_C_ind_C_cls" +
 		"] ON " +
-			"SchemaToClass(ind,schema,cls)" +
+			"SchemaToClass(schema,ind,cls)" +
 		"");
 
 		// -
