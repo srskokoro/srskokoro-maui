@@ -249,16 +249,16 @@ public sealed class Class : DataEntity {
 	public void UnloadFieldInfo(StringKey name) {
 		var infos = _FieldInfos;
 		if (infos != null) {
-			infos.Remove(name);
 			_FieldInfoChanges?.Remove(name);
+			infos.Remove(name);
 		}
 	}
 
 	public void UnloadFieldInfos() {
 		var infos = _FieldInfos;
 		if (infos != null) {
-			infos.Clear();
 			_FieldInfoChanges = null;
+			infos.Clear();
 		}
 	}
 
@@ -427,8 +427,8 @@ public sealed class Class : DataEntity {
 
 
 	public void Unload() {
-		UnloadCore();
 		UnloadFieldInfos();
+		UnloadCore();
 	}
 
 	public void UnloadCore() {
