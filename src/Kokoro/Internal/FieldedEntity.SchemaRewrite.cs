@@ -157,6 +157,10 @@ partial class FieldedEntity {
 
 		KokoroSqliteDb db;
 		{
+			// Reinitialize the class set with only the classes awaiting
+			// addition, while also obtaining the class change set
+			// --
+
 			HashSet<long> clsChgSet; // The class change set
 
 			if (clsSet != null) {
