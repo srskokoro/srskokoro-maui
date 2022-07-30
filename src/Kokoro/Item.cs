@@ -10,7 +10,7 @@ public sealed class Item : FieldedEntity {
 	private long _RowId;
 	private UniqueId _Uid;
 
-	private long _ParentRowId;
+	private long _ParentId;
 	private int _Ordinal;
 	private long _OrdModStamp;
 
@@ -31,10 +31,10 @@ public sealed class Item : FieldedEntity {
 		NoChanges = 0,
 
 		Change_Uid          = 1 << 0,
-		Change_ParentRowId  = 1 << 1,
+		Change_ParentId  = 1 << 1,
 		Change_Ordinal      = 1 << 2,
 		Change_OrdModStamp  = 1 << 3,
-		Change_SchemaRowId  = 1 << 4,
+		Change_SchemaId  = 1 << 4,
 		Change_DataModStamp = 1 << 5,
 
 		NotExists           = 1 << 31,
@@ -62,15 +62,15 @@ public sealed class Item : FieldedEntity {
 
 	public void SetCachedUid(UniqueId uid) => _Uid = uid;
 
-	public long ParentRowId {
-		get => _ParentRowId;
+	public long ParentId {
+		get => _ParentId;
 		set {
-			_ParentRowId = value;
-			_State = StateFlags.Change_ParentRowId;
+			_ParentId = value;
+			_State = StateFlags.Change_ParentId;
 		}
 	}
 
-	public void SetCachedParentRowId(long parentRowId) => _ParentRowId = parentRowId;
+	public void SetCachedParentId(long parentId) => _ParentId = parentId;
 
 	public int Ordinal {
 		get => _Ordinal;
@@ -92,11 +92,11 @@ public sealed class Item : FieldedEntity {
 
 	public void SetCachedOrdModStamp(long ordModStamp) => _OrdModStamp = ordModStamp;
 
-	public new long SchemaRowId {
-		get => _SchemaRowId;
+	public new long SchemaId {
+		get => _SchemaId;
 		set {
-			_SchemaRowId = value;
-			_State = StateFlags.Change_SchemaRowId;
+			_SchemaId = value;
+			_State = StateFlags.Change_SchemaId;
 		}
 	}
 
@@ -138,7 +138,7 @@ public sealed class Item : FieldedEntity {
 	}
 
 	[SkipLocalsInit]
-	internal void LoadSchemaRowId(KokoroSqliteDb db) {
+	internal void LoadSchemaId(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
 		cmd.Set("SELECT schema FROM Item WHERE rowid=$rowid")
 			.AddParams(new("$rowid", _RowId));
@@ -146,10 +146,10 @@ public sealed class Item : FieldedEntity {
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
 			// Pending changes will be discarded
-			_State &= ~StateFlags.Change_SchemaRowId;
+			_State &= ~StateFlags.Change_SchemaId;
 
 			r.DAssert_Name(0, "schema");
-			_SchemaRowId = r.GetInt64(0);
+			_SchemaId = r.GetInt64(0);
 
 			return; // Early exit
 		}
@@ -181,7 +181,7 @@ public sealed class Item : FieldedEntity {
 			_Uid = r.GetUniqueId(0);
 
 			r.DAssert_Name(1, "parent");
-			_ParentRowId = r.GetInt64(1);
+			_ParentId = r.GetInt64(1);
 
 			r.DAssert_Name(2, "ord");
 			_Ordinal = r.GetInt32(2);
@@ -190,7 +190,7 @@ public sealed class Item : FieldedEntity {
 			_OrdModStamp = r.GetInt64(3);
 
 			r.DAssert_Name(4, "schema");
-			_SchemaRowId = r.GetInt64(4);
+			_SchemaId = r.GetInt64(4);
 
 			r.DAssert_Name(5, "dataModSt");
 			_DataModStamp = r.GetInt64(5);
@@ -457,130 +457,130 @@ public sealed class Item : FieldedEntity {
 	}
 
 
-	public bool LoadClassId(long classRowId) {
+	public bool LoadClassId(long classId) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
-				return InternalLoadClassId(db, classRowId);
+				return InternalLoadClassId(db, classId);
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2) {
+	public bool LoadClassId(long classId1, long classId2) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2)
 					;
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3) {
+	public bool LoadClassId(long classId1, long classId2, long classId3) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2) &
-					InternalLoadClassId(db, classRowId3)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2) &
+					InternalLoadClassId(db, classId3)
 					;
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4) {
+	public bool LoadClassId(long classId1, long classId2, long classId3, long classId4) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2) &
-					InternalLoadClassId(db, classRowId3) &
-					InternalLoadClassId(db, classRowId4)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2) &
+					InternalLoadClassId(db, classId3) &
+					InternalLoadClassId(db, classId4)
 					;
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5) {
+	public bool LoadClassId(long classId1, long classId2, long classId3, long classId4, long classId5) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2) &
-					InternalLoadClassId(db, classRowId3) &
-					InternalLoadClassId(db, classRowId4) &
-					InternalLoadClassId(db, classRowId5)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2) &
+					InternalLoadClassId(db, classId3) &
+					InternalLoadClassId(db, classId4) &
+					InternalLoadClassId(db, classId5)
 					;
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6) {
+	public bool LoadClassId(long classId1, long classId2, long classId3, long classId4, long classId5, long classId6) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2) &
-					InternalLoadClassId(db, classRowId3) &
-					InternalLoadClassId(db, classRowId4) &
-					InternalLoadClassId(db, classRowId5) &
-					InternalLoadClassId(db, classRowId6)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2) &
+					InternalLoadClassId(db, classId3) &
+					InternalLoadClassId(db, classId4) &
+					InternalLoadClassId(db, classId5) &
+					InternalLoadClassId(db, classId6)
 					;
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6, long classRowId7) {
+	public bool LoadClassId(long classId1, long classId2, long classId3, long classId4, long classId5, long classId6, long classId7) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2) &
-					InternalLoadClassId(db, classRowId3) &
-					InternalLoadClassId(db, classRowId4) &
-					InternalLoadClassId(db, classRowId5) &
-					InternalLoadClassId(db, classRowId6) &
-					InternalLoadClassId(db, classRowId7)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2) &
+					InternalLoadClassId(db, classId3) &
+					InternalLoadClassId(db, classId4) &
+					InternalLoadClassId(db, classId5) &
+					InternalLoadClassId(db, classId6) &
+					InternalLoadClassId(db, classId7)
 					;
 			}
 			return false;
 		}
 	}
 
-	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6, long classRowId7, long classRowId8) {
+	public bool LoadClassId(long classId1, long classId2, long classId3, long classId4, long classId5, long classId6, long classId7, long classId8) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			LoadSchemaRowId(db);
+			LoadSchemaId(db);
 			if (Exists) {
 				return
-					InternalLoadClassId(db, classRowId1) &
-					InternalLoadClassId(db, classRowId2) &
-					InternalLoadClassId(db, classRowId3) &
-					InternalLoadClassId(db, classRowId4) &
-					InternalLoadClassId(db, classRowId5) &
-					InternalLoadClassId(db, classRowId6) &
-					InternalLoadClassId(db, classRowId7) &
-					InternalLoadClassId(db, classRowId8)
+					InternalLoadClassId(db, classId1) &
+					InternalLoadClassId(db, classId2) &
+					InternalLoadClassId(db, classId3) &
+					InternalLoadClassId(db, classId4) &
+					InternalLoadClassId(db, classId5) &
+					InternalLoadClassId(db, classId6) &
+					InternalLoadClassId(db, classId7) &
+					InternalLoadClassId(db, classId8)
 					;
 			}
 			return false;
@@ -599,10 +599,10 @@ public sealed class Item : FieldedEntity {
 	public void UnloadCoreState() {
 		_State = default;
 		_Uid = default;
-		_ParentRowId = default;
+		_ParentId = default;
 		_Ordinal = default;
 		_OrdModStamp = default;
-		_SchemaRowId = default;
+		_SchemaId = default;
 		_DataModStamp = default;
 	}
 
@@ -627,7 +627,7 @@ public sealed class Item : FieldedEntity {
 		if (newRowId == 0) {
 			// Guaranteed not null if didn't throw above
 			Debug.Assert(db.Context != null);
-			newRowId = db.Context.NextItemRowId();
+			newRowId = db.Context.NextItemId();
 			hasUsedNextRowId = true;
 		} else {
 			hasUsedNextRowId = false;
@@ -643,7 +643,7 @@ public sealed class Item : FieldedEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		)) {
-			db.Context?.UndoItemRowId(newRowId);
+			db.Context?.UndoItemId(newRowId);
 			throw;
 		}
 

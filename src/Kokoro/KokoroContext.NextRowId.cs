@@ -22,26 +22,26 @@ partial class KokoroContext {
 		);
 
 		using var reader = cmd.ExecuteReader();
-		reader.Read(); _NextItemRowId = reader.GetInt64(0);
-		reader.Read(); _NextSchemaRowId = reader.GetInt64(0);
-		reader.Read(); _NextClassRowId = reader.GetInt64(0);
-		reader.Read(); _NextFieldNameRowId = reader.GetInt64(0);
+		reader.Read(); _NextItemId = reader.GetInt64(0);
+		reader.Read(); _NextSchemaId = reader.GetInt64(0);
+		reader.Read(); _NextClassId = reader.GetInt64(0);
+		reader.Read(); _NextFieldId = reader.GetInt64(0);
 	}
 
-	private long _NextItemRowId;
-	private long _NextSchemaRowId;
-	private long _NextClassRowId;
-	private long _NextFieldNameRowId;
+	private long _NextItemId;
+	private long _NextSchemaId;
+	private long _NextClassId;
+	private long _NextFieldId;
 
-	internal long NextItemRowId() => NextRowId(ref _NextItemRowId);
-	internal long NextSchemaRowId() => NextRowId(ref _NextSchemaRowId);
-	internal long NextClassRowId() => NextRowId(ref _NextClassRowId);
-	internal long NextFieldNameRowId() => NextRowId(ref _NextFieldNameRowId);
+	internal long NextItemId() => NextRowId(ref _NextItemId);
+	internal long NextSchemaId() => NextRowId(ref _NextSchemaId);
+	internal long NextClassId() => NextRowId(ref _NextClassId);
+	internal long NextFieldId() => NextRowId(ref _NextFieldId);
 
-	internal void UndoItemRowId(long rowidToUndo) => UndoRowId(ref _NextItemRowId, rowidToUndo);
-	internal void UndoSchemaRowId(long rowidToUndo) => UndoRowId(ref _NextSchemaRowId, rowidToUndo);
-	internal void UndoClassRowId(long rowidToUndo) => UndoRowId(ref _NextClassRowId, rowidToUndo);
-	internal void UndoFieldNameRowId(long rowidToUndo) => UndoRowId(ref _NextFieldNameRowId, rowidToUndo);
+	internal void UndoItemId(long rowidToUndo) => UndoRowId(ref _NextItemId, rowidToUndo);
+	internal void UndoSchemaId(long rowidToUndo) => UndoRowId(ref _NextSchemaId, rowidToUndo);
+	internal void UndoClassId(long rowidToUndo) => UndoRowId(ref _NextClassId, rowidToUndo);
+	internal void UndoFieldId(long rowidToUndo) => UndoRowId(ref _NextFieldId, rowidToUndo);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	private static long NextRowId(ref long nextRowIdFieldRef) {

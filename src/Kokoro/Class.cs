@@ -18,7 +18,7 @@ public sealed class Class : DataEntity {
 	private byte[]? _CachedCsum;
 
 	private int _Ordinal;
-	private long _GrpRowId;
+	private long _GrpId;
 	private string? _Name;
 
 	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
@@ -40,7 +40,7 @@ public sealed class Class : DataEntity {
 
 		Change_Uid      = 1 << 0,
 		Change_Ordinal  = 1 << 1,
-		Change_GrpRowId = 1 << 2,
+		Change_GrpId    = 1 << 2,
 		Change_Name     = 1 << 3,
 
 		NotExists       = 1 << 31,
@@ -100,15 +100,15 @@ public sealed class Class : DataEntity {
 
 	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
 
-	public long GrpRowId {
-		get => _GrpRowId;
+	public long GrpId {
+		get => _GrpId;
 		set {
-			_GrpRowId = value;
-			_State = StateFlags.Change_GrpRowId;
+			_GrpId = value;
+			_State = StateFlags.Change_GrpId;
 		}
 	}
 
-	public void SetCachedGrpRowId(long grpRowId) => _GrpRowId = grpRowId;
+	public void SetCachedGrpId(long grpId) => _GrpId = grpId;
 
 	public string? Name {
 		get => _Name;
@@ -298,7 +298,7 @@ public sealed class Class : DataEntity {
 			_Ordinal = r.GetInt32(2);
 
 			r.DAssert_Name(3, "grp");
-			_GrpRowId = r.GetInt64(3);
+			_GrpId = r.GetInt64(3);
 
 			r.DAssert_Name(4, "name");
 			_Name = r.GetString(4);
@@ -436,7 +436,7 @@ public sealed class Class : DataEntity {
 		_Uid = default;
 		_CachedCsum = default;
 		_Ordinal = default;
-		_GrpRowId = default;
+		_GrpId = default;
 		_Name = default;
 	}
 
@@ -456,7 +456,7 @@ public sealed class Class : DataEntity {
 		if (rowid == 0) {
 			// Guaranteed not null if didn't throw above
 			Debug.Assert(db.Context != null);
-			rowid = db.Context.NextClassRowId();
+			rowid = db.Context.NextClassId();
 			hasUsedNextRowId = true;
 		} else {
 			hasUsedNextRowId = false;
@@ -501,7 +501,7 @@ public sealed class Class : DataEntity {
 			hasher.UpdateLE(_Ordinal);
 			Debug.Assert(1 == hasher_debug_i++);
 
-			cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
+			cmdParams.Add(new("$grp", RowIds.DBBox(_GrpId)));
 			cmdParams.Add(new("$name", _Name.OrDBNull()));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
@@ -531,7 +531,7 @@ public sealed class Class : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		)) {
-			db.Context?.UndoClassRowId(rowid);
+			db.Context?.UndoClassId(rowid);
 			throw;
 		}
 
@@ -632,9 +632,9 @@ public sealed class Class : DataEntity {
 			}
 
 			if (state != StateFlags.NoChanges) {
-				if ((state & StateFlags.Change_GrpRowId) != 0) {
+				if ((state & StateFlags.Change_GrpId) != 0) {
 					cmdSb.Append("grp=$grp,");
-					cmdParams.Add(new("$grp", RowIds.DBBox(_GrpRowId)));
+					cmdParams.Add(new("$grp", RowIds.DBBox(_GrpId)));
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
@@ -686,7 +686,7 @@ public sealed class Class : DataEntity {
 			$"Cannot update `{nameof(Class)}` with rowid {rowid} as it's missing.");
 	}
 
-	private static void HashWithFieldInfos(KokoroSqliteDb db, long clsRowId, ref Blake2bHashState hasher) {
+	private static void HashWithFieldInfos(KokoroSqliteDb db, long cls, ref Blake2bHashState hasher) {
 		const int hasher_flds_dlen = 64; // 512-bit hash
 		var hasher_flds = Blake2b.CreateIncrementalHasher(hasher_flds_dlen);
 
@@ -696,21 +696,21 @@ public sealed class Class : DataEntity {
 			"FROM ClassToField AS cls2fld,FieldName AS fld\n" +
 			"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
 			"ORDER BY cls2fld.ord,fld.name"
-		).AddParams(new("$cls", clsRowId));
+		).AddParams(new("$cls", cls));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
 			r.DAssert_Name(0, "csum");
 			// Will be empty span on null (i.e., won't throw NRE)
 			var csum = (ReadOnlySpan<byte>)r.GetBytesOrNull(0);
-			Debug.Assert(csum.Length > 0, $"Unexpected: field info has no `csum` (under class rowid {clsRowId})");
+			Debug.Assert(csum.Length > 0, $"Unexpected: field info has no `csum` (under class rowid {cls})");
 			hasher_flds.Update(csum);
 		}
 
 		hasher.Update(hasher_flds.FinishAndGet(stackalloc byte[hasher_flds_dlen]));
 	}
 
-	private static void HashWithClassIncludes(KokoroSqliteDb db, long clsRowId, ref Blake2bHashState hasher) {
+	private static void HashWithClassIncludes(KokoroSqliteDb db, long cls, ref Blake2bHashState hasher) {
 		const int hasher_incls_dlen = 64; // 512-bit hash
 		var hasher_incls = Blake2b.CreateIncrementalHasher(hasher_incls_dlen);
 
@@ -719,7 +719,7 @@ public sealed class Class : DataEntity {
 			"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
 			"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
 			"ORDER BY uid"
-		).AddParams(new("$cls", clsRowId));
+		).AddParams(new("$cls", cls));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
@@ -732,7 +732,7 @@ public sealed class Class : DataEntity {
 	}
 
 	[SkipLocalsInit]
-	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsRowId) {
+	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsId) {
 		var fieldInfoChanges_iter = fieldInfoChanges.GetEnumerator();
 		if (!fieldInfoChanges_iter.MoveNext()) goto NoFieldInfoChanges;
 
@@ -743,7 +743,7 @@ public sealed class Class : DataEntity {
 			delCmd = null;
 
 		SqliteParameter
-			cmd_cls = new("$cls", clsRowId),
+			cmd_cls = new("$cls", clsId),
 			cmd_fld = new() { ParameterName = "$fld" };
 
 		SqliteParameter
@@ -934,7 +934,7 @@ public sealed class Class : DataEntity {
 		if (newRowId == 0) {
 			// Guaranteed not null if didn't throw above
 			Debug.Assert(db.Context != null);
-			newRowId = db.Context.NextClassRowId();
+			newRowId = db.Context.NextClassId();
 			hasUsedNextRowId = true;
 		} else {
 			hasUsedNextRowId = false;
@@ -950,7 +950,7 @@ public sealed class Class : DataEntity {
 			ex is not SqliteException sqlex ||
 			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 		)) {
-			db.Context?.UndoClassRowId(newRowId);
+			db.Context?.UndoClassId(newRowId);
 			throw;
 		}
 

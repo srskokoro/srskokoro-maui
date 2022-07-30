@@ -237,7 +237,7 @@ partial class FieldedEntity {
 		[DoesNotReturn]
 		private static void E_LocalFieldsWithSameIndex(FieldedEntity owner) {
 			throw new InvalidDataException(
-				$"Schema (with rowid {owner._SchemaRowId}) has local fields " +
+				$"Schema (with rowid {owner._SchemaId}) has local fields " +
 				$"occupying the same index.");
 		}
 	}
@@ -421,7 +421,7 @@ partial class FieldedEntity {
 	/// <remarks>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
 	/// <br/>- Must be called while <see cref="MayCompileFieldChanges"/> is <see langword="true"/>.
 	/// <para>
@@ -460,7 +460,7 @@ partial class FieldedEntity {
 					"SELECT idx_sto FROM SchemaToField\n" +
 					"WHERE (schema,fld)=($schema,$fld)"
 				).AddParams(
-					new("$schema", _SchemaRowId),
+					new("$schema", _SchemaId),
 					cmd_fld = new() { ParameterName = "$fld" }
 				);
 
@@ -609,7 +609,7 @@ partial class FieldedEntity {
 				cmd.Set(
 					"SELECT hotCount,coldCount FROM Schema\n" +
 					"WHERE rowid=$rowid"
-				).AddParams(new("$rowid", _SchemaRowId));
+				).AddParams(new("$rowid", _SchemaId));
 
 				using var r = cmd.ExecuteReader();
 				if (r.Read()) {
@@ -631,7 +631,7 @@ partial class FieldedEntity {
 			// local field may change in that case.
 			// - The check also ensures `xlc` is never negative, or we throw.
 			if (lmn > xlc) {
-				E_IndexBeyondLocalFieldCount(_SchemaRowId, lmn: lmn, xlc: xlc);
+				E_IndexBeyondLocalFieldCount(_SchemaId, lmn: lmn, xlc: xlc);
 			}
 
 			Debug.Assert(xlc > 0); // Assured by the above
@@ -640,24 +640,24 @@ partial class FieldedEntity {
 			// - Necessary for when we finally allocate the buffers later below,
 			// which would be `xlc` in length each, to be cut by `xhc`.
 			if ((uint)xhc > (uint)xlc) {
-				E_InvalidHotFieldCount(_SchemaRowId, xhc: xhc, xlc: xlc);
+				E_InvalidHotFieldCount(_SchemaId, xhc: xhc, xlc: xlc);
 			}
 
 			// -=-
 
 			[DoesNotReturn]
-			static void E_IndexBeyondLocalFieldCount(long schemaRowId, int lmn, int xlc) {
+			static void E_IndexBeyondLocalFieldCount(long schemaId, int lmn, int xlc) {
 				Debug.Assert(lmn > xlc);
 				throw new InvalidDataException(
-					$"Schema (with rowid {schemaRowId}) gave a local field " +
+					$"Schema (with rowid {schemaId}) gave a local field " +
 					$"index (which is {lmn-1}) not under the expected maximum " +
 					$"number of local fields it defined (which is {xlc}).");
 			}
 
 			[DoesNotReturn]
-			static void E_InvalidHotFieldCount(long schemaRowId, int xhc, int xlc) {
+			static void E_InvalidHotFieldCount(long schemaId, int xhc, int xlc) {
 				throw new InvalidDataException(
-					$"Schema (with rowid {schemaRowId}) has {xhc} as its " +
+					$"Schema (with rowid {schemaId}) has {xhc} as its " +
 					$"maximum hot field count while having {xlc} as its " +
 					$"maximum local field count.");
 			}
@@ -818,7 +818,7 @@ partial class FieldedEntity {
 				Debug.Fail(
 					$"Invalid: `xhc != ohc` while \"real cold store\" flag set;" +
 					$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-					$"{Environment.NewLine}Schema: {_SchemaRowId}; " +
+					$"{Environment.NewLine}Schema: {_SchemaId}; " +
 					$"{Environment.NewLine}xhc={xhc}; ohc={ohc};");
 
 				goto LoadAll_TryRewriteHotColdSplit;
@@ -899,7 +899,7 @@ partial class FieldedEntity {
 						$"Invalid: Entity found with expected hot data size " +
 						$"different from when actually loaded." +
 						$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-						$"{Environment.NewLine}Schema: {_SchemaRowId}; " +
+						$"{Environment.NewLine}Schema: {_SchemaId}; " +
 						$"{Environment.NewLine}Expected hot data size: {hotFValsSize};" +
 						$"{Environment.NewLine}Actual hot data size:   {newHotFValsSize};");
 
@@ -1098,6 +1098,6 @@ partial class FieldedEntity {
 		throw new InvalidOperationException(
 			$"Total number of fields (currently {currentCount}) shouldn't exceed {MaxFieldCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Schema: {_SchemaRowId};");
+			$"{Environment.NewLine}Schema: {_SchemaId};");
 	}
 }

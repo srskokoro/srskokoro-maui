@@ -26,15 +26,15 @@ partial class FieldedEntity {
 	private sealed class ClassChanges : HashSet<long> { }
 
 
-	public bool IsOfClassCached(long classRowId) {
+	public bool IsOfClassCached(long classId) {
 		var classes = _Classes;
-		if (classes != null && classes.Contains(classRowId)) {
+		if (classes != null && classes.Contains(classId)) {
 			return true;
 		}
 		return false;
 	}
 
-	public void AddClass(long classRowId) {
+	public void AddClass(long classId) {
 		var classes = _Classes;
 		if (classes == null) {
 			// This becomes a conditional jump forward to not favor it
@@ -52,8 +52,8 @@ partial class FieldedEntity {
 		// as held may fail, and if that happens while the class is marked first
 		// as changed, the "changed" mark would be interpreted incorrectly as a
 		// "class removal" instead, which isn't what we want.
-		classes.Add(classRowId); // Marks as held
-		changes.Add(classRowId); // Marks as changed
+		classes.Add(classId); // Marks as held
+		changes.Add(classId); // Marks as changed
 		return;
 
 	Init:
@@ -63,7 +63,7 @@ partial class FieldedEntity {
 		goto Set;
 	}
 
-	public void RemoveClass(long classRowId) {
+	public void RemoveClass(long classId) {
 		var classes = _Classes;
 		if (classes == null) {
 			// This becomes a conditional jump forward to not favor it
@@ -74,7 +74,7 @@ partial class FieldedEntity {
 		// class as held may fail, and if that happens while the class is held
 		// and marked first as changed, the "changed" mark would be interpreted
 		// incorrectly as a "class addition" instead, which isn't what we want.
-		classes.Remove(classRowId); // Unmarks as held (if marked held before)
+		classes.Remove(classId); // Unmarks as held (if marked held before)
 
 		var changes = classes._Changes;
 		if (changes == null) {
@@ -83,7 +83,7 @@ partial class FieldedEntity {
 		}
 
 	Set:
-		changes.Add(classRowId); // Marks as changed
+		changes.Add(classId); // Marks as changed
 		return;
 
 	Init:
@@ -94,7 +94,7 @@ partial class FieldedEntity {
 	}
 
 	/// <seealso cref="AddClassAsLoaded(long)"/>
-	public void AddClassToCache(long classRowId) {
+	public void AddClassToCache(long classId) {
 		var classes = _Classes;
 		if (classes == null) {
 			// This becomes a conditional jump forward to not favor it
@@ -102,7 +102,7 @@ partial class FieldedEntity {
 		}
 
 	Set:
-		classes.Add(classRowId); // Marks as held
+		classes.Add(classId); // Marks as held
 		return;
 
 	Init:
@@ -114,17 +114,17 @@ partial class FieldedEntity {
 	/// Same as <see cref="UnmarkClassAsChanged(long)"/> followed by
 	/// <see cref="AddClassToCache(long)"/>.
 	/// </summary>
-	public void AddClassAsLoaded(long classRowId) {
+	public void AddClassAsLoaded(long classId) {
 		var classes = _Classes;
 		if (classes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
 		}
 
-		classes._Changes?.Remove(classRowId); // Unmarks as changed
+		classes._Changes?.Remove(classId); // Unmarks as changed
 
 	Set:
-		classes.Add(classRowId); // Marks as held
+		classes.Add(classId); // Marks as held
 		return;
 
 	Init:
@@ -136,12 +136,12 @@ partial class FieldedEntity {
 	/// Alias for <see cref="UnloadClassId(long)"/>
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void RemoveClassFromCache(long classRowId)
-		=> UnloadClassId(classRowId);
+	public void RemoveClassFromCache(long classId)
+		=> UnloadClassId(classId);
 
 
-	public void UnmarkClassAsChanged(long classRowId)
-		=> _Classes?._Changes?.Remove(classRowId);
+	public void UnmarkClassAsChanged(long classId)
+		=> _Classes?._Changes?.Remove(classId);
 
 	public void UnmarkClassesAsChanged() {
 		var classes = _Classes;
@@ -150,7 +150,7 @@ partial class FieldedEntity {
 	}
 
 
-	public void UnloadClassId(long classRowId) {
+	public void UnloadClassId(long classId) {
 		var classes = _Classes;
 		if (classes != null) {
 			// NOTE: Unmark first as changed before unmarking as held. Unmarking
@@ -158,8 +158,8 @@ partial class FieldedEntity {
 			// class is unmarked first as held, the "changed" mark would be
 			// interpreted incorrectly as a "class removal" -- a potentially
 			// destructive side-effect.
-			classes._Changes?.Remove(classRowId); // Unmarks as changed
-			classes.Remove(classRowId); // Unmarks as held
+			classes._Changes?.Remove(classId); // Unmarks as changed
+			classes.Remove(classId); // Unmarks as held
 		}
 	}
 
@@ -181,26 +181,26 @@ partial class FieldedEntity {
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
 	/// or <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
 	/// </remarks>
 	[SkipLocalsInit]
-	private protected bool InternalLoadClassId(KokoroSqliteDb db, long classRowId) {
+	private protected bool InternalLoadClassId(KokoroSqliteDb db, long classId) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			"SELECT 1 FROM SchemaToClass\n" +
 			"WHERE (schema,cls)=($schema,$cls)"
 		).AddParams(
-			new("$schema", _SchemaRowId),
-			new("$cls", classRowId)
+			new("$schema", _SchemaId),
+			new("$cls", classId)
 		);
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
-			AddClassAsLoaded(classRowId);
+			AddClassAsLoaded(classId);
 			return true;
 		}
 
@@ -211,7 +211,7 @@ partial class FieldedEntity {
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
 	/// or <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
@@ -229,7 +229,7 @@ partial class FieldedEntity {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set("SELECT cls FROM SchemaToClass WHERE schema=$schema")
-			.AddParams(new("$schema", _SchemaRowId));
+			.AddParams(new("$schema", _SchemaId));
 
 		var r = cmd.ExecuteReader();
 		r.DAssert_Name(0, "cls");

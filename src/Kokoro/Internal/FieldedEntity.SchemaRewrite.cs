@@ -135,7 +135,7 @@ partial class FieldedEntity {
 	/// <remarks>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
@@ -191,7 +191,7 @@ partial class FieldedEntity {
 			db = fr.Db;
 			using var cmd = db.CreateCommand();
 			cmd.Set("SELECT cls FROM SchemaToClass WHERE (ind,schema)=(0,$schema)")
-				.AddParams(new("$schema", _SchemaRowId));
+				.AddParams(new("$schema", _SchemaId));
 
 			using var r = cmd.ExecuteReader();
 			while (r.Read()) {
@@ -327,7 +327,7 @@ partial class FieldedEntity {
 
 			using (var cmd = db.CreateCommand()) {
 				cmd.Set("SELECT fld,idx_sto FROM SchemaToField WHERE schema=$schema")
-					.AddParams(new("$schema", _SchemaRowId));
+					.AddParams(new("$schema", _SchemaId));
 
 				using var r = cmd.ExecuteReader();
 				while (r.Read()) {
@@ -911,10 +911,10 @@ partial class FieldedEntity {
 					// Existing schema found!
 
 					r.DAssert_Name(0, "rowid");
-					long schemaRowId = r.GetInt64(0);
+					long schemaId = r.GetInt64(0);
 
-					Debug.Assert(schemaRowId != 0);
-					_SchemaRowId = schemaRowId;
+					Debug.Assert(schemaId != 0);
+					_SchemaId = schemaId;
 
 					return; // Early exit
 				}
@@ -924,7 +924,7 @@ partial class FieldedEntity {
 			// --
 
 			Debug.Assert(db.Context != null);
-			long newSchemaRowId = db.Context.NextSchemaRowId();
+			long newSchemaId = db.Context.NextSchemaId();
 
 			try {
 				// Save the class entries for the new schema
@@ -952,7 +952,7 @@ partial class FieldedEntity {
 							"\nVALUES" +
 							"($schema,$cls,$csum,0)"
 						).AddParams(
-							new("$schema", newSchemaRowId),
+							new("$schema", newSchemaId),
 							cmd_cls = new() { ParameterName = "$cls" },
 							cmd_csum = new() { ParameterName = "$csum" }
 						);
@@ -997,7 +997,7 @@ partial class FieldedEntity {
 							"\nVALUES" +
 							"($schema,$cls,$csum,1)"
 						).AddParams(
-							new("$schema", newSchemaRowId),
+							new("$schema", newSchemaId),
 							cmd_cls = new() { ParameterName = "$cls" },
 							cmd_csum = new() { ParameterName = "$csum" }
 						);
@@ -1033,7 +1033,7 @@ partial class FieldedEntity {
 						"\nVALUES" +
 						"($schema,$fld,$idx_sto)"
 					).AddParams(
-						new("$schema", newSchemaRowId),
+						new("$schema", newSchemaId),
 						cmd_fld = new() { ParameterName = "$fld" },
 						cmd_idx_sto = new() { ParameterName = "$idx_sto" }
 					);
@@ -1205,7 +1205,7 @@ partial class FieldedEntity {
 							"\nVALUES" +
 							"($rowid,$usum,$hotCount,$coldCount,$data)"
 						).AddParams(
-							new("$rowid", newSchemaRowId),
+							new("$rowid", newSchemaId),
 							new("$usum", usum),
 							new("$hotCount", fldHotCount),
 							new("$coldCount", fldLocalCount - fldHotCount),
@@ -1221,12 +1221,12 @@ partial class FieldedEntity {
 				ex is not SqliteException sqlex ||
 				sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 			) {
-				db.Context?.UndoSchemaRowId(newSchemaRowId);
+				db.Context?.UndoSchemaId(newSchemaId);
 				throw;
 			}
 
 			// Success!
-			_SchemaRowId = newSchemaRowId;
+			_SchemaId = newSchemaId;
 
 			return; // Early exit
 
@@ -1249,7 +1249,7 @@ partial class FieldedEntity {
 		throw new InvalidOperationException(
 			$"Total number of classes (currently {currentCount}) shouldn't exceed {MaxClassCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Schema: {_SchemaRowId};");
+			$"{Environment.NewLine}Schema: {_SchemaId};");
 	}
 
 	// --

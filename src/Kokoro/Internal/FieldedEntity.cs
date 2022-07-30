@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 public abstract partial class FieldedEntity : DataEntity {
 
-	private protected long _SchemaRowId;
+	private protected long _SchemaId;
 	private Fields? _Fields;
 
 	private sealed class Fields : Dictionary<StringKey, FieldVal> {
@@ -20,9 +20,9 @@ public abstract partial class FieldedEntity : DataEntity {
 	internal FieldedEntity(KokoroCollection host) : base(host) { }
 
 
-	public long SchemaRowId => _SchemaRowId;
+	public long SchemaId => _SchemaId;
 
-	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
+	public void SetCachedSchemaId(long schemaId) => _SchemaId = schemaId;
 
 
 	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
@@ -148,7 +148,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal Stream ReadSharedStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
-			tableName: "Schema", columnName: "data", rowid: _SchemaRowId,
+			tableName: "Schema", columnName: "data", rowid: _SchemaId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
@@ -160,7 +160,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	/// or <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
 	/// beforehand, at least once, while inside the transaction.
-	/// <br/>- Must load <see cref="_SchemaRowId"/> beforehand, at least once,
+	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
@@ -181,7 +181,7 @@ public abstract partial class FieldedEntity : DataEntity {
 				"SELECT idx_sto FROM SchemaToField\n" +
 				"WHERE schema=$schema AND fld=$fld"
 			).AddParams(
-				new("$schema", _SchemaRowId),
+				new("$schema", _SchemaId),
 				new("$fld", fld)
 			);
 

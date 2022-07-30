@@ -76,7 +76,7 @@ public readonly ref struct KokoroCollectionMaintenance {
 	public void CompressRowIds(CompressRowIdsProgress progress) {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
-		// TODO When done, update the next rowid slots available in `KokoroContext._Next**RowId` et al.
-		_ = _Collection.Context.NextItemRowId(); // Referenced simply so that we don't forget
+		// TODO When done, update the next rowid slots available in `KokoroContext._Next**Id` et al.
+		_ = _Collection.Context.NextItemId(); // Referenced simply so that we don't forget
 	}
 }
