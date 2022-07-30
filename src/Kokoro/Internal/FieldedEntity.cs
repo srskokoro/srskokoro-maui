@@ -84,7 +84,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	}
 
 	/// <summary>
-	/// Same as <see cref="ClearFieldChangeStatus(StringKey)"/> followed by
+	/// Same as <see cref="UnmarkFieldAsChanged(StringKey)"/> followed by
 	/// <see cref="SetCache(StringKey, FieldVal)"/>.
 	/// </summary>
 	public void SetAsLoaded(StringKey name, FieldVal value) {
@@ -105,10 +105,10 @@ public abstract partial class FieldedEntity : DataEntity {
 		goto Set;
 	}
 
-	public void ClearFieldChangeStatus(StringKey name)
+	public void UnmarkFieldAsChanged(StringKey name)
 		=> _FieldChanges?.Remove(name);
 
-	public void ClearFieldChangeStatuses()
+	public void UnmarkFieldsAsChanged()
 		=> _FieldChanges = null;
 
 

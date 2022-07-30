@@ -407,7 +407,7 @@ partial class FieldedEntity {
 			$"`{nameof(fw._FloatingFields)}` must be null or empty prior a fields rewrite");
 	}
 
-	/// <seealso cref="ClearFieldChangeStatuses()"/>
+	/// <seealso cref="UnmarkFieldsAsChanged()"/>
 	private protected bool MayCompileFieldChanges {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _FieldChanges == null ? false : true;
