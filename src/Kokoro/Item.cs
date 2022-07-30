@@ -593,10 +593,10 @@ public sealed class Item : FieldedEntity {
 	public void Unload() {
 		UnloadClassIds();
 		UnloadFields();
-		UnloadCoreState();
+		UnloadCore();
 	}
 
-	public void UnloadCoreState() {
+	public void UnloadCore() {
 		_State = default;
 		_Uid = default;
 		_ParentId = default;

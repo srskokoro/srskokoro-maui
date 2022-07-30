@@ -427,11 +427,11 @@ public sealed class Class : DataEntity {
 
 
 	public void Unload() {
-		UnloadCoreState();
+		UnloadCore();
 		UnloadFieldInfos();
 	}
 
-	public void UnloadCoreState() {
+	public void UnloadCore() {
 		_State = default;
 		_Uid = default;
 		_CachedCsum = default;
