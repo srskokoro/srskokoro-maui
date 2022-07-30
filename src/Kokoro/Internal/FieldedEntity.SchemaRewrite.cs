@@ -155,34 +155,37 @@ partial class FieldedEntity {
 		// the classes in the current set. In the end, the resulting set will
 		// contain all the classes of the fielded entity under a new schema.
 
-		HashSet<long> clsChgSet; // The class change set
+		KokoroSqliteDb db;
 		{
+			HashSet<long> clsChgSet; // The class change set
+
 			if (clsSet != null) {
 				clsChgSet = clsSet._Changes!;
 				if (clsChgSet == null) {
 					// NOTE: The favored case is schema rewrites due to shared
 					// field changes, often without any class changes.
 					clsSet.Clear();
-					goto Fallback;
+					goto FallbackForClsChgSet;
 				} else {
 					// NOTE: The intersection represents the newly added
 					// classes. Classes present in the change set but not in the
 					// resulting set, represent the classes awaiting removal.
 					clsSet.IntersectWith(clsChgSet);
-					goto Done;
+					goto DoneWithClsChgSet;
 				}
 			} else {
 				_Classes = clsSet = new();
 			}
-		Fallback:
+		FallbackForClsChgSet:
 			clsChgSet = clsSet;
-		Done:
+		DoneWithClsChgSet:
 			;
-		}
 
-		// Get the old schema's direct classes
-		var db = fr.Db;
-		using (var cmd = db.CreateCommand()) {
+			// Get the old schema's direct classes
+			// --
+
+			db = fr.Db;
+			using var cmd = db.CreateCommand();
 			cmd.Set("SELECT cls FROM SchemaToClass WHERE (ind,schema)=(0,$schema)")
 				.AddParams(new("$schema", _SchemaRowId));
 
