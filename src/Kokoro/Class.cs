@@ -18,7 +18,7 @@ public sealed class Class : DataEntity {
 	private byte[]? _CachedCsum;
 
 	private int _Ordinal;
-	private long _GrpId;
+	private long _GroupId;
 	private string? _Name;
 
 	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
@@ -40,7 +40,7 @@ public sealed class Class : DataEntity {
 
 		Change_Uid      = 1 << 0,
 		Change_Ordinal  = 1 << 1,
-		Change_GrpId    = 1 << 2,
+		Change_GroupId  = 1 << 2,
 		Change_Name     = 1 << 3,
 
 		NotExists       = 1 << 31,
@@ -100,15 +100,15 @@ public sealed class Class : DataEntity {
 
 	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
 
-	public long GrpId {
-		get => _GrpId;
+	public long GroupId {
+		get => _GroupId;
 		set {
-			_GrpId = value;
-			_State = StateFlags.Change_GrpId;
+			_GroupId = value;
+			_State = StateFlags.Change_GroupId;
 		}
 	}
 
-	public void SetCachedGrpId(long grpId) => _GrpId = grpId;
+	public void SetCachedGroupId(long groupId) => _GroupId = groupId;
 
 	public string? Name {
 		get => _Name;
@@ -298,7 +298,7 @@ public sealed class Class : DataEntity {
 			_Ordinal = r.GetInt32(2);
 
 			r.DAssert_Name(3, "grp");
-			_GrpId = r.GetInt64(3);
+			_GroupId = r.GetInt64(3);
 
 			r.DAssert_Name(4, "name");
 			_Name = r.GetString(4);
@@ -436,7 +436,7 @@ public sealed class Class : DataEntity {
 		_Uid = default;
 		_CachedCsum = default;
 		_Ordinal = default;
-		_GrpId = default;
+		_GroupId = default;
 		_Name = default;
 	}
 
@@ -501,7 +501,7 @@ public sealed class Class : DataEntity {
 			hasher.UpdateLE(_Ordinal);
 			Debug.Assert(1 == hasher_debug_i++);
 
-			cmdParams.Add(new("$grp", RowIds.DBBox(_GrpId)));
+			cmdParams.Add(new("$grp", RowIds.DBBox(_GroupId)));
 			cmdParams.Add(new("$name", _Name.OrDBNull()));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
@@ -632,9 +632,9 @@ public sealed class Class : DataEntity {
 			}
 
 			if (state != StateFlags.NoChanges) {
-				if ((state & StateFlags.Change_GrpId) != 0) {
+				if ((state & StateFlags.Change_GroupId) != 0) {
 					cmdSb.Append("grp=$grp,");
-					cmdParams.Add(new("$grp", RowIds.DBBox(_GrpId)));
+					cmdParams.Add(new("$grp", RowIds.DBBox(_GroupId)));
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
