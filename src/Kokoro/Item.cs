@@ -31,10 +31,10 @@ public sealed class Item : FieldedEntity {
 		NoChanges = 0,
 
 		Change_Uid          = 1 << 0,
-		Change_ParentId  = 1 << 1,
+		Change_ParentId     = 1 << 1,
 		Change_Ordinal      = 1 << 2,
 		Change_OrdModStamp  = 1 << 3,
-		Change_SchemaId  = 1 << 4,
+		Change_SchemaId     = 1 << 4,
 		Change_DataModStamp = 1 << 5,
 
 		NotExists           = 1 << 31,
