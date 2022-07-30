@@ -14,26 +14,27 @@ public class KokoroCollection : IDisposable {
 	#region Primary Properties
 
 	public KokoroContext Context {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _Context;
 			if (_ != null)
 				return _;
-			E_ODisposed();
-			throw null;
+			return E_ODisposed<KokoroContext>();
 		}
 	}
 
 	internal KokoroSqliteDb Db {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _Db;
 			if (_ != null)
 				return _;
-			E_ODisposed();
-			throw null;
+			return E_ODisposed<KokoroSqliteDb>();
 		}
 	}
 
 	internal InvalidationSource InvalidationSource {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var invsrc = Db.InvalidationSource!;
 			Debug.Assert(invsrc != null);
@@ -157,7 +158,7 @@ public class KokoroCollection : IDisposable {
 	}
 
 	[DoesNotReturn]
-	private void E_ODisposed() => throw Ex_ODisposed();
+	private T E_ODisposed<T>() => throw Ex_ODisposed();
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	private ObjectDisposedException Ex_ODisposed() => DisposeUtils.Ode(GetType());
