@@ -573,7 +573,9 @@ public sealed class Item : FieldedEntity {
 		_Uid = default;
 		_ParentRowId = default;
 		_Ordinal = default;
+		_OrdModStamp = default;
 		_SchemaRowId = default;
+		_DataModStamp = default;
 	}
 
 	// --

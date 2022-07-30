@@ -434,6 +434,7 @@ public sealed class Class : DataEntity {
 	public void UnloadCoreState() {
 		_State = default;
 		_Uid = default;
+		_CachedCsum = default;
 		_Ordinal = default;
 		_GrpRowId = default;
 		_Name = default;
