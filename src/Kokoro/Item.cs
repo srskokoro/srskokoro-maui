@@ -430,7 +430,141 @@ public sealed class Item : FieldedEntity {
 	}
 
 
+	public bool LoadClassId(long classRowId) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return InternalLoadClassId(db, classRowId);
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2)
+					;
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2) &
+					InternalLoadClassId(db, classRowId3)
+					;
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2) &
+					InternalLoadClassId(db, classRowId3) &
+					InternalLoadClassId(db, classRowId4)
+					;
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2) &
+					InternalLoadClassId(db, classRowId3) &
+					InternalLoadClassId(db, classRowId4) &
+					InternalLoadClassId(db, classRowId5)
+					;
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2) &
+					InternalLoadClassId(db, classRowId3) &
+					InternalLoadClassId(db, classRowId4) &
+					InternalLoadClassId(db, classRowId5) &
+					InternalLoadClassId(db, classRowId6)
+					;
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6, long classRowId7) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2) &
+					InternalLoadClassId(db, classRowId3) &
+					InternalLoadClassId(db, classRowId4) &
+					InternalLoadClassId(db, classRowId5) &
+					InternalLoadClassId(db, classRowId6) &
+					InternalLoadClassId(db, classRowId7)
+					;
+			}
+			return false;
+		}
+	}
+
+	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6, long classRowId7, long classRowId8) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			Load();
+			if (Exists) {
+				return
+					InternalLoadClassId(db, classRowId1) &
+					InternalLoadClassId(db, classRowId2) &
+					InternalLoadClassId(db, classRowId3) &
+					InternalLoadClassId(db, classRowId4) &
+					InternalLoadClassId(db, classRowId5) &
+					InternalLoadClassId(db, classRowId6) &
+					InternalLoadClassId(db, classRowId7) &
+					InternalLoadClassId(db, classRowId8)
+					;
+			}
+			return false;
+		}
+		// TODO A counterpart that loads up to 16 fields
+		// TODO Generate code via T4 text templates instead
+	}
+
+
 	public void Unload() {
+		UnloadClassIds();
 		UnloadFields();
 		UnloadCoreState();
 	}
