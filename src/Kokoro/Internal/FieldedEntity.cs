@@ -115,16 +115,16 @@ public abstract partial class FieldedEntity : DataEntity {
 	public void UnloadField(StringKey fieldName) {
 		var fields = _Fields;
 		if (fields != null) {
-			fields.Remove(fieldName);
 			_FieldChanges?.Remove(fieldName);
+			fields.Remove(fieldName);
 		}
 	}
 
 	public void UnloadFields() {
 		var fields = _Fields;
 		if (fields != null) {
-			fields.Clear();
 			_FieldChanges = null;
+			fields.Clear();
 		}
 	}
 
