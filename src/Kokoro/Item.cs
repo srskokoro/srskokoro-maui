@@ -4,7 +4,6 @@ using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
-using System.IO;
 
 public sealed class Item : FieldedEntity {
 
