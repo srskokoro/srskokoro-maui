@@ -6,9 +6,15 @@ using System.Runtime.InteropServices;
 public abstract partial class FieldedEntity : DataEntity {
 
 	private protected long _SchemaRowId;
+	private Fields? _Fields;
 
-	private Dictionary<StringKey, FieldVal>? _Fields;
-	private Dictionary<StringKey, FieldVal>? _FieldChanges;
+	private sealed class Fields : Dictionary<StringKey, FieldVal> {
+		internal FieldChanges? _Changes;
+	}
+
+	private sealed class FieldChanges : Dictionary<StringKey, FieldVal> { }
+
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal FieldedEntity(KokoroCollection host) : base(host) { }
@@ -35,7 +41,7 @@ public abstract partial class FieldedEntity : DataEntity {
 			goto Init;
 		}
 
-		var changes = _FieldChanges;
+		var changes = fields._Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -49,7 +55,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	Init:
 		_Fields = fields = new();
 	InitChanges:
-		_FieldChanges = changes = new();
+		fields._Changes = changes = new();
 		goto Set;
 	}
 
@@ -66,7 +72,7 @@ public abstract partial class FieldedEntity : DataEntity {
 		fields[name] = value;
 
 		{
-			var changes = _FieldChanges;
+			var changes = fields._Changes;
 			// Optimized for the common case
 			if (changes == null) {
 				return;
@@ -95,7 +101,7 @@ public abstract partial class FieldedEntity : DataEntity {
 			goto Init;
 		}
 
-		_FieldChanges?.Remove(name);
+		fields._Changes?.Remove(name);
 
 	Set:
 		fields[name] = value;
@@ -108,16 +114,19 @@ public abstract partial class FieldedEntity : DataEntity {
 
 
 	public void UnmarkFieldAsChanged(StringKey name)
-		=> _FieldChanges?.Remove(name);
+		=> _Fields?._Changes?.Remove(name);
 
-	public void UnmarkFieldsAsChanged()
-		=> _FieldChanges = null;
+	public void UnmarkFieldsAsChanged() {
+		var fields = _Fields;
+		if (fields != null)
+			fields._Changes = null;
+	}
 
 
 	public void UnloadField(StringKey fieldName) {
 		var fields = _Fields;
 		if (fields != null) {
-			_FieldChanges?.Remove(fieldName);
+			fields._Changes?.Remove(fieldName);
 			fields.Remove(fieldName);
 		}
 	}
@@ -125,7 +134,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	public void UnloadFields() {
 		var fields = _Fields;
 		if (fields != null) {
-			_FieldChanges = null;
+			fields._Changes = null;
 			fields.Clear();
 		}
 	}

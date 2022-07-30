@@ -410,7 +410,12 @@ partial class FieldedEntity {
 	/// <seealso cref="UnmarkFieldsAsChanged()"/>
 	private protected bool MayCompileFieldChanges {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _FieldChanges == null ? false : true;
+		get {
+			var fields = _Fields;
+			if (fields != null && fields._Changes != null)
+				return true;
+			return false;
+		}
 	}
 
 	/// <remarks>
@@ -428,8 +433,12 @@ partial class FieldedEntity {
 	private protected void CompileFieldChanges(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
-		Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
-		Debug.Assert(fchanges != null, $"`{nameof(_FieldChanges)}` must be non-null " +
+		Fields? fields = _Fields;
+		Debug.Assert(fields != null, $"`{nameof(_Fields)}` must be non-null " +
+			$"prior to calling this method (see also, `{nameof(MayCompileFieldChanges)}`)");
+
+		FieldChanges? fchanges = fields._Changes;
+		Debug.Assert(fchanges != null, $"`{nameof(_Fields)}.{nameof(_Fields._Changes)}` must be non-null " +
 			$"prior to calling this method (see also, `{nameof(MayCompileFieldChanges)}`)");
 
 		var fchanges_iter = fchanges.GetEnumerator();

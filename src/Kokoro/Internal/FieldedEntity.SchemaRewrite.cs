@@ -290,7 +290,10 @@ partial class FieldedEntity {
 			// Process the field changes
 			// --
 
-			Dictionary<StringKey, FieldVal>? fchanges = _FieldChanges;
+			Fields? fields = _Fields;
+			if (fields == null) goto NoFieldChanges;
+
+			FieldChanges? fchanges = fields._Changes;
 			if (fchanges == null) goto NoFieldChanges;
 
 			var fchanges_iter = fchanges.GetEnumerator();
