@@ -25,6 +25,7 @@ partial class FieldedEntity {
 
 	private sealed class ClassChanges : HashSet<long> { }
 
+
 	public bool IsOfClassCached(long classRowId) {
 		var classes = _Classes;
 		if (classes != null && classes.Contains(classRowId)) {

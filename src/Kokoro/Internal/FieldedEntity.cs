@@ -106,6 +106,7 @@ public abstract partial class FieldedEntity : DataEntity {
 		goto Set;
 	}
 
+
 	public void UnmarkFieldAsChanged(StringKey name)
 		=> _FieldChanges?.Remove(name);
 
