@@ -329,9 +329,9 @@ public sealed class Item : FieldedEntity {
 					fr.Dispose();
 				}
 			}
-			// TODO A counterpart that loads up to 16 fields
-			// TODO Generate code via T4 text templates instead
 		}
+		// TODO A counterpart that loads up to 16 fields
+		// TODO Generate code via T4 text templates instead
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
