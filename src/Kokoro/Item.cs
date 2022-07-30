@@ -129,12 +129,36 @@ public sealed class Item : FieldedEntity {
 	public static long LoadRowId(KokoroCollection host, UniqueId uid)
 		=> LoadRowId(host.Db, uid);
 
+	[SkipLocalsInit]
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid) {
 		using var cmd = db.CreateCommand();
 		return cmd.Set("SELECT rowid FROM Item WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ExecScalarOrDefault<long>();
 	}
+
+	[SkipLocalsInit]
+	internal void LoadSchemaRowId(KokoroSqliteDb db) {
+		using var cmd = db.CreateCommand();
+		cmd.Set("SELECT schema FROM Item WHERE rowid=$rowid")
+			.AddParams(new("$rowid", _RowId));
+
+		using var r = cmd.ExecuteReader();
+		if (r.Read()) {
+			// Pending changes will be discarded
+			_State &= ~StateFlags.Change_SchemaRowId;
+
+			r.DAssert_Name(0, "schema");
+			_SchemaRowId = r.GetInt64(0);
+
+			return; // Early exit
+		}
+
+		// Otherwise, either deleted or never existed.
+		Unload(); // Let that state materialize here then.
+		_State = StateFlags.NotExists;
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Load() => Load(Host.Db);
@@ -182,7 +206,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -198,7 +222,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -215,7 +239,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -233,7 +257,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -252,7 +276,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -272,7 +296,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -293,7 +317,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -315,7 +339,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7, StringKey fieldName8) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -344,7 +368,7 @@ public sealed class Item : FieldedEntity {
 	public void Load(ReadOnlySpan<StringKey> fieldNames) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			Load(db);
 			if (Exists) {
 				db.ReloadFieldNameCaches();
 				var fr = new FieldsReader(this, db);
@@ -436,7 +460,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return InternalLoadClassId(db, classRowId);
 			}
@@ -447,7 +471,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
@@ -461,7 +485,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
@@ -476,7 +500,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
@@ -492,7 +516,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
@@ -509,7 +533,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
@@ -527,7 +551,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6, long classRowId7) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
@@ -546,7 +570,7 @@ public sealed class Item : FieldedEntity {
 	public bool LoadClassId(long classRowId1, long classRowId2, long classRowId3, long classRowId4, long classRowId5, long classRowId6, long classRowId7, long classRowId8) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			Load();
+			LoadSchemaRowId(db);
 			if (Exists) {
 				return
 					InternalLoadClassId(db, classRowId1) &
