@@ -431,8 +431,8 @@ public sealed class Item : FieldedEntity {
 
 
 	public void Unload() {
-		UnloadCoreState();
 		UnloadFields();
+		UnloadCoreState();
 	}
 
 	public void UnloadCoreState() {
