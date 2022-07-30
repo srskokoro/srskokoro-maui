@@ -136,8 +136,12 @@ public sealed class Item : FieldedEntity {
 			.ExecScalarOrDefault<long>();
 	}
 
-	public void Load() {
-		var db = Host.Db;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void Load() => Load(Host.Db);
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	private void Load(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			"SELECT uid,ifnull(parent,0)AS parent,ord,ordModSt,schema,dataModSt FROM Item\n" +
