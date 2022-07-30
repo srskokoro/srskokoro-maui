@@ -17,8 +17,9 @@ public class KokoroCollection : IDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _Context;
-			if (_ != null)
+			if (_ != null) {
 				return _;
+			}
 			return E_ODisposed<KokoroContext>();
 		}
 	}
@@ -27,8 +28,9 @@ public class KokoroCollection : IDisposable {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get {
 			var _ = _Db;
-			if (_ != null)
+			if (_ != null) {
 				return _;
+			}
 			return E_ODisposed<KokoroSqliteDb>();
 		}
 	}
