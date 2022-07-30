@@ -10,10 +10,11 @@ public abstract partial class FieldedEntity : DataEntity {
 	private Dictionary<StringKey, FieldVal>? _Fields;
 	private Dictionary<StringKey, FieldVal>? _FieldChanges;
 
-	public long SchemaRowId => _SchemaRowId;
-
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal FieldedEntity(KokoroCollection host) : base(host) { }
+
+
+	public long SchemaRowId => _SchemaRowId;
 
 	public void SetCachedSchemaRowId(long schemaRowId) => _SchemaRowId = schemaRowId;
 
