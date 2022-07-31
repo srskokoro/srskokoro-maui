@@ -47,7 +47,7 @@ internal static class SqliteUtils {
 		// > 5. … The name of the super-journal is arbitrary. (The current
 		// > implementation appends random suffixes to the name of the main
 		// > database file until it finds a name that does not previously
-		// exist.) …
+		// > exist.) …
 		//
 		// See, https://web.archive.org/web/20220407150600/https://sqlite.org/lockingv3.html#writing:~:text=The%20current%20implementation%20appends,exist%2E
 	}
