@@ -1,5 +1,6 @@
 ﻿namespace Kokoro.Internal;
 using Blake2Fast.Implementation;
+using Kokoro.Common.IO;
 using System.IO;
 
 internal readonly record struct LatentFieldVal {
@@ -59,11 +60,20 @@ internal readonly record struct LatentFieldVal {
 		int length = _Length;
 		if (length > 0) {
 			var source = _Stream;
-			if (source != null) {
-				source.Position = _Offset;
-				source.CopyPartlyTo(destination, length);
+			if (source == null) {
+				// Pretend we're using `Stream.Null`
+				goto E_EndOfStreamRead_InvOp;
+			}
+			source.Position = _Offset;
+			if (source.CopyPartlyTo(destination, length) != 0) {
+				// Not enough data read to reach the supposed length
+				goto E_EndOfStreamRead_InvOp;
 			}
 		}
+		return;
+
+	E_EndOfStreamRead_InvOp:
+		StreamUtils.E_EndOfStreamRead_InvOp();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,14 +81,23 @@ internal readonly record struct LatentFieldVal {
 		int length = _Length;
 		if (length > 0) {
 			var source = _Stream;
-			if (source != null) {
-				source.Position = _Offset;
-				hasher.UpdateLE((uint)length); // i.e., length-prepended
-				source.FeedPartlyTo(ref hasher, length);
-				return;
+			if (source == null) {
+				// Pretend we're using `Stream.Null`
+				goto E_EndOfStreamRead_InvOp;
 			}
+			source.Position = _Offset;
+			hasher.UpdateLE((uint)length); // i.e., length-prepended
+			if (source.FeedPartlyTo(ref hasher, length) != 0) {
+				// Not enough data read to reach the supposed length
+				goto E_EndOfStreamRead_InvOp;
+			}
+			return;
 		}
 		hasher.UpdateLE((uint)0); // i.e., zero length
+		return;
+
+	E_EndOfStreamRead_InvOp:
+		StreamUtils.E_EndOfStreamRead_InvOp();
 	}
 
 	// --
