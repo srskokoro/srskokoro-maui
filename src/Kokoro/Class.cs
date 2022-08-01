@@ -16,6 +16,7 @@ public sealed class Class : DataEntity {
 
 	private UniqueId _Uid;
 	private byte[]? _CachedCsum;
+	private long _ModStamp;
 
 	private int _Ordinal;
 	private long _GroupId;
@@ -39,9 +40,10 @@ public sealed class Class : DataEntity {
 		NoChanges = 0,
 
 		Change_Uid      = 1 << 0,
-		Change_Ordinal  = 1 << 1,
-		Change_GroupId  = 1 << 2,
-		Change_Name     = 1 << 3,
+		Change_ModStamp = 1 << 1,
+		Change_Ordinal  = 1 << 2,
+		Change_GroupId  = 1 << 3,
+		Change_Name     = 1 << 4,
 
 		NotExists       = 1 << 31,
 	}
@@ -88,6 +90,16 @@ public sealed class Class : DataEntity {
 	public byte[]? CachedCsum => _CachedCsum;
 
 	public void SetCachedCsum(byte[]? csum) => _CachedCsum = csum;
+
+	public long ModStamp {
+		get => _ModStamp;
+		set {
+			_ModStamp = value;
+			_State = StateFlags.Change_ModStamp;
+		}
+	}
+
+	public void SetCachedModStamp(int modstamp) => _ModStamp = modstamp;
 
 
 	public int Ordinal {
@@ -279,7 +291,7 @@ public sealed class Class : DataEntity {
 		var db = Host.Db;
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT uid,csum,ord,ifnull(grp,0)AS grp,name FROM Class\n" +
+			"SELECT uid,csum,modst,ord,ifnull(grp,0)AS grp,name FROM Class\n" +
 			"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));
 
@@ -294,14 +306,17 @@ public sealed class Class : DataEntity {
 			r.DAssert_Name(1, "csum");
 			_CachedCsum = r.GetBytes(1);
 
-			r.DAssert_Name(2, "ord");
-			_Ordinal = r.GetInt32(2);
+			r.DAssert_Name(2, "modst");
+			_ModStamp = r.GetInt64(2);
 
-			r.DAssert_Name(3, "grp");
-			_GroupId = r.GetInt64(3);
+			r.DAssert_Name(3, "ord");
+			_Ordinal = r.GetInt32(3);
 
-			r.DAssert_Name(4, "name");
-			_Name = r.GetString(4);
+			r.DAssert_Name(4, "grp");
+			_GroupId = r.GetInt64(4);
+
+			r.DAssert_Name(5, "name");
+			_Name = r.GetString(5);
 
 			return; // Early exit
 		}
@@ -478,9 +493,9 @@ public sealed class Class : DataEntity {
 			using var cmd = db.CreateCommand();
 			cmd.Set(
 				"INSERT INTO Class" +
-				"(rowid,uid,csum,ord,grp,name)" +
+				"(rowid,uid,csum,modst,ord,grp,name)" +
 				"\nVALUES" +
-				$"($rowid,$uid,$csum,$ord,$grp,$name)"
+				$"($rowid,$uid,$csum,$modst,$ord,$grp,$name)"
 			);
 
 			var cmdParams = cmd.Parameters;
@@ -496,6 +511,11 @@ public sealed class Class : DataEntity {
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
 			hasher.Update(uid.Span);
 			Debug.Assert(0 == hasher_debug_i++);
+
+			cmdParams.Add(
+				new("$modst", (_State & StateFlags.Change_ModStamp) != 0
+					? _ModStamp : TimeUtils.UnixMillisNow())
+			);
 
 			cmdParams.Add(new("$ord", _Ordinal));
 			hasher.UpdateLE(_Ordinal);
@@ -631,7 +651,10 @@ public sealed class Class : DataEntity {
 				Debug.Assert(1 == hasher_debug_i++);
 			}
 
-			if (state != StateFlags.NoChanges) {
+			// --
+			{
+				if (state == StateFlags.NoChanges) goto ModStampIsNow;
+
 				if ((state & StateFlags.Change_GroupId) != 0) {
 					cmdSb.Append("grp=$grp,");
 					cmdParams.Add(new("$grp", RowIds.DBBox(_GroupId)));
@@ -640,6 +663,22 @@ public sealed class Class : DataEntity {
 					cmdSb.Append("name=$name,");
 					cmdParams.Add(new("$name", _Name.OrDBNull()));
 				}
+
+				if ((state & StateFlags.Change_ModStamp) != 0) {
+					goto ModStampIsCustom;
+				}
+
+			ModStampIsNow:
+				long modstamp = TimeUtils.UnixMillisNow();
+				goto SetModStampParam;
+
+			ModStampIsCustom:
+				modstamp = _ModStamp;
+				goto SetModStampParam;
+
+			SetModStampParam:
+				cmdParams.Add(new("$modst", modstamp));
+				cmdSb.Append("modst=$modst,");
 			}
 
 			HashWithFieldInfos(db, _RowId, ref hasher);

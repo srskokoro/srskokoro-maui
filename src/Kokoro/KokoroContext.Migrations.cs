@@ -320,11 +320,26 @@ partial class KokoroContext {
 
 			// The cryptographic checksum of the entity class's primary data,
 			// which includes other tables that comprises the entity class, but
-			// excludes the `rowid`, `grp`, `name`, and the contents of included
-			// entity classes (only the included entity class's `uid` is used).
+			// excludes the `rowid`, `modst`, `grp`, `name`, and the contents of
+			// included entity classes (only the included entity class's `uid`
+			// is used).
 			//
 			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
 			"csum BLOB NOT NULL," +
+
+			// A modstamp, a number of milliseconds since Unix epoch, when the
+			// entity class or any associated data was last modified. Data
+			// associated to an entity class includes the field infos (see
+			// `ClassToField` table) and the list of included classes (see
+			// `ClassToInclude` table) but excludes the data of the included
+			// classes.
+			//
+			// This is also set to the "first" time the entity class is created,
+			// as the class is considered modified for the first time. Note
+			// that, this is independent of entity class creation due to device
+			// syncs, as syncing should simply keep any existing modstamps on
+			// sync.
+			"modst INTEGER NOT NULL," +
 
 			// The entity class ordinal.
 			Ord_Int32Nn + "," +
