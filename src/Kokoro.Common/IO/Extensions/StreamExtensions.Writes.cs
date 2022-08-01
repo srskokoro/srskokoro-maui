@@ -28,11 +28,13 @@ internal static partial class StreamExtensions {
 					goto Done;
 				}
 			}
-			// --
-			{
-				int bytesRead;
-				while ((bytesRead = source.Read(buffer, 0, remaining)) != 0) {
+			while (remaining != 0) {
+				int bytesRead = source.Read(buffer, 0, remaining);
+				if (bytesRead != 0) {
 					destination.Write(buffer, 0, bytesRead);
+					remaining -= bytesRead;
+				} else {
+					goto Done;
 				}
 			}
 		Done:
@@ -59,12 +61,13 @@ internal static partial class StreamExtensions {
 					goto Done;
 				}
 			}
-			// --
-			{
-				int remainingAsInt = (int)remaining;
-				int bytesRead;
-				while ((bytesRead = source.Read(buffer, 0, remainingAsInt)) != 0) {
+			for (int remainingAsInt = (int)remaining; remaining != 0;) {
+				int bytesRead = source.Read(buffer, 0, remainingAsInt);
+				if (bytesRead != 0) {
 					destination.Write(buffer, 0, bytesRead);
+					remainingAsInt -= bytesRead;
+				} else {
+					goto Done;
 				}
 			}
 		Done:

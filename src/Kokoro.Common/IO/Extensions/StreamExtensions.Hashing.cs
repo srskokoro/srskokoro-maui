@@ -33,11 +33,13 @@ internal static partial class StreamExtensions {
 					goto Done;
 				}
 			}
-			// --
-			{
-				int bytesRead;
-				while ((bytesRead = source.Read(buffer, 0, remaining)) != 0) {
+			while (remaining != 0) {
+				int bytesRead = source.Read(buffer, 0, remaining);
+				if (bytesRead != 0) {
 					hasher.Update(buffer.AsSpan(0, bytesRead));
+					remaining -= bytesRead;
+				} else {
+					goto Done;
 				}
 			}
 		Done:
