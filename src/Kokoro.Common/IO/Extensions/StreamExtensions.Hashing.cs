@@ -7,6 +7,7 @@ internal static partial class StreamExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public static void FeedFullyTo(this Stream source, ref Blake2bHashState hasher, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+		Debug.Assert(bufferSize > 0);
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
 			int bytesRead;
@@ -23,6 +24,7 @@ internal static partial class StreamExtensions {
 	public static int FeedPartlyTo(this Stream source, ref Blake2bHashState hasher, int count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
 		int remaining = count;
 
+		Debug.Assert(bufferSize > 0);
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
 			while (remaining > buffer.Length) {
