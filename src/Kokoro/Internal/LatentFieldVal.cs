@@ -56,10 +56,10 @@ internal readonly record struct LatentFieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteTo(Stream destination) {
-		var source = _Stream;
-		if (source != null) {
-			int length = _Length;
-			if (length > 0) {
+		int length = _Length;
+		if (length > 0) {
+			var source = _Stream;
+			if (source != null) {
 				source.Position = _Offset;
 				source.CopyPartlyTo(destination, length);
 			}
@@ -67,10 +67,10 @@ internal readonly record struct LatentFieldVal {
 	}
 
 	public void FeedTo(ref Blake2bHashState hasher) {
-		var source = _Stream;
-		if (source != null) {
-			int length = _Length;
-			if (length > 0) {
+		int length = _Length;
+		if (length > 0) {
+			var source = _Stream;
+			if (source != null) {
 				source.Position = _Offset;
 				hasher.UpdateLE((uint)length); // i.e., length-prepended
 				source.FeedPartlyTo(ref hasher, length);
