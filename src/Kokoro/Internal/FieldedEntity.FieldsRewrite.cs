@@ -260,6 +260,7 @@ partial class FieldedEntity {
 			public FieldVal? Override;
 			public LatentFieldVal OrigValue;
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public Entry(FieldVal? Override, LatentFieldVal OrigValue) {
 				this.Override = Override;
 				this.OrigValue = OrigValue;
