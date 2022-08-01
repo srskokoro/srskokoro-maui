@@ -23,7 +23,6 @@ internal static partial class StreamExtensions {
 	[SkipLocalsInit]
 	public static int FeedPartlyTo(this Stream source, ref Blake2bHashState hasher, int count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
 		int remaining = count;
-
 		Debug.Assert(bufferSize > 0);
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
@@ -52,7 +51,6 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
-
 		return remaining;
 	}
 }

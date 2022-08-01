@@ -17,7 +17,6 @@ internal static partial class StreamExtensions {
 	[SkipLocalsInit]
 	public static int CopyPartlyTo(this Stream source, Stream destination, int count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
 		int remaining = count;
-
 		Debug.Assert(bufferSize > 0);
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
@@ -46,7 +45,6 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
-
 		return remaining;
 	}
 
@@ -54,7 +52,6 @@ internal static partial class StreamExtensions {
 	[SkipLocalsInit]
 	public static long CopyPartlyTo(this Stream source, Stream destination, long count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
 		long remaining = count;
-
 		Debug.Assert(bufferSize > 0);
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
@@ -83,7 +80,6 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
-
 		return remaining;
 	}
 
