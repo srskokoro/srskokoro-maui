@@ -80,13 +80,15 @@ internal readonly record struct LatentFieldVal {
 	public void FeedTo(ref Blake2bHashState hasher) {
 		int length = _Length;
 		if (length > 0) {
+			hasher.UpdateLE((uint)length); // i.e., length-prepended
+
 			var source = _Stream;
 			if (source == null) {
 				// Pretend we're using `Stream.Null`
 				goto E_EndOfStreamRead_InvOp;
 			}
+
 			source.Position = _Offset;
-			hasher.UpdateLE((uint)length); // i.e., length-prepended
 			if (source.FeedPartlyTo(ref hasher, length) != 0) {
 				// Not enough data read to reach the supposed length
 				goto E_EndOfStreamRead_InvOp;
