@@ -35,7 +35,7 @@ internal static partial class StreamExtensions {
 					goto Done;
 				}
 			}
-			while (remaining != 0) {
+			do {
 				int bytesRead = source.Read(buffer, 0, remaining);
 				if (bytesRead != 0) {
 					hasher.Update(buffer.AsSpan(0, bytesRead));
@@ -43,7 +43,7 @@ internal static partial class StreamExtensions {
 				} else {
 					goto Done;
 				}
-			}
+			} while (remaining != 0);
 		Done:
 			// ^ Label must still be within the `try…finally` block, so that the
 			// `goto` statement can simply become a conditional jump forward.
