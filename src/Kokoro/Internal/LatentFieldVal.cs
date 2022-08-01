@@ -66,6 +66,7 @@ internal readonly record struct LatentFieldVal {
 		}
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void FeedTo(ref Blake2bHashState hasher) {
 		int length = _Length;
 		if (length > 0) {
@@ -84,12 +85,14 @@ internal readonly record struct LatentFieldVal {
 
 	#region Equality and Comparability
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public readonly bool Equals(LatentFieldVal other) {
 		if (_Stream == other._Stream && _Offset == other._Offset && _Length == other._Length)
 			return true;
 		return false;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override readonly int GetHashCode()
 		=> HashCode.Combine(_Stream, _Offset, _Length);
 
