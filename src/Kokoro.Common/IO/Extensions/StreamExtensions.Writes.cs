@@ -15,10 +15,11 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public static void CopyPartlyTo(this Stream source, Stream destination, int count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+	public static int CopyPartlyTo(this Stream source, Stream destination, int count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+		int remaining = count;
+
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
-			int remaining = count;
 			while (remaining > buffer.Length) {
 				int bytesRead = source.Read(buffer, 0, buffer.Length);
 				if (bytesRead != 0) {
@@ -44,14 +45,17 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
+
+		return remaining;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public static void CopyPartlyTo(this Stream source, Stream destination, long count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+	public static long CopyPartlyTo(this Stream source, Stream destination, long count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+		long remaining = count;
+
 		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
 		try {
-			long remaining = count;
 			while (remaining > buffer.Length) {
 				int bytesRead = source.Read(buffer, 0, buffer.Length);
 				if (bytesRead != 0) {
@@ -61,11 +65,11 @@ internal static partial class StreamExtensions {
 					goto Done;
 				}
 			}
-			for (int remainingAsInt = (int)remaining; remaining != 0;) {
-				int bytesRead = source.Read(buffer, 0, remainingAsInt);
+			while (remaining != 0) {
+				int bytesRead = source.Read(buffer, 0, (int)remaining);
 				if (bytesRead != 0) {
 					destination.Write(buffer, 0, bytesRead);
-					remainingAsInt -= bytesRead;
+					remaining -= bytesRead;
 				} else {
 					goto Done;
 				}
@@ -77,6 +81,8 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
+
+		return remaining;
 	}
 
 	// --
