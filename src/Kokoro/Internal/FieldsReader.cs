@@ -475,21 +475,21 @@ internal struct FieldsReader : IDisposable {
 					return new(typeHint, data);
 
 				ReadUntilBufferFull:
-					buffer = buffer.Slice(sread, rem); // Oddly, generates shorter asm than passing the slice directly
-					ReadUntilBufferFull(stream, buffer);
+					ReadUntilBufferFull(stream, data, sread, rem);
 					goto Done;
 
 					// Non-inline to improve code quality as uncommon path
 					[MethodImpl(MethodImplOptions.NoInlining)]
 					[SkipLocalsInit]
-					static void ReadUntilBufferFull(Stream stream, Span<byte> buffer) {
+					static void ReadUntilBufferFull(Stream stream, byte[] data, int offset, int count) {
 						for (; ; ) {
-							int sread = stream.Read(buffer);
-							int rem = buffer.Length - sread;
-							if (rem == 0) {
+							int sread = stream.Read(data, offset, count);
+
+							offset += sread;
+							count -= sread;
+
+							if (count == 0)
 								return;
-							}
-							buffer = buffer.Slice(sread, rem);
 						}
 					}
 				}
