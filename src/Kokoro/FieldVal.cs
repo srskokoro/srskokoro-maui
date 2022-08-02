@@ -49,6 +49,7 @@ public sealed class FieldVal {
 
 	// --
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public void WriteTo(Stream destination) {
 		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
@@ -58,6 +59,7 @@ public sealed class FieldVal {
 		}
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public void FeedTo(ref Blake2bHashState hasher) {
 		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
