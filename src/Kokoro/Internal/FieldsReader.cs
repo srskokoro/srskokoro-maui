@@ -464,13 +464,33 @@ internal struct FieldsReader : IDisposable {
 				if (typeHint != FieldTypeHint.Null) {
 					var data = new byte[fValLen - fValSpecLen];
 					var buffer = data.AsDangerousSpan();
-					for (; ; ) {
-						int sread = stream.Read(buffer);
-						int rem = buffer.Length - sread;
-						if (rem == 0) {
-							return new(typeHint, data);
+
+					int sread = stream.Read(buffer);
+					int rem = buffer.Length - sread;
+
+					// This becomes a conditional jump forward to not favor it
+					if (rem != 0) { goto ReadUntilBufferFull; }
+
+				Done:
+					return new(typeHint, data);
+
+				ReadUntilBufferFull:
+					buffer = buffer.Slice(sread, rem); // Oddly, generates shorter asm than passing the slice directly
+					ReadUntilBufferFull(stream, buffer);
+					goto Done;
+
+					// Non-inline to improve code quality as uncommon path
+					[MethodImpl(MethodImplOptions.NoInlining)]
+					[SkipLocalsInit]
+					static void ReadUntilBufferFull(Stream stream, Span<byte> buffer) {
+						for (; ; ) {
+							int sread = stream.Read(buffer);
+							int rem = buffer.Length - sread;
+							if (rem == 0) {
+								return;
+							}
+							buffer = buffer.Slice(sread, rem);
 						}
-						buffer = buffer.Slice(sread, rem);
 					}
 				}
 			}
