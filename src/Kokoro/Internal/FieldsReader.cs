@@ -466,16 +466,16 @@ internal struct FieldsReader : IDisposable {
 					var span = data.AsDangerousSpan();
 
 					int sread = stream.Read(span);
-					int rem = span.Length - sread;
+					int remaining = span.Length - sread;
 
 					// This becomes a conditional jump forward to not favor it
-					if (rem != 0) { goto ReadIntoBufferFully; }
+					if (remaining != 0) { goto ReadIntoBufferFully; }
 
 				Done:
 					return new(typeHint, data);
 
 				ReadIntoBufferFully:
-					ReadIntoBufferFully(stream, data, sread, rem);
+					ReadIntoBufferFully(stream, data, sread, remaining);
 					goto Done;
 
 					// Non-inline to improve code quality as uncommon path
