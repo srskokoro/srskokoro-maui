@@ -83,6 +83,46 @@ internal static partial class StreamExtensions {
 		return remaining;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ClearFully(this Stream stream, int bufferSize = StreamUtils.DefaultCopyBufferSize)
+		=> stream.ClearPartly(stream.Length, bufferSize);
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static void ClearPartly(this Stream stream, int count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+		Debug.Assert(bufferSize > 0);
+		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+		try {
+			buffer.AsDangerousSpan().Clear(); // Zero-fill
+			int remaining = count;
+			while (remaining > buffer.Length) {
+				stream.Write(buffer, 0, buffer.Length);
+				remaining -= buffer.Length;
+			}
+			stream.Write(buffer, 0, remaining);
+		} finally {
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static void ClearPartly(this Stream stream, long count, int bufferSize = StreamUtils.DefaultCopyBufferSize) {
+		Debug.Assert(bufferSize > 0);
+		byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+		try {
+			buffer.AsDangerousSpan().Clear(); // Zero-fill
+			long remaining = count;
+			while (remaining > buffer.Length) {
+				stream.Write(buffer, 0, buffer.Length);
+				remaining -= buffer.Length;
+			}
+			stream.Write(buffer, 0, (int)remaining);
+		} finally {
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
+	}
+
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
