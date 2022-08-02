@@ -56,40 +56,40 @@ internal readonly record struct LatentFieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteTo(Stream destination) {
-		int length = _Length;
-		if (length > 0) {
+		int remaining = _Length;
+		if (remaining > 0) {
 			var source = _Stream;
 			if (source == null) goto ZeroFillRemaining;
 
 			source.Position = _Offset;
-			length = source.CopyPartlyTo(destination, length);
-			if (length != 0) goto ZeroFillRemaining;
+			remaining = source.CopyPartlyTo(destination, remaining);
+			if (remaining != 0) goto ZeroFillRemaining;
 		}
 		return;
 
 	ZeroFillRemaining:
-		destination.ClearPartly(length);
+		destination.ClearPartly(remaining);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void FeedTo(ref Blake2bHashState hasher) {
-		int length = _Length;
-		if (length > 0) {
-			hasher.UpdateLE((uint)length); // i.e., length-prepended
+		int remaining = _Length;
+		if (remaining > 0) {
+			hasher.UpdateLE((uint)remaining); // i.e., length-prepended
 
 			var source = _Stream;
 			if (source == null) goto ZeroFillRemaining;
 
 			source.Position = _Offset;
-			length = source.FeedPartlyTo(ref hasher, length);
-			if (length != 0) goto ZeroFillRemaining;
+			remaining = source.FeedPartlyTo(ref hasher, remaining);
+			if (remaining != 0) goto ZeroFillRemaining;
 			return;
 		}
 		hasher.UpdateLE((uint)0); // i.e., zero length
 		return;
 
 	ZeroFillRemaining:
-		FeedWithNullBytes(ref hasher, length);
+		FeedWithNullBytes(ref hasher, remaining);
 
 		// Never inline, as this is expected to be an uncommon path
 		[MethodImpl(MethodImplOptions.NoInlining)]
