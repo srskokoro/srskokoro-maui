@@ -463,11 +463,15 @@ internal struct FieldsReader : IDisposable {
 
 				if (typeHint != FieldTypeHint.Null) {
 					var data = new byte[fValLen - fValSpecLen];
-					{
-						int sread = stream.Read(data);
-						Debug.Assert(sread == data.Length);
+					var buffer = data.AsDangerousSpan();
+					for (; ; ) {
+						int sread = stream.Read(buffer);
+						int rem = buffer.Length - sread;
+						if (rem == 0) {
+							return new(typeHint, data);
+						}
+						buffer = buffer.Slice(sread, rem);
 					}
-					return new(typeHint, data);
 				}
 			}
 			goto Fail;
