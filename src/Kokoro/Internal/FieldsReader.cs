@@ -482,15 +482,11 @@ internal struct FieldsReader : IDisposable {
 					[MethodImpl(MethodImplOptions.NoInlining)]
 					[SkipLocalsInit]
 					static void ReadIntoBufferFully(Stream stream, byte[] data, int offset, int count) {
-						for (; ; ) {
+						do {
 							int sread = stream.Read(data, offset, count);
-
 							offset += sread;
 							count -= sread;
-
-							if (count == 0)
-								return;
-						}
+						} while (count != 0);
 					}
 				}
 			}
