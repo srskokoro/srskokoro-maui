@@ -66,10 +66,14 @@ internal readonly record struct LatentFieldVal {
 			remaining = source.CopyPartlyTo(destination, remaining);
 			if (remaining != 0) goto ZeroFillRemaining;
 		}
+	Done:
 		return;
 
 	ZeroFillRemaining:
-		destination.ClearPartly(remaining);
+		{
+			destination.ClearPartly(remaining);
+			goto Done;
+		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -85,13 +89,24 @@ internal readonly record struct LatentFieldVal {
 			source.Position = _Offset;
 			remaining = source.FeedPartlyTo(ref hasher, remaining);
 			if (remaining != 0) goto ZeroFillRemaining;
-			return;
+		} else {
+			// This becomes a conditional jump forward to not favor it
+			goto ZeroLength;
 		}
-		hasher.UpdateLE((uint)0); // i.e., zero length
+	Done:
 		return;
 
+	ZeroLength:
+		{
+			hasher.UpdateLE((uint)0); // i.e., zero length
+			goto Done;
+		}
+
 	ZeroFillRemaining:
-		FeedWithNullBytes(ref hasher, remaining);
+		{
+			FeedWithNullBytes(ref hasher, remaining);
+			goto Done;
+		}
 
 		// Never inline, as this is expected to be an uncommon path
 		[MethodImpl(MethodImplOptions.NoInlining)]
