@@ -55,6 +55,7 @@ internal readonly record struct LatentFieldVal {
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
 	public void WriteTo(Stream destination) {
 		int remaining = _Length;
 		if (remaining > 0) {
@@ -72,6 +73,7 @@ internal readonly record struct LatentFieldVal {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
 	public void FeedTo(ref Blake2bHashState hasher) {
 		int remaining = _Length;
 		if (remaining > 0) {

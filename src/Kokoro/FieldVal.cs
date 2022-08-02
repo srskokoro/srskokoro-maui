@@ -49,6 +49,7 @@ public sealed class FieldVal {
 
 	// --
 
+	[SkipLocalsInit]
 	public void WriteTo(Stream destination) {
 		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
 		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
@@ -57,6 +58,7 @@ public sealed class FieldVal {
 		}
 	}
 
+	[SkipLocalsInit]
 	public void FeedTo(ref Blake2bHashState hasher) {
 		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
 		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
