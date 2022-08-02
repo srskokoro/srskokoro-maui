@@ -463,25 +463,25 @@ internal struct FieldsReader : IDisposable {
 
 				if (typeHint != FieldTypeHint.Null) {
 					var data = new byte[fValLen - fValSpecLen];
-					var buffer = data.AsDangerousSpan();
+					var span = data.AsDangerousSpan();
 
-					int sread = stream.Read(buffer);
-					int rem = buffer.Length - sread;
+					int sread = stream.Read(span);
+					int rem = span.Length - sread;
 
 					// This becomes a conditional jump forward to not favor it
-					if (rem != 0) { goto ReadUntilBufferFull; }
+					if (rem != 0) { goto ReadIntoBufferFully; }
 
 				Done:
 					return new(typeHint, data);
 
-				ReadUntilBufferFull:
-					ReadUntilBufferFull(stream, data, sread, rem);
+				ReadIntoBufferFully:
+					ReadIntoBufferFully(stream, data, sread, rem);
 					goto Done;
 
 					// Non-inline to improve code quality as uncommon path
 					[MethodImpl(MethodImplOptions.NoInlining)]
 					[SkipLocalsInit]
-					static void ReadUntilBufferFull(Stream stream, byte[] data, int offset, int count) {
+					static void ReadIntoBufferFully(Stream stream, byte[] data, int offset, int count) {
 						for (; ; ) {
 							int sread = stream.Read(data, offset, count);
 
