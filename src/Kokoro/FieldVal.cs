@@ -49,7 +49,7 @@ public sealed class FieldVal {
 
 	// --
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public void WriteTo(Stream destination) {
 		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
