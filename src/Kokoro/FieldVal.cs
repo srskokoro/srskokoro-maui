@@ -69,7 +69,10 @@ public sealed class FieldVal {
 			/// See also, <see cref="CountEncodeLength"/>
 
 			hasher.UpdateLE(encodeLength); // i.e., length-prepended
-			hasher.Update(typeHintBuffer[..typeHintLength]);
+
+			typeHintBuffer = typeHintBuffer.Slice(0, typeHintLength);
+			hasher.Update(typeHintBuffer);
+
 			hasher.Update(data);
 		} else {
 			hasher.UpdateLE((uint)0); // i.e., zero length
