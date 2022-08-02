@@ -484,6 +484,7 @@ internal struct FieldsReader : IDisposable {
 					static void ReadIntoBufferFully(Stream stream, byte[] data, int offset, int count) {
 						do {
 							int sread = stream.Read(data, offset, count);
+							if (sread == 0) break;
 							offset += sread;
 							count -= sread;
 						} while (count != 0);
