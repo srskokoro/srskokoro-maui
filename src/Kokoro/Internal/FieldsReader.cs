@@ -489,6 +489,8 @@ internal struct FieldsReader : IDisposable {
 							count -= sread;
 						} while (count != 0);
 					}
+				} else {
+					goto E_NullFValWithNonZeroLength;
 				}
 			}
 			goto Fail;
@@ -512,5 +514,12 @@ internal struct FieldsReader : IDisposable {
 		stream = _Owner.ReadColdStore(Db);
 		st = new(stream);
 		goto CheckIndex;
+
+	E_NullFValWithNonZeroLength:
+		return E_NullFValWithNonZeroLength();
+
+		[DoesNotReturn]
+		static FieldVal E_NullFValWithNonZeroLength()
+			=> throw new InvalidOperationException("Unexpected: null field value shouldn't have a nonzero data length.");
 	}
 }
