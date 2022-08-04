@@ -58,8 +58,8 @@ internal readonly record struct LatentFieldVal {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public void WriteTo(Stream destination) {
-		int remaining = _Length;
-		if (remaining > 0) {
+		int length = _Length;
+		if (length > 0) {
 			var source = _Stream;
 			if (source == null) {
 				// Pretend we're using `Stream.Null`
@@ -67,7 +67,7 @@ internal readonly record struct LatentFieldVal {
 			}
 
 			source.Position = _Offset;
-			remaining = source.CopyPartlyTo(destination, remaining);
+			int remaining = source.CopyPartlyTo(destination, length);
 			if (remaining != 0) {
 				// Not enough data read to reach the supposed length
 				goto E_EndOfStreamRead_InvOp;
@@ -82,9 +82,9 @@ internal readonly record struct LatentFieldVal {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public void FeedTo(ref Blake2bHashState hasher) {
-		int remaining = _Length;
-		if (remaining > 0) {
-			hasher.UpdateLE((uint)remaining); // i.e., length-prepended
+		int length = _Length;
+		if (length > 0) {
+			hasher.UpdateLE((uint)length); // i.e., length-prepended
 
 			var source = _Stream;
 			if (source == null) {
@@ -93,7 +93,7 @@ internal readonly record struct LatentFieldVal {
 			}
 
 			source.Position = _Offset;
-			remaining = source.FeedPartlyTo(ref hasher, remaining);
+			int remaining = source.FeedPartlyTo(ref hasher, length);
 			if (remaining != 0) {
 				// Not enough data read to reach the supposed length
 				goto E_EndOfStreamRead_InvOp;
