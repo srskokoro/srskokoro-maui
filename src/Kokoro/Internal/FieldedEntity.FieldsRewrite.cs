@@ -261,7 +261,7 @@ partial class FieldedEntity {
 			public LatentFieldVal OrigValue;
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Entry(FieldVal? Override, LatentFieldVal OrigValue) {
+			public Entry(FieldVal? Override, LatentFieldVal OrigValue = default) {
 				this.Override = Override;
 				this.OrigValue = OrigValue;
 			}
@@ -273,12 +273,12 @@ partial class FieldedEntity {
 		internal int _HotStoreLength, _ColdStoreLength; // -1 if should skip
 		internal FieldsDesc _HotFieldsDesc, _ColdFieldsDesc;
 
-		internal List<(long Id, FieldVal Value)>? _FloatingFields;
+		internal List<(long Id, Entry Entry)>? _FloatingFields;
 
 		public readonly int HotStoreLength => _HotStoreLength;
 		public readonly int ColdStoreLength => _ColdStoreLength;
 
-		public readonly List<(long Id, FieldVal Value)>? FloatingFields => _FloatingFields;
+		public readonly List<(long Id, Entry Entry)>? FloatingFields => _FloatingFields;
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]
@@ -503,7 +503,7 @@ partial class FieldedEntity {
 						}
 
 					AddFloatingField:
-						floatingFields.Add((fld, fval));
+						floatingFields.Add((fld, new(fval)));
 						goto DoneFloatingField;
 
 					InitFloatingFields:

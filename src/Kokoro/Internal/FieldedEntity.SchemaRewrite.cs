@@ -515,7 +515,9 @@ partial class FieldedEntity {
 					floFlds.EnsureCapacity(fldMapOldCount);
 				}
 				foreach (var (fld, entry) in fldMapOld) {
-					floFlds.Add((fld, entry.FVal ?? fr.Read(entry.FSpec)));
+					var fval = entry.FVal;
+					floFlds.Add((fld, new(fval, fval != null
+						? default : fr.ReadLater(entry.FSpec))));
 				}
 			}
 		}
