@@ -107,7 +107,7 @@ partial class Class {
 	}
 
 	/// <summary>
-	/// Same as <see cref="ClearFieldInfoChangeStatus(StringKey)"/> followed by
+	/// Same as <see cref="UnmarkFieldInfoAsChanged(StringKey)"/> followed by
 	/// <see cref="SetCachedFieldInfo(StringKey, FieldInfo)"/>.
 	/// </summary>
 	public void SetFieldInfoAsLoaded(StringKey name, FieldInfo info) {
@@ -128,10 +128,10 @@ partial class Class {
 		goto Set;
 	}
 
-	public void ClearFieldInfoChangeStatus(StringKey name)
+	public void UnmarkFieldInfoAsChanged(StringKey name)
 		=> _FieldInfoChanges?.Remove(name);
 
-	public void ClearFieldInfoChangeStatuses()
+	public void UnmarkFieldInfosAsChanged()
 		=> _FieldInfoChanges = null;
 
 
