@@ -262,7 +262,7 @@ public sealed partial class Class : DataEntity {
 			// Save field infos
 			// --
 			{
-				var fieldChanges = _FieldInfoChanges;
+				var fieldChanges = _FieldInfos?._Changes;
 				if (fieldChanges != null)
 					InternalSaveFieldInfos(db, fieldChanges, _RowId);
 			}
@@ -323,7 +323,7 @@ public sealed partial class Class : DataEntity {
 			{
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
-				_FieldInfoChanges?.Clear();
+				_FieldInfos?._Changes?.Clear();
 				_ModStamp = modstamp;
 			}
 		} catch (Exception ex) when (hasUsedNextRowId && (
@@ -342,8 +342,10 @@ public sealed partial class Class : DataEntity {
 	public void SaveChanges() {
 		var state = _State;
 		if (state < 0) goto Missing;
-		if (state == StateFlags.NoChanges && _FieldInfoChanges == null) {
-			goto Success;
+		if (state == StateFlags.NoChanges) {
+			var infos = _FieldInfos;
+			if (infos == null) goto Success;
+			if (infos._Changes == null) goto Success;
 		}
 
 		var db = Host.Db; // Throws if host is already disposed
@@ -351,7 +353,7 @@ public sealed partial class Class : DataEntity {
 			// Save field infos
 			// --
 			{
-				var fieldChanges = _FieldInfoChanges;
+				var fieldChanges = _FieldInfos?._Changes;
 				if (fieldChanges != null)
 					InternalSaveFieldInfos(db, fieldChanges, _RowId);
 			}
@@ -491,7 +493,7 @@ public sealed partial class Class : DataEntity {
 			{
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
-				_FieldInfoChanges?.Clear();
+				_FieldInfos?._Changes?.Clear();
 				_ModStamp = modstamp;
 			}
 		}

@@ -7,8 +7,15 @@ using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
 partial class Class {
-	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
-	private Dictionary<StringKey, FieldInfo>? _FieldInfoChanges;
+
+	private FieldInfos? _FieldInfos;
+
+	private sealed class FieldInfos : Dictionary<StringKey, FieldInfo> {
+		internal FieldInfoChanges? _Changes;
+	}
+
+	private sealed class FieldInfoChanges : Dictionary<StringKey, FieldInfo> { }
+
 
 	public ICollection<StringKey> FieldNames {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,7 +60,7 @@ partial class Class {
 			goto Init;
 		}
 
-		var changes = _FieldInfoChanges;
+		var changes = infos._Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -67,7 +74,7 @@ partial class Class {
 	Init:
 		_FieldInfos = infos = new();
 	InitChanges:
-		_FieldInfoChanges = changes = new();
+		infos._Changes = changes = new();
 		goto Set;
 	}
 
@@ -88,7 +95,7 @@ partial class Class {
 		infos[name] = info;
 
 		{
-			var changes = _FieldInfoChanges;
+			var changes = infos._Changes;
 			// Optimized for the common case
 			if (changes == null) {
 				return;
@@ -117,7 +124,7 @@ partial class Class {
 			goto Init;
 		}
 
-		_FieldInfoChanges?.Remove(name);
+		infos._Changes?.Remove(name);
 
 	Set:
 		infos[name] = info;
@@ -129,16 +136,18 @@ partial class Class {
 	}
 
 	public void UnmarkFieldInfoAsChanged(StringKey name)
-		=> _FieldInfoChanges?.Remove(name);
+		=> _FieldInfos?._Changes?.Remove(name);
 
-	public void UnmarkFieldInfosAsChanged()
-		=> _FieldInfoChanges = null;
-
+	public void UnmarkFieldInfosAsChanged() {
+		var infos = _FieldInfos;
+		if (infos != null)
+			infos._Changes = null;
+	}
 
 	public void UnloadFieldInfo(StringKey name) {
 		var infos = _FieldInfos;
 		if (infos != null) {
-			_FieldInfoChanges?.Remove(name);
+			infos._Changes?.Remove(name);
 			infos.Remove(name);
 		}
 	}
@@ -146,7 +155,7 @@ partial class Class {
 	public void UnloadFieldInfos() {
 		var infos = _FieldInfos;
 		if (infos != null) {
-			_FieldInfoChanges = null;
+			infos._Changes = null;
 			infos.Clear();
 		}
 	}
