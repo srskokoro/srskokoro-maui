@@ -1,0 +1,400 @@
+namespace Kokoro;
+using Blake2Fast;
+using Blake2Fast.Implementation;
+using Kokoro.Common.Util;
+using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
+using System.Runtime.InteropServices;
+
+partial class Class {
+	private Dictionary<StringKey, FieldInfo>? _FieldInfos;
+	private Dictionary<StringKey, FieldInfo>? _FieldInfoChanges;
+
+	public ICollection<StringKey> FieldNames {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _FieldInfos?.Keys ?? EmptyFieldNames.Instance;
+	}
+
+	private static class EmptyFieldNames {
+		internal static readonly Dictionary<StringKey, FieldInfo>.KeyCollection Instance = new(new());
+	}
+
+	public void EnsureCachedFieldName(StringKey name) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+	Set:
+		infos.TryAdd(name, default);
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+		goto Set;
+	}
+
+
+	public bool TryGetFieldInfo(StringKey name, [MaybeNullWhen(false)] out FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos != null) {
+			infos.TryGetValue(name, out info);
+			return info._IsLoaded;
+		}
+		info = default;
+		return false;
+	}
+
+	public void SetFieldInfo(StringKey name, FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+		var changes = _FieldInfoChanges;
+		if (changes == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto InitChanges;
+		}
+
+	Set:
+		infos[name] = info;
+		changes[name] = info;
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+	InitChanges:
+		_FieldInfoChanges = changes = new();
+		goto Set;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void DeleteFieldInfo(StringKey name)
+		=> SetFieldInfo(name, default);
+
+	/// <seealso cref="SetFieldInfoAsLoaded(StringKey, FieldInfo)"/>
+	[SkipLocalsInit]
+	public void SetCachedFieldInfo(StringKey name, FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+	Set:
+		infos[name] = info;
+
+		{
+			var changes = _FieldInfoChanges;
+			// Optimized for the common case
+			if (changes == null) {
+				return;
+			} else {
+				ref var infoRef = ref CollectionsMarshal.GetValueRefOrNullRef(changes, name);
+				if (!U.IsNullRef(ref infoRef)) {
+					infoRef = info;
+				}
+				return;
+			}
+		}
+
+	Init:
+		_FieldInfos = infos = new();
+		goto Set;
+	}
+
+	/// <summary>
+	/// Same as <see cref="ClearFieldInfoChangeStatus(StringKey)"/> followed by
+	/// <see cref="SetCachedFieldInfo(StringKey, FieldInfo)"/>.
+	/// </summary>
+	public void SetFieldInfoAsLoaded(StringKey name, FieldInfo info) {
+		var infos = _FieldInfos;
+		if (infos == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+		_FieldInfoChanges?.Remove(name);
+
+	Set:
+		infos[name] = info;
+		return;
+
+	Init:
+		_FieldInfos = infos = new();
+		goto Set;
+	}
+
+	public void ClearFieldInfoChangeStatus(StringKey name)
+		=> _FieldInfoChanges?.Remove(name);
+
+	public void ClearFieldInfoChangeStatuses()
+		=> _FieldInfoChanges = null;
+
+
+	public void UnloadFieldInfo(StringKey name) {
+		var infos = _FieldInfos;
+		if (infos != null) {
+			_FieldInfoChanges?.Remove(name);
+			infos.Remove(name);
+		}
+	}
+
+	public void UnloadFieldInfos() {
+		var infos = _FieldInfos;
+		if (infos != null) {
+			_FieldInfoChanges = null;
+			infos.Clear();
+		}
+	}
+
+	// --
+
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
+	/// or <see cref="NestingWriteTransaction"/>).
+	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
+	/// beforehand, at least once, while inside the transaction.
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey name) {
+		long fld = db.LoadStaleFieldId(name);
+		if (fld == 0) goto NotFound;
+
+		// Load field info
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set(
+				"SELECT ord,sto FROM ClassToField\n" +
+				"WHERE cls=$cls AND fld=$fld"
+			).AddParams(
+				new("$cls", _RowId),
+				new("$fld", fld)
+			);
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "ord");
+				int ordinal = r.GetInt32(0);
+
+				r.DAssert_Name(1, "sto");
+				var storeType = (FieldStoreType)r.GetInt32(1);
+				storeType.DAssert_Defined();
+
+				FieldInfo info = new(ordinal, storeType);
+
+				// Pending changes will be discarded
+				SetFieldInfoAsLoaded(name, info);
+				return; // Early exit
+			}
+		}
+
+	NotFound:
+		// Otherwise, either deleted or never existed.
+		// Let that state materialize here then.
+		UnloadFieldInfo(name);
+	}
+
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
+	/// or <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	private void InternalLoadFieldNames(KokoroSqliteDb db) {
+		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+
+		using var cmd = db.CreateCommand();
+		cmd.Set("SELECT fld FROM ClassToField WHERE cls=$cls")
+			.AddParams(new() { ParameterName = "$cls" });
+
+		using var r = cmd.ExecuteReader();
+		while (r.Read()) {
+			long fld = r.GetInt64(0);
+			var name = db.LoadStaleFieldName(fld);
+			Debug.Assert(name is not null, "An FK constraint should've been " +
+				"enforced to ensure this doesn't happen.");
+			EnsureCachedFieldName(name);
+		}
+	}
+
+	// --
+
+	[SkipLocalsInit]
+	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsId) {
+		var fieldInfoChanges_iter = fieldInfoChanges.GetEnumerator();
+		if (!fieldInfoChanges_iter.MoveNext()) goto NoFieldInfoChanges;
+
+		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+
+		SqliteCommand?
+			updCmd = null,
+			delCmd = null;
+
+		SqliteParameter
+			cmd_cls = new("$cls", clsId),
+			cmd_fld = new() { ParameterName = "$fld" };
+
+		SqliteParameter
+			updCmd_ord = null!,
+			updCmd_sto = null!,
+			updCmd_csum = null!;
+
+		try {
+			do {
+				var (fieldName, info) = fieldInfoChanges_iter.Current;
+				long fld;
+				if (info._IsLoaded) {
+					fld = db.LoadStaleOrEnsureFieldId(fieldName);
+					if (updCmd != null) {
+						goto UpdateFieldInfo;
+					} else
+						goto InitToUpdateFieldInfo;
+				} else {
+					fld = db.LoadStaleFieldId(fieldName);
+					if (fld != 0) {
+						if (delCmd != null) {
+							goto DeleteFieldInfo;
+						} else
+							goto InitToDeleteFieldInfo;
+					} else {
+						// Deletion requested, but there's nothing to delete, as
+						// the field is nonexistent.
+						continue;
+					}
+				}
+
+			InitToUpdateFieldInfo:
+				{
+					updCmd = db.CreateCommand();
+					updCmd.Set(
+						"INSERT INTO ClassToField(cls,fld,csum,ord,sto)\n" +
+						"VALUES($cls,$fld,$csum,$ord,$sto)\n" +
+						"ON CONFLICT DO UPDATE\n" +
+						"SET csum=$csum,ord=$ord,sto=$sto"
+					).AddParams(
+						cmd_cls, cmd_fld,
+						updCmd_ord = new() { ParameterName = "$ord" },
+						updCmd_sto = new() { ParameterName = "$sto" },
+						updCmd_csum = new() { ParameterName = "$csum" }
+					);
+					Debug.Assert(
+						cmd_cls.Value != null
+					);
+					goto UpdateFieldInfo;
+				}
+
+			UpdateFieldInfo:
+				{
+					var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
+					// WARNING: The expected order of inputs to be fed to the
+					// above hasher must be strictly as follows:
+					//
+					// 0. `fieldName` in UTF8 with length prepended
+					// 1. `info.Ordinal`
+					// 2. `info.StoreType`
+					//
+					// Unless stated otherwise, all integer inputs should be
+					// consumed in their little-endian form.
+					//
+					// The resulting hash BLOB shall be prepended with a version
+					// varint. Should any of the following happens, the version
+					// varint must change:
+					//
+					// - The resulting hash BLOB length changes.
+					// - The algorithm for the resulting hash BLOB changes.
+					// - An input entry (from the list of inputs above) was
+					// removed.
+					// - The order of an input entry (from the list of inputs
+					// above) was changed or shifted.
+					// - An input entry's size (in bytes) changed while it's
+					// expected to be fixed-size (e.g., not length-prepended).
+					//
+					// The version varint needs not to change if further input
+					// entries were to be appended (from the list of inputs
+					// above).
+					//
+					int hasher_fld_debug_i = 0; // Used only to help assert the above
+
+					hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
+					Debug.Assert(0 == hasher_fld_debug_i++);
+
+					cmd_fld.Value = fld;
+
+					updCmd_ord.Value = info.Ordinal;
+					hasher_fld.UpdateLE(info.Ordinal);
+					Debug.Assert(1 == hasher_fld_debug_i++);
+
+					updCmd_sto.Value = info.StoreType;
+					Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
+					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
+					Debug.Assert(2 == hasher_fld_debug_i++);
+
+					byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
+					updCmd_csum.Value = csum;
+
+					int updated = updCmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+
+					continue;
+				}
+
+			InitToDeleteFieldInfo:
+				{
+					delCmd = db.CreateCommand();
+					delCmd.Set(
+						"DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)"
+					).AddParams(
+						cmd_cls, cmd_fld
+					);
+					Debug.Assert(
+						cmd_cls.Value != null
+					);
+					goto DeleteFieldInfo;
+				}
+
+			DeleteFieldInfo:
+				{
+					cmd_fld.Value = fld;
+
+					int deleted = delCmd.ExecuteNonQuery();
+					// NOTE: It's possible for nothing to be deleted, for when
+					// the field info didn't exist in the first place.
+					Debug.Assert(deleted is 1 or 0);
+
+					continue;
+				}
+
+			} while (fieldInfoChanges_iter.MoveNext());
+
+		} finally {
+			updCmd?.Dispose();
+			delCmd?.Dispose();
+		}
+
+	NoFieldInfoChanges:
+		;
+	}
+
+	private const int FieldInfoCsumDigestLength = 31; // 248-bit hash
+
+	private static byte[] FinishWithFieldInfoCsum(ref Blake2bHashState hasher) {
+		const int CsumVer = 1; // The version varint
+		const int CsumVerLen = 1; // The varint length is a single byte for now
+		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLen);
+
+		Span<byte> csum = stackalloc byte[CsumVerLen + FieldInfoCsumDigestLength];
+		csum[0] = CsumVer; // Prepend version varint
+		hasher.Finish(csum[CsumVerLen..]);
+		return csum.ToArray();
+	}
+}
