@@ -512,11 +512,6 @@ public sealed class Class : DataEntity {
 			hasher.Update(uid.Span);
 			Debug.Assert(0 == hasher_debug_i++);
 
-			cmdParams.Add(
-				new("$modst", (_State & StateFlags.Change_ModStamp) != 0
-					? _ModStamp : TimeUtils.UnixMillisNow())
-			);
-
 			cmdParams.Add(new("$ord", _Ordinal));
 			hasher.UpdateLE(_Ordinal);
 			Debug.Assert(1 == hasher_debug_i++);
@@ -533,6 +528,9 @@ public sealed class Class : DataEntity {
 			byte[] csum = FinishWithClassCsum(ref hasher);
 			cmdParams.Add(new("$csum", csum));
 
+			long modstamp = (_State & StateFlags.Change_ModStamp) != 0 ? _ModStamp : TimeUtils.UnixMillisNow();
+			cmdParams.Add(new("$modst", modstamp));
+
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1, $"Updated: {updated}");
 
@@ -546,6 +544,7 @@ public sealed class Class : DataEntity {
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				_FieldInfoChanges?.Clear();
+				_ModStamp = modstamp;
 			}
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
@@ -651,6 +650,8 @@ public sealed class Class : DataEntity {
 				Debug.Assert(1 == hasher_debug_i++);
 			}
 
+			long modstamp;
+
 			// --
 			{
 				if (state == StateFlags.NoChanges) goto ModStampIsNow;
@@ -669,7 +670,7 @@ public sealed class Class : DataEntity {
 				}
 
 			ModStampIsNow:
-				long modstamp = TimeUtils.UnixMillisNow();
+				modstamp = TimeUtils.UnixMillisNow();
 				goto SetModStampParam;
 
 			ModStampIsCustom:
@@ -711,6 +712,7 @@ public sealed class Class : DataEntity {
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				_FieldInfoChanges?.Clear();
+				_ModStamp = modstamp;
 			}
 		}
 
