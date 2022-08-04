@@ -461,36 +461,35 @@ internal struct FieldsReader : IDisposable {
 				Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
 				FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
 
-				if (typeHint != FieldTypeHint.Null) {
-					var data = new byte[fValLen - fValSpecLen];
-					var span = data.AsDangerousSpan();
-
-					int sread = stream.Read(span);
-					int remaining = span.Length - sread;
-
-					// This becomes a conditional jump forward to not favor it
-					if (remaining != 0) { goto ReadIntoBufferFully; }
-
-				Done:
-					return new(typeHint, data);
-
-				ReadIntoBufferFully:
-					ReadIntoBufferFully(stream, data, sread, remaining);
-					goto Done;
-
-					// Non-inline to improve code quality as uncommon path
-					[MethodImpl(MethodImplOptions.NoInlining)]
-					[SkipLocalsInit]
-					static void ReadIntoBufferFully(Stream stream, byte[] data, int offset, int count) {
-						do {
-							int sread = stream.Read(data, offset, count);
-							if (sread == 0) break;
-							offset += sread;
-							count -= sread;
-						} while (count != 0);
-					}
-				} else {
+				if (typeHint == FieldTypeHint.Null)
 					goto E_NullFValWithNonZeroLength;
+
+				var data = new byte[fValLen - fValSpecLen];
+				var span = data.AsDangerousSpan();
+
+				int sread = stream.Read(span);
+				int remaining = span.Length - sread;
+
+				// This becomes a conditional jump forward to not favor it
+				if (remaining != 0) { goto ReadIntoBufferFully; }
+
+			Done:
+				return new(typeHint, data);
+
+			ReadIntoBufferFully:
+				ReadIntoBufferFully(stream, data, sread, remaining);
+				goto Done;
+
+				// Non-inline to improve code quality as uncommon path
+				[MethodImpl(MethodImplOptions.NoInlining)]
+				[SkipLocalsInit]
+				static void ReadIntoBufferFully(Stream stream, byte[] data, int offset, int count) {
+					do {
+						int sread = stream.Read(data, offset, count);
+						if (sread == 0) break;
+						offset += sread;
+						count -= sread;
+					} while (count != 0);
 				}
 			}
 			goto Fail;
