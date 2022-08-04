@@ -319,12 +319,14 @@ public sealed partial class Class : DataEntity {
 			// - See, https://www.sqlite.org/rescode.html#busy
 			tx.Commit();
 
-			// Set new `csum` and clear pending changes (as they're now saved)
+			// Conclude modstamp, set new `csum`, and clear pending changes (as
+			// they're now saved)
+			// --
 			{
+				_ModStamp = modstamp;
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				_FieldInfos?._Changes?.Clear();
-				_ModStamp = modstamp;
 			}
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
@@ -489,12 +491,14 @@ public sealed partial class Class : DataEntity {
 				goto Missing;
 			}
 
-			// Set new `csum` and clear pending changes (as they're now saved)
+			// Conclude modstamp, set new `csum`, and clear pending changes (as
+			// they're now saved)
+			// --
 			{
+				_ModStamp = modstamp;
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				_FieldInfos?._Changes?.Clear();
-				_ModStamp = modstamp;
 			}
 		}
 
