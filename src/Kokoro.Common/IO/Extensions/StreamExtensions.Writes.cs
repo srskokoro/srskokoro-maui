@@ -45,6 +45,7 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
+		Debug.Assert(remaining >= 0);
 		return remaining;
 	}
 
@@ -80,6 +81,7 @@ internal static partial class StreamExtensions {
 		} finally {
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
+		Debug.Assert(remaining >= 0);
 		return remaining;
 	}
 
