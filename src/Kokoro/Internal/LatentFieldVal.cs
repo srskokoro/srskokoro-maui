@@ -1,5 +1,6 @@
 ﻿namespace Kokoro.Internal;
 using Blake2Fast.Implementation;
+using Kokoro.Common.IO;
 using System.IO;
 
 internal readonly record struct LatentFieldVal {
@@ -60,20 +61,22 @@ internal readonly record struct LatentFieldVal {
 		int remaining = _Length;
 		if (remaining > 0) {
 			var source = _Stream;
-			if (source == null) goto ZeroFillRemaining;
+			if (source == null) {
+				// Pretend we're using `Stream.Null`
+				goto E_EndOfStreamRead_InvOp;
+			}
 
 			source.Position = _Offset;
 			remaining = source.CopyPartlyTo(destination, remaining);
-			if (remaining != 0) goto ZeroFillRemaining;
+			if (remaining != 0) {
+				// Not enough data read to reach the supposed length
+				goto E_EndOfStreamRead_InvOp;
+			}
 		}
-	Done:
 		return;
 
-	ZeroFillRemaining:
-		{
-			destination.ClearPartly(remaining);
-			goto Done;
-		}
+	E_EndOfStreamRead_InvOp:
+		StreamUtils.E_EndOfStreamRead_InvOp();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -84,11 +87,17 @@ internal readonly record struct LatentFieldVal {
 			hasher.UpdateLE((uint)remaining); // i.e., length-prepended
 
 			var source = _Stream;
-			if (source == null) goto ZeroFillRemaining;
+			if (source == null) {
+				// Pretend we're using `Stream.Null`
+				goto E_EndOfStreamRead_InvOp;
+			}
 
 			source.Position = _Offset;
 			remaining = source.FeedPartlyTo(ref hasher, remaining);
-			if (remaining != 0) goto ZeroFillRemaining;
+			if (remaining != 0) {
+				// Not enough data read to reach the supposed length
+				goto E_EndOfStreamRead_InvOp;
+			}
 		} else {
 			// This becomes a conditional jump forward to not favor it
 			goto ZeroLength;
@@ -102,18 +111,8 @@ internal readonly record struct LatentFieldVal {
 			goto Done;
 		}
 
-	ZeroFillRemaining:
-		{
-			FeedWithNullBytes(ref hasher, remaining);
-			goto Done;
-		}
-
-		// Never inline, as this is expected to be an uncommon path
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		static void FeedWithNullBytes(ref Blake2bHashState hasher, int count) {
-			while (--count >= 0)
-				hasher.Update<byte>(0);
-		}
+	E_EndOfStreamRead_InvOp:
+		StreamUtils.E_EndOfStreamRead_InvOp();
 	}
 
 	// --

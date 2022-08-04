@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal;
+using Kokoro.Common.IO;
 using Kokoro.Internal.Sqlite;
 using System.IO;
 
@@ -486,10 +487,15 @@ internal struct FieldsReader : IDisposable {
 				static void ReadIntoBufferFully(Stream stream, byte[] data, int offset, int count) {
 					do {
 						int sread = stream.Read(data, offset, count);
-						if (sread == 0) break;
+						if (sread == 0) goto E_EndOfStreamRead_InvOp;
 						offset += sread;
 						count -= sread;
 					} while (count != 0);
+
+					return; // Early exit
+
+				E_EndOfStreamRead_InvOp:
+					StreamUtils.E_EndOfStreamRead_InvOp();
 				}
 			}
 			goto Fail;
