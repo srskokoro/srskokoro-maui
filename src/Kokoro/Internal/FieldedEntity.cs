@@ -116,11 +116,8 @@ public abstract partial class FieldedEntity : DataEntity {
 	public void UnmarkFieldAsChanged(StringKey name)
 		=> _Fields?._Changes?.Remove(name);
 
-	public void UnmarkFieldsAsChanged() {
-		var fields = _Fields;
-		if (fields != null)
-			fields._Changes = null;
-	}
+	public void UnmarkFieldsAsChanged()
+		=> _Fields?._Changes?.Clear();
 
 
 	public void UnloadField(StringKey fieldName) {

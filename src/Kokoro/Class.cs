@@ -326,7 +326,7 @@ public sealed partial class Class : DataEntity {
 				_ModStamp = modstamp;
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
-				_FieldInfos?._Changes?.Clear();
+				UnmarkFieldInfosAsChanged();
 			}
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
@@ -498,7 +498,7 @@ public sealed partial class Class : DataEntity {
 				_ModStamp = modstamp;
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
-				_FieldInfos?._Changes?.Clear();
+				UnmarkFieldInfosAsChanged();
 			}
 		}
 

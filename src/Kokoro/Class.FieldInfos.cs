@@ -139,11 +139,8 @@ partial class Class {
 	public void UnmarkFieldInfoAsChanged(StringKey name)
 		=> _FieldInfos?._Changes?.Remove(name);
 
-	public void UnmarkFieldInfosAsChanged() {
-		var infos = _FieldInfos;
-		if (infos != null)
-			infos._Changes = null;
-	}
+	public void UnmarkFieldInfosAsChanged()
+		=> _FieldInfos?._Changes?.Clear();
 
 
 	public void UnloadFieldInfo(StringKey name) {
