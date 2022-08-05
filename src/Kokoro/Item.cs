@@ -589,6 +589,31 @@ public sealed class Item : FieldedEntity {
 		// TODO Generate code via T4 text templates instead
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void LoadClassId(params long[] classIds)
+		=> LoadClassId(classIds.AsSpan());
+
+	public void LoadClassId(ReadOnlySpan<long> classIds) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			LoadSchemaId(db);
+			if (Exists) {
+				// TODO Unroll?
+				foreach (var classId in classIds)
+					InternalLoadClassId(db, classId);
+			}
+		}
+	}
+
+	public void LoadClassIds() {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			LoadSchemaId(db);
+			if (Exists)
+				InternalLoadClassIds(db);
+		}
+	}
+
 
 	public void Unload() {
 		UnloadClassIds();
