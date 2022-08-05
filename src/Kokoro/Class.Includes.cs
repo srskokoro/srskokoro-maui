@@ -1,5 +1,6 @@
 ﻿namespace Kokoro;
 using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
 
 partial class Class {
 	/// <summary>
@@ -385,5 +386,104 @@ partial class Class {
 			if (Exists)
 				InternalLoadIncludes(db);
 		}
+	}
+
+	// --
+
+	[SkipLocalsInit]
+	private static void InternalSaveIncludes(KokoroSqliteDb db, Includes includes, long clsId) {
+		var changes = includes._Changes;
+		Debug.Assert(changes != null);
+
+		var changes_iter = changes.GetEnumerator();
+		if (!changes_iter.MoveNext()) goto NoChanges;
+
+		SqliteCommand?
+			insCmd = null,
+			delCmd = null;
+
+		SqliteParameter
+			cmd_cls = new("$cls", clsId),
+			cmd_incl = new() { ParameterName = "$incl" };
+
+		try {
+			do {
+				long incl = changes_iter.Current;
+				cmd_incl.Value = incl;
+
+				if (includes.Contains(incl)) {
+					if (insCmd != null) {
+						goto InsertInclude;
+					} else
+						goto InitToInsertInclude;
+				} else {
+					if (delCmd != null) {
+						goto DeleteInclude;
+					} else
+						goto InitToDeleteInclude;
+				}
+
+			InitToInsertInclude:
+				{
+					insCmd = db.CreateCommand();
+					// NOTE: `INSERT … ON CONFLICT DO NOTHING` ignores rows that
+					// violate uniqueness constraints only (unlike `INSERT OR IGNORE …`)
+					insCmd.Set(
+						"INSERT INTO ClassToInclude(cls,incl)\n" +
+						"VALUES($cls,$incl)\n" +
+						"ON CONFLICT DO NOTHING"
+					).AddParams(
+						cmd_cls, cmd_incl
+					);
+					Debug.Assert(
+						cmd_cls.Value != null &&
+						cmd_incl.Value != null
+					);
+					goto InsertInclude;
+				}
+
+			InsertInclude:
+				{
+					int inserted = insCmd.ExecuteNonQuery();
+					// NOTE: It's possible for nothing to be inserted, for when
+					// the class include already exists.
+					Debug.Assert(inserted is 1 or 0);
+					continue;
+				}
+
+			InitToDeleteInclude:
+				{
+					delCmd = db.CreateCommand();
+					delCmd.Set(
+						"DELETE FROM ClassToInclude\n" +
+						"WHERE (cls,incl)=($cls,$incl)"
+					).AddParams(
+						cmd_cls, cmd_incl
+					);
+					Debug.Assert(
+						cmd_cls.Value != null &&
+						cmd_incl.Value != null
+					);
+					goto DeleteInclude;
+				}
+
+			DeleteInclude:
+				{
+					int deleted = delCmd.ExecuteNonQuery();
+					// NOTE: It's possible for nothing to be deleted, for when
+					// the class include didn't exist in the first place.
+					Debug.Assert(deleted is 1 or 0);
+					continue;
+				}
+
+			} while (changes_iter.MoveNext());
+
+		} finally {
+			insCmd?.Dispose();
+			delCmd?.Dispose();
+		}
+
+	NoChanges:
+		;
 	}
 }

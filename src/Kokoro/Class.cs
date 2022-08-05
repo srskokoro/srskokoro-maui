@@ -267,6 +267,14 @@ public sealed partial class Class : DataEntity {
 					InternalSaveFieldInfos(db, fieldChanges, rowid);
 			}
 
+			// Save class includes
+			// --
+			{
+				var includes = _Includes;
+				if (includes != null && includes._Changes != null)
+					InternalSaveIncludes(db, includes, rowid);
+			}
+
 			// Save core state
 			// --
 
@@ -327,6 +335,7 @@ public sealed partial class Class : DataEntity {
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				UnmarkFieldInfosAsChanged();
+				UnmarkIncludesAsChanged();
 			}
 		} catch (Exception ex) when (hasUsedNextRowId && (
 			ex is not SqliteException sqlex ||
@@ -358,6 +367,14 @@ public sealed partial class Class : DataEntity {
 				var fieldChanges = _FieldInfos?._Changes;
 				if (fieldChanges != null)
 					InternalSaveFieldInfos(db, fieldChanges, _RowId);
+			}
+
+			// Save class includes
+			// --
+			{
+				var includes = _Includes;
+				if (includes != null && includes._Changes != null)
+					InternalSaveIncludes(db, includes, _RowId);
 			}
 
 			// Save core state
@@ -499,6 +516,7 @@ public sealed partial class Class : DataEntity {
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				UnmarkFieldInfosAsChanged();
+				UnmarkIncludesAsChanged();
 			}
 		}
 
