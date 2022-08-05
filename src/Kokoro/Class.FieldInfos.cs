@@ -135,6 +135,7 @@ partial class Class {
 		goto Set;
 	}
 
+
 	public void UnmarkFieldInfoAsChanged(StringKey name)
 		=> _FieldInfos?._Changes?.Remove(name);
 
@@ -143,6 +144,7 @@ partial class Class {
 		if (infos != null)
 			infos._Changes = null;
 	}
+
 
 	public void UnloadFieldInfo(StringKey name) {
 		var infos = _FieldInfos;
