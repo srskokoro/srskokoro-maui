@@ -37,7 +37,7 @@ public sealed class Item : FieldedEntity {
 		Change_SchemaId     = 1 << 4,
 		Change_DataModStamp = 1 << 5,
 
-		NotExists           = 1 << 31,
+		NotExists           = 1 << (sizeof(StateFlags)*8 - 1), // Sets sign bit
 	}
 
 

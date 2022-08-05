@@ -41,7 +41,7 @@ public sealed partial class Class : DataEntity {
 		Change_GroupId  = 1 << 3,
 		Change_Name     = 1 << 4,
 
-		NotExists       = 1 << 31,
+		NotExists       = 1 << (sizeof(StateFlags)*8 - 1), // Sets sign bit
 	}
 
 	public readonly struct FieldInfo {
