@@ -264,7 +264,7 @@ public sealed partial class Class : DataEntity {
 			{
 				var fieldChanges = _FieldInfos?._Changes;
 				if (fieldChanges != null)
-					InternalSaveFieldInfos(db, fieldChanges, _RowId);
+					InternalSaveFieldInfos(db, fieldChanges, rowid);
 			}
 
 			// Save core state
