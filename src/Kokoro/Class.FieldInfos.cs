@@ -1,4 +1,4 @@
-namespace Kokoro;
+ï»¿namespace Kokoro;
 using Blake2Fast;
 using Blake2Fast.Implementation;
 using Kokoro.Common.Util;
@@ -219,7 +219,7 @@ partial class Class {
 	/// </remarks>
 	[SkipLocalsInit]
 	private void InternalLoadFieldNames(KokoroSqliteDb db) {
-		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+		db.ReloadFieldNameCaches(); // Needed by `db.LoadStaleâ€¦()` below
 
 		using var cmd = db.CreateCommand();
 		cmd.Set("SELECT fld FROM ClassToField WHERE cls=$cls")
@@ -242,7 +242,7 @@ partial class Class {
 		var changes_iter = changes.GetEnumerator();
 		if (!changes_iter.MoveNext()) goto NoChanges;
 
-		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+		db.ReloadFieldNameCaches(); // Needed by `db.LoadStaleâ€¦()` below
 
 		SqliteCommand?
 			updCmd = null,

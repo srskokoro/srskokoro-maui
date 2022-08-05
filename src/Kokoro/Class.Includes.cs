@@ -1,4 +1,4 @@
-namespace Kokoro;
+﻿namespace Kokoro;
 using Kokoro.Internal.Sqlite;
 
 partial class Class {
