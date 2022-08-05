@@ -238,9 +238,9 @@ partial class Class {
 	// --
 
 	[SkipLocalsInit]
-	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> fieldInfoChanges, long clsId) {
-		var fieldInfoChanges_iter = fieldInfoChanges.GetEnumerator();
-		if (!fieldInfoChanges_iter.MoveNext()) goto NoFieldInfoChanges;
+	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> changes, long clsId) {
+		var changes_iter = changes.GetEnumerator();
+		if (!changes_iter.MoveNext()) goto NoChanges;
 
 		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
 
@@ -259,7 +259,7 @@ partial class Class {
 
 		try {
 			do {
-				var (fieldName, info) = fieldInfoChanges_iter.Current;
+				var (fieldName, info) = changes_iter.Current;
 				long fld;
 				if (info._IsLoaded) {
 					fld = db.LoadStaleOrEnsureFieldId(fieldName);
@@ -382,14 +382,14 @@ partial class Class {
 					continue;
 				}
 
-			} while (fieldInfoChanges_iter.MoveNext());
+			} while (changes_iter.MoveNext());
 
 		} finally {
 			updCmd?.Dispose();
 			delCmd?.Dispose();
 		}
 
-	NoFieldInfoChanges:
+	NoChanges:
 		;
 	}
 
