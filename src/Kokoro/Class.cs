@@ -361,12 +361,14 @@ public sealed partial class Class : DataEntity {
 
 		var db = Host.Db; // Throws if host is already disposed
 		using (var tx = new NestingWriteTransaction(db)) {
+			long rowid = _RowId;
+
 			// Save field infos
 			// --
 			{
 				var fieldChanges = _FieldInfos?._Changes;
 				if (fieldChanges != null)
-					InternalSaveFieldInfos(db, fieldChanges, _RowId);
+					InternalSaveFieldInfos(db, fieldChanges, rowid);
 			}
 
 			// Save class includes
@@ -374,7 +376,7 @@ public sealed partial class Class : DataEntity {
 			{
 				var includes = _Includes;
 				if (includes != null && includes._Changes != null)
-					InternalSaveIncludes(db, includes, _RowId);
+					InternalSaveIncludes(db, includes, rowid);
 			}
 
 			// Save core state
@@ -382,7 +384,7 @@ public sealed partial class Class : DataEntity {
 
 			using var cmd = db.CreateCommand();
 			var cmdParams = cmd.Parameters;
-			cmdParams.Add(new("$rowid", _RowId));
+			cmdParams.Add(new("$rowid", rowid));
 
 			StringBuilder cmdSb = new();
 			cmdSb.Append("UPDATE Class SET\n");
@@ -423,7 +425,7 @@ public sealed partial class Class : DataEntity {
 			cmd_old.Set(
 				"SELECT uid,ord FROM Class\n" +
 				"WHERE rowid=$rowid"
-			).AddParams(new("$rowid", _RowId));
+			).AddParams(new("$rowid", rowid));
 
 			using var r = cmd_old.ExecuteReader();
 			if (!r.Read()) goto Missing;
@@ -483,10 +485,10 @@ public sealed partial class Class : DataEntity {
 				cmdSb.Append("modst=$modst,");
 			}
 
-			HashWithFieldInfos(db, _RowId, ref hasher);
+			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
 
-			HashWithClassIncludes(db, _RowId, ref hasher);
+			HashWithClassIncludes(db, rowid, ref hasher);
 			Debug.Assert(3 == hasher_debug_i++);
 
 			byte[] csum = FinishWithClassCsum(ref hasher);
