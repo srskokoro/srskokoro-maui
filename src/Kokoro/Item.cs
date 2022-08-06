@@ -585,7 +585,7 @@ public sealed class Item : FieldedEntity {
 			}
 			return false;
 		}
-		// TODO A counterpart that loads up to 16 fields
+		// TODO A counterpart that loads up to 16 class ids
 		// TODO Generate code via T4 text templates instead
 	}
 

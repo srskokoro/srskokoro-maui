@@ -358,7 +358,7 @@ partial class Class {
 			}
 			return false;
 		}
-		// TODO A counterpart that loads up to 16 fields
+		// TODO A counterpart that loads up to 16 includes
 		// TODO Generate code via T4 text templates instead
 	}
 
