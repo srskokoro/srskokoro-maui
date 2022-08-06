@@ -48,32 +48,32 @@ partial class KokoroSqliteDb {
 	}
 
 	[SkipLocalsInit]
-	private long QueryNameId(StringKey fieldName) {
+	private long QueryNameId(StringKey name) {
 		using var cmd = CreateCommand();
 		cmd.Set("SELECT rowid FROM NameId WHERE name=$name");
-		cmd.AddParams(new("$name", fieldName.Value));
+		cmd.AddParams(new("$name", name.Value));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
 			long id = r.GetInt64(0);
 			Debug.Assert(id != 0, "Unexpected zero rowid.");
-			_NameToNameIdCache.Put(fieldName, id);
+			_NameToNameIdCache.Put(name, id);
 		}
 		return 0;
 	}
 
 	[SkipLocalsInit]
-	private StringKey? QueryName(long fieldId) {
+	private StringKey? QueryName(long nameId) {
 		using var cmd = CreateCommand();
 		cmd.Set("SELECT name FROM NameId WHERE rowid=$rowid");
-		cmd.AddParams(new("$rowid", fieldId));
+		cmd.AddParams(new("$rowid", nameId));
 
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
-			Debug.Assert(fieldId != 0, "Unexpected zero rowid.");
+			Debug.Assert(nameId != 0, "Unexpected zero rowid.");
 			StringKey name = new(r.GetString(0));
 			name = _NameToNameIdCache.Normalize(name);
-			_NameIdToNameCache.Put(fieldId, name);
+			_NameIdToNameCache.Put(nameId, name);
 			return name;
 		}
 		return null;
@@ -104,13 +104,13 @@ partial class KokoroSqliteDb {
 
 	/// <remarks>Never returns zero.</remarks>
 	[SkipLocalsInit]
-	private long QueryOrInsertNameId(StringKey fieldName) {
+	private long QueryOrInsertNameId(StringKey name) {
 		using var tx = new NestingWriteTransaction(this);
 
 		long id;
 		using (var cmd = CreateCommand()) {
 			cmd.Set("SELECT rowid FROM NameId WHERE name=$name");
-			cmd.AddParams(new("$name", fieldName.Value));
+			cmd.AddParams(new("$name", name.Value));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
@@ -121,7 +121,7 @@ partial class KokoroSqliteDb {
 		}
 
 		Debug.Assert(id != 0, "Unexpected zero rowid.");
-		_NameToNameIdCache.Put(fieldName, id);
+		_NameToNameIdCache.Put(name, id);
 		tx.DisposeNoInvalidate();
 		return id;
 
@@ -131,7 +131,7 @@ partial class KokoroSqliteDb {
 				"INSERT INTO NameId(rowid,name) VALUES($rowid,$name)"
 			).AddParams(
 				new("$rowid", id = Context!.NextNameId()),
-				new("$name", fieldName.Value)
+				new("$name", name.Value)
 			);
 
 			try {
@@ -155,7 +155,7 @@ partial class KokoroSqliteDb {
 		}
 
 		Debug.Assert(id != 0, "Unexpected zero rowid.");
-		_NameToNameIdCache.Put(fieldName, id);
+		_NameToNameIdCache.Put(name, id);
 		tx.Commit();
 		return id;
 	}
