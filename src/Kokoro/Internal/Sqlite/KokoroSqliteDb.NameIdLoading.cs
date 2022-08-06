@@ -3,12 +3,12 @@ using Kokoro.Internal.Caching;
 using Microsoft.Data.Sqlite;
 
 partial class KokoroSqliteDb {
-	private readonly NameToNameIdCache _FieldNameToIdCache = new(2048);
-	private readonly NameIdToNameCache _FieldIdToNameCache = new(2048);
+	private readonly NameToNameIdCache _NameToNameIdCache = new(2048);
+	private readonly NameIdToNameCache _NameIdToNameCache = new(2048);
 
 	public void ClearNameIdCaches() {
-		_FieldNameToIdCache.Clear();
-		_FieldIdToNameCache.Clear();
+		_NameToNameIdCache.Clear();
+		_NameIdToNameCache.Clear();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -17,38 +17,38 @@ partial class KokoroSqliteDb {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadNameId(StringKey name) {
-		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(name, out long id)) {
+		if (!ReloadNameIdCaches() && _NameToNameIdCache.TryGet(name, out long id)) {
 			return id;
 		}
-		return QueryFieldId(name);
+		return QueryNameId(name);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public StringKey? LoadName(long nameId) {
-		if (!ReloadNameIdCaches() && _FieldIdToNameCache.TryGet(nameId, out var name)) {
+		if (!ReloadNameIdCaches() && _NameIdToNameCache.TryGet(nameId, out var name)) {
 			return name;
 		}
-		return QueryFieldName(nameId);
+		return QueryName(nameId);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadStaleNameId(StringKey name) {
-		if (_FieldNameToIdCache.TryGet(name, out long id)) {
+		if (_NameToNameIdCache.TryGet(name, out long id)) {
 			return id;
 		}
-		return QueryFieldId(name);
+		return QueryNameId(name);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public StringKey? LoadStaleName(long nameId) {
-		if (_FieldIdToNameCache.TryGet(nameId, out var name)) {
+		if (_NameIdToNameCache.TryGet(nameId, out var name)) {
 			return name;
 		}
-		return QueryFieldName(nameId);
+		return QueryName(nameId);
 	}
 
 	[SkipLocalsInit]
-	private long QueryFieldId(StringKey fieldName) {
+	private long QueryNameId(StringKey fieldName) {
 		using var cmd = CreateCommand();
 		cmd.Set("SELECT rowid FROM NameId WHERE name=$name");
 		cmd.AddParams(new("$name", fieldName.Value));
@@ -57,13 +57,13 @@ partial class KokoroSqliteDb {
 		if (r.Read()) {
 			long id = r.GetInt64(0);
 			Debug.Assert(id != 0, "Unexpected zero rowid.");
-			_FieldNameToIdCache.Put(fieldName, id);
+			_NameToNameIdCache.Put(fieldName, id);
 		}
 		return 0;
 	}
 
 	[SkipLocalsInit]
-	private StringKey? QueryFieldName(long fieldId) {
+	private StringKey? QueryName(long fieldId) {
 		using var cmd = CreateCommand();
 		cmd.Set("SELECT name FROM NameId WHERE rowid=$rowid");
 		cmd.AddParams(new("$rowid", fieldId));
@@ -72,8 +72,8 @@ partial class KokoroSqliteDb {
 		if (r.Read()) {
 			Debug.Assert(fieldId != 0, "Unexpected zero rowid.");
 			StringKey name = new(r.GetString(0));
-			name = _FieldNameToIdCache.Normalize(name);
-			_FieldIdToNameCache.Put(fieldId, name);
+			name = _NameToNameIdCache.Normalize(name);
+			_NameIdToNameCache.Put(fieldId, name);
 			return name;
 		}
 		return null;
@@ -83,28 +83,28 @@ partial class KokoroSqliteDb {
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long EnsureNameId(StringKey name) {
-		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(name, out long id)) {
+		if (!ReloadNameIdCaches() && _NameToNameIdCache.TryGet(name, out long id)) {
 			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
 		// NOTE: The following never returns zero.
-		return QueryOrInsertFieldId(name);
+		return QueryOrInsertNameId(name);
 	}
 
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadStaleOrEnsureNameId(StringKey name) {
-		if (_FieldNameToIdCache.TryGet(name, out long id)) {
+		if (_NameToNameIdCache.TryGet(name, out long id)) {
 			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
 		// NOTE: The following never returns zero.
-		return QueryOrInsertFieldId(name);
+		return QueryOrInsertNameId(name);
 	}
 
 	/// <remarks>Never returns zero.</remarks>
 	[SkipLocalsInit]
-	private long QueryOrInsertFieldId(StringKey fieldName) {
+	private long QueryOrInsertNameId(StringKey fieldName) {
 		using var tx = new NestingWriteTransaction(this);
 
 		long id;
@@ -116,16 +116,16 @@ partial class KokoroSqliteDb {
 			if (r.Read()) {
 				id = r.GetInt64(0);
 			} else {
-				goto InsertNewFieldName;
+				goto InsertNewNameId;
 			}
 		}
 
 		Debug.Assert(id != 0, "Unexpected zero rowid.");
-		_FieldNameToIdCache.Put(fieldName, id);
+		_NameToNameIdCache.Put(fieldName, id);
 		tx.DisposeNoInvalidate();
 		return id;
 
-	InsertNewFieldName:
+	InsertNewNameId:
 		using (var cmd = CreateCommand()) {
 			cmd.Set(
 				"INSERT INTO NameId(rowid,name) VALUES($rowid,$name)"
@@ -155,7 +155,7 @@ partial class KokoroSqliteDb {
 		}
 
 		Debug.Assert(id != 0, "Unexpected zero rowid.");
-		_FieldNameToIdCache.Put(fieldName, id);
+		_NameToNameIdCache.Put(fieldName, id);
 		tx.Commit();
 		return id;
 	}
