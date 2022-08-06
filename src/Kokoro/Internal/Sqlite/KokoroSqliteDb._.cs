@@ -151,11 +151,11 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	internal void OnNestingWriteRollback() => ClearCaches();
 
 	internal void ClearCaches() {
-		// NOTE: We should ensure that the field name caches are never stale by
-		// preventing field names from being remapped to a different rowid so
+		// NOTE: We should ensure that the name id caches are never stale by
+		// preventing name entries from being remapped to a different rowid so
 		// long as the DB or context exists. One way to accomplish that is to
 		// clear the cache on rollback, and delete any offending cache entry
-		// whenever a field name is deleted (as the rowid might get remapped).
+		// whenever a name entry is deleted (as the rowid might get remapped).
 		ClearNameIdCaches();
 	}
 }

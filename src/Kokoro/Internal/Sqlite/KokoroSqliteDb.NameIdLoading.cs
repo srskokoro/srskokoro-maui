@@ -142,8 +142,8 @@ partial class KokoroSqliteDb {
 				sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
 			) {
 				// Shouldn't fail via uniqueness constraint, since we already
-				// know that the field name didn't exist beforehand, and we're
-				// in a transaction.
+				// know that the name id entry didn't exist beforehand, and
+				// we're in a transaction.
 				Debug.Assert(
 					ex is not SqliteException sqlex2 ||
 					sqlex2.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_UNIQUE,
