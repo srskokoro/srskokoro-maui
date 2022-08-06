@@ -16,35 +16,35 @@ partial class KokoroSqliteDb {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long LoadNameId(StringKey fieldName) {
-		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+	public long LoadNameId(StringKey name) {
+		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(name, out long id)) {
 			return id;
 		}
-		return QueryFieldId(fieldName);
+		return QueryFieldId(name);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public StringKey? LoadName(long fieldId) {
-		if (!ReloadNameIdCaches() && _FieldIdToNameCache.TryGet(fieldId, out var name)) {
+	public StringKey? LoadName(long nameId) {
+		if (!ReloadNameIdCaches() && _FieldIdToNameCache.TryGet(nameId, out var name)) {
 			return name;
 		}
-		return QueryFieldName(fieldId);
+		return QueryFieldName(nameId);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long LoadStaleNameId(StringKey fieldName) {
-		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
+	public long LoadStaleNameId(StringKey name) {
+		if (_FieldNameToIdCache.TryGet(name, out long id)) {
 			return id;
 		}
-		return QueryFieldId(fieldName);
+		return QueryFieldId(name);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public StringKey? LoadStaleName(long fieldId) {
-		if (_FieldIdToNameCache.TryGet(fieldId, out var name)) {
+	public StringKey? LoadStaleName(long nameId) {
+		if (_FieldIdToNameCache.TryGet(nameId, out var name)) {
 			return name;
 		}
-		return QueryFieldName(fieldId);
+		return QueryFieldName(nameId);
 	}
 
 	[SkipLocalsInit]
@@ -82,24 +82,24 @@ partial class KokoroSqliteDb {
 
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long EnsureNameId(StringKey fieldName) {
-		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+	public long EnsureNameId(StringKey name) {
+		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(name, out long id)) {
 			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
 		// NOTE: The following never returns zero.
-		return QueryOrInsertFieldId(fieldName);
+		return QueryOrInsertFieldId(name);
 	}
 
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long LoadStaleOrEnsureNameId(StringKey fieldName) {
-		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
+	public long LoadStaleOrEnsureNameId(StringKey name) {
+		if (_FieldNameToIdCache.TryGet(name, out long id)) {
 			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
 		// NOTE: The following never returns zero.
-		return QueryOrInsertFieldId(fieldName);
+		return QueryOrInsertFieldId(name);
 	}
 
 	/// <remarks>Never returns zero.</remarks>
