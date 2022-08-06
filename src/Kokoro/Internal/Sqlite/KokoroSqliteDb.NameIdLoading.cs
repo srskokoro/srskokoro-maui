@@ -3,8 +3,8 @@ using Kokoro.Internal.Caching;
 using Microsoft.Data.Sqlite;
 
 partial class KokoroSqliteDb {
-	private readonly FieldNameToIdCache _FieldNameToIdCache = new(2048);
-	private readonly FieldIdToNameCache _FieldIdToNameCache = new(2048);
+	private readonly NameToNameIdCache _FieldNameToIdCache = new(2048);
+	private readonly NameIdToNameCache _FieldIdToNameCache = new(2048);
 
 	public void ClearNameIdCaches() {
 		_FieldNameToIdCache.Clear();
