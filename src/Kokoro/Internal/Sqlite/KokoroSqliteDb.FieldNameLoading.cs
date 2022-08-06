@@ -130,7 +130,7 @@ partial class KokoroSqliteDb {
 			cmd.Set(
 				"INSERT INTO NameId(rowid,name) VALUES($rowid,$name)"
 			).AddParams(
-				new("$rowid", id = Context!.NextFieldId()),
+				new("$rowid", id = Context!.NextNameId()),
 				new("$name", fieldName.Value)
 			);
 
@@ -149,7 +149,7 @@ partial class KokoroSqliteDb {
 					sqlex2.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_UNIQUE,
 					"Shouldn't normally fail.", $"Unexpected: {ex}"
 				);
-				Context?.UndoFieldId(id);
+				Context?.UndoNameId(id);
 				throw;
 			}
 		}
