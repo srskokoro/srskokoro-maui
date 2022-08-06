@@ -81,8 +81,8 @@ partial class KokoroContext {
 		")");
 
 		// An item, a node in a tree-like structure that can have fields, with
-		// with its fields described by one or more classes, with the latter
-		// also referred to as entity classes.
+		// its fields described by one or more classes, with the latter also
+		// referred to as entity classes.
 		//
 		// An item is also said to be a type of fielded entity due to its
 		// ability have fields, with the latter also referred to as entity
