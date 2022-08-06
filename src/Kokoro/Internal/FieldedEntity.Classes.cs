@@ -143,11 +143,8 @@ partial class FieldedEntity {
 	public void UnmarkClassAsChanged(long classId)
 		=> _Classes?._Changes?.Remove(classId);
 
-	public void UnmarkClassesAsChanged() {
-		var classes = _Classes;
-		if (classes != null)
-			classes._Changes = null;
-	}
+	public void UnmarkClassesAsChanged()
+		=> _Classes?._Changes?.Clear();
 
 
 	public void UnloadClassId(long classId) {

@@ -146,11 +146,8 @@ partial class Class {
 	public void UnmarkIncludeAsChanged(long classId)
 		=> _Includes?._Changes?.Remove(classId);
 
-	public void UnmarkIncludesAsChanged() {
-		var includes = _Includes;
-		if (includes != null)
-			includes._Changes = null;
-	}
+	public void UnmarkIncludesAsChanged()
+		=> _Includes?._Changes?.Clear();
 
 
 	public void UnloadInclude(long classId) {
