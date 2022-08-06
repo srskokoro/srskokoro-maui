@@ -155,7 +155,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
 	/// or <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
+	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadNameIdCaches()"/>
 	/// beforehand, at least once, while inside the transaction.
 	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
@@ -170,7 +170,7 @@ public abstract partial class FieldedEntity : DataEntity {
 		FieldSpec fspec;
 
 		var db = fr.Db;
-		long fld = db.LoadStaleFieldId(fieldName);
+		long fld = db.LoadStaleNameId(fieldName);
 		if (fld == 0) goto NotFound;
 
 		using (var cmd = db.CreateCommand()) {

@@ -301,10 +301,10 @@ partial class FieldedEntity {
 
 			fldMapOld = new(fchanges.Count);
 
-			db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+			db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 			do {
 				var (fname, fval) = fchanges_iter.Current;
-				long fld = db.LoadStaleOrEnsureFieldId(fname);
+				long fld = db.LoadStaleOrEnsureNameId(fname);
 
 				bool added = fldMapOld.TryAdd(fld, (fval, -1));
 				Debug.Assert(added, $"Shouldn't happen if running in a " +

@@ -208,7 +208,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -224,7 +224,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -241,7 +241,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -259,7 +259,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -278,7 +278,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -298,7 +298,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -319,7 +319,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -341,7 +341,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					InternalLoadField(ref fr, fieldName1);
@@ -370,7 +370,7 @@ public sealed class Item : FieldedEntity {
 		using (new OptionalReadTransaction(db)) {
 			Load(db);
 			if (Exists) {
-				db.ReloadFieldNameCaches();
+				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
 					// TODO Unroll?

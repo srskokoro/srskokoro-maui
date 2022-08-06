@@ -465,10 +465,10 @@ partial class FieldedEntity {
 					cmd_fld = new() { ParameterName = "$fld" }
 				);
 
-				db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+				db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 				do {
 					var (fname, fval) = fchanges_iter.Current;
-					long fld = db.LoadStaleOrEnsureFieldId(fname);
+					long fld = db.LoadStaleOrEnsureNameId(fname);
 					cmd_fld.Value = fld;
 
 					using var r = cmd.ExecuteReader();

@@ -165,7 +165,7 @@ partial class Class {
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
 	/// or <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadFieldNameCaches()"/>
+	/// <br/>- Must call <see cref="KokoroSqliteDb.ReloadNameIdCaches()"/>
 	/// beforehand, at least once, while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
@@ -173,7 +173,7 @@ partial class Class {
 	/// </remarks>
 	[SkipLocalsInit]
 	private void InternalLoadFieldInfo(KokoroSqliteDb db, StringKey name) {
-		long fld = db.LoadStaleFieldId(name);
+		long fld = db.LoadStaleNameId(name);
 		if (fld == 0) goto NotFound;
 
 		// Load field info
@@ -219,7 +219,7 @@ partial class Class {
 	/// </remarks>
 	[SkipLocalsInit]
 	private void InternalLoadFieldNames(KokoroSqliteDb db) {
-		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
 		using var cmd = db.CreateCommand();
 		cmd.Set("SELECT fld FROM ClassToField WHERE cls=$cls")
@@ -228,7 +228,7 @@ partial class Class {
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
 			long fld = r.GetInt64(0);
-			var name = db.LoadStaleFieldName(fld);
+			var name = db.LoadStaleName(fld);
 			Debug.Assert(name is not null, "An FK constraint should've been " +
 				"enforced to ensure this doesn't happen.");
 			EnsureCachedFieldName(name);
@@ -242,7 +242,7 @@ partial class Class {
 		var changes_iter = changes.GetEnumerator();
 		if (!changes_iter.MoveNext()) goto NoChanges;
 
-		db.ReloadFieldNameCaches(); // Needed by `db.LoadStale…()` below
+		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
 		SqliteCommand?
 			updCmd = null,
@@ -262,13 +262,13 @@ partial class Class {
 				var (fieldName, info) = changes_iter.Current;
 				long fld;
 				if (info._IsLoaded) {
-					fld = db.LoadStaleOrEnsureFieldId(fieldName);
+					fld = db.LoadStaleOrEnsureNameId(fieldName);
 					if (updCmd != null) {
 						goto UpdateFieldInfo;
 					} else
 						goto InitToUpdateFieldInfo;
 				} else {
-					fld = db.LoadStaleFieldId(fieldName);
+					fld = db.LoadStaleNameId(fieldName);
 					if (fld != 0) {
 						if (delCmd != null) {
 							goto DeleteFieldInfo;

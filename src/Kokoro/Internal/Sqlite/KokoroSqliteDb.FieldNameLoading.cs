@@ -6,33 +6,33 @@ partial class KokoroSqliteDb {
 	private readonly FieldNameToIdCache _FieldNameToIdCache = new(2048);
 	private readonly FieldIdToNameCache _FieldIdToNameCache = new(2048);
 
-	public void ClearFieldNameCaches() {
+	public void ClearNameIdCaches() {
 		_FieldNameToIdCache.Clear();
 		_FieldIdToNameCache.Clear();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public bool ReloadFieldNameCaches() => ReloadCaches();
+	public bool ReloadNameIdCaches() => ReloadCaches();
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long LoadFieldId(StringKey fieldName) {
-		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+	public long LoadNameId(StringKey fieldName) {
+		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
 		return QueryFieldId(fieldName);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public StringKey? LoadFieldName(long fieldId) {
-		if (!ReloadFieldNameCaches() && _FieldIdToNameCache.TryGet(fieldId, out var name)) {
+	public StringKey? LoadName(long fieldId) {
+		if (!ReloadNameIdCaches() && _FieldIdToNameCache.TryGet(fieldId, out var name)) {
 			return name;
 		}
 		return QueryFieldName(fieldId);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long LoadStaleFieldId(StringKey fieldName) {
+	public long LoadStaleNameId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			return id;
 		}
@@ -40,7 +40,7 @@ partial class KokoroSqliteDb {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public StringKey? LoadStaleFieldName(long fieldId) {
+	public StringKey? LoadStaleName(long fieldId) {
 		if (_FieldIdToNameCache.TryGet(fieldId, out var name)) {
 			return name;
 		}
@@ -82,8 +82,8 @@ partial class KokoroSqliteDb {
 
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long EnsureFieldId(StringKey fieldName) {
-		if (!ReloadFieldNameCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
+	public long EnsureNameId(StringKey fieldName) {
+		if (!ReloadNameIdCaches() && _FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;
 		}
@@ -93,7 +93,7 @@ partial class KokoroSqliteDb {
 
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public long LoadStaleOrEnsureFieldId(StringKey fieldName) {
+	public long LoadStaleOrEnsureNameId(StringKey fieldName) {
 		if (_FieldNameToIdCache.TryGet(fieldName, out long id)) {
 			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
 			return id;

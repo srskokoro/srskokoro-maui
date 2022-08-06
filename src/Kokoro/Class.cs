@@ -204,7 +204,7 @@ public sealed partial class Class : DataEntity {
 			var fieldNames_iter = fieldNames.GetEnumerator();
 			try {
 				if (fieldNames_iter.MoveNext()) {
-					db.ReloadFieldNameCaches();
+					db.ReloadNameIdCaches();
 					do {
 						var fieldName = fieldNames_iter.Current;
 						InternalLoadFieldInfo(db, fieldName);

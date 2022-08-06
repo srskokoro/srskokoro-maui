@@ -156,6 +156,6 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		// long as the DB or context exists. One way to accomplish that is to
 		// clear the cache on rollback, and delete any offending cache entry
 		// whenever a field name is deleted (as the rowid might get remapped).
-		ClearFieldNameCaches();
+		ClearNameIdCaches();
 	}
 }
