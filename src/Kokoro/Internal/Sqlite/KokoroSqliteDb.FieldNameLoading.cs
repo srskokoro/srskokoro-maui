@@ -50,7 +50,7 @@ partial class KokoroSqliteDb {
 	[SkipLocalsInit]
 	private long QueryFieldId(StringKey fieldName) {
 		using var cmd = CreateCommand();
-		cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
+		cmd.Set("SELECT rowid FROM NameId WHERE name=$name");
 		cmd.AddParams(new("$name", fieldName.Value));
 
 		using var r = cmd.ExecuteReader();
@@ -65,7 +65,7 @@ partial class KokoroSqliteDb {
 	[SkipLocalsInit]
 	private StringKey? QueryFieldName(long fieldId) {
 		using var cmd = CreateCommand();
-		cmd.Set("SELECT name FROM FieldName WHERE rowid=$rowid");
+		cmd.Set("SELECT name FROM NameId WHERE rowid=$rowid");
 		cmd.AddParams(new("$rowid", fieldId));
 
 		using var r = cmd.ExecuteReader();
@@ -109,7 +109,7 @@ partial class KokoroSqliteDb {
 
 		long id;
 		using (var cmd = CreateCommand()) {
-			cmd.Set("SELECT rowid FROM FieldName WHERE name=$name");
+			cmd.Set("SELECT rowid FROM NameId WHERE name=$name");
 			cmd.AddParams(new("$name", fieldName.Value));
 
 			using var r = cmd.ExecuteReader();
@@ -128,7 +128,7 @@ partial class KokoroSqliteDb {
 	InsertNewFieldName:
 		using (var cmd = CreateCommand()) {
 			cmd.Set(
-				"INSERT INTO FieldName(rowid,name) VALUES($rowid,$name)"
+				"INSERT INTO NameId(rowid,name) VALUES($rowid,$name)"
 			).AddParams(
 				new("$rowid", id = Context!.NextFieldId()),
 				new("$name", fieldName.Value)

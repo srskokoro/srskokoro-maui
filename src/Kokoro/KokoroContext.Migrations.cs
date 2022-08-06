@@ -67,8 +67,12 @@ partial class KokoroContext {
 
 		// --
 
-		// A string interning table for field names.
-		db.Exec("CREATE TABLE FieldName(" +
+		// A string interning table for strings used as keys or key names.
+		//
+		// A string interning table that maps a string to an integer id, with
+		// the string often used as a name or key to uniquely identify a given
+		// resource under a certain context.
+		db.Exec("CREATE TABLE NameId(" +
 
 			RowIdPk + "," +
 
@@ -173,7 +177,7 @@ partial class KokoroContext {
 
 			"item INTEGER NOT NULL REFERENCES Item" + OnRowIdFkCascDel + WithFkDfr + "," +
 
-			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES NameId" + OnRowIdFk + "," +
 
 			// The field value bytes.
 			"data BLOB NOT NULL," +
@@ -247,7 +251,7 @@ partial class KokoroContext {
 
 			"schema INTEGER NOT NULL REFERENCES Schema" + OnRowIdFkCascDel + WithFkDfr + "," +
 
-			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES NameId" + OnRowIdFk + "," +
 
 			$"idx_sto INTEGER NOT NULL CHECK(idx_sto {BetweenInt32RangeGE0})," +
 
@@ -365,10 +369,10 @@ partial class KokoroContext {
 
 			"cls INTEGER NOT NULL REFERENCES Class" + OnRowIdFkCascDel + WithFkDfr + "," +
 
-			"fld INTEGER NOT NULL REFERENCES FieldName" + OnRowIdFk + "," +
+			"fld INTEGER NOT NULL REFERENCES NameId" + OnRowIdFk + "," +
 
 			// The cryptographic checksum of the field definition's primary
-			// data, which includes the `FieldName.name` of this field, but
+			// data, which includes the `NameId.name` of this field, but
 			// excludes the `cls` and `fld` columns.
 			//
 			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
