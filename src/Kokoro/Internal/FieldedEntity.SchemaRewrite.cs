@@ -113,12 +113,12 @@ partial class FieldedEntity {
 				{
 					Debug.Assert(a.rowid != b.rowid, $"Expecting no " +
 						$"duplicates but found a duplicate field entry " +
-						$"with rowid {a.rowid}");
+						$"with name id {a.rowid}");
 				}
 				{
 					cmp = string.CompareOrdinal(a.name, b.name);
 					Debug.Assert(cmp != 0, $"Impossible! Two fields have " +
-						$"different rowids ({a.rowid} and {b.rowid}) but " +
+						$"different name ids ({a.rowid} and {b.rowid}) but " +
 						$"same name: {a.name}");
 				}
 			Return:
@@ -417,7 +417,7 @@ partial class FieldedEntity {
 						ref var entry = ref fldList.AsSpan().DangerousGetReferenceAt(i);
 
 						Debug.Assert(name == entry.name, $"Impossible! " +
-							$"Two fields have the same rowid (which is {fld}) but different names:{Environment.NewLine}" +
+							$"Two fields have the same name id (which is {fld}) but different names:{Environment.NewLine}" +
 							$"Name of 1st instance: {name}{Environment.NewLine}" +
 							$"Name of 2nd instance: {entry.name}");
 
