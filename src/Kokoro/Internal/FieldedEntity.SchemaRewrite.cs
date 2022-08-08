@@ -190,7 +190,7 @@ partial class FieldedEntity {
 
 			db = fr.Db;
 			using var cmd = db.CreateCommand();
-			cmd.Set($"SELECT cls FROM SchemaToClass WHERE (ind,schema)=(0,$schema)")
+			cmd.Set($"SELECT cls FROM {Prot.SchemaToClass} WHERE (ind,schema)=(0,$schema)")
 				.AddParams(new("$schema", _SchemaId));
 
 			using var r = cmd.ExecuteReader();
@@ -950,7 +950,7 @@ partial class FieldedEntity {
 						SqliteParameter cmd_cls, cmd_csum;
 
 						cmd.Set(
-							$"INSERT INTO SchemaToClass" +
+							$"INSERT INTO {Prot.SchemaToClass}" +
 							$"(schema,cls,csum,ind)" +
 							$"\nVALUES" +
 							$"($schema,$cls,$csum,0)"
@@ -995,7 +995,7 @@ partial class FieldedEntity {
 						SqliteParameter cmd_cls, cmd_csum;
 
 						cmd.Set(
-							$"INSERT INTO SchemaToClass" +
+							$"INSERT INTO {Prot.SchemaToClass}" +
 							$"(schema,cls,csum,ind)" +
 							$"\nVALUES" +
 							$"($schema,$cls,$csum,1)"
