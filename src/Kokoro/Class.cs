@@ -156,11 +156,24 @@ public sealed partial class Class : DataEntity {
 			.ExecScalarOrDefault<long>();
 	}
 
+
 	[SkipLocalsInit]
 	public void Load() {
 		var db = Host.Db;
-		using var tx = new OptionalReadTransaction(db); // Needed by `db.LoadName()` below
+		using (new OptionalReadTransaction(db))
+			InternalLoadCore(db);
+	}
 
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
+	/// or <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	private void InternalLoadCore(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			"SELECT uid,csum,modst,ord," +
@@ -216,7 +229,7 @@ public sealed partial class Class : DataEntity {
 	public void Load(LoadInfo loadInfo) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
-			if (loadInfo.Core) Load();
+			if (loadInfo.Core) InternalLoadCore(db);
 			if (Exists) {
 				if (loadInfo.AllFieldInfos) InternalLoadFieldInfos(db);
 				if (loadInfo.AllFieldNames) InternalLoadFieldNames(db);
