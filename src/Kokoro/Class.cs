@@ -24,7 +24,7 @@ public sealed partial class Class : DataEntity {
 
 	private int _Ordinal;
 	private long _GroupId;
-	private string? _Name;
+	private StringKey? _Name;
 
 	private StateFlags _State;
 
@@ -119,7 +119,7 @@ public sealed partial class Class : DataEntity {
 
 	public void SetCachedGroupId(long groupId) => _GroupId = groupId;
 
-	public string? Name {
+	public StringKey? Name {
 		get => _Name;
 		set {
 			_Name = value;
@@ -127,7 +127,7 @@ public sealed partial class Class : DataEntity {
 		}
 	}
 
-	public void SetCachedName(string? name) => _Name = name;
+	public void SetCachedName(StringKey? name) => _Name = name;
 
 
 	public bool Exists {
@@ -159,9 +159,14 @@ public sealed partial class Class : DataEntity {
 	[SkipLocalsInit]
 	public void Load() {
 		var db = Host.Db;
+		using var tx = new OptionalReadTransaction(db); // Needed by `db.LoadName()` below
+
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT uid,csum,modst,ord,ifnull(grp,0)AS grp,name FROM Class\n" +
+			"SELECT uid,csum,modst,ord," +
+				"ifnull(grp,0)AS grp," +
+				"ifnull(name,0)AS name\n" +
+			"FROM Class\n" +
 			"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));
 
@@ -186,7 +191,9 @@ public sealed partial class Class : DataEntity {
 			_GroupId = r.GetInt64(4);
 
 			r.DAssert_Name(5, "name");
-			_Name = r.GetString(5);
+			long nameId = r.GetInt64(5);
+			_Name = nameId == 0 ? null
+				: db.LoadName(nameId);
 
 			return; // Early exit
 		}
@@ -302,7 +309,10 @@ public sealed partial class Class : DataEntity {
 			Debug.Assert(1 == hasher_debug_i++);
 
 			cmdParams.Add(new("$grp", RowIds.DBBox(_GroupId)));
-			cmdParams.Add(new("$name", _Name.OrDBNull()));
+
+			StringKey? name = _Name;
+			cmdParams.Add(new("$name", name is null
+				? DBNull.Value : db.EnsureNameId(name)));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
@@ -462,7 +472,10 @@ public sealed partial class Class : DataEntity {
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");
-					cmdParams.Add(new("$name", _Name.OrDBNull()));
+
+					StringKey? name = _Name;
+					cmdParams.Add(new("$name", name is null
+						? DBNull.Value : db.EnsureNameId(name)));
 				}
 
 				if ((state & StateFlags.Change_ModStamp) != 0) {

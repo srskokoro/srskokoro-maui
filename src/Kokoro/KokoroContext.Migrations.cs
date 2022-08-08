@@ -359,7 +359,7 @@ partial class KokoroContext {
 
 			// Quirks:
 			// - Null when unnamed.
-			"name TEXT," +
+			"name INTEGER REFERENCES NameId" + OnRowIdFk + "," +
 
 			"UNIQUE(grp, name)" +
 
