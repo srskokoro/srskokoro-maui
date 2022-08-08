@@ -7,8 +7,8 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
-	private const int MaxFieldCount = byte.MaxValue;
-	private const int MaxFieldValsLength = 0xFF_FFFF;
+	internal const int MaxFieldCount = byte.MaxValue;
+	internal const int MaxFieldValsLength = 0xFF_FFFF;
 
 	private struct FieldsWriterCore {
 		internal int[] Offsets;

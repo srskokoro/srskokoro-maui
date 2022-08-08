@@ -9,7 +9,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
-	private const int MaxClassCount = byte.MaxValue;
+	internal const int MaxClassCount = byte.MaxValue;
 
 	[SuppressMessage("Style", "IDE1006:Naming Styles")]
 	private static class SchemaRewrite {
