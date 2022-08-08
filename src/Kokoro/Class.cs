@@ -360,8 +360,8 @@ public sealed partial class Class : DataEntity {
 			///
 			/// 0. `uid`
 			/// 1. `ord`
-			/// 2. The 512-bit hash of, the list of `csum` data from `ClassToField`,
-			/// ordered by `ClassToField.ord,NameId.name`
+			/// 2. The 512-bit hash of, the list of `csum` data from `<see cref="Prot.ClassToField"/>`,
+			/// ordered by `<see cref="Prot.ClassToField"/>.ord,NameId.name`
 			/// 3. The 512-bit hash of, the list of `uid` data from `<see cref="Prot.Class"/> ON <see cref="Prot.Class"/>.rowid=ClassToInclude.incl`,
 			/// ordered by `<see cref="Prot.Class"/>.uid`
 			///
@@ -508,7 +508,7 @@ public sealed partial class Class : DataEntity {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			$"SELECT cls2fld.csum AS csum\n" +
-			$"FROM ClassToField AS cls2fld,NameId AS fld\n" +
+			$"FROM {Prot.ClassToField} AS cls2fld,NameId AS fld\n" +
 			$"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
 			$"ORDER BY cls2fld.ord,fld.name"
 		).AddParams(new("$cls", cls));

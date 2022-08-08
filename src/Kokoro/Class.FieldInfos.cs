@@ -197,7 +197,7 @@ partial class Class {
 		// Load field info
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"SELECT ord,sto FROM ClassToField\n" +
+				$"SELECT ord,sto FROM {Prot.ClassToField}\n" +
 				$"WHERE cls=$cls AND fld=$fld"
 			).AddParams(
 				new("$cls", _RowId),
@@ -240,7 +240,7 @@ partial class Class {
 		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
 		using var cmd = db.CreateCommand();
-		cmd.Set($"SELECT ord,sto,fld FROM ClassToField WHERE cls=$cls")
+		cmd.Set($"SELECT ord,sto,fld FROM {Prot.ClassToField} WHERE cls=$cls")
 			.AddParams(new() { ParameterName = "$cls" });
 
 		using var r = cmd.ExecuteReader();
@@ -278,7 +278,7 @@ partial class Class {
 		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
 		using var cmd = db.CreateCommand();
-		cmd.Set($"SELECT fld FROM ClassToField WHERE cls=$cls")
+		cmd.Set($"SELECT fld FROM {Prot.ClassToField} WHERE cls=$cls")
 			.AddParams(new() { ParameterName = "$cls" });
 
 		using var r = cmd.ExecuteReader();
@@ -484,7 +484,7 @@ partial class Class {
 				{
 					updCmd = db.CreateCommand();
 					updCmd.Set(
-						$"INSERT INTO ClassToField(cls,fld,csum,ord,sto)\n" +
+						$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto)\n" +
 						$"VALUES($cls,$fld,$csum,$ord,$sto)\n" +
 						$"ON CONFLICT DO UPDATE\n" +
 						$"SET csum=$csum,ord=$ord,sto=$sto"
@@ -559,7 +559,7 @@ partial class Class {
 				{
 					delCmd = db.CreateCommand();
 					delCmd.Set(
-						$"DELETE FROM ClassToField WHERE (cls,fld)=($cls,$fld)"
+						$"DELETE FROM {Prot.ClassToField} WHERE (cls,fld)=($cls,$fld)"
 					).AddParams(
 						cmd_cls, cmd_fld
 					);
