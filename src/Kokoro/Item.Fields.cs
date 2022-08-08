@@ -192,7 +192,7 @@ partial class Item {
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
 				$"SELECT data\n" +
-				$"FROM ItemToFloatingField\n" +
+				$"FROM {Prot.ItemToFloatingField}\n" +
 				$"WHERE (item,fld)=($item,$fld)"
 			).AddParams(
 				new("$item", _RowId),
@@ -221,7 +221,7 @@ partial class Item {
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"DELETE FROM ItemToFloatingField\n" +
+				$"DELETE FROM {Prot.ItemToFloatingField}\n" +
 				$"WHERE (item,fld)=($item,$fld)\n" +
 				$"RETURNING data"
 			).AddParams(
