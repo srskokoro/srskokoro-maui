@@ -17,6 +17,24 @@ partial class Class {
 	private sealed class FieldInfoChanges : Dictionary<StringKey, FieldInfo> { }
 
 
+	public readonly struct FieldInfo {
+		internal readonly bool _IsLoaded;
+
+		private readonly int _Ordinal;
+		private readonly FieldStoreType _StoreType;
+
+		public readonly int Ordinal => _Ordinal;
+		public readonly FieldStoreType StoreType => _StoreType;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public FieldInfo(int ordinal, FieldStoreType storeType) {
+			_IsLoaded = true;
+			_Ordinal = ordinal;
+			_StoreType = storeType;
+		}
+	}
+
+
 	public ICollection<StringKey> FieldNames {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => _FieldInfos?.Keys ?? EmptyFieldNames.Instance;

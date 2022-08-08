@@ -45,23 +45,6 @@ public sealed partial class Class : DataEntity {
 		NotExists       = StateFlags_1 << StateFlags_NotExists_Shift,
 	}
 
-	public readonly struct FieldInfo {
-		internal readonly bool _IsLoaded;
-
-		private readonly int _Ordinal;
-		private readonly FieldStoreType _StoreType;
-
-		public readonly int Ordinal => _Ordinal;
-		public readonly FieldStoreType StoreType => _StoreType;
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public FieldInfo(int ordinal, FieldStoreType storeType) {
-			_IsLoaded = true;
-			_Ordinal = ordinal;
-			_StoreType = storeType;
-		}
-	}
-
 
 	public Class(KokoroCollection host) : base(host) { }
 
