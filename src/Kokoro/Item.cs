@@ -1,4 +1,5 @@
 ﻿namespace Kokoro;
+using CommunityToolkit.HighPerformance.Helpers;
 using Kokoro.Common.Sqlite;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
@@ -7,6 +8,7 @@ using Microsoft.Data.Sqlite;
 
 using StateFlagsInt = System.Int32;
 using StateFlagsSInt = System.Int32;
+using StateFlagsUInt = System.UInt32;
 
 public sealed class Item : FieldedEntity {
 
@@ -109,11 +111,18 @@ public sealed class Item : FieldedEntity {
 
 	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
 
+
 	public bool Exists {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		get => (StateFlagsSInt)_State < 0 ? false : true;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void SetCachedExists(bool exists = true) {
+		_State = (StateFlags)BitHelper.SetFlag(
+			(StateFlagsUInt)_State, StateFlags_NotExists_Shift, !exists);
 	}
 
 

@@ -1,6 +1,7 @@
 ﻿namespace Kokoro;
 using Blake2Fast;
 using Blake2Fast.Implementation;
+using CommunityToolkit.HighPerformance.Helpers;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
@@ -8,6 +9,7 @@ using Microsoft.Data.Sqlite;
 
 using StateFlagsInt = System.Int32;
 using StateFlagsSInt = System.Int32;
+using StateFlagsUInt = System.UInt32;
 
 /// <summary>
 /// An entity class, i.e., a fielded entity's class.
@@ -127,11 +129,18 @@ public sealed partial class Class : DataEntity {
 
 	public void SetCachedName(string? name) => _Name = name;
 
+
 	public bool Exists {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		get => (StateFlagsSInt)_State < 0 ? false : true;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void SetCachedExists(bool exists = true) {
+		_State = (StateFlags)BitHelper.SetFlag(
+			(StateFlagsUInt)_State, StateFlags_NotExists_Shift, !exists);
 	}
 
 	// --
