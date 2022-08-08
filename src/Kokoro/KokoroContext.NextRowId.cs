@@ -18,7 +18,7 @@ partial class KokoroContext {
 			$"SELECT ifnull(max(rowid), 0) FROM Item UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM {Prot.Schema} UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM {Prot.Class} UNION ALL\n" +
-			$"SELECT ifnull(max(rowid), 0) FROM NameId"
+			$"SELECT ifnull(max(rowid), 0) FROM {Prot.NameId}"
 		);
 
 		using var reader = cmd.ExecuteReader();

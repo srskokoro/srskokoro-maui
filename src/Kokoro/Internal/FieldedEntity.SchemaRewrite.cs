@@ -363,7 +363,7 @@ partial class FieldedEntity {
 					$"fld.name AS name,\n" +
 					$"cls2fld.ord AS ord,\n" +
 					$"cls2fld.sto AS sto\n" +
-				$"FROM {Prot.ClassToField} AS cls2fld,NameId AS fld\n" +
+				$"FROM {Prot.ClassToField} AS cls2fld,{Prot.NameId} AS fld\n" +
 				$"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld"
 			).AddParams(
 				cmd_cls = new() { ParameterName = "$cls" }
