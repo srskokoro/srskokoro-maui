@@ -98,7 +98,7 @@ public sealed partial class Item : FieldedEntity {
 
 	internal sealed override Stream ReadColdStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
-			tableName: "ItemToColdStore", columnName: "data", rowid: _RowId,
+			tableName: Prot.ItemToColdStore, columnName: "data", rowid: _RowId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
