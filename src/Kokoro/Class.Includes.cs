@@ -363,17 +363,22 @@ partial class Class {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void LoadInclude(params long[] classIds)
+	public bool LoadInclude(params long[] classIds)
 		=> LoadInclude(classIds.AsSpan());
 
-	public void LoadInclude(ReadOnlySpan<long> classIds) {
+	public bool LoadInclude(ReadOnlySpan<long> classIds) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			if (Exists) {
+				bool isWithGivenIncludes = true;
+
 				// TODO Unroll?
 				foreach (var classId in classIds)
-					InternalLoadInclude(db, classId);
+					isWithGivenIncludes &= InternalLoadInclude(db, classId);
+
+				return isWithGivenIncludes;
 			}
+			return false;
 		}
 	}
 

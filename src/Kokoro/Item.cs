@@ -605,18 +605,23 @@ public sealed class Item : FieldedEntity {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void LoadClassId(params long[] classIds)
+	public bool LoadClassId(params long[] classIds)
 		=> LoadClassId(classIds.AsSpan());
 
-	public void LoadClassId(ReadOnlySpan<long> classIds) {
+	public bool LoadClassId(ReadOnlySpan<long> classIds) {
 		var db = Host.Db;
 		using (new OptionalReadTransaction(db)) {
 			LoadSchemaId(db);
 			if (Exists) {
+				bool isOfGivenClasses = true;
+
 				// TODO Unroll?
 				foreach (var classId in classIds)
-					InternalLoadClassId(db, classId);
+					isOfGivenClasses &= InternalLoadClassId(db, classId);
+
+				return isOfGivenClasses;
 			}
+			return false;
 		}
 	}
 
