@@ -96,7 +96,7 @@ public sealed partial class Class : DataEntity {
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid) {
 		using var cmd = db.CreateCommand();
-		return cmd.Set($"SELECT rowid FROM Class WHERE uid=$uid")
+		return cmd.Set($"SELECT rowid FROM {Prot.Class} WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ExecScalarOrDefault<long>();
 	}
@@ -124,7 +124,7 @@ public sealed partial class Class : DataEntity {
 			$"SELECT uid,csum,modst,ord," +
 				$"ifnull(grp,0)AS grp," +
 				$"ifnull(name,0)AS name\n" +
-			$"FROM Class\n" +
+			$"FROM {Prot.Class}\n" +
 			$"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));
 
@@ -242,7 +242,7 @@ public sealed partial class Class : DataEntity {
 
 			using var cmd = db.CreateCommand();
 			cmd.Set(
-				$"INSERT INTO Class" +
+				$"INSERT INTO {Prot.Class}" +
 				$"(rowid,uid,csum,modst,ord,grp,name)" +
 				$"\nVALUES" +
 				$"($rowid,$uid,$csum,$modst,$ord,$grp,$name)"
@@ -352,7 +352,7 @@ public sealed partial class Class : DataEntity {
 			cmdParams.Add(new("$rowid", rowid));
 
 			StringBuilder cmdSb = new();
-			cmdSb.Append($"UPDATE Class SET\n");
+			cmdSb.Append($"UPDATE {Prot.Class} SET\n");
 
 			var hasher = Blake2b.CreateIncrementalHasher(ClassCsumDigestLength);
 			/// WARNING: The expected order of inputs to be fed to the above
@@ -362,8 +362,8 @@ public sealed partial class Class : DataEntity {
 			/// 1. `ord`
 			/// 2. The 512-bit hash of, the list of `csum` data from `ClassToField`,
 			/// ordered by `ClassToField.ord,NameId.name`
-			/// 3. The 512-bit hash of, the list of `uid` data from `Class ON Class.rowid=ClassToInclude.incl`,
-			/// ordered by `Class.uid`
+			/// 3. The 512-bit hash of, the list of `uid` data from `<see cref="Prot.Class"/> ON <see cref="Prot.Class"/>.rowid=ClassToInclude.incl`,
+			/// ordered by `<see cref="Prot.Class"/>.uid`
 			///
 			/// Unless stated otherwise, all integer inputs should be consumed
 			/// in their little-endian form.
@@ -388,7 +388,7 @@ public sealed partial class Class : DataEntity {
 			// TODO Avoid creating this when it won't be used at all
 			using var cmd_old = db.CreateCommand();
 			cmd_old.Set(
-				$"SELECT uid,ord FROM Class\n" +
+				$"SELECT uid,ord FROM {Prot.Class}\n" +
 				$"WHERE rowid=$rowid"
 			).AddParams(new("$rowid", rowid));
 
@@ -531,7 +531,7 @@ public sealed partial class Class : DataEntity {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			$"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
+			$"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,{Prot.Class} AS cls\n" +
 			$"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
 			$"ORDER BY uid"
 		).AddParams(new("$cls", cls));
@@ -589,7 +589,7 @@ public sealed partial class Class : DataEntity {
 		int updated;
 		try {
 			using var cmd = db.CreateCommand();
-			updated = cmd.Set($"UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
+			updated = cmd.Set($"UPDATE {Prot.Class} SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
 				.Exec();
 		} catch (Exception ex) when (hasUsedNextRowId && (
@@ -622,7 +622,7 @@ public sealed partial class Class : DataEntity {
 
 		int deleted;
 		using (var cmd = db.CreateCommand()) {
-			deleted = cmd.Set($"DELETE FROM Class WHERE rowid=$rowid")
+			deleted = cmd.Set($"DELETE FROM {Prot.Class} WHERE rowid=$rowid")
 				.AddParams(new("$rowid", rowid)).Exec();
 		}
 
@@ -635,7 +635,7 @@ public sealed partial class Class : DataEntity {
 
 		int deleted;
 		using (var cmd = db.CreateCommand()) {
-			deleted = cmd.Set($"DELETE FROM Class WHERE uid=$uid")
+			deleted = cmd.Set($"DELETE FROM {Prot.Class} WHERE uid=$uid")
 				.AddParams(new("$uid", uid)).Exec();
 		}
 

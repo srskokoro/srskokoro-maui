@@ -212,7 +212,7 @@ partial class FieldedEntity {
 		// indirect classes
 		using (var clsCmd = db.CreateCommand()) {
 			SqliteParameter clsCmd_rowid;
-			clsCmd.Set($"SELECT uid,csum,ord FROM Class WHERE rowid=$rowid")
+			clsCmd.Set($"SELECT uid,csum,ord FROM {Prot.Class} WHERE rowid=$rowid")
 				.AddParams(clsCmd_rowid = new() { ParameterName = "$rowid" });
 
 			// Get the needed info for each direct class

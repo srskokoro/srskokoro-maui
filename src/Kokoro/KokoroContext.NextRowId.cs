@@ -17,7 +17,7 @@ partial class KokoroContext {
 		using var cmd = db.CreateCommand(
 			$"SELECT ifnull(max(rowid), 0) FROM Item UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM Schema UNION ALL\n" +
-			$"SELECT ifnull(max(rowid), 0) FROM Class UNION ALL\n" +
+			$"SELECT ifnull(max(rowid), 0) FROM {Prot.Class} UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM NameId"
 		);
 
