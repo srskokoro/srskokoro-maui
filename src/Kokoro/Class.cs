@@ -6,6 +6,9 @@ using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 
+using StateFlagsInt = System.Int32;
+using StateFlagsSInt = System.Int32;
+
 /// <summary>
 /// An entity class, i.e., a fielded entity's class.
 /// </summary>
@@ -27,21 +30,24 @@ public sealed partial class Class : DataEntity {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		get => _State < 0 ? false : true;
+		get => (StateFlagsSInt)_State < 0 ? false : true;
 	}
 
 
+	private const StateFlagsInt StateFlags_1 = 1; // Type must be the same as the enum's underlying type
+	private const int StateFlags_NotExists_Shift = sizeof(StateFlags)*8 - 1; // Sets sign bit when used as shift
+
 	[Flags]
-	private enum StateFlags : int {
+	private enum StateFlags : StateFlagsInt {
 		NoChanges = 0,
 
-		Change_Uid      = 1 << 0,
-		Change_ModStamp = 1 << 1,
-		Change_Ordinal  = 1 << 2,
-		Change_GroupId  = 1 << 3,
-		Change_Name     = 1 << 4,
+		Change_Uid      = StateFlags_1 << 0,
+		Change_ModStamp = StateFlags_1 << 1,
+		Change_Ordinal  = StateFlags_1 << 2,
+		Change_GroupId  = StateFlags_1 << 3,
+		Change_Name     = StateFlags_1 << 4,
 
-		NotExists       = 1 << (sizeof(StateFlags)*8 - 1), // Sets sign bit
+		NotExists       = StateFlags_1 << StateFlags_NotExists_Shift,
 	}
 
 	public readonly struct FieldInfo {
