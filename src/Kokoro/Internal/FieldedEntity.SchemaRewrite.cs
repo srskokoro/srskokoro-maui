@@ -906,7 +906,7 @@ partial class FieldedEntity {
 
 			// Look up new schema rowid given `usum`
 			using (var cmd = db.CreateCommand()) {
-				cmd.Set($"SELECT rowid FROM Schema WHERE usum=$usum")
+				cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
 					.AddParams(new("$usum", usum));
 
 				using var r = cmd.ExecuteReader();
@@ -1203,7 +1203,7 @@ partial class FieldedEntity {
 
 					using (var cmd = db.CreateCommand()) {
 						cmd.Set(
-							$"INSERT INTO Schema" +
+							$"INSERT INTO {Prot.Schema}" +
 							$"(rowid,usum,hotCount,coldCount,data)" +
 							$"\nVALUES" +
 							$"($rowid,$usum,$hotCount,$coldCount,$data)"

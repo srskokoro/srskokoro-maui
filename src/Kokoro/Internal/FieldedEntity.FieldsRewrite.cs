@@ -608,7 +608,7 @@ partial class FieldedEntity {
 			int xlc, xhc;
 			using (var cmd = db.CreateCommand()) {
 				cmd.Set(
-					$"SELECT hotCount,coldCount FROM Schema\n" +
+					$"SELECT hotCount,coldCount FROM {Prot.Schema}\n" +
 					$"WHERE rowid=$rowid"
 				).AddParams(new("$rowid", _SchemaId));
 

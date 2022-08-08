@@ -145,7 +145,7 @@ public abstract partial class FieldedEntity : DataEntity {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal Stream ReadSharedStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
-			tableName: "Schema", columnName: "data", rowid: _SchemaId,
+			tableName: Prot.Schema, columnName: "data", rowid: _SchemaId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
