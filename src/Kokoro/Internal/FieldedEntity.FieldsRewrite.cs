@@ -458,8 +458,8 @@ partial class FieldedEntity {
 			using (var cmd = db.CreateCommand()) {
 				SqliteParameter cmd_fld;
 				cmd.Set(
-					"SELECT idx_sto FROM SchemaToField\n" +
-					"WHERE (schema,fld)=($schema,$fld)"
+					$"SELECT idx_sto FROM SchemaToField\n" +
+					$"WHERE (schema,fld)=($schema,$fld)"
 				).AddParams(
 					new("$schema", _SchemaId),
 					cmd_fld = new() { ParameterName = "$fld" }
@@ -608,8 +608,8 @@ partial class FieldedEntity {
 			int xlc, xhc;
 			using (var cmd = db.CreateCommand()) {
 				cmd.Set(
-					"SELECT hotCount,coldCount FROM Schema\n" +
-					"WHERE rowid=$rowid"
+					$"SELECT hotCount,coldCount FROM Schema\n" +
+					$"WHERE rowid=$rowid"
 				).AddParams(new("$rowid", _SchemaId));
 
 				using var r = cmd.ExecuteReader();

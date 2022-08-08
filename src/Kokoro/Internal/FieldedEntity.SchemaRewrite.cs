@@ -190,7 +190,7 @@ partial class FieldedEntity {
 
 			db = fr.Db;
 			using var cmd = db.CreateCommand();
-			cmd.Set("SELECT cls FROM SchemaToClass WHERE (ind,schema)=(0,$schema)")
+			cmd.Set($"SELECT cls FROM SchemaToClass WHERE (ind,schema)=(0,$schema)")
 				.AddParams(new("$schema", _SchemaId));
 
 			using var r = cmd.ExecuteReader();
@@ -212,7 +212,7 @@ partial class FieldedEntity {
 		// indirect classes
 		using (var clsCmd = db.CreateCommand()) {
 			SqliteParameter clsCmd_rowid;
-			clsCmd.Set("SELECT uid,csum,ord FROM Class WHERE rowid=$rowid")
+			clsCmd.Set($"SELECT uid,csum,ord FROM Class WHERE rowid=$rowid")
 				.AddParams(clsCmd_rowid = new() { ParameterName = "$rowid" });
 
 			// Get the needed info for each direct class
@@ -239,7 +239,7 @@ partial class FieldedEntity {
 
 			SqliteParameter inclCmd_cls;
 			using var inclCmd = db.CreateCommand();
-			inclCmd.Set("SELECT incl FROM ClassToInclude WHERE cls=$cls")
+			inclCmd.Set($"SELECT incl FROM ClassToInclude WHERE cls=$cls")
 				.AddParams(inclCmd_cls = new() { ParameterName = "$cls" });
 
 			// Recursively get all included classes, skipping already seen
@@ -326,7 +326,7 @@ partial class FieldedEntity {
 			// --
 
 			using (var cmd = db.CreateCommand()) {
-				cmd.Set("SELECT fld,idx_sto FROM SchemaToField WHERE schema=$schema")
+				cmd.Set($"SELECT fld,idx_sto FROM SchemaToField WHERE schema=$schema")
 					.AddParams(new("$schema", _SchemaId));
 
 				using var r = cmd.ExecuteReader();
@@ -358,13 +358,13 @@ partial class FieldedEntity {
 		using (var cmd = db.CreateCommand()) {
 			SqliteParameter cmd_cls;
 			cmd.Set(
-				"SELECT\n" +
-					"fld.rowid AS fld,\n" +
-					"fld.name AS name,\n" +
-					"cls2fld.ord AS ord,\n" +
-					"cls2fld.sto AS sto\n" +
-				"FROM ClassToField AS cls2fld,NameId AS fld\n" +
-				"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld"
+				$"SELECT\n" +
+					$"fld.rowid AS fld,\n" +
+					$"fld.name AS name,\n" +
+					$"cls2fld.ord AS ord,\n" +
+					$"cls2fld.sto AS sto\n" +
+				$"FROM ClassToField AS cls2fld,NameId AS fld\n" +
+				$"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld"
 			).AddParams(
 				cmd_cls = new() { ParameterName = "$cls" }
 			);
@@ -749,35 +749,36 @@ partial class FieldedEntity {
 			// Generate the schema `usum`
 			{
 				var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
-				// WARNING: The expected order of inputs to be fed to the above
-				// hasher must be strictly as follows:
-				//
-				// 0. The number of direct classes, as a 32-bit integer.
-				// 1. The list of `csum`s from direct classes, ordered by `uid`.
-				// 2. The number of indirect classes, as a 32-bit integer.
-				// 3. The list of `csum`s from indirect classes, ordered by `uid`.
-				// 4. The number of shared fields, including trailing null
-				// fields, as a 32-bit integer.
-				// 5. The field values of shared fields, including trailing null
-				// fields, each prepended with its length.
-				//
-				// Unless stated otherwise, all integer inputs should be
-				// consumed in their little-endian form.
-				//
-				// The resulting hash BLOB shall be prepended with a version
-				// varint. Should any of the following happens, the version
-				// varint must change:
-				//
-				// - The resulting hash BLOB length changes.
-				// - The algorithm for the resulting hash BLOB changes.
-				// - An input entry (from the list of inputs above) was removed.
-				// - The order of an input entry (from the list of inputs above)
-				// was changed or shifted.
-				// - An input entry's size (in bytes) changed while it's
-				// expected to be fixed-size (e.g., not length-prepended).
-				//
-				// The version varint needs not to change if further input
-				// entries were to be appended (from the list of inputs above).
+				/// WARNING: The expected order of inputs to be fed to the above
+				/// hasher must be strictly as follows:
+				///
+				/// 0. The number of direct classes, as a 32-bit integer.
+				/// 1. The list of `csum`s from direct classes, ordered by `uid`.
+				/// 2. The number of indirect classes, as a 32-bit integer.
+				/// 3. The list of `csum`s from indirect classes, ordered by `uid`.
+				/// 4. The number of shared fields, including trailing null
+				/// fields, as a 32-bit integer.
+				/// 5. The field values of shared fields, including trailing
+				/// null fields, each prepended with its length.
+				///
+				/// Unless stated otherwise, all integer inputs should be
+				/// consumed in their little-endian form.
+				///
+				/// The resulting hash BLOB shall be prepended with a version
+				/// varint. Should any of the following happens, the version
+				/// varint must change:
+				///
+				/// - The resulting hash BLOB length changes.
+				/// - The algorithm for the resulting hash BLOB changes.
+				/// - An input entry (from the list of inputs above) was
+				/// removed.
+				/// - The order of an input entry (from the list of inputs
+				/// above) was changed or shifted.
+				/// - An input entry's size (in bytes) changed while it's
+				/// expected to be fixed-size (e.g., not length-prepended).
+				///
+				/// The version varint needs not to change if further input
+				/// entries were to be appended (from the list of inputs above).
 
 				// Hash the list of direct class's `csum`
 				{
@@ -905,7 +906,7 @@ partial class FieldedEntity {
 
 			// Look up new schema rowid given `usum`
 			using (var cmd = db.CreateCommand()) {
-				cmd.Set("SELECT rowid FROM Schema WHERE usum=$usum")
+				cmd.Set($"SELECT rowid FROM Schema WHERE usum=$usum")
 					.AddParams(new("$usum", usum));
 
 				using var r = cmd.ExecuteReader();
@@ -949,10 +950,10 @@ partial class FieldedEntity {
 						SqliteParameter cmd_cls, cmd_csum;
 
 						cmd.Set(
-							"INSERT INTO SchemaToClass" +
-							"(schema,cls,csum,ind)" +
-							"\nVALUES" +
-							"($schema,$cls,$csum,0)"
+							$"INSERT INTO SchemaToClass" +
+							$"(schema,cls,csum,ind)" +
+							$"\nVALUES" +
+							$"($schema,$cls,$csum,0)"
 						).AddParams(
 							new("$schema", newSchemaId),
 							cmd_cls = new() { ParameterName = "$cls" },
@@ -994,10 +995,10 @@ partial class FieldedEntity {
 						SqliteParameter cmd_cls, cmd_csum;
 
 						cmd.Set(
-							"INSERT INTO SchemaToClass" +
-							"(schema,cls,csum,ind)" +
-							"\nVALUES" +
-							"($schema,$cls,$csum,1)"
+							$"INSERT INTO SchemaToClass" +
+							$"(schema,cls,csum,ind)" +
+							$"\nVALUES" +
+							$"($schema,$cls,$csum,1)"
 						).AddParams(
 							new("$schema", newSchemaId),
 							cmd_cls = new() { ParameterName = "$cls" },
@@ -1030,10 +1031,10 @@ partial class FieldedEntity {
 					SqliteParameter cmd_fld, cmd_idx_sto;
 
 					cmd.Set(
-						"INSERT INTO SchemaToField" +
-						"(schema,fld,idx_sto)" +
-						"\nVALUES" +
-						"($schema,$fld,$idx_sto)"
+						$"INSERT INTO SchemaToField" +
+						$"(schema,fld,idx_sto)" +
+						$"\nVALUES" +
+						$"($schema,$fld,$idx_sto)"
 					).AddParams(
 						new("$schema", newSchemaId),
 						cmd_fld = new() { ParameterName = "$fld" },
@@ -1202,10 +1203,10 @@ partial class FieldedEntity {
 
 					using (var cmd = db.CreateCommand()) {
 						cmd.Set(
-							"INSERT INTO Schema" +
-							"(rowid,usum,hotCount,coldCount,data)" +
-							"\nVALUES" +
-							"($rowid,$usum,$hotCount,$coldCount,$data)"
+							$"INSERT INTO Schema" +
+							$"(rowid,usum,hotCount,coldCount,data)" +
+							$"\nVALUES" +
+							$"($rowid,$usum,$hotCount,$coldCount,$data)"
 						).AddParams(
 							new("$rowid", newSchemaId),
 							new("$usum", usum),

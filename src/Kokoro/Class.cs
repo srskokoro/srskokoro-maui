@@ -96,7 +96,7 @@ public sealed partial class Class : DataEntity {
 
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid) {
 		using var cmd = db.CreateCommand();
-		return cmd.Set("SELECT rowid FROM Class WHERE uid=$uid")
+		return cmd.Set($"SELECT rowid FROM Class WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ExecScalarOrDefault<long>();
 	}
@@ -121,11 +121,11 @@ public sealed partial class Class : DataEntity {
 	private void InternalLoadCore(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT uid,csum,modst,ord," +
-				"ifnull(grp,0)AS grp," +
-				"ifnull(name,0)AS name\n" +
-			"FROM Class\n" +
-			"WHERE rowid=$rowid"
+			$"SELECT uid,csum,modst,ord," +
+				$"ifnull(grp,0)AS grp," +
+				$"ifnull(name,0)AS name\n" +
+			$"FROM Class\n" +
+			$"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
@@ -242,9 +242,9 @@ public sealed partial class Class : DataEntity {
 
 			using var cmd = db.CreateCommand();
 			cmd.Set(
-				"INSERT INTO Class" +
-				"(rowid,uid,csum,modst,ord,grp,name)" +
-				"\nVALUES" +
+				$"INSERT INTO Class" +
+				$"(rowid,uid,csum,modst,ord,grp,name)" +
+				$"\nVALUES" +
 				$"($rowid,$uid,$csum,$modst,$ord,$grp,$name)"
 			);
 
@@ -352,44 +352,44 @@ public sealed partial class Class : DataEntity {
 			cmdParams.Add(new("$rowid", rowid));
 
 			StringBuilder cmdSb = new();
-			cmdSb.Append("UPDATE Class SET\n");
+			cmdSb.Append($"UPDATE Class SET\n");
 
 			var hasher = Blake2b.CreateIncrementalHasher(ClassCsumDigestLength);
-			// WARNING: The expected order of inputs to be fed to the above
-			// hasher must be strictly as follows:
-			//
-			// 0. `uid`
-			// 1. `ord`
-			// 2. The 512-bit hash of, the list of `csum` data from `ClassToField`,
-			// ordered by `ClassToField.ord,NameId.name`
-			// 3. The 512-bit hash of, the list of `uid` data from `Class ON Class.rowid=ClassToInclude.incl`,
-			// ordered by `Class.uid`
-			//
-			// Unless stated otherwise, all integer inputs should be consumed in
-			// their little-endian form.
-			//
-			// The resulting hash BLOB shall be prepended with a version varint.
-			// Should any of the following happens, the version varint must
-			// change:
-			//
-			// - The resulting hash BLOB length changes.
-			// - The algorithm for the resulting hash BLOB changes.
-			// - An input entry (from the list of inputs above) was removed.
-			// - The order of an input entry (from the list of inputs above) was
-			// changed or shifted.
-			// - An input entry's size (in bytes) changed while it's expected to
-			// be fixed-size (e.g., not length-prepended).
-			//
-			// The version varint needs not to change if further input entries
-			// were to be appended (from the list of inputs above).
-			//
+			/// WARNING: The expected order of inputs to be fed to the above
+			/// hasher must be strictly as follows:
+			///
+			/// 0. `uid`
+			/// 1. `ord`
+			/// 2. The 512-bit hash of, the list of `csum` data from `ClassToField`,
+			/// ordered by `ClassToField.ord,NameId.name`
+			/// 3. The 512-bit hash of, the list of `uid` data from `Class ON Class.rowid=ClassToInclude.incl`,
+			/// ordered by `Class.uid`
+			///
+			/// Unless stated otherwise, all integer inputs should be consumed
+			/// in their little-endian form.
+			///
+			/// The resulting hash BLOB shall be prepended with a version
+			/// varint. Should any of the following happens, the version varint
+			/// must change:
+			///
+			/// - The resulting hash BLOB length changes.
+			/// - The algorithm for the resulting hash BLOB changes.
+			/// - An input entry (from the list of inputs above) was removed.
+			/// - The order of an input entry (from the list of inputs above)
+			/// was changed or shifted.
+			/// - An input entry's size (in bytes) changed while it's expected
+			/// to be fixed-size (e.g., not length-prepended).
+			///
+			/// The version varint needs not to change if further input entries
+			/// were to be appended (from the list of inputs above).
+			///
 			int hasher_debug_i = 0; // Used only to help assert the above
 
 			// TODO Avoid creating this when it won't be used at all
 			using var cmd_old = db.CreateCommand();
 			cmd_old.Set(
-				"SELECT uid,ord FROM Class\n" +
-				"WHERE rowid=$rowid"
+				$"SELECT uid,ord FROM Class\n" +
+				$"WHERE rowid=$rowid"
 			).AddParams(new("$rowid", rowid));
 
 			using var r = cmd_old.ExecuteReader();
@@ -507,10 +507,10 @@ public sealed partial class Class : DataEntity {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT cls2fld.csum AS csum\n" +
-			"FROM ClassToField AS cls2fld,NameId AS fld\n" +
-			"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
-			"ORDER BY cls2fld.ord,fld.name"
+			$"SELECT cls2fld.csum AS csum\n" +
+			$"FROM ClassToField AS cls2fld,NameId AS fld\n" +
+			$"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
+			$"ORDER BY cls2fld.ord,fld.name"
 		).AddParams(new("$cls", cls));
 
 		using var r = cmd.ExecuteReader();
@@ -531,9 +531,9 @@ public sealed partial class Class : DataEntity {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
-			"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
-			"ORDER BY uid"
+			$"SELECT cls.uid AS uid FROM ClassToInclude AS cls2incl,Class AS cls\n" +
+			$"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
+			$"ORDER BY uid"
 		).AddParams(new("$cls", cls));
 
 		using var r = cmd.ExecuteReader();
@@ -589,7 +589,7 @@ public sealed partial class Class : DataEntity {
 		int updated;
 		try {
 			using var cmd = db.CreateCommand();
-			updated = cmd.Set("UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
+			updated = cmd.Set($"UPDATE Class SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
 				.Exec();
 		} catch (Exception ex) when (hasUsedNextRowId && (
@@ -622,7 +622,7 @@ public sealed partial class Class : DataEntity {
 
 		int deleted;
 		using (var cmd = db.CreateCommand()) {
-			deleted = cmd.Set("DELETE FROM Class WHERE rowid=$rowid")
+			deleted = cmd.Set($"DELETE FROM Class WHERE rowid=$rowid")
 				.AddParams(new("$rowid", rowid)).Exec();
 		}
 
@@ -635,7 +635,7 @@ public sealed partial class Class : DataEntity {
 
 		int deleted;
 		using (var cmd = db.CreateCommand()) {
-			deleted = cmd.Set("DELETE FROM Class WHERE uid=$uid")
+			deleted = cmd.Set($"DELETE FROM Class WHERE uid=$uid")
 				.AddParams(new("$uid", uid)).Exec();
 		}
 

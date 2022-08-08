@@ -188,8 +188,8 @@ partial class FieldedEntity {
 	private protected bool InternalLoadClassId(KokoroSqliteDb db, long classId) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			"SELECT 1 FROM SchemaToClass\n" +
-			"WHERE (schema,cls)=($schema,$cls)"
+			$"SELECT 1 FROM SchemaToClass\n" +
+			$"WHERE (schema,cls)=($schema,$cls)"
 		).AddParams(
 			new("$schema", _SchemaId),
 			new("$cls", classId)
@@ -225,7 +225,7 @@ partial class FieldedEntity {
 		}
 
 		using var cmd = db.CreateCommand();
-		cmd.Set("SELECT cls FROM SchemaToClass WHERE schema=$schema")
+		cmd.Set($"SELECT cls FROM SchemaToClass WHERE schema=$schema")
 			.AddParams(new("$schema", _SchemaId));
 
 		var r = cmd.ExecuteReader();
