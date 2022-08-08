@@ -735,5 +735,5 @@ public sealed class Item : FieldedEntity {
 
 	// --
 
-	internal override string GetDebugLabel() => $"Item {_RowId} (uid: {_Uid})";
+	internal override string GetDebugLabel() => $"Item {_RowId}";
 }
