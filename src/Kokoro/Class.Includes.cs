@@ -372,7 +372,6 @@ partial class Class {
 			if (Exists) {
 				bool isWithGivenIncludes = true;
 
-				// TODO Unroll?
 				foreach (var classId in classIds)
 					isWithGivenIncludes &= InternalLoadInclude(db, classId);
 

@@ -388,7 +388,6 @@ public sealed class Item : FieldedEntity {
 				db.ReloadNameIdCaches();
 				var fr = new FieldsReader(this, db);
 				try {
-					// TODO Unroll?
 					foreach (var fieldName in fieldNames)
 						InternalLoadField(ref fr, fieldName);
 				} finally {
@@ -615,7 +614,6 @@ public sealed class Item : FieldedEntity {
 			if (Exists) {
 				bool isOfGivenClasses = true;
 
-				// TODO Unroll?
 				foreach (var classId in classIds)
 					isOfGivenClasses &= InternalLoadClassId(db, classId);
 

@@ -356,8 +356,6 @@ partial class Class {
 		using (new OptionalReadTransaction(db)) {
 			if (Exists) {
 				db.ReloadNameIdCaches();
-
-				// TODO Unroll?
 				foreach (var fieldName in fieldNames)
 					InternalLoadFieldInfo(db, fieldName);
 			}
