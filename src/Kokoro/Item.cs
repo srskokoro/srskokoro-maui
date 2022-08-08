@@ -21,13 +21,6 @@ public sealed class Item : FieldedEntity {
 
 	private StateFlags _State;
 
-	public bool Exists {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		// Ternary operator returning true/false prevents redundant asm generation:
-		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		get => (StateFlagsSInt)_State < 0 ? false : true;
-	}
-
 
 	private const StateFlagsInt StateFlags_1 = 1; // Type must be the same as the enum's underlying type
 	private const int StateFlags_NotExists_Shift = sizeof(StateFlags)*8 - 1; // Sets sign bit when used as shift
@@ -115,6 +108,13 @@ public sealed class Item : FieldedEntity {
 	}
 
 	public void SetCachedDataModStamp(long dataModStamp) => _DataModStamp = dataModStamp;
+
+	public bool Exists {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		get => (StateFlagsSInt)_State < 0 ? false : true;
+	}
 
 
 	internal sealed override Stream ReadHotStore(KokoroSqliteDb db) {
