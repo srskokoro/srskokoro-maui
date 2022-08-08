@@ -318,7 +318,7 @@ public partial class KokoroContext : IDisposable {
 			RecursiveTriggers = true,
 		};
 
-		string colDbPath = Path.Join(DataPath, "col.db", "main");
+		string colDbPath = Path.Join(DataPath, ProtFs.CollectionDb);
 		if (!IsReadOnly) {
 			connStrBuilder.DataSource = colDbPath;
 			connStrBuilder.Mode = SqliteOpenMode.ReadWrite;
