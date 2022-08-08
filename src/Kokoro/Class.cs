@@ -201,39 +201,20 @@ public sealed partial class Class : DataEntity {
 
 		public bool Core { readonly get; set; }
 
-		public bool FieldNames { readonly get; set; }
+		public bool AllFieldInfos { readonly get; set; }
 
-		public IEnumerable<StringKey>? FieldInfos { readonly get; set; }
+		public bool AllFieldNames { readonly get; set; }
 	}
 
 	public void Load(LoadInfo loadInfo) {
 		var db = Host.Db;
-		using var tx = new OptionalReadTransaction(db);
-
-		if (loadInfo.Core) Load();
-
-		// Load field infos
-		{
-			var fieldNames = loadInfo.FieldInfos;
-			if (fieldNames == null) goto Done;
-
-			var fieldNames_iter = fieldNames.GetEnumerator();
-			try {
-				if (fieldNames_iter.MoveNext()) {
-					db.ReloadNameIdCaches();
-					do {
-						var fieldName = fieldNames_iter.Current;
-						InternalLoadFieldInfo(db, fieldName);
-					} while (fieldNames_iter.MoveNext());
-				}
-			} finally {
-				fieldNames_iter.Dispose();
+		using (new OptionalReadTransaction(db)) {
+			if (loadInfo.Core) Load();
+			if (Exists) {
+				if (loadInfo.AllFieldInfos) InternalLoadFieldInfos(db);
+				if (loadInfo.AllFieldNames) InternalLoadFieldNames(db);
 			}
-
-		Done:;
 		}
-
-		if (loadInfo.FieldNames) InternalLoadFieldNames(db);
 	}
 
 
