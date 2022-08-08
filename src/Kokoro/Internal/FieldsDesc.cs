@@ -13,8 +13,9 @@ internal readonly struct FieldsDesc {
 	/// - The remaining bits indicate the number of fields (and field offset
 	/// integers) in the fielded data.
 	///
-	/// This corresponds to the data descriptor stored in columns like `Item.data`,
-	/// `ItemToColdStore.data` and `Schema.data` in the collection's SQLite DB.
+	/// This corresponds to the data descriptor stored in columns like
+	/// `<see cref="Item"/>.data`, `ItemToColdStore.data` and `Schema.data` in
+	/// the collection's SQLite DB.
 	public readonly uint Value;
 
 	private const int FOffsetSizeM1Or0_Mask = 0b11; // 3

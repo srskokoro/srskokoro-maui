@@ -15,7 +15,7 @@ partial class KokoroContext {
 
 	private void LoadNextRowIdsFrom(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand(
-			$"SELECT ifnull(max(rowid), 0) FROM Item UNION ALL\n" +
+			$"SELECT ifnull(max(rowid), 0) FROM {Prot.Item} UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM {Prot.Schema} UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM {Prot.Class} UNION ALL\n" +
 			$"SELECT ifnull(max(rowid), 0) FROM {Prot.NameId}"

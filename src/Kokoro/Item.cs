@@ -92,7 +92,7 @@ public sealed partial class Item : FieldedEntity {
 
 	internal sealed override Stream ReadHotStore(KokoroSqliteDb db) {
 		return SqliteBlobSlim.Open(db,
-			tableName: "Item", columnName: "data", rowid: _RowId,
+			tableName: Prot.Item, columnName: "data", rowid: _RowId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
@@ -111,7 +111,7 @@ public sealed partial class Item : FieldedEntity {
 	[SkipLocalsInit]
 	internal static long LoadRowId(KokoroSqliteDb db, UniqueId uid) {
 		using var cmd = db.CreateCommand();
-		return cmd.Set($"SELECT rowid FROM Item WHERE uid=$uid")
+		return cmd.Set($"SELECT rowid FROM {Prot.Item} WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
 			.ExecScalarOrDefault<long>();
 	}
@@ -119,7 +119,7 @@ public sealed partial class Item : FieldedEntity {
 	[SkipLocalsInit]
 	internal void LoadSchemaId(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
-		cmd.Set($"SELECT schema FROM Item WHERE rowid=$rowid")
+		cmd.Set($"SELECT schema FROM {Prot.Item} WHERE rowid=$rowid")
 			.AddParams(new("$rowid", _RowId));
 
 		using var r = cmd.ExecuteReader();
@@ -147,7 +147,7 @@ public sealed partial class Item : FieldedEntity {
 	private void Load(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			$"SELECT uid,ifnull(parent,0)AS parent,ord,ordModSt,schema,dataModSt FROM Item\n" +
+			$"SELECT uid,ifnull(parent,0)AS parent,ord,ordModSt,schema,dataModSt FROM {Prot.Item}\n" +
 			$"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));
 
@@ -229,7 +229,7 @@ public sealed partial class Item : FieldedEntity {
 		int updated;
 		try {
 			using var cmd = db.CreateCommand();
-			updated = cmd.Set($"UPDATE Item SET rowid=$newRowId WHERE rowid=$oldRowId")
+			updated = cmd.Set($"UPDATE {Prot.Item} SET rowid=$newRowId WHERE rowid=$oldRowId")
 				.AddParams(new("$oldRowId", oldRowId), new("$newRowId", newRowId))
 				.Exec();
 		} catch (Exception ex) when (hasUsedNextRowId && (
@@ -262,7 +262,7 @@ public sealed partial class Item : FieldedEntity {
 
 		int deleted;
 		using (var cmd = db.CreateCommand()) {
-			deleted = cmd.Set($"DELETE FROM Item WHERE rowid=$rowid")
+			deleted = cmd.Set($"DELETE FROM {Prot.Item} WHERE rowid=$rowid")
 				.AddParams(new("$rowid", rowid)).Exec();
 		}
 
@@ -275,7 +275,7 @@ public sealed partial class Item : FieldedEntity {
 
 		int deleted;
 		using (var cmd = db.CreateCommand()) {
-			deleted = cmd.Set($"DELETE FROM Item WHERE uid=$uid")
+			deleted = cmd.Set($"DELETE FROM {Prot.Item} WHERE uid=$uid")
 				.AddParams(new("$uid", uid)).Exec();
 		}
 
