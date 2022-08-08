@@ -1094,10 +1094,10 @@ partial class FieldedEntity {
 	}
 
 	[DoesNotReturn]
-	private void E_TooManyFields(int currentCount) {
-		Debug.Assert(currentCount > MaxFieldCount);
+	private void E_TooManyFields(int count) {
+		Debug.Assert(count > MaxFieldCount);
 		throw new InvalidOperationException(
-			$"Total number of fields (currently {currentCount}) shouldn't exceed {MaxFieldCount};" +
+			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
 			$"{Environment.NewLine}Schema: {_SchemaId};");
 	}

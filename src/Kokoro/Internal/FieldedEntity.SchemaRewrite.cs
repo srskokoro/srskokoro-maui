@@ -1246,10 +1246,10 @@ partial class FieldedEntity {
 	}
 
 	[DoesNotReturn]
-	private void E_TooManyClasses(int currentCount) {
-		Debug.Assert(currentCount > MaxClassCount);
+	private void E_TooManyClasses(int count) {
+		Debug.Assert(count > MaxClassCount);
 		throw new InvalidOperationException(
-			$"Total number of classes (currently {currentCount}) shouldn't exceed {MaxClassCount};" +
+			$"Total number of classes (currently {count}) shouldn't exceed {MaxClassCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
 			$"{Environment.NewLine}Schema: {_SchemaId};");
 	}
