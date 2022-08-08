@@ -18,6 +18,7 @@ partial class KokoroContext {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
 #if TEST
 	private protected virtual
 #else
@@ -50,28 +51,33 @@ partial class KokoroContext {
 			}
 
 			GroupCollection groups = match.Groups;
-			const int VGroupOffset = ConformingMigrationActionExprArg_VersionGroupOffset;
 
-			KokoroDataVersion from = new(
-				major: groups[1 + VGroupOffset].ValueSpan,
-				minor: groups[2 + VGroupOffset].ValueSpan);
+			KokoroDataVersion x = new(
+				major: groups[1].ValueSpan,
+				minor: groups[2].ValueSpan);
 
-			KokoroDataVersion to = new(
-				major: groups[3 + VGroupOffset].ValueSpan,
-				minor: groups[4 + VGroupOffset].ValueSpan);
+			KokoroDataVersion y = new(
+				major: groups[4].ValueSpan,
+				minor: groups[5].ValueSpan);
 
-			Debug.Assert(from != to, $"Unexpected migration mapping: {from} to {to}");
-			Debug.Assert(from < to
-				? groups[1].ValueSpan.SequenceEqual("Up")
-				: groups[1].ValueSpan.SequenceEqual("Down"),
-				$"Unexpected '{(from < to ? "up" : "down")}grade' action bearing an incorrect naming:" +
+			(KokoroDataVersion Current, KokoroDataVersion Target) vers;
+
+			ReadOnlySpan<char> actionSeq = groups[3].ValueSpan;
+			if (actionSeq.SequenceEqual(/* x */"UpgradeFrom"/* y */)) {
+				vers = (Current: y, Target: x);
+			} else {
+				Debug.Assert(actionSeq.SequenceEqual(/* x */"DowngradeTo"/* y */));
+				vers = (Current: x, Target: y);
+			}
+
+			Debug.Assert(x > y,
+				$"Unexpected '{actionSeq}' action bearing incorrect version mapping:" +
 				$"{Environment.NewLine}   {migrationActionExprStr}");
 
-			Add((from, to), migrationAction);
+			Add(vers, migrationAction);
 		}
 
 		private static readonly Regex ConformingMigrationActionExprArg = new(ConformingMigrationActionExprArg_Pattern, RegexOptions.Compiled);
-		private const string ConformingMigrationActionExprArg_Pattern = $@"^_\s*=>\s*_\s*.\s*({(DEBUG?"":"?:")}Up|Down)grade_v(\d+)w(\d+)_To_v(\d+)w(\d+)";
-		private const int ConformingMigrationActionExprArg_VersionGroupOffset = DEBUG ? 1 : 0;
+		private const string ConformingMigrationActionExprArg_Pattern = $@"^Setup_v(\d+)w(\d+)_(UpgradeFrom|DowngradeTo)_v(\d+)w(\d+)\.";
 	}
 }
