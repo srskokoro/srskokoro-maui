@@ -10,6 +10,9 @@ using StateFlagsInt = System.Int32;
 using StateFlagsSInt = System.Int32;
 using StateFlagsUInt = System.UInt32;
 
+/// <summary>
+/// A fielded entity that can be organized as a node in a tree-like structure.
+/// </summary>
 public sealed class Item : FieldedEntity {
 
 	private long _RowId;
