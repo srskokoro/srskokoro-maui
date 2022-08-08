@@ -197,7 +197,7 @@ public sealed partial class Class : DataEntity {
 	}
 
 
-	public ref struct LoadInfo {
+	public struct LoadInfo {
 
 		public bool Core { readonly get; set; }
 
