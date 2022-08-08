@@ -156,6 +156,7 @@ public sealed partial class Class : DataEntity {
 			.ExecScalarOrDefault<long>();
 	}
 
+	[SkipLocalsInit]
 	public void Load() {
 		var db = Host.Db;
 		using var cmd = db.CreateCommand();
