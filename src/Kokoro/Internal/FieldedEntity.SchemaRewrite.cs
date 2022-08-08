@@ -326,7 +326,7 @@ partial class FieldedEntity {
 			// --
 
 			using (var cmd = db.CreateCommand()) {
-				cmd.Set($"SELECT fld,idx_sto FROM SchemaToField WHERE schema=$schema")
+				cmd.Set($"SELECT fld,idx_sto FROM {Prot.SchemaToField} WHERE schema=$schema")
 					.AddParams(new("$schema", _SchemaId));
 
 				using var r = cmd.ExecuteReader();
@@ -1031,7 +1031,7 @@ partial class FieldedEntity {
 					SqliteParameter cmd_fld, cmd_idx_sto;
 
 					cmd.Set(
-						$"INSERT INTO SchemaToField" +
+						$"INSERT INTO {Prot.SchemaToField}" +
 						$"(schema,fld,idx_sto)" +
 						$"\nVALUES" +
 						$"($schema,$fld,$idx_sto)"

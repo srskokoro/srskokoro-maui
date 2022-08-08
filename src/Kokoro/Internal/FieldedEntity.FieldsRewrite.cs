@@ -458,7 +458,7 @@ partial class FieldedEntity {
 			using (var cmd = db.CreateCommand()) {
 				SqliteParameter cmd_fld;
 				cmd.Set(
-					$"SELECT idx_sto FROM SchemaToField\n" +
+					$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
 					$"WHERE (schema,fld)=($schema,$fld)"
 				).AddParams(
 					new("$schema", _SchemaId),

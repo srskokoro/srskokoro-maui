@@ -175,7 +175,7 @@ public abstract partial class FieldedEntity : DataEntity {
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"SELECT idx_sto FROM SchemaToField\n" +
+				$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
 				$"WHERE schema=$schema AND fld=$fld"
 			).AddParams(
 				new("$schema", _SchemaId),
