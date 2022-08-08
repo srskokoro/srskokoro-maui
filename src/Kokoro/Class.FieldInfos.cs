@@ -218,6 +218,44 @@ partial class Class {
 	/// </para>
 	/// </remarks>
 	[SkipLocalsInit]
+	private void InternalLoadFieldInfos(KokoroSqliteDb db) {
+		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
+
+		using var cmd = db.CreateCommand();
+		cmd.Set("SELECT ord,sto,fld FROM ClassToField WHERE cls=$cls")
+			.AddParams(new() { ParameterName = "$cls" });
+
+		using var r = cmd.ExecuteReader();
+		while (r.Read()) {
+			r.DAssert_Name(0, "ord");
+			int ordinal = r.GetInt32(0);
+
+			r.DAssert_Name(1, "sto");
+			var storeType = (FieldStoreType)r.GetInt32(1);
+			storeType.DAssert_Defined();
+
+			FieldInfo info = new(ordinal, storeType);
+
+			r.DAssert_Name(2, "fld");
+			long fld = r.GetInt64(2);
+			var name = db.LoadStaleName(fld);
+			Debug.Assert(name is not null, "An FK constraint should've been " +
+				"enforced to ensure this doesn't happen.");
+
+			// Pending changes will be discarded
+			SetFieldInfoAsLoaded(name, info);
+		}
+	}
+
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="OptionalReadTransaction"/>
+	/// or <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
 	private void InternalLoadFieldNames(KokoroSqliteDb db) {
 		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
@@ -359,6 +397,14 @@ partial class Class {
 				foreach (var fieldName in fieldNames)
 					InternalLoadFieldInfo(db, fieldName);
 			}
+		}
+	}
+
+	public void LoadFieldInfos() {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists)
+				InternalLoadFieldInfos(db);
 		}
 	}
 
