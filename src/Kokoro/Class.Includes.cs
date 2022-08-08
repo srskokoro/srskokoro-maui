@@ -189,7 +189,7 @@ partial class Class {
 	private bool InternalLoadInclude(KokoroSqliteDb db, long classId) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			$"SELECT 1 FROM ClassToInclude\n" +
+			$"SELECT 1 FROM {Prot.ClassToInclude}\n" +
 			$"WHERE (cls,incl)=($cls,$incl)"
 		).AddParams(
 			new("$cls", _RowId),
@@ -224,7 +224,7 @@ partial class Class {
 		}
 
 		using var cmd = db.CreateCommand();
-		cmd.Set($"SELECT incl FROM ClassToInclude WHERE cls=$cls")
+		cmd.Set($"SELECT incl FROM {Prot.ClassToInclude} WHERE cls=$cls")
 			.AddParams(new("$cls", _RowId));
 
 		var r = cmd.ExecuteReader();
@@ -430,7 +430,7 @@ partial class Class {
 					// NOTE: `INSERT … ON CONFLICT DO NOTHING` ignores rows that
 					// violate uniqueness constraints only (unlike `INSERT OR IGNORE …`)
 					insCmd.Set(
-						$"INSERT INTO ClassToInclude(cls,incl)\n" +
+						$"INSERT INTO {Prot.ClassToInclude}(cls,incl)\n" +
 						$"VALUES($cls,$incl)\n" +
 						$"ON CONFLICT DO NOTHING"
 					).AddParams(
@@ -456,7 +456,7 @@ partial class Class {
 				{
 					delCmd = db.CreateCommand();
 					delCmd.Set(
-						$"DELETE FROM ClassToInclude\n" +
+						$"DELETE FROM {Prot.ClassToInclude}\n" +
 						$"WHERE (cls,incl)=($cls,$incl)"
 					).AddParams(
 						cmd_cls, cmd_incl
