@@ -237,6 +237,143 @@ partial class Class {
 
 	// --
 
+	public void LoadFieldInfo(StringKey fieldName1) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+				InternalLoadFieldInfo(db, fieldName3);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+				InternalLoadFieldInfo(db, fieldName3);
+				InternalLoadFieldInfo(db, fieldName4);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+				InternalLoadFieldInfo(db, fieldName3);
+				InternalLoadFieldInfo(db, fieldName4);
+				InternalLoadFieldInfo(db, fieldName5);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+				InternalLoadFieldInfo(db, fieldName3);
+				InternalLoadFieldInfo(db, fieldName4);
+				InternalLoadFieldInfo(db, fieldName5);
+				InternalLoadFieldInfo(db, fieldName6);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+				InternalLoadFieldInfo(db, fieldName3);
+				InternalLoadFieldInfo(db, fieldName4);
+				InternalLoadFieldInfo(db, fieldName5);
+				InternalLoadFieldInfo(db, fieldName6);
+				InternalLoadFieldInfo(db, fieldName7);
+			}
+		}
+	}
+
+	public void LoadFieldInfo(StringKey fieldName1, StringKey fieldName2, StringKey fieldName3, StringKey fieldName4, StringKey fieldName5, StringKey fieldName6, StringKey fieldName7, StringKey fieldName8) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+				InternalLoadFieldInfo(db, fieldName1);
+				InternalLoadFieldInfo(db, fieldName2);
+				InternalLoadFieldInfo(db, fieldName3);
+				InternalLoadFieldInfo(db, fieldName4);
+				InternalLoadFieldInfo(db, fieldName5);
+				InternalLoadFieldInfo(db, fieldName6);
+				InternalLoadFieldInfo(db, fieldName7);
+				InternalLoadFieldInfo(db, fieldName8);
+			}
+		}
+		// TODO A counterpart that loads up to 16 field infos
+		// TODO Generate code via T4 text templates instead
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void LoadFieldInfo(params StringKey[] fieldNames)
+		=> LoadFieldInfo(fieldNames.AsSpan());
+
+	public void LoadFieldInfo(ReadOnlySpan<StringKey> fieldNames) {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists) {
+				db.ReloadNameIdCaches();
+
+				// TODO Unroll?
+				foreach (var fieldName in fieldNames)
+					InternalLoadFieldInfo(db, fieldName);
+			}
+		}
+	}
+
+	public void LoadFieldNames() {
+		var db = Host.Db;
+		using (new OptionalReadTransaction(db)) {
+			if (Exists)
+				InternalLoadFieldNames(db);
+		}
+	}
+
+	// --
+
 	[SkipLocalsInit]
 	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> changes, long clsId) {
 		var changes_iter = changes.GetEnumerator();
