@@ -6,7 +6,7 @@ using S = Setup_v0w1;
 
 internal static class Setup_v0w1_UpgradeFrom_v0w0 {
 
-	public static void DoMigrate(KokoroContext ctx) {
+	public static void Exec(KokoroContext ctx) {
 		string dataPath = ctx.DataPath;
 
 		string colDbDir = Path.Join(dataPath, Fs.CollectionDbDir);
