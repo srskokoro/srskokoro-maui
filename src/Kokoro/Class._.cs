@@ -221,6 +221,7 @@ public sealed partial class Class : DataEntity {
 
 		try {
 			using var tx = new NestingWriteTransaction(db);
+
 			// Save field infos
 			// --
 			{
