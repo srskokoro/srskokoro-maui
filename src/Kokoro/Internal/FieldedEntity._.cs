@@ -1,9 +1,10 @@
 ﻿namespace Kokoro.Internal;
 using Kokoro.Common.Sqlite;
 using Kokoro.Internal.Sqlite;
+using System.Collections;
 using System.Runtime.InteropServices;
 
-public abstract partial class FieldedEntity : DataEntity {
+public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePair<StringKey, FieldVal>> {
 
 	private protected long _SchemaId;
 	private Fields? _Fields;
@@ -23,16 +24,6 @@ public abstract partial class FieldedEntity : DataEntity {
 	public long SchemaId => _SchemaId;
 
 	public void SetCachedSchemaId(long schemaId) => _SchemaId = schemaId;
-
-
-	public ICollection<StringKey> FieldNames {
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _Fields?.Keys ?? EmptyFieldNames.Instance;
-	}
-
-	private static class EmptyFieldNames {
-		internal static readonly Dictionary<StringKey, FieldVal>.KeyCollection Instance = new(new());
-	}
 
 
 	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
@@ -144,6 +135,28 @@ public abstract partial class FieldedEntity : DataEntity {
 			fields._Changes = null;
 			fields.Clear();
 		}
+	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public IEnumerator<KeyValuePair<StringKey, FieldVal>> GetEnumerator() {
+		var fields = _Fields;
+		if (fields != null) {
+			return fields.GetEnumerator();
+		} else {
+			var enumerator = EmptyFieldsEnumerator.Value;
+			Debug.Assert(Types.TypeOf(enumerator).IsValueType);
+			return enumerator;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+	private static class EmptyFieldsEnumerator {
+		internal static readonly Dictionary<StringKey, FieldVal>.Enumerator Value
+			= new Dictionary<StringKey, FieldVal>().GetEnumerator();
 	}
 
 	// --
