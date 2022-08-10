@@ -524,6 +524,8 @@ partial class FieldedEntity {
 
 		// -=-
 		{
+			DInit_StoreLengthsAndFDescs(ref fw);
+
 			Debug.Assert(fldList.Count <= byte.MaxValue + 1);
 			Debug.Assert(clsList.Count <= byte.MaxValue + 1);
 
@@ -742,7 +744,9 @@ partial class FieldedEntity {
 			}
 
 		DoneWithLocalFields:
-			;
+			DAssert_StoreLengthsAndFDescs(ref fw);
+
+			// -=-
 
 			byte[] usum;
 
