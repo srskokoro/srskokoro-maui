@@ -1,5 +1,6 @@
 namespace Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
+using System.Collections.Immutable;
 
 partial class FieldedEntity {
 	/// <summary>
@@ -25,6 +26,9 @@ partial class FieldedEntity {
 
 	private sealed class ClassChanges : HashSet<long> { }
 
+
+	public IReadOnlySet<long> ClassesCached
+		=> (IReadOnlySet<long>?)_Classes ?? ImmutableHashSet<long>.Empty;
 
 	public bool IsOfClassCached(long classId) {
 		var classes = _Classes;
