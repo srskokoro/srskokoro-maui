@@ -37,7 +37,7 @@ public sealed partial class Class : DataEntity {
 		get => _Uid;
 		set {
 			_Uid = value;
-			_State = StateFlags.Change_Uid;
+			_State |= StateFlags.Change_Uid;
 		}
 	}
 
@@ -51,7 +51,7 @@ public sealed partial class Class : DataEntity {
 		get => _ModStamp;
 		set {
 			_ModStamp = value;
-			_State = StateFlags.Change_ModStamp;
+			_State |= StateFlags.Change_ModStamp;
 		}
 	}
 
@@ -62,7 +62,7 @@ public sealed partial class Class : DataEntity {
 		get => _Ordinal;
 		set {
 			_Ordinal = value;
-			_State = StateFlags.Change_Ordinal;
+			_State |= StateFlags.Change_Ordinal;
 		}
 	}
 
@@ -72,7 +72,7 @@ public sealed partial class Class : DataEntity {
 		get => _GroupId;
 		set {
 			_GroupId = value;
-			_State = StateFlags.Change_GroupId;
+			_State |= StateFlags.Change_GroupId;
 		}
 	}
 
@@ -82,7 +82,7 @@ public sealed partial class Class : DataEntity {
 		get => _Name;
 		set {
 			_Name = value;
-			_State = StateFlags.Change_Name;
+			_State |= StateFlags.Change_Name;
 		}
 	}
 

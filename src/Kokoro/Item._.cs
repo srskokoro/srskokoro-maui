@@ -1,6 +1,5 @@
 ﻿namespace Kokoro;
 using Kokoro.Common.Sqlite;
-using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
@@ -35,7 +34,7 @@ public sealed partial class Item : FieldedEntity {
 		get => _Uid;
 		set {
 			_Uid = value;
-			_State = StateFlags.Change_Uid;
+			_State |= StateFlags.Change_Uid;
 		}
 	}
 
@@ -45,7 +44,7 @@ public sealed partial class Item : FieldedEntity {
 		get => _ParentId;
 		set {
 			_ParentId = value;
-			_State = StateFlags.Change_ParentId;
+			_State |= StateFlags.Change_ParentId;
 		}
 	}
 
@@ -55,7 +54,7 @@ public sealed partial class Item : FieldedEntity {
 		get => _Ordinal;
 		set {
 			_Ordinal = value;
-			_State = StateFlags.Change_Ordinal;
+			_State |= StateFlags.Change_Ordinal;
 		}
 	}
 
@@ -65,7 +64,7 @@ public sealed partial class Item : FieldedEntity {
 		get => _OrdModStamp;
 		set {
 			_OrdModStamp = value;
-			_State = StateFlags.Change_OrdModStamp;
+			_State |= StateFlags.Change_OrdModStamp;
 		}
 	}
 
@@ -75,7 +74,7 @@ public sealed partial class Item : FieldedEntity {
 		get => _SchemaId;
 		set {
 			_SchemaId = value;
-			_State = StateFlags.Change_SchemaId;
+			_State |= StateFlags.Change_SchemaId;
 		}
 	}
 
@@ -83,7 +82,7 @@ public sealed partial class Item : FieldedEntity {
 		get => _DataModStamp;
 		set {
 			_DataModStamp = value;
-			_State = StateFlags.Change_DataModStamp;
+			_State |= StateFlags.Change_DataModStamp;
 		}
 	}
 
