@@ -58,6 +58,7 @@ partial class FieldedEntity {
 		// as a "class removal" instead, which isn't what we want.
 		classes.Add(classId); // Marks as held
 		changes.Add(classId); // Marks as changed
+		OnClassMarkedAsChanged();
 		return;
 
 	Init:
@@ -88,6 +89,7 @@ partial class FieldedEntity {
 
 	Set:
 		changes.Add(classId); // Marks as changed
+		OnClassMarkedAsChanged();
 		return;
 
 	Init:
@@ -125,7 +127,12 @@ partial class FieldedEntity {
 			goto Init;
 		}
 
-		classes._Changes?.Remove(classId); // Unmarks as changed
+		var changes = classes._Changes;
+		if (changes != null) {
+			changes.Remove(classId); // Unmarks as changed
+			if (changes.Count == 0)
+				OnAllClassesUnmarkedAsChanged();
+		}
 
 	Set:
 		classes.Add(classId); // Marks as held
@@ -144,11 +151,28 @@ partial class FieldedEntity {
 		=> UnloadClassId(classId);
 
 
-	public void UnmarkClassAsChanged(long classId)
-		=> _Classes?._Changes?.Remove(classId);
+	public void UnmarkClassAsChanged(long classId) {
+		var classes = _Classes;
+		if (classes != null) {
+			var changes = classes._Changes;
+			if (changes != null) {
+				changes.Remove(classId);
+				if (changes.Count == 0)
+					OnAllClassesUnmarkedAsChanged();
+			}
+		}
+	}
 
-	public void UnmarkClassesAsChanged()
-		=> _Classes?._Changes?.Clear();
+	public void UnmarkClassesAsChanged() {
+		var classes = _Classes;
+		if (classes != null) {
+			var changes = classes._Changes;
+			if (changes != null) {
+				changes.Clear();
+				OnAllClassesUnmarkedAsChanged();
+			}
+		}
+	}
 
 
 	public void UnloadClassId(long classId) {
@@ -159,7 +183,12 @@ partial class FieldedEntity {
 			// class is unmarked first as held, the "changed" mark would be
 			// interpreted incorrectly as a "class removal" -- a potentially
 			// destructive side-effect.
-			classes._Changes?.Remove(classId); // Unmarks as changed
+			var changes = classes._Changes;
+			if (changes != null) {
+				changes.Remove(classId); // Unmarks as changed
+				if (changes.Count == 0)
+					OnAllClassesUnmarkedAsChanged();
+			}
 			classes.Remove(classId); // Unmarks as held
 		}
 	}
@@ -168,9 +197,16 @@ partial class FieldedEntity {
 		var classes = _Classes;
 		if (classes != null) {
 			classes._Changes = null; // Unmarks as changed
+			OnAllClassesUnmarkedAsChanged();
 			classes.Clear(); // Unmarks as held
 		}
 	}
+
+	// --
+
+	private protected virtual void OnClassMarkedAsChanged() { }
+
+	private protected virtual void OnAllClassesUnmarkedAsChanged() { }
 
 	// --
 
