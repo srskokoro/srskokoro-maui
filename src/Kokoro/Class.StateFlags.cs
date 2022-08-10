@@ -2,7 +2,6 @@ namespace Kokoro;
 using CommunityToolkit.HighPerformance.Helpers;
 
 using StateFlagsInt = System.Int32;
-using StateFlagsSInt = System.Int32;
 using StateFlagsUInt = System.UInt32;
 
 partial class Class {
@@ -30,7 +29,7 @@ partial class Class {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		get => (StateFlagsSInt)_State < 0 ? false : true;
+		get => _State < 0 ? false : true;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
