@@ -52,10 +52,10 @@ partial class FieldedEntity {
 		}
 
 	Set:
-		// NOTE: Mark first as held before marking as changed. Marking the class
-		// as held may fail, and if that happens while the class is marked first
-		// as changed, the "changed" mark would be interpreted incorrectly as a
-		// "class removal" instead, which isn't what we want.
+		// NOTE: Mark first as held before marking as changed. If marking the
+		// class as held fails, and if that happens while the class is marked
+		// first as changed, the "changed" mark would be interpreted incorrectly
+		// as a "class removal" instead, which isn't what we want.
 		classes.Add(classId); // Marks as held
 		changes.Add(classId); // Marks as changed
 		return;
@@ -74,8 +74,8 @@ partial class FieldedEntity {
 			goto Init;
 		}
 
-		// NOTE: Unmark first as held before marking as changed. Unmarking the
-		// class as held may fail, and if that happens while the class is held
+		// NOTE: Unmark first as held before marking as changed. If unmarking
+		// the class as held fails, and if that happens while the class is held
 		// and marked first as changed, the "changed" mark would be interpreted
 		// incorrectly as a "class addition" instead, which isn't what we want.
 		classes.Remove(classId); // Unmarks as held (if marked held before)
