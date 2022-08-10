@@ -25,6 +25,16 @@ public abstract partial class FieldedEntity : DataEntity {
 	public void SetCachedSchemaId(long schemaId) => _SchemaId = schemaId;
 
 
+	public ICollection<StringKey> FieldNames {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _Fields?.Keys ?? EmptyFieldNames.Instance;
+	}
+
+	private static class EmptyFieldNames {
+		internal static readonly Dictionary<StringKey, FieldVal>.KeyCollection Instance = new(new());
+	}
+
+
 	public bool TryGet(StringKey name, [MaybeNullWhen(false)] out FieldVal value) {
 		var fields = _Fields;
 		if (fields != null && fields.TryGetValue(name, out value)) {
