@@ -318,7 +318,9 @@ public sealed partial class Class : DataEntity {
 	[SkipLocalsInit]
 	public void SaveChanges() {
 		var state = _State;
+
 		if (state < 0) goto Missing;
+		Debug.Assert((StateFlags)(-1) < 0, $"Underlying type of `{nameof(StateFlags)}` must be signed");
 
 		if (state == StateFlags.NoChanges) {
 			var fieldInfos = _FieldInfos;
