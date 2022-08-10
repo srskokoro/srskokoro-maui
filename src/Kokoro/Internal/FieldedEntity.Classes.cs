@@ -186,8 +186,10 @@ partial class FieldedEntity {
 			var changes = classes._Changes;
 			if (changes != null) {
 				changes.Remove(classId); // Unmarks as changed
-				if (changes.Count == 0)
+				if (changes.Count == 0) {
+					classes._Changes = null;
 					OnAllClassesUnmarkedAsChanged();
+				}
 			}
 			classes.Remove(classId); // Unmarks as held
 		}
