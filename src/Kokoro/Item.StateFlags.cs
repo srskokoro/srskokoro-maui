@@ -15,12 +15,13 @@ partial class Item {
 	private enum StateFlags : StateFlagsInt {
 		NoChanges = 0,
 
-		Change_Uid          = StateFlags_1 << 0,
-		Change_ParentId     = StateFlags_1 << 1,
-		Change_Ordinal      = StateFlags_1 << 2,
-		Change_OrdModStamp  = StateFlags_1 << 3,
-		Change_SchemaId     = StateFlags_1 << 4,
-		Change_DataModStamp = StateFlags_1 << 5,
+		Change_Classes      = StateFlags_1 << 0,
+		Change_Uid          = StateFlags_1 << 1,
+		Change_ParentId     = StateFlags_1 << 2,
+		Change_Ordinal      = StateFlags_1 << 3,
+		Change_OrdModStamp  = StateFlags_1 << 4,
+		Change_SchemaId     = StateFlags_1 << 5,
+		Change_DataModStamp = StateFlags_1 << 6,
 
 		NotExists           = StateFlags_1 << StateFlags_NotExists_Shift,
 	}
@@ -38,4 +39,12 @@ partial class Item {
 		_State = (StateFlags)BitHelper.SetFlag(
 			(StateFlagsUInt)_State, StateFlags_NotExists_Shift, !exists);
 	}
+
+	// --
+
+	private protected sealed override void OnClassMarkedAsChanged()
+		=> _State |= StateFlags.Change_Classes;
+
+	private protected sealed override void OnAllClassesUnmarkedAsChanged()
+		=> _State &= ~StateFlags.Change_Classes;
 }
