@@ -157,6 +157,12 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		internal Enumerator(FieldedEntity owner)
 			=> _Impl = (owner._Fields ?? EmptySource.Instance).GetEnumerator();
 
+		private static class EmptySource {
+			internal static readonly Dictionary<StringKey, FieldVal> Instance = new();
+		}
+
+		// --
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool MoveNext() => _Impl.MoveNext();
 
@@ -176,12 +182,6 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		}
 
 		void IEnumerator.Reset() => throw new NotSupportedException();
-
-		// --
-
-		private static class EmptySource {
-			internal static readonly Dictionary<StringKey, FieldVal> Instance = new();
-		}
 	}
 
 	// --
