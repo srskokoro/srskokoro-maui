@@ -148,6 +148,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldChangesEnumerable EnumerateFieldChanges() => new(this);
 
@@ -166,6 +167,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
+
 
 	public struct Enumerator : IEnumerator<KeyValuePair<StringKey, FieldVal>> {
 		private Dictionary<StringKey, FieldVal>.Enumerator _Impl;

@@ -228,6 +228,7 @@ partial class FieldedEntity {
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public ClassChangesEnumerable EnumerateClassChanges() => new(this);
 
@@ -246,6 +247,7 @@ partial class FieldedEntity {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
+
 
 	public struct ClassesEnumerator : IEnumerator<long> {
 		private HashSet<long>.Enumerator _Impl;
