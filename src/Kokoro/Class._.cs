@@ -324,10 +324,16 @@ public sealed partial class Class : DataEntity {
 
 		if (state == StateFlags.NoChanges) {
 			var fieldInfos = _FieldInfos;
-			if (fieldInfos != null && fieldInfos._Changes != null) goto HasChanges;
+			if (fieldInfos != null) {
+				var changes = fieldInfos._Changes;
+				if (changes != null && changes.Count != 0) goto HasChanges;
+			}
 
 			var includes = _Includes;
-			if (includes != null && includes._Changes != null) goto HasChanges;
+			if (includes != null) {
+				var changes = includes._Changes;
+				if (changes != null && changes.Count != 0) goto HasChanges;
+			}
 
 			goto Success;
 
