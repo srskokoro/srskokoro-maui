@@ -1,6 +1,6 @@
 namespace Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
-using System.Collections.Immutable;
+using System.Collections;
 
 partial class FieldedEntity {
 	/// <summary>
@@ -26,9 +26,6 @@ partial class FieldedEntity {
 
 	private sealed class ClassChanges : HashSet<long> { }
 
-
-	public IReadOnlySet<long> ClassesCached
-		=> (IReadOnlySet<long>?)_Classes ?? ImmutableHashSet<long>.Empty;
 
 	public bool IsOfClassCached(long classId) {
 		var classes = _Classes;
@@ -209,6 +206,59 @@ partial class FieldedEntity {
 	private protected virtual void OnClassMarkedAsChanged() { }
 
 	private protected virtual void OnAllClassesUnmarkedAsChanged() { }
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public ClassesEnumerable EnumerateClasses() => new(this);
+
+	public readonly struct ClassesEnumerable : IEnumerable<long> {
+		private readonly FieldedEntity _Owner;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ClassesEnumerable(FieldedEntity owner) => _Owner = owner;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public ClassesEnumerator GetEnumerator() => new(_Owner);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		IEnumerator<long> IEnumerable<long>.GetEnumerator() => GetEnumerator();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
+	public struct ClassesEnumerator : IEnumerator<long> {
+		private Classes.Enumerator _Impl;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ClassesEnumerator(FieldedEntity owner)
+			=> _Impl = (owner._Classes ?? EmptySource.Instance).GetEnumerator();
+
+		private static class EmptySource {
+			internal static readonly Classes Instance = new();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool MoveNext() => _Impl.MoveNext();
+
+		public long Current {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _Impl.Current;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Dispose() => _Impl.Dispose();
+
+		// --
+
+		object? IEnumerator.Current {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _Impl.Current;
+		}
+
+		void IEnumerator.Reset() => throw new NotSupportedException();
+	}
 
 	// --
 
