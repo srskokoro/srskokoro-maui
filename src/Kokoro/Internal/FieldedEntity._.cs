@@ -149,6 +149,25 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 
+	private protected bool HasPendingFieldChanges {
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		get {
+			var fields = _Fields;
+			if (fields == null) goto NoChanges;
+
+			var changes = fields._Changes;
+			if (changes == null) goto NoChanges;
+			if (changes.Count == 0) goto NoChanges;
+
+			return true;
+
+		NoChanges:
+			return false;
+		}
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsChangedEnumerable EnumerateFieldsChanged() => new(this);
 
