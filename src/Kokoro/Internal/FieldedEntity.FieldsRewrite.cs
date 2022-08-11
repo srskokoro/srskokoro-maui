@@ -410,6 +410,7 @@ partial class FieldedEntity {
 
 	private protected bool MayCompileFieldChanges {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
 		get {
 			var fields = _Fields;
 			if (fields != null && fields._Changes != null)
