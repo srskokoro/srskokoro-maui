@@ -150,13 +150,13 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldChangesEnumerable EnumerateFieldChanges() => new(this);
+	public FieldsChangedEnumerable EnumerateFieldsChanged() => new(this);
 
-	public readonly struct FieldChangesEnumerable : IEnumerable<KeyValuePair<StringKey, FieldVal>> {
+	public readonly struct FieldsChangedEnumerable : IEnumerable<KeyValuePair<StringKey, FieldVal>> {
 		private readonly FieldedEntity _Owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal FieldChangesEnumerable(FieldedEntity owner) => _Owner = owner;
+		internal FieldsChangedEnumerable(FieldedEntity owner) => _Owner = owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Enumerator GetEnumerator() => new(_Owner._Fields?._Changes);

@@ -230,13 +230,13 @@ partial class FieldedEntity {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public ClassChangesEnumerable EnumerateClassChanges() => new(this);
+	public ClassesChangedEnumerable EnumerateClassesChanged() => new(this);
 
-	public readonly struct ClassChangesEnumerable : IEnumerable<long> {
+	public readonly struct ClassesChangedEnumerable : IEnumerable<long> {
 		private readonly FieldedEntity _Owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal ClassChangesEnumerable(FieldedEntity owner) => _Owner = owner;
+		internal ClassesChangedEnumerable(FieldedEntity owner) => _Owner = owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public ClassesEnumerator GetEnumerator() => new(_Owner._Classes?._Changes);
