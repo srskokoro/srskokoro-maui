@@ -148,11 +148,6 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-	private static class EmptyEnumerator {
-		internal static readonly Dictionary<StringKey, FieldVal>.Enumerator Value
-			= new Dictionary<StringKey, FieldVal>().GetEnumerator();
-	}
-
 	// --
 
 	public struct Enumerator : IEnumerator<KeyValuePair<StringKey, FieldVal>> {
@@ -160,7 +155,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal Enumerator(FieldedEntity owner)
-			=> _Impl = owner._Fields?.GetEnumerator() ?? EmptyEnumerator.Value;
+			=> _Impl = owner._Fields?.GetEnumerator() ?? EmptyImpl.Value;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool MoveNext() => _Impl.MoveNext();
@@ -181,6 +176,12 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		}
 
 		void IEnumerator.Reset() => throw new NotSupportedException();
+
+		// --
+
+		private static class EmptyImpl {
+			internal static readonly Dictionary<StringKey, FieldVal>.Enumerator Value = new Dictionary<StringKey, FieldVal>().GetEnumerator();
+		}
 	}
 
 	// --
