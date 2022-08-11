@@ -148,6 +148,25 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public FieldChangesEnumerable EnumerateFieldChanges() => new(this);
+
+	public readonly struct FieldChangesEnumerable : IEnumerable<KeyValuePair<StringKey, FieldVal>> {
+		private readonly FieldedEntity _Owner;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal FieldChangesEnumerable(FieldedEntity owner) => _Owner = owner;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Enumerator GetEnumerator() => new(_Owner._Fields?._Changes);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		IEnumerator<KeyValuePair<StringKey, FieldVal>> IEnumerable<KeyValuePair<StringKey, FieldVal>>.GetEnumerator() => GetEnumerator();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
 	public struct Enumerator : IEnumerator<KeyValuePair<StringKey, FieldVal>> {
 		private Dictionary<StringKey, FieldVal>.Enumerator _Impl;
 
