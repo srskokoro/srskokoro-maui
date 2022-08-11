@@ -219,7 +219,7 @@ partial class FieldedEntity {
 		internal ClassesEnumerable(FieldedEntity owner) => _Owner = owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ClassesEnumerator GetEnumerator() => new(_Owner);
+		public ClassesEnumerator GetEnumerator() => new(_Owner._Classes);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IEnumerator<long> IEnumerable<long>.GetEnumerator() => GetEnumerator();
@@ -229,11 +229,11 @@ partial class FieldedEntity {
 	}
 
 	public struct ClassesEnumerator : IEnumerator<long> {
-		private Classes.Enumerator _Impl;
+		private HashSet<long>.Enumerator _Impl;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal ClassesEnumerator(FieldedEntity owner)
-			=> _Impl = (owner._Classes ?? EmptySource.Instance).GetEnumerator();
+		internal ClassesEnumerator(HashSet<long>? classIds)
+			=> _Impl = (classIds ?? EmptySource.Instance).GetEnumerator();
 
 		private static class EmptySource {
 			internal static readonly Classes Instance = new();
