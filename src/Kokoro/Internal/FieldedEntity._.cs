@@ -158,7 +158,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 			=> _Impl = (owner._Fields ?? EmptySource.Instance).GetEnumerator();
 
 		private static class EmptySource {
-			internal static readonly Dictionary<StringKey, FieldVal> Instance = new();
+			internal static readonly Fields Instance = new();
 		}
 
 		// --
