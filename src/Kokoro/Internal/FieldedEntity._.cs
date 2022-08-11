@@ -151,7 +151,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	// --
 
 	public struct Enumerator : IEnumerator<KeyValuePair<StringKey, FieldVal>> {
-		private Dictionary<StringKey, FieldVal>.Enumerator _Impl;
+		private Fields.Enumerator _Impl;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal Enumerator(FieldedEntity owner)
