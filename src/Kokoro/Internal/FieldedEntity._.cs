@@ -148,8 +148,6 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-	// --
-
 	public struct Enumerator : IEnumerator<KeyValuePair<StringKey, FieldVal>> {
 		private Fields.Enumerator _Impl;
 
@@ -160,8 +158,6 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		private static class EmptySource {
 			internal static readonly Fields Instance = new();
 		}
-
-		// --
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool MoveNext() => _Impl.MoveNext();
