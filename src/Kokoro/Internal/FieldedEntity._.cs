@@ -140,16 +140,9 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public IEnumerator<KeyValuePair<StringKey, FieldVal>> GetEnumerator() {
-		var fields = _Fields;
-		if (fields != null) {
-			return fields.GetEnumerator();
-		} else {
-			var enumerator = EmptyFieldsEnumerator.Value;
-			Debug.Assert(Types.TypeOf(enumerator).IsValueType);
-			return enumerator;
-		}
-	}
+	[SkipLocalsInit]
+	public IEnumerator<KeyValuePair<StringKey, FieldVal>> GetEnumerator()
+		=> _Fields?.GetEnumerator() ?? EmptyFieldsEnumerator.Value;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
