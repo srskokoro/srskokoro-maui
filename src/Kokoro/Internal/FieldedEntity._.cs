@@ -155,7 +155,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal Enumerator(FieldedEntity owner)
-			=> _Impl = owner._Fields?.GetEnumerator() ?? EmptyImpl.Value;
+			=> _Impl = (owner._Fields ?? EmptySource.Instance).GetEnumerator();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool MoveNext() => _Impl.MoveNext();
@@ -179,8 +179,8 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 		// --
 
-		private static class EmptyImpl {
-			internal static readonly Dictionary<StringKey, FieldVal>.Enumerator Value = new Dictionary<StringKey, FieldVal>().GetEnumerator();
+		private static class EmptySource {
+			internal static readonly Dictionary<StringKey, FieldVal> Instance = new();
 		}
 	}
 
