@@ -140,9 +140,10 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	[SkipLocalsInit]
-	public IEnumerator<KeyValuePair<StringKey, FieldVal>> GetEnumerator()
-		=> _Fields?.GetEnumerator() ?? EmptyFieldsEnumerator.Value;
+	public Enumerator GetEnumerator() => new(this);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	IEnumerator<KeyValuePair<StringKey, FieldVal>> IEnumerable<KeyValuePair<StringKey, FieldVal>>.GetEnumerator() => GetEnumerator();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -150,6 +151,36 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	private static class EmptyFieldsEnumerator {
 		internal static readonly Dictionary<StringKey, FieldVal>.Enumerator Value
 			= new Dictionary<StringKey, FieldVal>().GetEnumerator();
+	}
+
+	// --
+
+	public struct Enumerator : IEnumerator<KeyValuePair<StringKey, FieldVal>> {
+		private Dictionary<StringKey, FieldVal>.Enumerator _Impl;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal Enumerator(FieldedEntity owner)
+			=> _Impl = owner._Fields?.GetEnumerator() ?? EmptyFieldsEnumerator.Value;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool MoveNext() => _Impl.MoveNext();
+
+		public KeyValuePair<StringKey, FieldVal> Current {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _Impl.Current;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Dispose() => _Impl.Dispose();
+
+		// --
+
+		object? IEnumerator.Current {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _Impl.Current;
+		}
+
+		void IEnumerator.Reset() => throw new NotSupportedException();
 	}
 
 	// --
