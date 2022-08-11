@@ -228,6 +228,25 @@ partial class FieldedEntity {
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public ClassChangesEnumerable EnumerateClassChanges() => new(this);
+
+	public readonly struct ClassChangesEnumerable : IEnumerable<long> {
+		private readonly FieldedEntity _Owner;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ClassChangesEnumerable(FieldedEntity owner) => _Owner = owner;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public ClassesEnumerator GetEnumerator() => new(_Owner._Classes?._Changes);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		IEnumerator<long> IEnumerable<long>.GetEnumerator() => GetEnumerator();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
 	public struct ClassesEnumerator : IEnumerator<long> {
 		private HashSet<long>.Enumerator _Impl;
 
