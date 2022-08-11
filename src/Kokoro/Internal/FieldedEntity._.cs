@@ -149,6 +149,10 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 
+	/// <remarks>
+	/// When <see langword="true"/>, <see cref="MayCompileFieldChanges"/> will
+	/// also be <see langword="true"/>.
+	/// </remarks>
 	private protected bool HasPendingFieldChanges {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -161,6 +165,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 			if (changes == null) goto NoChanges;
 			if (changes.Count == 0) goto NoChanges;
 
+			Debug.Assert(MayCompileFieldChanges);
 			return true;
 
 		NoChanges:
