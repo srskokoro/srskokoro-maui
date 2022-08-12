@@ -55,6 +55,7 @@ internal sealed class SqliteBlobSlim : Stream {
 	/// </param>
 	/// <seealso href="https://docs.microsoft.com/dotnet/standard/data/sqlite/blob-io">BLOB I/O</seealso>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public static SqliteBlobSlim? Open(
 		SqliteConnection connection,
 		string databaseName,
@@ -174,6 +175,7 @@ internal sealed class SqliteBlobSlim : Stream {
 	/// A value indicating the reference point used to obtain the new position.
 	/// </param>
 	/// <returns>The new position within the current stream.</returns>
+	[SkipLocalsInit]
 	public override long Seek(long offset, SeekOrigin origin) {
 		long position;
 		switch (origin) {
@@ -233,6 +235,7 @@ internal sealed class SqliteBlobSlim : Stream {
 	/// reached.
 	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public override int Read(Span<byte> buffer) {
 		long position = _Position;
 		int count = buffer.Length;
@@ -286,6 +289,7 @@ internal sealed class SqliteBlobSlim : Stream {
 	/// the current stream.
 	/// </param>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	public override void Write(ReadOnlySpan<byte> buffer) {
 		long position = _Position;
 		int count = buffer.Length;
