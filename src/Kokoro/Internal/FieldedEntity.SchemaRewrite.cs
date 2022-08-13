@@ -467,7 +467,7 @@ partial class FieldedEntity {
 							Debug.Fail($"Unexpected! Duplicate rows returned for class-and-field pair:{Environment.NewLine}" +
 								$"Class UID: {cls.uid}{Environment.NewLine}" +
 								$"Field Name: {name}{Environment.NewLine}" +
-								$"Field ROWID: {fld}");
+								$"Field ID: {fld}");
 
 							// Same entry or practically the same
 							goto LeaveEntry;
