@@ -55,12 +55,17 @@ partial class FieldedEntity {
 
 			public string name;
 			public FieldVal? new_fval;
-			public UniqueId cls_uid; // TODO Assess if still necessary
+#if DEBUG
+			public UniqueId cls_uid;
+#endif
 
 			public FieldInfo(
 				long rowid,
 				int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_sto,
-				string name, FieldVal? new_fval, UniqueId cls_uid
+				string name, FieldVal? new_fval
+#if DEBUG
+				, UniqueId cls_uid
+#endif
 			) {
 				this.rowid = rowid;
 
@@ -71,7 +76,9 @@ partial class FieldedEntity {
 
 				this.name = name;
 				this.new_fval = new_fval;
+#if DEBUG
 				this.cls_uid = cls_uid;
+#endif
 			}
 		}
 
@@ -409,7 +416,10 @@ partial class FieldedEntity {
 						fldList.Add(new(
 							rowid: fld,
 							cls_ord: cls.ord, sto, ord, src_idx_sto,
-							name, new_fval, cls_uid: cls.uid
+							name, new_fval
+#if DEBUG
+							, cls_uid: cls.uid
+#endif
 						));
 					} else {
 						// Get a `ref` to the already existing entry
@@ -444,11 +454,13 @@ partial class FieldedEntity {
 							}
 						}
 						{
+#if DEBUG
 							var a = cls.uid; var b = entry.cls_uid;
 							if (a != b) {
 								if (a < b) goto ReplaceEntry;
 								else goto LeaveEntry;
 							}
+#endif
 						}
 						{
 							// Same field. Same class. It's the same entry.
@@ -457,7 +469,7 @@ partial class FieldedEntity {
 								$"Field Name: {name}{Environment.NewLine}" +
 								$"Field ROWID: {fld}");
 
-							// It's the same entry anyway.
+							// Same entry or practically the same
 							goto LeaveEntry;
 						}
 
@@ -475,7 +487,10 @@ partial class FieldedEntity {
 						entry = new(
 							rowid: fld,
 							cls_ord: cls.ord, sto, ord, entry.src_idx_sto,
-							name, entry.new_fval, cls_uid: cls.uid
+							name, entry.new_fval
+#if DEBUG
+							, cls_uid: cls.uid
+#endif
 						);
 					}
 
