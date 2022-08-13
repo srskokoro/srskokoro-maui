@@ -153,7 +153,7 @@ public sealed partial class Item : FieldedEntity {
 		using var r = cmd.ExecuteReader();
 		if (r.Read()) {
 			// Pending changes will be discarded
-			_State = StateFlags.NoChanges;
+			_State &= StateFlags.Change_Classes;
 
 			r.DAssert_Name(0, "uid");
 			_Uid = r.GetUniqueId(0);
@@ -189,7 +189,7 @@ public sealed partial class Item : FieldedEntity {
 	}
 
 	public void UnloadCore() {
-		_State = default;
+		_State &= StateFlags.Change_Classes;
 		_Uid = default;
 		_ParentId = default;
 		_Ordinal = default;
