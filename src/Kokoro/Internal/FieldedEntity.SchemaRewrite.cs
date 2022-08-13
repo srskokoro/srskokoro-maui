@@ -1207,7 +1207,7 @@ partial class FieldedEntity {
 
 							FieldVal? fval = fld.new_fval;
 							if (fval == null) {
-								var lfval = fr.Read(fld.src_idx_sto);
+								var lfval = fr.ReadLater(fld.src_idx_sto);
 								lfval.WriteTo(dest);
 							} else {
 								fval.WriteTo(dest);
