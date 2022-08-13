@@ -141,8 +141,8 @@ partial class FieldedEntity {
 	/// <remarks>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must load/set <see cref="_SchemaId"/> beforehand, at least once,
-	/// while inside the transaction.
+	/// <br/>- Must set <see cref="_SchemaId"/> beforehand to the rowid of the
+	/// desired base schema.
 	/// <br/>- Must have <paramref name="oldSchemaId"/> with the rowid of the
 	/// actual schema being used by the <see cref="FieldedEntity">fielded entity</see>.
 	/// <br/>- If <see cref="_SchemaId"/> != <paramref name="oldSchemaId"/>,
