@@ -273,8 +273,17 @@ public sealed partial class Class : DataEntity {
 			cmdParams.Add(new("$name", name is null
 				? DBNull.Value : db.EnsureNameId(name)));
 
-			long modstamp = (_State & StateFlags.Change_ModStamp) != 0 ? _ModStamp : TimeUtils.UnixMillisNow();
-			cmdParams.Add(new("$modst", modstamp));
+			// --
+			{
+				long modstamp;
+				if ((_State & StateFlags.Change_ModStamp) == 0) {
+					modstamp = TimeUtils.UnixMillisNow();
+					_ModStamp = modstamp;
+				} else {
+					modstamp = _ModStamp;
+				}
+				cmdParams.Add(new("$modst", modstamp));
+			}
 
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
@@ -293,11 +302,9 @@ public sealed partial class Class : DataEntity {
 			// - See, https://www.sqlite.org/rescode.html#busy
 			tx.Commit();
 
-			// Conclude modstamp, set new `csum`, and clear pending changes (as
-			// they're now saved)
+			// Set new `csum` and clear pending changes (as they're now saved)
 			// --
 			{
-				_ModStamp = modstamp;
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				UnmarkFieldInfosAsChanged();
@@ -435,8 +442,6 @@ public sealed partial class Class : DataEntity {
 				Debug.Assert(1 == hasher_debug_i++);
 			}
 
-			long modstamp;
-
 			// --
 			{
 				if (state == StateFlags.NoChanges) goto ModStampIsNow;
@@ -458,7 +463,8 @@ public sealed partial class Class : DataEntity {
 				}
 
 			ModStampIsNow:
-				modstamp = TimeUtils.UnixMillisNow();
+				long modstamp = TimeUtils.UnixMillisNow();
+				_ModStamp = modstamp;
 				goto SetModStampParam;
 
 			ModStampIsCustom:
@@ -495,11 +501,9 @@ public sealed partial class Class : DataEntity {
 				goto Missing;
 			}
 
-			// Conclude modstamp, set new `csum`, and clear pending changes (as
-			// they're now saved)
+			// Set new `csum` and clear pending changes (as they're now saved)
 			// --
 			{
-				_ModStamp = modstamp;
 				_CachedCsum = csum;
 				_State = StateFlags.NoChanges;
 				UnmarkFieldInfosAsChanged();
