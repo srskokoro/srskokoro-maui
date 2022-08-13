@@ -424,6 +424,8 @@ partial class FieldedEntity {
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
+	/// <br/>- Must load <see cref="_SchemaId"/> with the rowid of the actual
+	/// schema being used by the <see cref="FieldedEntity">fielded entity</see>.
 	/// <br/>- Must be called while <see cref="MayCompileFieldChanges"/> is <see langword="true"/>.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
@@ -1064,7 +1066,7 @@ partial class FieldedEntity {
 
 	RewriteSchema:
 		fw._FloatingFields?.Clear();
-		RewriteSchema(ref fr, hotStoreLimit, ref fw);
+		RewriteSchema(_SchemaId, ref fr, hotStoreLimit, ref fw);
 	}
 
 	[DoesNotReturn]

@@ -293,6 +293,8 @@ partial class FieldedEntity {
 	/// or <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
+	/// <br/>- Must load <see cref="_SchemaId"/> with the rowid of the actual
+	/// schema being used by the <see cref="FieldedEntity">fielded entity</see>.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
@@ -323,6 +325,8 @@ partial class FieldedEntity {
 	/// or <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
+	/// <br/>- Must load <see cref="_SchemaId"/> with the rowid of the actual
+	/// schema being used by the <see cref="FieldedEntity">fielded entity</see>.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>

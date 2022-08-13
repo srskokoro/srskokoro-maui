@@ -141,15 +141,17 @@ partial class FieldedEntity {
 	/// <remarks>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
-	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
+	/// <br/>- Must load/set <see cref="_SchemaId"/> beforehand, at least once,
 	/// while inside the transaction.
+	/// <br/>- Must have <paramref name="oldSchemaId"/> with the rowid of the
+	/// actual schema being used by the <see cref="FieldedEntity">fielded entity</see>.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private protected void RewriteSchema(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
+	private protected void RewriteSchema(long oldSchemaId, ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		var clsSet = _Classes;
