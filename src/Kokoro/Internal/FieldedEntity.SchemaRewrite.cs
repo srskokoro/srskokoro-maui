@@ -62,7 +62,6 @@ partial class FieldedEntity {
 				int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_sto,
 				string name, FieldVal? new_fval, UniqueId cls_uid
 			) {
-				U.SkipInit(out this);
 				this.rowid = rowid;
 
 				this.cls_ord = cls_ord;
