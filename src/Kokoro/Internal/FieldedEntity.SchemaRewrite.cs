@@ -333,7 +333,7 @@ partial class FieldedEntity {
 		DoneWithFieldChanges:
 			;
 
-			// Retrieve the field specs from the old schema
+			// Retrieve the old field specs from the old schema
 			// --
 
 			using (var cmd = db.CreateCommand()) {
