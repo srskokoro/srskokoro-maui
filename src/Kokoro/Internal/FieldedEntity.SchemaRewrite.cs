@@ -145,6 +145,9 @@ partial class FieldedEntity {
 	/// while inside the transaction.
 	/// <br/>- Must have <paramref name="oldSchemaId"/> with the rowid of the
 	/// actual schema being used by the <see cref="FieldedEntity">fielded entity</see>.
+	/// <br/>- If <see cref="_SchemaId"/> != <paramref name="oldSchemaId"/>,
+	/// then <see cref="FieldsReader.OverrideSharedStore(long)"><paramref name="fr"/>.OverrideSharedStore(<paramref name="oldSchemaId"/>)</see>
+	/// must be called beforehand, at least once, while inside the transaction.
 	/// <para>
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
@@ -158,7 +161,7 @@ partial class FieldedEntity {
 		// ^- NOTE: Soon, the class set will contain only the newly added
 		// classes (i.e., classes awaiting addition). The code after will make
 		// sure that happens. Later, it'll also include direct classes from the
-		// old schema, provided that those awaiting removal are filtered out.
+		// base schema, provided that those awaiting removal are filtered out.
 		// Afterwards, it'll also include the indirect classes, as included by
 		// the classes in the current set. In the end, the resulting set will
 		// contain all the classes of the fielded entity under a new schema.
@@ -193,7 +196,7 @@ partial class FieldedEntity {
 		DoneWithClsChgSet:
 			;
 
-			// Get the old schema's direct classes
+			// Get the base schema's direct classes
 			// --
 
 			db = fr.Db;
@@ -335,7 +338,7 @@ partial class FieldedEntity {
 
 			using (var cmd = db.CreateCommand()) {
 				cmd.Set($"SELECT fld,idx_sto FROM {Prot.SchemaToField} WHERE schema=$schema")
-					.AddParams(new("$schema", _SchemaId));
+					.AddParams(new("$schema", oldSchemaId));
 
 				using var r = cmd.ExecuteReader();
 				while (r.Read()) {
@@ -1272,7 +1275,7 @@ partial class FieldedEntity {
 		throw new InvalidOperationException(
 			$"Total number of classes (currently {count}) shouldn't exceed {MaxClassCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Schema: {_SchemaId};");
+			$"{Environment.NewLine}Base Schema: {_SchemaId};");
 	}
 
 	// --
