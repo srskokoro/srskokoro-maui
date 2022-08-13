@@ -144,7 +144,8 @@ partial class FieldedEntity {
 	/// <br/>- Must set <see cref="_SchemaId"/> beforehand to the rowid of the
 	/// desired base schema.
 	/// <br/>- Must have <paramref name="oldSchemaId"/> with the rowid of the
-	/// actual schema being used by the <see cref="FieldedEntity">fielded entity</see>.
+	/// actual schema being used by the <see cref="FieldedEntity">fielded entity</see>,
+	/// as loaded beforehand while inside the transaction.
 	/// <br/>- If <see cref="_SchemaId"/> != <paramref name="oldSchemaId"/>,
 	/// then <see cref="FieldsReader.OverrideSharedStore(long)"><paramref name="fr"/>.OverrideSharedStore(<paramref name="oldSchemaId"/>)</see>
 	/// must be called beforehand, at least once, while inside the transaction.
