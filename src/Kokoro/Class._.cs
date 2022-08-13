@@ -273,6 +273,9 @@ public sealed partial class Class : DataEntity {
 			cmdParams.Add(new("$name", name is null
 				? DBNull.Value : db.EnsureNameId(name)));
 
+			long modstamp = (_State & StateFlags.Change_ModStamp) != 0 ? _ModStamp : TimeUtils.UnixMillisNow();
+			cmdParams.Add(new("$modst", modstamp));
+
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
 
@@ -281,9 +284,6 @@ public sealed partial class Class : DataEntity {
 
 			byte[] csum = FinishWithClassCsum(ref hasher);
 			cmdParams.Add(new("$csum", csum));
-
-			long modstamp = (_State & StateFlags.Change_ModStamp) != 0 ? _ModStamp : TimeUtils.UnixMillisNow();
-			cmdParams.Add(new("$modst", modstamp));
 
 			int updated = cmd.ExecuteNonQuery();
 			Debug.Assert(updated == 1, $"Updated: {updated}");
