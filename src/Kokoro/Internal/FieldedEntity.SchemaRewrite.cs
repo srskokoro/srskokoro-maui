@@ -51,7 +51,7 @@ partial class FieldedEntity {
 			public int cls_ord;
 			public FieldStoreType sto;
 			public int ord;
-			public FieldSpec src_idx_sto;
+			public FieldSpec old_idx_sto;
 
 			public string name;
 			public FieldVal? new_fval;
@@ -61,7 +61,7 @@ partial class FieldedEntity {
 
 			public FieldInfo(
 				long rowid,
-				int cls_ord, FieldStoreType sto, int ord, FieldSpec src_idx_sto,
+				int cls_ord, FieldStoreType sto, int ord, FieldSpec old_idx_sto,
 				string name, FieldVal? new_fval
 #if DEBUG
 				, UniqueId cls_uid
@@ -72,7 +72,7 @@ partial class FieldedEntity {
 				this.cls_ord = cls_ord;
 				this.sto = sto;
 				this.ord = ord;
-				this.src_idx_sto = src_idx_sto;
+				this.old_idx_sto = old_idx_sto;
 
 				this.name = name;
 				this.new_fval = new_fval;
@@ -406,21 +406,21 @@ partial class FieldedEntity {
 						i = fldList.Count; // The new entry's index in the list
 
 						FieldVal? new_fval;
-						FieldSpec src_idx_sto;
+						FieldSpec old_idx_sto;
 
 						if (fldMapOld.Remove(fld, out var oldMapping)) {
-							(new_fval, src_idx_sto) = oldMapping;
-							Debug.Assert(new_fval != null || (int)src_idx_sto >= 0);
+							(new_fval, old_idx_sto) = oldMapping;
+							Debug.Assert(new_fval != null || (int)old_idx_sto >= 0);
 						} else {
 							// Field not defined by the old schema
 							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
-							src_idx_sto = -1;
+							old_idx_sto = -1;
 						}
 
 						// Add the new entry
 						fldList.Add(new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, src_idx_sto,
+							cls_ord: cls.ord, sto, ord, old_idx_sto,
 							name, new_fval
 #if DEBUG
 							, cls_uid: cls.uid
@@ -491,7 +491,7 @@ partial class FieldedEntity {
 						}
 						entry = new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, entry.src_idx_sto,
+							cls_ord: cls.ord, sto, ord, entry.old_idx_sto,
 							name, entry.new_fval
 #if DEBUG
 							, cls_uid: cls.uid
@@ -651,7 +651,7 @@ partial class FieldedEntity {
 
 						FieldVal? fval = fld.new_fval;
 						if (fval == null) {
-							LatentFieldVal lfval = fr.ReadLater(fld.src_idx_sto);
+							LatentFieldVal lfval = fr.ReadLater(fld.old_idx_sto);
 							entry.OrigValue = lfval;
 
 							// It's a reference type: it should've been
@@ -887,7 +887,7 @@ partial class FieldedEntity {
 
 							FieldVal? fval = fld.new_fval;
 							if (fval == null) {
-								LatentFieldVal lfval = fr.ReadLater(fld.src_idx_sto);
+								LatentFieldVal lfval = fr.ReadLater(fld.old_idx_sto);
 								int nextLength = lfval.Length;
 								if (nextLength >= 0) {
 									checked { nextOffset += nextLength; }
@@ -1212,7 +1212,7 @@ partial class FieldedEntity {
 
 							FieldVal? fval = fld.new_fval;
 							if (fval == null) {
-								var lfval = fr.ReadLater(fld.src_idx_sto);
+								var lfval = fr.ReadLater(fld.old_idx_sto);
 								lfval.WriteTo(dest);
 							} else {
 								fval.WriteTo(dest);
