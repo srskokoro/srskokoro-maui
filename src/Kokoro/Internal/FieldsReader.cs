@@ -275,6 +275,20 @@ internal struct FieldsReader : IDisposable {
 			_SharedState = new(_Owner.ReadSharedStore(Db));
 	}
 
+	[SkipLocalsInit]
+	public void OverrideSharedStore(long schemaIdOverride) {
+		Stream? oldStream = _SharedState.Stream;
+		if (oldStream != null) { goto DisposeOld; }
+
+	SetNew:
+		_SharedState = new(FieldedEntity.ReadSharedStore(Db, schemaIdOverride));
+		return;
+
+	DisposeOld:
+		oldStream.Dispose();
+		goto SetNew;
+	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]

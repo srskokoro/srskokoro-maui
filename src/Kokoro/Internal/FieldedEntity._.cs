@@ -232,9 +232,12 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	internal virtual Stream ReadColdStore(KokoroSqliteDb db) => Stream.Null;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal Stream ReadSharedStore(KokoroSqliteDb db) {
+	internal Stream ReadSharedStore(KokoroSqliteDb db) => ReadSharedStore(db, _SchemaId);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static Stream ReadSharedStore(KokoroSqliteDb db, long schemaId) {
 		return SqliteBlobSlim.Open(db,
-			tableName: Prot.Schema, columnName: "data", rowid: _SchemaId,
+			tableName: Prot.Schema, columnName: "data", rowid: schemaId,
 			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
 	}
 
