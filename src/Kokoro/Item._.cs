@@ -309,7 +309,142 @@ public sealed partial class Item : FieldedEntity {
 
 		CheckForOtherChanges:
 			if (mustRecompileFields) {
-				// TODO Implement
+				long oldSchemaId;
+				using (var oldSchemaCmd = db.CreateCommand()) {
+					oldSchemaCmd.Set(
+						$"SELECT schema FROM {Prot.Item}\n" +
+						$"WHERE rowid=$rowid"
+					).AddParams(new("$rowid", rowid));
+
+					using var r = oldSchemaCmd.ExecuteReader();
+					if (r.Read()) {
+						r.DAssert_Name(0, "schema");
+						oldSchemaId = r.GetInt64(0);
+					} else {
+						goto Missing_0;
+					}
+				}
+
+				FieldsReader fr = new(this, db);
+				U.SkipInit(out FieldsWriter fw);
+
+				try {
+					if ((state & MustRewriteSchema_Mask) == 0) {
+						_SchemaId = oldSchemaId;
+						CompileFieldChanges(ref fr, ref fw);
+					} else {
+						if ((state & StateFlags.Change_SchemaId) == 0) {
+							_SchemaId = oldSchemaId;
+						} else {
+							fr.OverrideSharedStore(_SchemaId);
+						}
+						/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
+						/// may be changed/updated by the following.
+						RewriteSchema(oldSchemaId, ref fr, ref fw);
+						// ^- NOTE: Even if the base schema changes, it is
+						// guaranteed to still be compatible with the old base
+						// schema, since it would still hold the same classes
+						// and shared fields as would be applied to the old base
+						// schema.
+
+						/// TODO Optimize case for when only the schema ID changes (without class changes, without
+						/// shared field changes).
+						/// - i.e., avoid <see cref="FieldedEntity.RewriteSchema"/>
+						/// in that case.
+						///   - Provide and use a counterpart that avoids schema
+						///   rewriting.
+
+						// Make the base schema the actual schema
+						cmdParams.Add(new("$schema", _SchemaId));
+						cmdSb.Append("schema=$schema,");
+					}
+
+					long dataModstamp;
+					if ((state & StateFlags.Change_DataModStamp) == 0) {
+						dataModstamp = TimeUtils.UnixMillisNow();
+						_DataModStamp = dataModstamp;
+					} else {
+						dataModstamp = _DataModStamp;
+					}
+					cmdParams.Add(new("$dataModSt", dataModstamp));
+					cmdSb.Append("dataModSt=$dataModSt"); // No trailing comma
+
+					int hotStoreLength = fw.HotStoreLength;
+					if (hotStoreLength >= 0) {
+						cmdParams.Add(new("$dataLength", hotStoreLength));
+						cmdSb.Append(",data=zeroblob($dataLength)");
+					}
+
+					// --
+					{
+						cmdSb.Append("WHERE rowid=$rowid");
+						cmd.CommandText = cmdSb.ToString();
+
+						int updated = cmd.ExecuteNonQuery();
+						Debug.Assert(updated == 1, $"Updated: {updated}");
+					}
+
+					if (hotStoreLength > 0) {
+						using (var newHotStore = SqliteBlobSlim.Open(
+							db, tableName: Prot.Item, columnName: "data",
+							rowid: rowid, canWrite: true, throwOnAccessFail: true
+						)!) {
+							fw.WriteHotStore(newHotStore);
+						}
+					}
+
+					int coldStoreLength = fw.ColdStoreLength;
+					if (coldStoreLength >= 0) {
+						if (coldStoreLength > 0) {
+							using (var updColdCmd = db.CreateCommand()) {
+								updColdCmd.Set(
+									$"INSERT INTO {Prot.ItemToColdStore}(rowid,data)\n" +
+									$"VALUES($rowid,zeroblob($dataLength))\n" +
+									$"ON CONFLICT DO UPDATE\n" +
+									$"SET data=zeroblob($dataLength)"
+								).AddParams(
+									new("$rowid", rowid),
+									new("$dataLength", coldStoreLength)
+								);
+
+								int updated = updColdCmd.ExecuteNonQuery();
+								Debug.Assert(updated == 1, $"Updated: {updated}");
+							}
+							using (var newColdStore = SqliteBlobSlim.Open(db,
+								tableName: Prot.ItemToColdStore, columnName: "data",
+								rowid: rowid, canWrite: true, throwOnAccessFail: true
+							)!) {
+								fw.WriteColdStore(newColdStore);
+							}
+						} else {
+							using (var delColdCmd = db.CreateCommand()) {
+								delColdCmd.Set(
+									$"DELETE FROM {Prot.ItemToColdStore}\n" +
+									$"WHERE rowid=$rowid"
+								).AddParams(new("$rowid", rowid));
+
+								int deleted = delColdCmd.ExecuteNonQuery();
+								// NOTE: It's possible for nothing to be
+								// deleted, for when the cold store didn't exist
+								// in the first place.
+								Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
+							}
+						}
+					}
+
+					var floatingFields = fw.FloatingFields;
+					if (floatingFields != null) {
+						// TODO Implement
+					}
+				} finally {
+					fw.Dispose();
+					fr.Dispose();
+				}
+
+				// COMMIT (or RELEASE) should be guaranteed to not fail at this
+				// point if there's at least one operation that started a write.
+				// - See, https://www.sqlite.org/rescode.html#busy
+				tx.Commit();
 			} else {
 				if ((state & StateFlags.Change_DataModStamp) != 0) {
 					cmdParams.Add(new("$dataModSt", _DataModStamp));
