@@ -100,9 +100,9 @@ internal static class Setup_v0w1 {
 			// was emphasized), since syncing should simply keep any existing
 			// modstamps on sync.
 			//
-			// If a plugin needs to have separate modstamp for a set of fields
-			// (so as to have a separate sync conflict handling for it), place
-			// the fields in a subrecord instead.
+			// If a plugin needs to have a separate modstamp for a set of fields
+			// (so as to have a separate sync conflict handling for this set of
+			// fields), place the fields in a subrecord instead.
 			// TODO-XXX Implement subrecord mechanics
 			//
 			// If the value of this column is nonzero, it can be used to
