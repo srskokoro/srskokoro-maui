@@ -199,14 +199,8 @@ public sealed partial class Class : DataEntity {
 
 	// --
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void SaveAsNew() => SaveAsNew(UniqueId.Create());
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void SaveAsNew(UniqueId uid) => SaveAsNew(0, uid);
-
 	[SkipLocalsInit]
-	public void SaveAsNew(long rowid, UniqueId uid) {
+	public void SaveAsNew(long rowid = 0) {
 		var db = Host.Db; // Throws if host is already disposed
 
 		bool hasUsedNextRowId;
@@ -259,6 +253,14 @@ public sealed partial class Class : DataEntity {
 			/// expected input format).
 			int hasher_debug_i = 0; // Used only to help assert the above
 
+			var state = _State;
+			UniqueId uid;
+			if ((state & StateFlags.Change_Uid) == 0) {
+				uid = UniqueId.Create();
+				_Uid = uid;
+			} else {
+				uid = _Uid;
+			}
 			cmdParams.Add(new("$uid", uid.ToByteArray()));
 			hasher.Update(uid.Span);
 			Debug.Assert(0 == hasher_debug_i++);
@@ -274,7 +276,7 @@ public sealed partial class Class : DataEntity {
 				? DBNull.Value : db.EnsureNameId(name)));
 
 			cmdParams.Add(new("$modst",
-				(_State & StateFlags.Change_ModStamp) != 0 ? _ModStamp : 0));
+				(state & StateFlags.Change_ModStamp) != 0 ? _ModStamp : 0));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
@@ -310,7 +312,6 @@ public sealed partial class Class : DataEntity {
 		}
 
 		_RowId = rowid;
-		_Uid = uid;
 	}
 
 	[SkipLocalsInit]
