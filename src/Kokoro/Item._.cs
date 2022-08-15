@@ -255,7 +255,7 @@ public sealed partial class Item : FieldedEntity {
 			mustRecompileFields = true;
 		} else {
 			if (state == StateFlags.NoChanges) goto Success;
-			mustRecompileFields = (state & StateFlags.Change_Classes) != 0;
+			mustRecompileFields = (state & (StateFlags.Change_Classes|StateFlags.Change_SchemaId)) != 0;
 		}
 
 		var db = Host.Db; // Throws if host is already disposed
