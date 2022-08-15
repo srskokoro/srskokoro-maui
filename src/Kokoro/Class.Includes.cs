@@ -473,7 +473,7 @@ partial class Class {
 					int deleted = delCmd.ExecuteNonQuery();
 					// NOTE: It's possible for nothing to be deleted, for when
 					// the class include didn't exist in the first place.
-					Debug.Assert(deleted is 1 or 0);
+					Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
 					continue;
 				}
 

@@ -669,7 +669,7 @@ public sealed partial class Class : DataEntity {
 			//   modstamp to the given custom modstamp.
 		}
 
-		Debug.Assert(deleted is 1 or 0);
+		Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
 		return ((byte)deleted).ToUnsafeBool();
 	}
 
@@ -690,7 +690,7 @@ public sealed partial class Class : DataEntity {
 			//   modstamp to the given custom modstamp.
 		}
 
-		Debug.Assert(deleted is 1 or 0);
+		Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
 		return ((byte)deleted).ToUnsafeBool();
 	}
 }
