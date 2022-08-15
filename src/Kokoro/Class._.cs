@@ -199,8 +199,11 @@ public sealed partial class Class : DataEntity {
 
 	// --
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void SaveAsNew() => SaveAsNew(0);
+
 	[SkipLocalsInit]
-	public void SaveAsNew(long rowid = 0) {
+	public void SaveAsNew(long rowid) {
 		var db = Host.Db; // Throws if host is already disposed
 
 		bool hasUsedNextRowId;
