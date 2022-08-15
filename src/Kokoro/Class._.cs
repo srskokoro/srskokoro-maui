@@ -439,7 +439,7 @@ public sealed partial class Class : DataEntity {
 				cmdParams.Add(new("$uid", _Uid.ToByteArray()));
 				// TODO Create graveyard entry for the old UID to assist with syncing
 				// - The modstamp of the graveyard entry should be equal to or
-				// less than the modstamp currently being saved in the current
+				// less than the class's modstamp being saved in the current
 				// operation.
 			}
 			hasher.Update(_Uid.Span);
