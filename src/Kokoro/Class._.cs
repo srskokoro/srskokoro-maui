@@ -278,8 +278,21 @@ public sealed partial class Class : DataEntity {
 			cmdParams.Add(new("$name", name is null
 				? DBNull.Value : db.EnsureNameId(name)));
 
-			cmdParams.Add(new("$modst",
-				(state & StateFlags.Change_ModStamp) != 0 ? _ModStamp : 0));
+			long modstamp;
+			if ((state & StateFlags.Change_ModStamp) == 0) {
+				if ((state & StateFlags.Change_Uid) == 0) {
+					// The auto-generated UID is practically unique anyway
+					modstamp = 0;
+					_ModStamp = modstamp;
+				} else {
+					// Set to "now" to mitigate UID conflict on sync
+					modstamp = TimeUtils.UnixMillisNow();
+					_ModStamp = modstamp;
+				}
+			} else {
+				modstamp = _ModStamp;
+			}
+			cmdParams.Add(new("$modst", modstamp));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
