@@ -250,12 +250,16 @@ public sealed partial class Item : FieldedEntity {
 		if (state < 0) goto Missing;
 		Debug.Assert((StateFlags)(-1) < 0, $"Underlying type of `{nameof(StateFlags)}` must be signed");
 
+		const StateFlags MustRewriteSchema_Mask =
+			StateFlags.Change_Classes|
+			StateFlags.Change_SchemaId;
+
 		bool mustRecompileFields;
 		if (HasPendingFieldChanges) {
 			mustRecompileFields = true;
 		} else {
 			if (state == StateFlags.NoChanges) goto Success;
-			mustRecompileFields = (state & (StateFlags.Change_Classes|StateFlags.Change_SchemaId)) != 0;
+			mustRecompileFields = (state & MustRewriteSchema_Mask) != 0;
 		}
 
 		var db = Host.Db; // Throws if host is already disposed
