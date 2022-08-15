@@ -100,8 +100,9 @@ internal static class Setup_v0w1 {
 			$"schema INTEGER NOT NULL REFERENCES {P.Schema} {OnRowIdFk}," +
 
 			// A modstamp, a number of milliseconds since Unix epoch, when the
-			// `schema` column and/or any field data were last modified. This
-			// column's primary use is to assist in sync conflict resolution.
+			// item and/or any field data were last modified, excluding columns
+			// already overseen by `ordModSt`. This column's primary use is to
+			// assist in sync conflict resolution.
 			//
 			// Given this column's primary use, the column is set to zero the
 			// "first" time the item is created. This saves space as SQLite
@@ -116,7 +117,8 @@ internal static class Setup_v0w1 {
 			// TODO-XXX Implement subrecord mechanics
 			//
 			// If the value of this column is nonzero, it can be used to
-			// determine when the item's fields and/or `schema` column were last
+			// determine when the item's fields and/or any of the item's columns
+			// (excluding columns already overseen by `ordModSt`) were last
 			// modified. If this is important, it may be helpful to also store
 			// the item's creation timestamp in a custom field data, which may
 			// then be substituted for when this column is zero.
