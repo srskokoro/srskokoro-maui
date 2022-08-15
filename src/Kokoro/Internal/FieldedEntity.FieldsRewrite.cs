@@ -433,7 +433,7 @@ partial class FieldedEntity {
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private protected void CompileFieldChanges(ref FieldsReader fr, int hotStoreLimit, ref FieldsWriter fw) {
+	private protected void CompileFieldChanges(ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		Fields? fields = _Fields;
@@ -1066,7 +1066,7 @@ partial class FieldedEntity {
 
 	RewriteSchema:
 		fw._FloatingFields?.Clear();
-		RewriteSchema(_SchemaId, ref fr, hotStoreLimit, ref fw);
+		RewriteSchema(_SchemaId, ref fr, ref fw, hotStoreLimit);
 	}
 
 	[DoesNotReturn]
