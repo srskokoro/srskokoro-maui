@@ -241,8 +241,8 @@ partial class FieldedEntity {
 		[DoesNotReturn]
 		private static void E_LocalFieldsWithSameIndex(FieldedEntity owner) {
 			throw new InvalidDataException(
-				$"Schema (with rowid {owner._SchemaId}) has local fields " +
-				$"occupying the same index.");
+				$"Fielded entity has local fields occupying the same index;" +
+				$"{Environment.NewLine}Entity: {owner.GetDebugLabel()}");
 		}
 	}
 
