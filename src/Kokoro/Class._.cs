@@ -403,13 +403,13 @@ public sealed partial class Class : DataEntity {
 			int hasher_debug_i = 0; // Used only to help assert the above
 
 			// TODO Avoid creating this when it won't be used at all
-			using var cmdOld = db.CreateCommand();
-			cmdOld.Set(
+			using var selOldCmd = db.CreateCommand();
+			selOldCmd.Set(
 				$"SELECT uid,ord FROM {Prot.Class}\n" +
 				$"WHERE rowid=$rowid"
 			).AddParams(new("$rowid", rowid));
 
-			using var r = cmdOld.ExecuteReader();
+			using var r = selOldCmd.ExecuteReader();
 			if (!r.Read()) goto Missing;
 
 			if ((state & StateFlags.Change_Uid) == 0) {
