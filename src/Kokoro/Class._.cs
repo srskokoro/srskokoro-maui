@@ -274,9 +274,7 @@ public sealed partial class Class : DataEntity {
 				? DBNull.Value : db.EnsureNameId(name)));
 
 			cmdParams.Add(new("$modst",
-				(_State & StateFlags.Change_ModStamp) != 0
-					? _ModStamp : 0
-			));
+				(_State & StateFlags.Change_ModStamp) != 0 ? _ModStamp : 0));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
