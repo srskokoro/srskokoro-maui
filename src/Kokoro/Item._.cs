@@ -263,6 +263,14 @@ public sealed partial class Item : FieldedEntity {
 		using (var cmd = db.CreateCommand()) {
 			deleted = cmd.Set($"DELETE FROM {Prot.Item} WHERE rowid=$rowid")
 				.AddParams(new("$rowid", rowid)).Exec();
+
+			// TODO Create graveyard entry for the deleted UID to assist with syncing
+			// - Place in a write transaction, as necessary.
+			// - Also provide a parameter to customize the graveyard entry's
+			// modstamp.
+			//   - Perhaps if nothing was deleted, and there's a custom modstamp
+			//   given, look up for any existing graveyard entry and update its
+			//   modstamp to the given custom modstamp.
 		}
 
 		Debug.Assert(deleted is 1 or 0);
@@ -276,6 +284,14 @@ public sealed partial class Item : FieldedEntity {
 		using (var cmd = db.CreateCommand()) {
 			deleted = cmd.Set($"DELETE FROM {Prot.Item} WHERE uid=$uid")
 				.AddParams(new("$uid", uid)).Exec();
+
+			// TODO Create graveyard entry for the deleted UID to assist with syncing
+			// - Place in a write transaction, as necessary.
+			// - Also provide a parameter to customize the graveyard entry's
+			// modstamp.
+			//   - Perhaps if nothing was deleted, and there's a custom modstamp
+			//   given, look up for any existing graveyard entry and update its
+			//   modstamp to the given custom modstamp.
 		}
 
 		Debug.Assert(deleted is 1 or 0);
