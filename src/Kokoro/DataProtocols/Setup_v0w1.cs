@@ -68,12 +68,21 @@ internal static class Setup_v0w1 {
 			$"{Ord_Int32Nn}," +
 
 			// A modstamp, a number of milliseconds since Unix epoch, when the
-			// `parent` and/or `ord` columns were last modified.
+			// `parent` and/or `ord` columns were last modified. This column's
+			// primary use is to assist in sync conflict resolution.
 			//
-			// This is also set to the "first" time the item is created, as the
-			// item is considered modified for the first time. Note that, this
-			// is independent of item creation due to device syncs, as syncing
-			// should simply keep any existing modstamps on sync.
+			// Given this column's primary use, the column is set to zero the
+			// "first" time the item is created. This saves space as SQLite
+			// encodes the zero value efficiently. Note that, this is
+			// independent of item creation due to device syncs (hence, "first"
+			// was emphasized), since syncing should simply keep any existing
+			// modstamps on sync.
+			//
+			// If the value of this column is nonzero, it can be used to
+			// determine when the item's `ord` and/or `parent` columns were last
+			// modified. If this is important, it may be helpful to also store
+			// the item's creation timestamp in a custom field data, which may
+			// then be substituted for when this column is zero.
 			$"ordModSt INTEGER NOT NULL," +
 
 			// A compilation of an item's classes, which may be shared by one or
@@ -81,17 +90,26 @@ internal static class Setup_v0w1 {
 			$"schema INTEGER NOT NULL REFERENCES {P.Schema} {OnRowIdFk}," +
 
 			// A modstamp, a number of milliseconds since Unix epoch, when the
-			// `schema` column and/or any field data were last modified.
+			// `schema` column and/or any field data were last modified. This
+			// column's primary use is to assist in sync conflict resolution.
 			//
-			// This is also set to the "first" time the item is created, as the
-			// item is considered modified for the first time. Note that, this
-			// is independent of item creation due to device syncs, as syncing
-			// should simply keep any existing modstamps on sync.
+			// Given this column's primary use, the column is set to zero the
+			// "first" time the item is created. This saves space as SQLite
+			// encodes the zero value efficiently. Note that, this is
+			// independent of item creation due to device syncs (hence, "first"
+			// was emphasized), since syncing should simply keep any existing
+			// modstamps on sync.
 			//
 			// If a plugin needs to have separate modstamp for a set of fields
 			// (so as to have a separate sync conflict handling for it), place
 			// the fields in a subrecord instead.
 			// TODO-XXX Implement subrecord mechanics
+			//
+			// If the value of this column is nonzero, it can be used to
+			// determine when the item's fields and/or `schema` column were last
+			// modified. If this is important, it may be helpful to also store
+			// the item's creation timestamp in a custom field data, which may
+			// then be substituted for when this column is zero.
 			$"dataModSt INTEGER NOT NULL," +
 
 			// The BLOB comprising the list of field data.
@@ -315,13 +333,15 @@ internal static class Setup_v0w1 {
 			// associated to an entity class includes the field infos (see
 			// `ClassToField` table) and the list of included classes (see
 			// `ClassToInclude` table) but excludes the data of the included
-			// classes.
+			// classes. This column's primary use is to assist in sync conflict
+			// resolution.
 			//
-			// This is also set to the "first" time the entity class is created,
-			// as the class is considered modified for the first time. Note
-			// that, this is independent of entity class creation due to device
-			// syncs, as syncing should simply keep any existing modstamps on
-			// sync.
+			// Given this column's primary use, the column is set to zero the
+			// "first" time the class is created. This saves space as SQLite
+			// encodes the zero value efficiently. Note that, this is
+			// independent of class creation due to device syncs (hence, "first"
+			// was emphasized), since syncing should simply keep any existing
+			// modstamps on sync.
 			$"modst INTEGER NOT NULL," +
 
 			// The entity class ordinal.

@@ -273,17 +273,10 @@ public sealed partial class Class : DataEntity {
 			cmdParams.Add(new("$name", name is null
 				? DBNull.Value : db.EnsureNameId(name)));
 
-			// --
-			{
-				long modstamp;
-				if ((_State & StateFlags.Change_ModStamp) == 0) {
-					modstamp = TimeUtils.UnixMillisNow();
-					_ModStamp = modstamp;
-				} else {
-					modstamp = _ModStamp;
-				}
-				cmdParams.Add(new("$modst", modstamp));
-			}
+			cmdParams.Add(new("$modst",
+				(_State & StateFlags.Change_ModStamp) != 0
+					? _ModStamp : 0
+			));
 
 			HashWithFieldInfos(db, rowid, ref hasher);
 			Debug.Assert(2 == hasher_debug_i++);
