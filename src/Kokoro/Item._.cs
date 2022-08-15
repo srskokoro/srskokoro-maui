@@ -345,7 +345,9 @@ public sealed partial class Item : FieldedEntity {
 						// guaranteed to still be compatible with the old base
 						// schema, since it would still hold the same classes
 						// and shared fields as would be applied to the old base
-						// schema.
+						// schema. If it's important that the old base schema be
+						// kept on failure, the client code should simply do a
+						// manual backup of it prior to the operation.
 
 						/// TODO Optimize case for when only the schema ID changes (without class changes, without
 						/// shared field changes).
