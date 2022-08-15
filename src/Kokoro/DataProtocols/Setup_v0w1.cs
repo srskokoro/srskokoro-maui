@@ -60,10 +60,16 @@ internal static class Setup_v0w1 {
 
 			$"{RowIdPk}," +
 
-			// NOTE: Once inserted, the UID should normally not change. Changing
-			// the UID can mess up syncing. If the UID really needs to be
-			// changed, make sure to treat it as if an old entry with the old
-			// UID was deleted, then sync in that deletion.
+			// Notes:
+			// - Once inserted, the UID should normally not change. Changing the
+			// UID can mess up syncing. If the UID really needs to be changed,
+			// make sure to treat it as if an old entry with the old UID was
+			// deleted, then sync in that deletion.
+			// - If reusing a UID from a graveyard entry, make sure to also set
+			// any of this item's modstamp columns (i.e., either `ordModSt` or
+			// `dataModSt`) to be higher than the graveyard entry's modstamp.
+			// Otherwise, a sync can cause the graveyard entry to return, and in
+			// the process, delete the item that reused the UID.
 			$"{UidUkCk}," +
 
 			$"parent INTEGER REFERENCES {P.Item} {OnRowIdFk}," +
@@ -321,10 +327,16 @@ internal static class Setup_v0w1 {
 
 			$"{RowIdPk}," +
 
-			// NOTE: Once inserted, the UID should normally not change. Changing
-			// the UID can mess up syncing. If the UID really needs to be
-			// changed, make sure to treat it as if an old entry with the old
-			// UID was deleted, then sync in that deletion.
+			// Notes:
+			// - Once inserted, the UID should normally not change. Changing the
+			// UID can mess up syncing. If the UID really needs to be changed,
+			// make sure to treat it as if an old entry with the old UID was
+			// deleted, then sync in that deletion.
+			// - If reusing a UID from a graveyard entry, make sure to also set
+			// this class's modstamp column (i.e., `modst`) to be higher than
+			// the graveyard entry's modstamp. Otherwise, a sync can cause the
+			// graveyard entry to return, and in the process, delete the class
+			// that reused the UID.
 			$"{UidUkCk}," +
 
 			// The cryptographic checksum of the entity class's primary data,
