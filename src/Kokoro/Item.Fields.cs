@@ -233,6 +233,7 @@ partial class Item {
 			if (r.Read()) {
 				r.DAssert_Name(0, "data");
 				encoded = r.GetBytesOrEmpty(0);
+				Debug.Assert(!r.Read(), $"Should've deleted only 1 floating field");
 				goto Found;
 			} else {
 				goto NotFound;
