@@ -201,6 +201,49 @@ public sealed partial class Item : FieldedEntity {
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void SaveAsNew() => SaveAsNew(0);
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public void SaveAsNew(long rowid) {
+		var db = Host.Db; // Throws if host is already disposed
+
+		bool hasUsedNextRowId;
+		if (rowid == 0) {
+			// Guaranteed not null if didn't throw above
+			Debug.Assert(db.Context != null);
+			rowid = db.Context.NextItemId();
+			hasUsedNextRowId = true;
+		} else {
+			hasUsedNextRowId = false;
+		}
+
+		try {
+			using var tx = new NestingWriteTransaction(db);
+
+			// TODO Implement
+
+			// Clear pending changes (as they're now saved)
+			// --
+			{
+				_State = StateFlags.NoChanges;
+				UnmarkFieldsAsChanged();
+				UnmarkClassesAsChanged();
+			}
+		} catch (Exception ex) when (hasUsedNextRowId && (
+			ex is not SqliteException sqlex ||
+			sqlex.SqliteExtendedErrorCode != SQLitePCL.raw.SQLITE_CONSTRAINT_ROWID
+		)) {
+			db.Context?.UndoItemId(rowid);
+			throw;
+		}
+
+		_RowId = rowid;
+	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void RenewRowId(KokoroCollection host, long oldRowId)
 		=> AlterRowId(host, oldRowId, 0);
 
