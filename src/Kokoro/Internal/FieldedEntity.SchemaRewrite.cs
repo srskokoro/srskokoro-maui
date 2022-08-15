@@ -692,7 +692,7 @@ partial class FieldedEntity {
 				int nhc = fldHotCount;
 
 				// NOTE: `nlc < nhc` may happen due to trimmed null fields.
-				if ((uint)nlc <= (uint)nhc) {
+				if ((uint)nlc <= (uint)nhc || nextOffset <= hotStoreLimit) {
 					FieldsDesc hotFDesc = new(
 						fCount: nlc,
 						fOffsetSizeM1Or0: lastFOffsetSizeM1Or0
