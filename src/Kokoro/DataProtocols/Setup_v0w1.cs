@@ -132,12 +132,14 @@ internal static class Setup_v0w1 {
 			//   bytes needed to store the largest integer in the list of
 			//   integers that will be defined in *point 2*; the next bit (at
 			//   bit index 2, of LSB 0 bit numbering) is reserved for a special
-			//   purpose; the remaining bits indicate the number of integers in
-			//   the list of integers mentioned earlier.
+			//   purpose; the remaining bits indicate the number of fields in
+			//   the fielded data (in *point 3*).
 			// 2. The list of field offsets, as a list of 32-bit unsigned
 			// integers.
 			//   - Each is a byte offset, where offset 0 is the location of the
 			//   first byte in *point 3*.
+			//     - Given that the first field offset will always be zero, it's
+			//     never stored in the list.
 			//   - Each occupies X bytes, where X is the minimum amount of bytes
 			//   needed to store the largest integer in the list. The 2 LSBs in
 			//   *point 1* determines X: `0b00` (or `0x0`) means X is 1 byte,
@@ -166,9 +168,9 @@ internal static class Setup_v0w1 {
 			// However, if the `data` column of an item row exceeds a certain
 			// size, the values for the cold fields are moved here.
 			//
-			// Under normal circumstances, this column is never empty, nor does
-			// it contain an empty list of field offsets; nonetheless, field
-			// values can still be empty as they can be zero-length BLOBs.
+			// Under normal circumstances, this column is never empty, as it
+			// should always have at least 1 field; nonetheless, field values
+			// can still be empty as they can be zero-length BLOBs.
 			$"data BLOB NOT NULL" +
 
 		$")";
