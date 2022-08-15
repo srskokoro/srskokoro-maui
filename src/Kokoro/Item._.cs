@@ -241,6 +241,47 @@ public sealed partial class Item : FieldedEntity {
 		_RowId = rowid;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public void SaveChanges() {
+		var state = _State;
+
+		if (state < 0) goto Missing;
+		Debug.Assert((StateFlags)(-1) < 0, $"Underlying type of `{nameof(StateFlags)}` must be signed");
+
+		bool mustRecompileFields;
+		if (HasPendingFieldChanges) {
+			mustRecompileFields = true;
+		} else {
+			if (state == StateFlags.NoChanges) goto Success;
+			mustRecompileFields = (state & StateFlags.Change_Classes) != 0;
+		}
+
+		var db = Host.Db; // Throws if host is already disposed
+		using (var tx = new NestingWriteTransaction(db)) {
+
+			// TODO Implement
+
+			// Clear pending changes (as they're now saved)
+			// --
+			{
+				_State = StateFlags.NoChanges;
+				UnmarkFieldsAsChanged();
+				UnmarkClassesAsChanged();
+			}
+		}
+
+	Success:
+		return;
+
+	Missing:
+		E_CannotUpdate_MRec(_RowId);
+
+		[DoesNotReturn]
+		static void E_CannotUpdate_MRec(long rowid) => throw new MissingRecordException(
+			$"Cannot update `{nameof(Item)}` with rowid {rowid} as it's missing.");
+	}
+
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
