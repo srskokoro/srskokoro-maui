@@ -412,8 +412,7 @@ public sealed partial class Class : DataEntity {
 
 			if ((state & StateFlags.Change_Uid) == 0) {
 				r.DAssert_Name(0, "uid");
-				hasher.Update(r.GetUniqueId(0).Span);
-				Debug.Assert(0 == hasher_debug_i++);
+				_Uid = r.GetUniqueId(0);
 			} else {
 				// NOTE: Changing the UID should be considerd similar to
 				// removing an entry with the old UID, then recreating that
@@ -425,22 +424,20 @@ public sealed partial class Class : DataEntity {
 				// - The modstamp of the graveyard entry should be equal to or
 				// less than the modstamp currently being saved in the current
 				// operation.
-
-				hasher.Update(_Uid.Span);
-				Debug.Assert(0 == hasher_debug_i++);
 			}
+			hasher.Update(_Uid.Span);
+			Debug.Assert(0 == hasher_debug_i++);
 
 			if ((state & StateFlags.Change_Ordinal) == 0) {
 				r.DAssert_Name(1, "ord");
 				Debug.Assert(Types.TypeOf(_Ordinal) == typeof(int));
-				hasher.UpdateLE(r.GetInt32(1));
-				Debug.Assert(1 == hasher_debug_i++);
+				_Ordinal = r.GetInt32(1);
 			} else {
 				cmdSb.Append("ord=$ord,");
 				cmdParams.Add(new("$ord", _Ordinal));
-				hasher.UpdateLE(_Ordinal);
-				Debug.Assert(1 == hasher_debug_i++);
 			}
+			hasher.UpdateLE(_Ordinal);
+			Debug.Assert(1 == hasher_debug_i++);
 
 			// --
 			{
