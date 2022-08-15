@@ -1,5 +1,6 @@
 ﻿namespace Kokoro;
 using Kokoro.Common.Sqlite;
+using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
@@ -259,8 +260,80 @@ public sealed partial class Item : FieldedEntity {
 
 		var db = Host.Db; // Throws if host is already disposed
 		using (var tx = new NestingWriteTransaction(db)) {
+			using var cmd = db.CreateCommand();
+			var cmdParams = cmd.Parameters;
 
-			// TODO Implement
+			long rowid = _RowId;
+			cmdParams.Add(new("$rowid", rowid));
+
+			StringBuilder cmdSb = new();
+			cmdSb.Append($"UPDATE {Prot.Item} SET\n");
+
+			if ((state & (
+				StateFlags.Change_ParentId|
+				StateFlags.Change_Ordinal|
+				StateFlags.Change_OrdModStamp
+			)) != 0) {
+				if ((state & StateFlags.Change_ParentId) != 0) {
+					cmdParams.Add(new("$parent", RowIds.DBBox(_ParentId)));
+					cmdSb.Append("parent=$parent,");
+				}
+				if ((state & StateFlags.Change_Ordinal) != 0) {
+					cmdParams.Add(new("$ord", _Ordinal));
+					cmdSb.Append("ord=$ord,");
+				}
+
+				long ordModStamp;
+				if ((state & StateFlags.Change_OrdModStamp) == 0) {
+					Debug.Assert((state & (
+						StateFlags.Change_ParentId|
+						StateFlags.Change_Ordinal)) != 0
+					);
+					ordModStamp = TimeUtils.UnixMillisNow();
+					_OrdModStamp = ordModStamp;
+				} else {
+					ordModStamp = _OrdModStamp;
+				}
+				cmdParams.Add(new("$ordModSt", ordModStamp));
+				cmdSb.Append("ordModSt=$ordModSt,");
+			}
+
+			if ((state & StateFlags.Change_Uid) != 0) {
+				// This becomes a conditional jump forward to not favor it
+				goto OnUidChanged;
+			}
+
+		CheckForOtherChanges:
+			if (mustRecompileFields) {
+				// TODO Implement
+			} else {
+				if ((state & StateFlags.Change_DataModStamp) != 0) {
+					cmdParams.Add(new("$dataModSt", _DataModStamp));
+					cmdSb.Append("dataModSt=$dataModSt");
+				} else {
+					Debug.Assert((state & ~StateFlags.NotExists) != 0, $"Must exist with at least 1 state changed");
+					Debug.Assert(cmdParams.Count > 1, $"Needs at least 2 parameters set");
+					Debug.Assert(cmdParams[0].ParameterName == "$rowid");
+
+					Debug.Assert(cmdSb[^1] == ',');
+					cmdSb.Length--; // Trim trailing comma
+				}
+
+				cmdSb.Append("WHERE rowid=$rowid");
+				cmd.CommandText = cmdSb.ToString();
+
+				int updated = cmd.ExecuteNonQuery();
+				if (updated != 0) {
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+					// COMMIT (or RELEASE) should be guaranteed to not fail at
+					// this point if there's at least one operation that started
+					// a write. See, https://www.sqlite.org/rescode.html#busy
+					tx.Commit();
+				} else {
+					// This becomes a conditional jump forward to not favor it
+					goto Missing_0;
+				}
+			}
 
 			// Clear pending changes (as they're now saved)
 			// --
@@ -268,6 +341,33 @@ public sealed partial class Item : FieldedEntity {
 				_State = StateFlags.NoChanges;
 				UnmarkFieldsAsChanged();
 				UnmarkClassesAsChanged();
+			}
+
+			goto Success;
+
+		Missing_0:
+			goto Missing;
+
+		OnUidChanged:
+			{
+				// NOTE: Changing the UID should be considerd similar to
+				// removing an entry with the old UID, then recreating that
+				// entry with a new UID, except that the modstamp isn't reset to
+				// its initial value (which is zero) when the entry was created.
+				cmdParams.Add(new("$uid", _Uid.ToByteArray()));
+				cmdSb.Append("uid=$uid,");
+				// TODO Create graveyard entry for the old UID to assist with syncing
+				// - The modstamp of the graveyard entry should be equal to or
+				// less than the item's data modstamp being saved in the current
+				// operation.
+
+				// Changes in UID are currently overseen by the data modstamp
+				if ((state & StateFlags.Change_DataModStamp) == 0) {
+					_DataModStamp = TimeUtils.UnixMillisNow();
+					state |= StateFlags.Change_DataModStamp;
+				}
+
+				goto CheckForOtherChanges;
 			}
 		}
 
