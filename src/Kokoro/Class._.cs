@@ -417,8 +417,17 @@ public sealed partial class Class : DataEntity {
 				hasher.Update(r.GetUniqueId(0).Span);
 				Debug.Assert(0 == hasher_debug_i++);
 			} else {
+				// NOTE: Changing the UID should be considerd similar to
+				// removing an entry with the old UID, then recreating that
+				// entry with a new UID, except that the modstamp isn't reset to
+				// its initial value (which is zero) when the entry was created.
 				cmdSb.Append("uid=$uid,");
 				cmdParams.Add(new("$uid", _Uid.ToByteArray()));
+				// TODO Create graveyard entry for the old UID to assist with syncing
+				// - The modstamp of the graveyard entry should be equal to or
+				// less than the modstamp currently being saved in the current
+				// operation.
+
 				hasher.Update(_Uid.Span);
 				Debug.Assert(0 == hasher_debug_i++);
 			}

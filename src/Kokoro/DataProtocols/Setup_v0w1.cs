@@ -60,6 +60,10 @@ internal static class Setup_v0w1 {
 
 			$"{RowIdPk}," +
 
+			// NOTE: Once inserted, the UID should normally not change. Changing
+			// the UID can mess up syncing. If the UID really needs to be
+			// changed, make sure to treat it as if an old entry with the old
+			// UID was deleted, then sync in that deletion.
 			$"{UidUkCk}," +
 
 			$"parent INTEGER REFERENCES {P.Item} {OnRowIdFk}," +
@@ -317,6 +321,10 @@ internal static class Setup_v0w1 {
 
 			$"{RowIdPk}," +
 
+			// NOTE: Once inserted, the UID should normally not change. Changing
+			// the UID can mess up syncing. If the UID really needs to be
+			// changed, make sure to treat it as if an old entry with the old
+			// UID was deleted, then sync in that deletion.
 			$"{UidUkCk}," +
 
 			// The cryptographic checksum of the entity class's primary data,
