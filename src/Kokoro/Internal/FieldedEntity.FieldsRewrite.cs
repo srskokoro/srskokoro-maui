@@ -7,6 +7,10 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
+	// Ideally, less than the default page size of SQLite version 3.12.0
+	// (2016-03-29), which is 4096.
+	internal const int DefaultHotStoreLimit = 3328;
+
 	internal const int MaxFieldCount = byte.MaxValue;
 	internal const int MaxFieldValsLength = 0xFF_FFFF;
 
@@ -433,7 +437,7 @@ partial class FieldedEntity {
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private protected void CompileFieldChanges(ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit) {
+	private protected void CompileFieldChanges(ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		Fields? fields = _Fields;
