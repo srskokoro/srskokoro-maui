@@ -147,7 +147,7 @@ internal static class Setup_v0w1 {
 			//   - Each field offset must always be greater than or equal to all
 			//   preceding field offsets, so that the preceding field's length
 			//   can be computed. Otherwise, the length cannot be computed and
-			//   the preceding field will be assumed as having a length of zero.
+			//   the preceding field may be assumed as having a length of zero.
 			// 3. The list of field values -- the bytes simply concatenated.
 			$"data BLOB NOT NULL" +
 
