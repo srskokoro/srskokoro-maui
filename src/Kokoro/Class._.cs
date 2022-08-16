@@ -280,15 +280,8 @@ public sealed partial class Class : DataEntity {
 
 			long modstamp;
 			if ((state & StateFlags.Change_ModStamp) == 0) {
-				if ((state & StateFlags.Change_Uid) == 0) {
-					// The auto-generated UID is practically unique anyway
-					modstamp = 0;
-					_ModStamp = modstamp;
-				} else {
-					// Set to "now" to mitigate UID conflict on sync
-					modstamp = TimeUtils.UnixMillisNow();
-					_ModStamp = modstamp;
-				}
+				modstamp = TimeUtils.UnixMillisNow();
+				_ModStamp = modstamp;
 			} else {
 				modstamp = _ModStamp;
 			}
@@ -433,8 +426,8 @@ public sealed partial class Class : DataEntity {
 			} else {
 				// NOTE: Changing the UID should be considerd similar to
 				// removing an entry with the old UID, then recreating that
-				// entry with a new UID, except that the modstamp isn't reset to
-				// its initial value (which is zero) when the entry was created.
+				// entry with a new UID, except that any creation timestamping
+				// mechanism (that is, if any) isn't disturbed.
 				cmdSb.Append("uid=$uid,");
 				cmdParams.Add(new("$uid", _Uid.ToByteArray()));
 				// TODO Create graveyard entry for the old UID to assist with syncing

@@ -496,8 +496,8 @@ public sealed partial class Item : FieldedEntity {
 			{
 				// NOTE: Changing the UID should be considerd similar to
 				// removing an entry with the old UID, then recreating that
-				// entry with a new UID, except that the modstamp isn't reset to
-				// its initial value (which is zero) when the entry was created.
+				// entry with a new UID, except that any creation timestamping
+				// mechanism (that is, if any) isn't disturbed.
 				cmdParams.Add(new("$uid", _Uid.ToByteArray()));
 				cmdSb.Append("uid=$uid,");
 				// TODO Create graveyard entry for the old UID to assist with syncing
