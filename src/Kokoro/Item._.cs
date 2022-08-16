@@ -443,10 +443,8 @@ public sealed partial class Item : FieldedEntity {
 					fr.Dispose();
 				}
 
-				// COMMIT (or RELEASE) should be guaranteed to not fail at this
-				// point if there's at least one operation that started a write.
-				// - See, https://www.sqlite.org/rescode.html#busy
-				tx.Commit();
+				goto Commit;
+
 			} else {
 				if ((state & StateFlags.Change_DataModStamp) != 0) {
 					cmdParams.Add(new("$dataModSt", _DataModStamp));
@@ -466,15 +464,18 @@ public sealed partial class Item : FieldedEntity {
 				int updated = cmd.ExecuteNonQuery();
 				if (updated != 0) {
 					Debug.Assert(updated == 1, $"Updated: {updated}");
-					// COMMIT (or RELEASE) should be guaranteed to not fail at
-					// this point if there's at least one operation that started
-					// a write. See, https://www.sqlite.org/rescode.html#busy
-					tx.Commit();
+					goto Commit;
 				} else {
 					// This becomes a conditional jump forward to not favor it
 					goto Missing_0;
 				}
 			}
+
+		Commit:
+			// COMMIT (or RELEASE) should be guaranteed to not fail at this
+			// point if there's at least one operation that started a write.
+			// - See, https://www.sqlite.org/rescode.html#busy
+			tx.Commit();
 
 			// Clear pending changes (as they're now saved)
 			// --
