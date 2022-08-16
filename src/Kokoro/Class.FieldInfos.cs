@@ -436,6 +436,13 @@ partial class Class {
 
 	// --
 
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
 	[SkipLocalsInit]
 	private static void InternalSaveFieldInfos(KokoroSqliteDb db, Dictionary<StringKey, FieldInfo> changes, long clsId) {
 		var changes_iter = changes.GetEnumerator();
