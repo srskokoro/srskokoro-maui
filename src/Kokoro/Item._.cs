@@ -488,6 +488,8 @@ public sealed partial class Item : FieldedEntity {
 			goto Success;
 
 		Missing_0:
+			// ^ Label must still be within the `using` block, so that the
+			// `goto` statement can become a conditional jump forward.
 			goto Missing;
 
 		OnUidChanged:
