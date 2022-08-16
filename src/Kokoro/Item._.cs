@@ -436,7 +436,7 @@ public sealed partial class Item : FieldedEntity {
 
 					var floatingFields = fw.FloatingFields;
 					if (floatingFields != null) {
-						// TODO Implement
+						InternalSaveFloatingFields(db, floatingFields, rowid);
 					}
 				} finally {
 					fw.Dispose();

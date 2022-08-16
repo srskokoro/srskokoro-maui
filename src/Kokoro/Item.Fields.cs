@@ -1,7 +1,9 @@
 namespace Kokoro;
+using Kokoro.Common.Sqlite;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
 
 partial class Item {
 
@@ -258,5 +260,189 @@ partial class Item {
 			return new(typeHint, data);
 		}
 		return FieldVal.Null;
+	}
+
+	// --
+
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	private static void InternalSaveFloatingFields(KokoroSqliteDb db, List<(long Id, FieldsWriter.Entry Entry)> changes, long itemId) {
+		var changes_iter = changes.GetEnumerator();
+		if (!changes_iter.MoveNext()) goto NoChanges;
+
+		SqliteCommand?
+			updCmd = null,
+			delCmd = null;
+
+		SqliteParameter
+			cmd_item = new("$item", itemId),
+			cmd_fld = new() { ParameterName = "$fld" };
+
+		SqliteParameter
+			updCmd_dataLength = null!;
+
+		try {
+		Loop:
+			var (fld, entry) = changes_iter.Current;
+			cmd_fld.Value = fld;
+
+			var fval = entry.Override;
+			if (fval != null) {
+				if (fval.TypeHint != FieldTypeHint.Null) {
+					if (updCmd != null) {
+						goto UpdateFloatingField_FVal;
+					} else {
+						goto InitToUpdateFloatingField;
+					}
+				} else {
+					goto ReadyToDeleteFloatingField;
+				}
+			}
+
+			if (entry.OrigValue.Length > 0) {
+				if (updCmd != null) {
+					goto UpdateFloatingField_LFVal;
+				} else {
+					goto InitToUpdateFloatingField;
+				}
+			} else {
+				goto ReadyToDeleteFloatingField;
+			}
+
+		UpdateFloatingField_FVal:
+			{
+				uint dataLength = fval.CountEncodeLength();
+				Debug.Assert(dataLength > 0);
+				updCmd_dataLength.Value = dataLength;
+
+				try {
+					int updated = updCmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+				} catch (SqliteException ex) when (
+					ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
+				) {
+					E_FloatingFieldDataTooLarge(db, dataLength);
+					return;
+				}
+
+				using (var data = SqliteBlobSlim.Open(db,
+					tableName: Prot.ItemToFloatingField, columnName: "data",
+					rowid: itemId, canWrite: true, throwOnAccessFail: true
+				)!) {
+					fval.WriteTo(data);
+				}
+
+				goto Continue;
+			}
+
+		UpdateFloatingField_LFVal:
+			{
+				var lfval = entry.OrigValue;
+
+				int dataLength = lfval.Length;
+				Debug.Assert(dataLength > 0);
+				updCmd_dataLength.Value = dataLength;
+
+				try {
+					int updated = updCmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+				} catch (SqliteException ex) when (
+					ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
+				) {
+					E_FloatingFieldDataTooLarge(db, (uint)dataLength);
+					return;
+				}
+
+				using (var data = SqliteBlobSlim.Open(db,
+					tableName: Prot.ItemToFloatingField, columnName: "data",
+					rowid: itemId, canWrite: true, throwOnAccessFail: true
+				)!) {
+					lfval.WriteTo(data);
+				}
+
+				goto Continue;
+			}
+
+		ReadyToDeleteFloatingField:
+			if (delCmd != null) {
+				goto DeleteFloatingField;
+			} else {
+				goto InitToDeleteFloatingField;
+			}
+
+		DeleteFloatingField:
+			{
+				int deleted = delCmd.ExecuteNonQuery();
+				// NOTE: It's possible for nothing to be deleted, for when the
+				// floating field didn't exist in the first place.
+				Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
+
+				goto Continue;
+			}
+
+		Continue:
+			if (!changes_iter.MoveNext()) {
+				goto Done;
+			} else {
+				// This becomes a conditional jump backward -- similar to a
+				// `do…while` loop.
+				goto Loop;
+			}
+
+		InitToUpdateFloatingField:
+			{
+				updCmd = db.CreateCommand();
+				updCmd.Set(
+					$"INSERT INTO {Prot.ItemToFloatingField}(item,fld,data)\n" +
+					$"VALUES($item,$fld,zeroblob($dataLength))\n" +
+					$"ON CONFLICT DO UPDATE\n" +
+					$"SET data=zeroblob($dataLength)"
+				).AddParams(
+					cmd_item, cmd_fld,
+					updCmd_dataLength = new() { ParameterName = "$dataLength" }
+				);
+				Debug.Assert(
+					cmd_item.Value != null &&
+					cmd_fld.Value != null
+				);
+				if (fval == null) {
+					goto UpdateFloatingField_LFVal;
+				} else {
+					goto UpdateFloatingField_FVal;
+				}
+			}
+
+		InitToDeleteFloatingField:
+			{
+				delCmd = db.CreateCommand();
+				delCmd.Set(
+					$"DELETE FROM {Prot.ItemToFloatingField}\n" +
+					$"WHERE (item,fld)=($item,$fld)"
+				).AddParams(
+					cmd_item, cmd_fld
+				);
+				Debug.Assert(
+					cmd_item.Value != null &&
+					cmd_fld.Value != null
+				);
+				goto DeleteFloatingField;
+			}
+
+		Done:
+			;
+
+		} finally {
+			updCmd?.Dispose();
+			delCmd?.Dispose();
+		}
+
+	NoChanges:
+		;
 	}
 }
