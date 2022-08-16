@@ -424,6 +424,11 @@ partial class FieldedEntity {
 	}
 
 	/// <remarks>
+	/// <para>
+	/// NOTE: This method may modify <see cref="_SchemaId"/> on successful
+	/// return. If it's important that the old value of <see cref="_SchemaId"/>
+	/// be preserved, perform a manual backup of the old value before the call.
+	/// </para>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
