@@ -222,7 +222,132 @@ public sealed partial class Item : FieldedEntity {
 		try {
 			using var tx = new NestingWriteTransaction(db);
 
-			// TODO Implement
+			using var cmd = db.CreateCommand();
+			cmd.Set(
+				$"INSERT INTO {Prot.Item}" +
+				$"(rowid,uid,parent,ord,ordModSt,schema,dataModSt,data)" +
+				$"\nVALUES" +
+				$"($rowid,$uid,$parent,$ord,$ordModSt,$schema,$dataModSt,zeroblob($dataLength))"
+			);
+
+			var cmdParams = cmd.Parameters;
+			cmdParams.Add(new("$rowid", rowid));
+
+			cmdParams.Add(new("$parent", RowIds.DBBox(_ParentId)));
+			cmdParams.Add(new("$ord", _Ordinal));
+
+			var state = _State;
+
+			U.SkipInit(out long now);
+			if ((~state & (
+				StateFlags.Change_OrdModStamp|
+				StateFlags.Change_DataModStamp
+			)) != 0) {
+				now = TimeUtils.UnixMillisNow();
+			}
+
+			long ordModStamp;
+			if ((state & StateFlags.Change_OrdModStamp) == 0) {
+				ordModStamp = now;
+				_OrdModStamp = ordModStamp;
+			} else {
+				ordModStamp = _OrdModStamp;
+			}
+			cmdParams.Add(new("$ordModSt", ordModStamp));
+
+			long dataModStamp;
+			if ((state & StateFlags.Change_DataModStamp) == 0) {
+				dataModStamp = now;
+				_DataModStamp = dataModStamp;
+			} else {
+				dataModStamp = _DataModStamp;
+			}
+			cmdParams.Add(new("$dataModSt", dataModStamp));
+
+			UniqueId uid;
+			if ((state & StateFlags.Change_Uid) == 0) {
+				uid = UniqueId.Create();
+				_Uid = uid;
+			} else {
+				uid = _Uid;
+			}
+			cmdParams.Add(new("$uid", uid.ToByteArray()));
+
+			// -=-
+
+			FieldsReader fr = new(this, db);
+			U.SkipInit(out FieldsWriter fw);
+			try {
+				if ((state & StateFlags.Change_SchemaId) == 0) {
+					_SchemaId = 0; // Ensure zero
+				}
+				/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
+				/// may be changed/updated by the following.
+				RewriteSchema(0, ref fr, ref fw);
+				cmdParams.Add(new("$schema", _SchemaId));
+				// ^- NOTE: Even if the base schema changes, it is guaranteed to
+				// still be compatible with the old base schema, since it would
+				// still hold the same classes and shared fields as would be
+				// applied to the old base schema. If it's important that the
+				// old base schema be kept on failure, the client code should
+				// simply do a manual backup of it prior to the operation.
+
+				int hotStoreLength = fw.HotStoreLength;
+				Debug.Assert(hotStoreLength >= 0, $"Should never be negative when schema (re)writing");
+				cmdParams.Add(new("$dataLength", hotStoreLength));
+
+				// --
+				{
+					int updated = cmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+				}
+
+				if (hotStoreLength > 0) {
+					using (var newHotStore = SqliteBlobSlim.Open(
+						db, tableName: Prot.Item, columnName: "data",
+						rowid: rowid, canWrite: true, throwOnAccessFail: true
+					)!) {
+						fw.WriteHotStore(newHotStore);
+					}
+				}
+
+				int coldStoreLength = fw.ColdStoreLength;
+				Debug.Assert(coldStoreLength >= 0, $"Should never be negative when schema (re)writing");
+
+				if (coldStoreLength > 0) {
+					using (var updColdCmd = db.CreateCommand()) {
+						updColdCmd.Set(
+							$"INSERT INTO {Prot.ItemToColdStore}(rowid,data)\n" +
+							$"VALUES($rowid,zeroblob($dataLength))"
+						).AddParams(
+							new("$rowid", rowid),
+							new("$dataLength", coldStoreLength)
+						);
+
+						int updated = updColdCmd.ExecuteNonQuery();
+						Debug.Assert(updated == 1, $"Updated: {updated}");
+					}
+					using (var newColdStore = SqliteBlobSlim.Open(db,
+						tableName: Prot.ItemToColdStore, columnName: "data",
+						rowid: rowid, canWrite: true, throwOnAccessFail: true
+					)!) {
+						fw.WriteColdStore(newColdStore);
+					}
+				}
+
+				var floatingFields = fw.FloatingFields;
+				if (floatingFields != null) {
+					InternalSaveFloatingFields(db, floatingFields, rowid);
+				}
+			} finally {
+				fw.Dispose();
+				fr.Dispose();
+			}
+
+			// COMMIT (or RELEASE) should be guaranteed to not fail at this
+			// point if there's at least one operation that started a write.
+			// - See, https://www.sqlite.org/rescode.html#busy
+			tx.Commit();
 
 			// Clear pending changes (as they're now saved)
 			// --
