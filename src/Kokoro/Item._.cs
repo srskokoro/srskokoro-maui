@@ -273,6 +273,14 @@ public sealed partial class Item : FieldedEntity {
 			StringBuilder cmdSb = new();
 			cmdSb.Append($"UPDATE {Prot.Item} SET\n");
 
+			U.SkipInit(out long now);
+			if ((~state & (
+				StateFlags.Change_OrdModStamp|
+				StateFlags.Change_DataModStamp
+			)) != 0) {
+				now = TimeUtils.UnixMillisNow();
+			}
+
 			if ((state & (
 				StateFlags.Change_ParentId|
 				StateFlags.Change_Ordinal|
@@ -293,7 +301,7 @@ public sealed partial class Item : FieldedEntity {
 						StateFlags.Change_ParentId|
 						StateFlags.Change_Ordinal)) != 0
 					);
-					ordModStamp = TimeUtils.UnixMillisNow();
+					ordModStamp = now;
 					_OrdModStamp = ordModStamp;
 				} else {
 					ordModStamp = _OrdModStamp;
@@ -363,7 +371,7 @@ public sealed partial class Item : FieldedEntity {
 
 					long dataModstamp;
 					if ((state & StateFlags.Change_DataModStamp) == 0) {
-						dataModstamp = TimeUtils.UnixMillisNow();
+						dataModstamp = now;
 						_DataModStamp = dataModstamp;
 					} else {
 						dataModstamp = _DataModStamp;
@@ -507,7 +515,7 @@ public sealed partial class Item : FieldedEntity {
 
 				// Changes in UID are currently overseen by the data modstamp
 				if ((state & StateFlags.Change_DataModStamp) == 0) {
-					_DataModStamp = TimeUtils.UnixMillisNow();
+					_DataModStamp = now;
 					state |= StateFlags.Change_DataModStamp;
 				}
 
