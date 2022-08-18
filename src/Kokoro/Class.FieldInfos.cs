@@ -11,7 +11,7 @@ partial class Class {
 	private FieldInfos? _FieldInfos;
 
 	private sealed class FieldInfos : Dictionary<StringKey, FieldInfo> {
-		internal FieldInfoChanges? Changes;
+		public FieldInfoChanges? Changes;
 	}
 
 	private sealed class FieldInfoChanges : Dictionary<StringKey, FieldInfo> { }

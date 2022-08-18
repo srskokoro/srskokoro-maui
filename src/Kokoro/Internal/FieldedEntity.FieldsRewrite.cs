@@ -15,9 +15,9 @@ partial class FieldedEntity {
 	internal const int MaxFieldValsLength = 0xFF_FFFF;
 
 	private struct FieldsWriterCore {
-		internal int[] Offsets;
-		internal FieldsWriter.Entry[] Entries;
-		internal (FieldSpec FSpec, FieldVal FVal)[] FOverrides;
+		public int[] Offsets;
+		public FieldsWriter.Entry[] Entries;
+		public (FieldSpec FSpec, FieldVal FVal)[] FOverrides;
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]

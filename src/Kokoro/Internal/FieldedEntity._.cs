@@ -10,7 +10,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	private Fields? _Fields;
 
 	private sealed class Fields : Dictionary<StringKey, FieldVal> {
-		internal FieldChanges? Changes;
+		public FieldChanges? Changes;
 	}
 
 	private sealed class FieldChanges : Dictionary<StringKey, FieldVal> { }

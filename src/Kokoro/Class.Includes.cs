@@ -23,7 +23,7 @@ partial class Class {
 		/// the "changed" mark should be interpreted as the class awaiting <b>removal</b>
 		/// from the holding entity class's list of includes.
 		/// </remarks>
-		internal IncludeChanges? Changes;
+		public IncludeChanges? Changes;
 	}
 
 	private sealed class IncludeChanges : HashSet<long> { }

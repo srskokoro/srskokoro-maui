@@ -21,7 +21,7 @@ partial class FieldedEntity {
 		/// the "changed" mark should be interpreted as the class awaiting <b>removal</b>
 		/// from the new schema, given that it existed in the old schema.
 		/// </remarks>
-		internal ClassChanges? Changes;
+		public ClassChanges? Changes;
 	}
 
 	private sealed class ClassChanges : HashSet<long> { }
