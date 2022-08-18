@@ -417,7 +417,7 @@ partial class FieldedEntity {
 		[SkipLocalsInit]
 		get {
 			var fields = _Fields;
-			if (fields != null && fields._Changes != null)
+			if (fields != null && fields.Changes != null)
 				return true;
 			return false;
 		}
@@ -449,8 +449,8 @@ partial class FieldedEntity {
 		Debug.Assert(fields != null, $"`{nameof(_Fields)}` must be non-null " +
 			$"prior to calling this method (see also, `{nameof(MayCompileFieldChanges)}`)");
 
-		FieldChanges? fchanges = fields._Changes;
-		Debug.Assert(fchanges != null, $"`{nameof(_Fields)}.{nameof(_Fields._Changes)}` must be non-null " +
+		FieldChanges? fchanges = fields.Changes;
+		Debug.Assert(fchanges != null, $"`{nameof(_Fields)}.{nameof(_Fields.Changes)}` must be non-null " +
 			$"prior to calling this method (see also, `{nameof(MayCompileFieldChanges)}`)");
 
 		var fchanges_iter = fchanges.GetEnumerator();

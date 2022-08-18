@@ -23,7 +23,7 @@ partial class Class {
 		/// the "changed" mark should be interpreted as the class awaiting <b>removal</b>
 		/// from the holding entity class's list of includes.
 		/// </remarks>
-		internal IncludeChanges? _Changes;
+		internal IncludeChanges? Changes;
 	}
 
 	private sealed class IncludeChanges : HashSet<long> { }
@@ -44,7 +44,7 @@ partial class Class {
 			goto Init;
 		}
 
-		var changes = includes._Changes;
+		var changes = includes.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -62,7 +62,7 @@ partial class Class {
 	Init:
 		_Includes = includes = new();
 	InitChanges:
-		includes._Changes = changes = new();
+		includes.Changes = changes = new();
 		goto Set;
 	}
 
@@ -79,7 +79,7 @@ partial class Class {
 		// incorrectly as a "class addition" instead, which isn't what we want.
 		includes.Remove(classId); // Unmarks as held (if marked held before)
 
-		var changes = includes._Changes;
+		var changes = includes.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -92,7 +92,7 @@ partial class Class {
 	Init:
 		_Includes = includes = new();
 	InitChanges:
-		includes._Changes = changes = new();
+		includes.Changes = changes = new();
 		goto Set;
 	}
 
@@ -124,7 +124,7 @@ partial class Class {
 			goto Init;
 		}
 
-		includes._Changes?.Remove(classId); // Unmarks as changed
+		includes.Changes?.Remove(classId); // Unmarks as changed
 
 	Set:
 		includes.Add(classId); // Marks as held
@@ -144,10 +144,10 @@ partial class Class {
 
 
 	public void UnmarkIncludeAsChanged(long classId)
-		=> _Includes?._Changes?.Remove(classId);
+		=> _Includes?.Changes?.Remove(classId);
 
 	public void UnmarkIncludesAsChanged()
-		=> _Includes?._Changes?.Clear();
+		=> _Includes?.Changes?.Clear();
 
 
 	public void UnloadInclude(long classId) {
@@ -158,7 +158,7 @@ partial class Class {
 			// class is unmarked first as held, the "changed" mark would be
 			// interpreted incorrectly as a "class removal" -- a potentially
 			// destructive side-effect.
-			includes._Changes?.Remove(classId); // Unmarks as changed
+			includes.Changes?.Remove(classId); // Unmarks as changed
 			includes.Remove(classId); // Unmarks as held
 		}
 	}
@@ -166,7 +166,7 @@ partial class Class {
 	public void UnloadIncludes() {
 		var includes = _Includes;
 		if (includes != null) {
-			includes._Changes = null; // Unmarks as changed
+			includes.Changes = null; // Unmarks as changed
 			includes.Clear(); // Unmarks as held
 		}
 	}
@@ -219,7 +219,7 @@ partial class Class {
 		if (includes == null) {
 			_Includes = includes = new();
 		} else {
-			includes._Changes = null; // Unmarks as changed
+			includes.Changes = null; // Unmarks as changed
 			includes.Clear(); // Unmarks as held
 		}
 
@@ -400,7 +400,7 @@ partial class Class {
 	/// </remarks>
 	[SkipLocalsInit]
 	private static void InternalSaveIncludes(KokoroSqliteDb db, Includes includes, long clsId) {
-		var changes = includes._Changes;
+		var changes = includes.Changes;
 		Debug.Assert(changes != null);
 
 		var changes_iter = changes.GetEnumerator();

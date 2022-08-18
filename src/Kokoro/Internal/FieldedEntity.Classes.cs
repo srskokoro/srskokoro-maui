@@ -21,7 +21,7 @@ partial class FieldedEntity {
 		/// the "changed" mark should be interpreted as the class awaiting <b>removal</b>
 		/// from the new schema, given that it existed in the old schema.
 		/// </remarks>
-		internal ClassChanges? _Changes;
+		internal ClassChanges? Changes;
 	}
 
 	private sealed class ClassChanges : HashSet<long> { }
@@ -42,7 +42,7 @@ partial class FieldedEntity {
 			goto Init;
 		}
 
-		var changes = classes._Changes;
+		var changes = classes.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -61,7 +61,7 @@ partial class FieldedEntity {
 	Init:
 		_Classes = classes = new();
 	InitChanges:
-		classes._Changes = changes = new();
+		classes.Changes = changes = new();
 		goto Set;
 	}
 
@@ -78,7 +78,7 @@ partial class FieldedEntity {
 		// incorrectly as a "class addition" instead, which isn't what we want.
 		classes.Remove(classId); // Unmarks as held (if marked held before)
 
-		var changes = classes._Changes;
+		var changes = classes.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -92,7 +92,7 @@ partial class FieldedEntity {
 	Init:
 		_Classes = classes = new();
 	InitChanges:
-		classes._Changes = changes = new();
+		classes.Changes = changes = new();
 		goto Set;
 	}
 
@@ -124,7 +124,7 @@ partial class FieldedEntity {
 			goto Init;
 		}
 
-		var changes = classes._Changes;
+		var changes = classes.Changes;
 		if (changes != null) {
 			changes.Remove(classId); // Unmarks as changed
 			if (changes.Count == 0)
@@ -151,7 +151,7 @@ partial class FieldedEntity {
 	public void UnmarkClassAsChanged(long classId) {
 		var classes = _Classes;
 		if (classes != null) {
-			var changes = classes._Changes;
+			var changes = classes.Changes;
 			if (changes != null) {
 				changes.Remove(classId);
 				if (changes.Count == 0)
@@ -163,7 +163,7 @@ partial class FieldedEntity {
 	public void UnmarkClassesAsChanged() {
 		var classes = _Classes;
 		if (classes != null) {
-			var changes = classes._Changes;
+			var changes = classes.Changes;
 			if (changes != null) {
 				changes.Clear();
 				OnAllClassesUnmarkedAsChanged();
@@ -180,11 +180,11 @@ partial class FieldedEntity {
 			// class is unmarked first as held, the "changed" mark would be
 			// interpreted incorrectly as a "class removal" -- a potentially
 			// destructive side-effect.
-			var changes = classes._Changes;
+			var changes = classes.Changes;
 			if (changes != null) {
 				changes.Remove(classId); // Unmarks as changed
 				if (changes.Count == 0) {
-					classes._Changes = null;
+					classes.Changes = null;
 					OnAllClassesUnmarkedAsChanged();
 				}
 			}
@@ -195,7 +195,7 @@ partial class FieldedEntity {
 	public void UnloadClassIds() {
 		var classes = _Classes;
 		if (classes != null) {
-			classes._Changes = null; // Unmarks as changed
+			classes.Changes = null; // Unmarks as changed
 			OnAllClassesUnmarkedAsChanged();
 			classes.Clear(); // Unmarks as held
 		}
@@ -239,7 +239,7 @@ partial class FieldedEntity {
 		internal ClassesChangedEnumerable(FieldedEntity owner) => _Owner = owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ClassesEnumerator GetEnumerator() => new(_Owner._Classes?._Changes);
+		public ClassesEnumerator GetEnumerator() => new(_Owner._Classes?.Changes);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IEnumerator<long> IEnumerable<long>.GetEnumerator() => GetEnumerator();
@@ -337,7 +337,7 @@ partial class FieldedEntity {
 		if (classes == null) {
 			_Classes = classes = new();
 		} else {
-			classes._Changes = null; // Unmarks as changed
+			classes.Changes = null; // Unmarks as changed
 			classes.Clear(); // Unmarks as held
 		}
 

@@ -222,7 +222,7 @@ public sealed partial class Class : DataEntity {
 			// Save field infos
 			// --
 			{
-				var fieldChanges = _FieldInfos?._Changes;
+				var fieldChanges = _FieldInfos?.Changes;
 				if (fieldChanges != null)
 					InternalSaveFieldInfos(db, fieldChanges, rowid);
 			}
@@ -231,7 +231,7 @@ public sealed partial class Class : DataEntity {
 			// --
 			{
 				var includes = _Includes;
-				if (includes != null && includes._Changes != null)
+				if (includes != null && includes.Changes != null)
 					InternalSaveIncludes(db, includes, rowid);
 			}
 
@@ -333,13 +333,13 @@ public sealed partial class Class : DataEntity {
 		if (state == StateFlags.NoChanges) {
 			var fieldInfos = _FieldInfos;
 			if (fieldInfos != null) {
-				var changes = fieldInfos._Changes;
+				var changes = fieldInfos.Changes;
 				if (changes != null && changes.Count != 0) goto HasChanges;
 			}
 
 			var includes = _Includes;
 			if (includes != null) {
-				var changes = includes._Changes;
+				var changes = includes.Changes;
 				if (changes != null && changes.Count != 0) goto HasChanges;
 			}
 
@@ -356,7 +356,7 @@ public sealed partial class Class : DataEntity {
 			// Save field infos
 			// --
 			{
-				var fieldChanges = _FieldInfos?._Changes;
+				var fieldChanges = _FieldInfos?.Changes;
 				if (fieldChanges != null)
 					InternalSaveFieldInfos(db, fieldChanges, rowid);
 			}
@@ -365,7 +365,7 @@ public sealed partial class Class : DataEntity {
 			// --
 			{
 				var includes = _Includes;
-				if (includes != null && includes._Changes != null)
+				if (includes != null && includes.Changes != null)
 					InternalSaveIncludes(db, includes, rowid);
 			}
 

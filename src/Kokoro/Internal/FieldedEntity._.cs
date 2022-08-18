@@ -10,7 +10,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	private Fields? _Fields;
 
 	private sealed class Fields : Dictionary<StringKey, FieldVal> {
-		internal FieldChanges? _Changes;
+		internal FieldChanges? Changes;
 	}
 
 	private sealed class FieldChanges : Dictionary<StringKey, FieldVal> { }
@@ -42,7 +42,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 			goto Init;
 		}
 
-		var changes = fields._Changes;
+		var changes = fields.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -56,7 +56,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	Init:
 		_Fields = fields = new();
 	InitChanges:
-		fields._Changes = changes = new();
+		fields.Changes = changes = new();
 		goto Set;
 	}
 
@@ -73,7 +73,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		fields[name] = value;
 
 		{
-			var changes = fields._Changes;
+			var changes = fields.Changes;
 			// Optimized for the common case
 			if (changes == null) {
 				return;
@@ -102,7 +102,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 			goto Init;
 		}
 
-		fields._Changes?.Remove(name);
+		fields.Changes?.Remove(name);
 
 	Set:
 		fields[name] = value;
@@ -115,16 +115,16 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 
 	public void UnmarkFieldAsChanged(StringKey name)
-		=> _Fields?._Changes?.Remove(name);
+		=> _Fields?.Changes?.Remove(name);
 
 	public void UnmarkFieldsAsChanged()
-		=> _Fields?._Changes?.Clear();
+		=> _Fields?.Changes?.Clear();
 
 
 	public void UnloadField(StringKey fieldName) {
 		var fields = _Fields;
 		if (fields != null) {
-			fields._Changes?.Remove(fieldName);
+			fields.Changes?.Remove(fieldName);
 			fields.Remove(fieldName);
 		}
 	}
@@ -132,7 +132,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	public void UnloadFields() {
 		var fields = _Fields;
 		if (fields != null) {
-			fields._Changes = null;
+			fields.Changes = null;
 			fields.Clear();
 		}
 	}
@@ -161,7 +161,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 			var fields = _Fields;
 			if (fields == null) goto NoChanges;
 
-			var changes = fields._Changes;
+			var changes = fields.Changes;
 			if (changes == null) goto NoChanges;
 			if (changes.Count == 0) goto NoChanges;
 
@@ -183,7 +183,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		internal FieldsChangedEnumerable(FieldedEntity owner) => _Owner = owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Enumerator GetEnumerator() => new(_Owner._Fields?._Changes);
+		public Enumerator GetEnumerator() => new(_Owner._Fields?.Changes);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IEnumerator<KeyValuePair<StringKey, FieldVal>> IEnumerable<KeyValuePair<StringKey, FieldVal>>.GetEnumerator() => GetEnumerator();

@@ -181,7 +181,7 @@ partial class FieldedEntity {
 			HashSet<long> clsChgSet; // The class change set
 
 			if (clsSet != null) {
-				clsChgSet = clsSet._Changes!;
+				clsChgSet = clsSet.Changes!;
 				if (clsChgSet == null) {
 					// NOTE: The favored case is schema rewrites due to shared
 					// field changes, often without any class changes.
@@ -310,7 +310,7 @@ partial class FieldedEntity {
 			Fields? fields = _Fields;
 			if (fields == null) goto NoFieldChanges;
 
-			FieldChanges? fchanges = fields._Changes;
+			FieldChanges? fchanges = fields.Changes;
 			if (fchanges == null) goto NoFieldChanges;
 
 			var fchanges_iter = fchanges.GetEnumerator();

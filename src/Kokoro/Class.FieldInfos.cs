@@ -11,7 +11,7 @@ partial class Class {
 	private FieldInfos? _FieldInfos;
 
 	private sealed class FieldInfos : Dictionary<StringKey, FieldInfo> {
-		internal FieldInfoChanges? _Changes;
+		internal FieldInfoChanges? Changes;
 	}
 
 	private sealed class FieldInfoChanges : Dictionary<StringKey, FieldInfo> { }
@@ -78,7 +78,7 @@ partial class Class {
 			goto Init;
 		}
 
-		var changes = infos._Changes;
+		var changes = infos.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
@@ -92,7 +92,7 @@ partial class Class {
 	Init:
 		_FieldInfos = infos = new();
 	InitChanges:
-		infos._Changes = changes = new();
+		infos.Changes = changes = new();
 		goto Set;
 	}
 
@@ -113,7 +113,7 @@ partial class Class {
 		infos[name] = info;
 
 		{
-			var changes = infos._Changes;
+			var changes = infos.Changes;
 			// Optimized for the common case
 			if (changes == null) {
 				return;
@@ -142,7 +142,7 @@ partial class Class {
 			goto Init;
 		}
 
-		infos._Changes?.Remove(name);
+		infos.Changes?.Remove(name);
 
 	Set:
 		infos[name] = info;
@@ -155,16 +155,16 @@ partial class Class {
 
 
 	public void UnmarkFieldInfoAsChanged(StringKey name)
-		=> _FieldInfos?._Changes?.Remove(name);
+		=> _FieldInfos?.Changes?.Remove(name);
 
 	public void UnmarkFieldInfosAsChanged()
-		=> _FieldInfos?._Changes?.Clear();
+		=> _FieldInfos?.Changes?.Clear();
 
 
 	public void UnloadFieldInfo(StringKey name) {
 		var infos = _FieldInfos;
 		if (infos != null) {
-			infos._Changes?.Remove(name);
+			infos.Changes?.Remove(name);
 			infos.Remove(name);
 		}
 	}
@@ -172,7 +172,7 @@ partial class Class {
 	public void UnloadFieldInfos() {
 		var infos = _FieldInfos;
 		if (infos != null) {
-			infos._Changes = null;
+			infos.Changes = null;
 			infos.Clear();
 		}
 	}
