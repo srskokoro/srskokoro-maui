@@ -631,13 +631,14 @@ partial class FieldedEntity {
 			// Rewrite local fields
 			{
 				int nlc = fldLocalCount;
-				Debug.Assert(nlc >= 0);
-				if (nlc == 0) goto ClearLocalFields;
 
 				// NOTE: Client code will ensure that the rented buffers are
 				// returned, even when rewriting fails (i.e., even when we don't
 				// return normally).
 				ref var entries_r0 = ref (fw._Entries = ArrayPool<FieldsWriter.Entry>.Shared.Rent(nlc)).DangerousGetReference();
+
+				Debug.Assert(nlc >= 0);
+				if (nlc == 0) goto ClearLocalFields;
 
 				Debug.Assert((uint)nlc <= (uint)fldListIdxs.Length);
 				Debug.Assert(fldList.Count == fldListIdxs.Length);
