@@ -58,6 +58,7 @@ partial class KokoroSqliteDb {
 			long id = r.GetInt64(0);
 			Debug.Assert(id != 0, "Unexpected zero rowid.");
 			_NameToNameIdCache.Put(name, id);
+			return id;
 		}
 		return 0;
 	}
