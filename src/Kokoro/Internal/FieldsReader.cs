@@ -1,5 +1,6 @@
 ﻿namespace Kokoro.Internal;
 using Kokoro.Common.IO;
+using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
 using System.IO;
 
@@ -71,7 +72,9 @@ internal struct FieldsReader : IDisposable {
 				// Get the field count, field offset integer size, and the size
 				// in bytes of the entire field offset list
 				int fieldOffsetListSize =
-					(FieldCount = fDesc.FieldCount) *
+					// NOTE: The first offset value is never stored, as it's
+					// always zero anyway.
+					((FieldCount = fDesc.FieldCount) - 1).NonNegOrBitCompl() *
 					(FOffsetSize = (byte)fDesc.FOffsetSize);
 
 				Debug.Assert(fDesc.FOffsetSize
