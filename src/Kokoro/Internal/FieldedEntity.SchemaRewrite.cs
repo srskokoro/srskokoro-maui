@@ -535,7 +535,7 @@ partial class FieldedEntity {
 			if (fldMapOldCount != 0) {
 				var floFlds = fw._FloatingFields;
 				if (floFlds == null) {
-					floFlds = new(fldMapOldCount);
+					fw._FloatingFields = floFlds = new(fldMapOldCount);
 				} else {
 					floFlds.EnsureCapacity(fldMapOldCount);
 				}
