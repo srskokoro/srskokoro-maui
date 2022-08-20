@@ -512,7 +512,7 @@ public sealed partial class Item : FieldedEntity {
 
 					// --
 					{
-						cmdSb.Append("WHERE rowid=$rowid");
+						cmdSb.Append(" WHERE rowid=$rowid");
 						cmd.CommandText = cmdSb.ToString();
 
 						int updated = cmd.ExecuteNonQuery();
@@ -591,7 +591,7 @@ public sealed partial class Item : FieldedEntity {
 					cmdSb.Length--; // Trim trailing comma
 				}
 
-				cmdSb.Append("WHERE rowid=$rowid");
+				cmdSb.Append(" WHERE rowid=$rowid");
 				cmd.CommandText = cmdSb.ToString();
 
 				int updated = cmd.ExecuteNonQuery();
