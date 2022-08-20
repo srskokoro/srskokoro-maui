@@ -345,6 +345,7 @@ internal struct FieldsReader : IDisposable {
 	DoLoad:
 		{
 			int fOffset, fOffsetSize = st.FOffsetSize;
+			int fPos;
 
 			// NOTE: The first offset value is never stored, as it's always zero
 			// anyway. Thus, we simply check the index for zero, and if so, skip
@@ -353,8 +354,10 @@ internal struct FieldsReader : IDisposable {
 				stream.Position = st.FOffsetListPos + (index - 1) * fOffsetSize;
 				fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 				Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
+				fPos = fOffset + st.FieldValListPos;
 			} else {
 				fOffset = 0;
+				fPos = st.FieldValListPos;
 				stream.Position = st.FOffsetListPos;
 			}
 
@@ -367,12 +370,12 @@ internal struct FieldsReader : IDisposable {
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
 			} else {
-				fValLen = (int)stream.Length - fOffset - st.FieldValListPos;
+				fValLen = (int)stream.Length - fPos;
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
 
-			return new(stream, st.FieldValListPos + fOffset, fValLen);
+			return new(stream, fPos, fValLen);
 		}
 
 	CheckIndex:
@@ -447,6 +450,7 @@ internal struct FieldsReader : IDisposable {
 	DoLoad:
 		{
 			int fOffset, fOffsetSize = st.FOffsetSize;
+			int fPos;
 
 			// NOTE: The first offset value is never stored, as it's always zero
 			// anyway. Thus, we simply check the index for zero, and if so, skip
@@ -455,8 +459,10 @@ internal struct FieldsReader : IDisposable {
 				stream.Position = st.FOffsetListPos + (index - 1) * fOffsetSize;
 				fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
 				Debug.Assert(fOffset < 0, $"{nameof(fOffset)} > `int.MaxValue`: {(uint)fOffset:X}");
+				fPos = fOffset + st.FieldValListPos;
 			} else {
 				fOffset = 0;
+				fPos = st.FieldValListPos;
 				stream.Position = st.FOffsetListPos;
 			}
 
@@ -469,14 +475,14 @@ internal struct FieldsReader : IDisposable {
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(fOffsetNext)}: {fOffsetNext}");
 			} else {
-				fValLen = (int)stream.Length - fOffset - st.FieldValListPos;
+				fValLen = (int)stream.Length - fPos;
 				Debug.Assert(fValLen >= 0, $"Unexpected `{nameof(fValLen)} < 0` at index {index}; " +
 					$"{nameof(fOffset)}: {fOffset}; {nameof(stream)}.Length: {stream.Length}");
 			}
 
 			if (fValLen > 0) {
 				// Seek to the target field's value bytes
-				stream.Position = st.FieldValListPos + fOffset;
+				stream.Position = fPos;
 
 				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
 
