@@ -342,6 +342,9 @@ partial class FieldedEntity {
 
 		fw.InitEntries(xlc);
 
+		int fmi = int.MaxValue;
+		int lmi = 0;
+
 		using (var cmd = db.CreateCommand()) {
 			SqliteParameter cmd_fld;
 			cmd.Set(
@@ -396,6 +399,10 @@ partial class FieldedEntity {
 
 						if (fspec.StoreType != FieldStoreType.Shared) {
 							int i = fspec.Index;
+
+							if (i < fmi) fmi = i;
+							if (i > lmi) lmi = i;
+
 							if ((uint)i < (uint)xlc) {
 								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
 								fw._Entries.DangerousGetReferenceAt(i) = fval;
