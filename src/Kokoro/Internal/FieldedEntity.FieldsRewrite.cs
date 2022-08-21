@@ -325,12 +325,104 @@ partial class FieldedEntity {
 
 		fw.InitEntries(xlc);
 
+		using (var cmd = db.CreateCommand()) {
+			SqliteParameter cmd_fld;
+			cmd.Set(
+				$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
+				$"WHERE (schema,fld)=($schema,$fld)"
+			).AddParams(
+				new("$schema", _SchemaId),
+				cmd_fld = new() { ParameterName = "$fld" }
+			);
+
+			db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
+			do {
+				var (fname, fchg) = fchanges_iter.Current;
+
+				FieldVal fval;
+				if (fchg.GetType() != typeof(StringKey)) {
+					Debug.Assert(fchg is FieldVal);
+					fval = U.As<FieldVal>(fchg);
+				} else {
+					Debug.Assert(fchg is StringKey);
+					var fsrc = U.As<StringKey>(fchg);
+
+					long fld2 = db.LoadStaleNameId(fsrc);
+					cmd_fld.Value = fld2;
+
+					using var r = cmd.ExecuteReader();
+					if (r.Read()) {
+						r.DAssert_Name(0, "idx_sto");
+						FieldSpec fspec2 = r.GetInt32(0);
+
+						Debug.Assert(fspec2.Index >= 0);
+						fspec2.StoreType.DAssert_Defined();
+
+						fval = fr.Read(fspec2);
+					} else {
+						fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
+					}
+				}
+
+				long fld = db.LoadStaleOrEnsureNameId(fname);
+				cmd_fld.Value = fld;
+
+				using (var r = cmd.ExecuteReader()) {
+					if (r.Read()) {
+						// Case: Core field
+
+						r.DAssert_Name(0, "idx_sto");
+						FieldSpec fspec = r.GetInt32(0);
+
+						Debug.Assert(fspec.Index >= 0);
+						fspec.StoreType.DAssert_Defined();
+
+						if (fspec.StoreType != FieldStoreType.Shared) {
+							fw._Entries[fspec.Index] = fval;
+						} else {
+							// If there are any schema field changes, end here
+							// and perform a schema rewrite instead.
+							goto RewriteSchema;
+							// ^- NOTE: We'll perform the schema rewrite outside
+							// the scope of any `using` statement, in order to
+							// first dispose any guarded disposable, before
+							// proceeding with the planned operation.
+						}
+					} else {
+						// Case: Floating field
+
+						var floatingFields = fw._FloatingFields;
+						if (floatingFields == null) {
+							// This becomes a conditional jump forward to not favor it
+							goto InitFloatingFields;
+						}
+
+					AddFloatingField:
+						floatingFields.Add((fld, fval));
+						goto DoneFloatingField;
+
+					InitFloatingFields:
+						fw._FloatingFields = floatingFields = new();
+						goto AddFloatingField;
+
+					DoneFloatingField:
+						;
+					}
+				}
+			} while (fchanges_iter.MoveNext());
+		}
+
 		// TODO Implement
 		;
 
 	NoFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
 		return;
+
+	RewriteSchema:
+		fw._FloatingFields?.Clear();
+		fw.DeInitEntries();
+		RewriteSchema(_SchemaId, ref fr, ref fw, hotStoreLimit);
 	}
 
 	[DoesNotReturn]
