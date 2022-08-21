@@ -129,11 +129,7 @@ partial class FieldedEntity {
 			// ^- NOTE: Must be done last. See code for `Dispose()`
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
-		public void Dispose() {
-			// NOTE: Client code should ensure that we're always disposed, even
-			// when rewriting fails (i.e., even when an exception occurs) and
-			// the buffers were not initialized.
+		internal void DeInitEntries() {
 			var offsets = _Offsets;
 			if (offsets != null) {
 				ArrayPool<int>.Shared.Return(offsets, clearArray: false);
@@ -142,6 +138,14 @@ partial class FieldedEntity {
 				ArrayPool<FieldVal?>.Shared.ReturnClearingReferences(_Entries);
 				_Entries = null!;
 			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Dispose() {
+			// NOTE: Client code should ensure that we're always disposed, even
+			// when rewriting fails (i.e., even when an exception occurs) and
+			// the buffers were not initialized.
+			DeInitEntries();
 		}
 	}
 
