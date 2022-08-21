@@ -13,7 +13,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		public FieldChanges? Changes;
 	}
 
-	private sealed class FieldChanges : Dictionary<StringKey, FieldVal> { }
+	private sealed class FieldChanges : Dictionary<StringKey, object> { }
 
 	// --
 
@@ -51,6 +51,31 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	Set:
 		fields[name] = value;
 		changes[name] = value;
+		return;
+
+	Init:
+		_Fields = fields = new();
+	InitChanges:
+		fields.Changes = changes = new();
+		goto Set;
+	}
+
+	public void Set(StringKey name, StringKey valueSource) {
+		var fields = _Fields;
+		if (fields == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto Init;
+		}
+
+		var changes = fields.Changes;
+		if (changes == null) {
+			// This becomes a conditional jump forward to not favor it
+			goto InitChanges;
+		}
+
+	Set:
+		fields.Remove(name);
+		changes[name] = valueSource;
 		return;
 
 	Init:
@@ -176,17 +201,17 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldsChangedEnumerable EnumerateFieldsChanged() => new(this);
 
-	public readonly struct FieldsChangedEnumerable : IEnumerable<KeyValuePair<StringKey, FieldVal>> {
+	public readonly struct FieldsChangedEnumerable : IEnumerable<KeyValuePair<StringKey, object>> {
 		private readonly FieldedEntity _Owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal FieldsChangedEnumerable(FieldedEntity owner) => _Owner = owner;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Enumerator GetEnumerator() => new(_Owner._Fields?.Changes);
+		public FieldsChangedEnumerator GetEnumerator() => new(_Owner._Fields?.Changes);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		IEnumerator<KeyValuePair<StringKey, FieldVal>> IEnumerable<KeyValuePair<StringKey, FieldVal>>.GetEnumerator() => GetEnumerator();
+		IEnumerator<KeyValuePair<StringKey, object>> IEnumerable<KeyValuePair<StringKey, object>>.GetEnumerator() => GetEnumerator();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -208,6 +233,38 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		public bool MoveNext() => _Impl.MoveNext();
 
 		public KeyValuePair<StringKey, FieldVal> Current {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _Impl.Current;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Dispose() => _Impl.Dispose();
+
+		// --
+
+		object? IEnumerator.Current {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _Impl.Current;
+		}
+
+		void IEnumerator.Reset() => throw new NotSupportedException();
+	}
+
+	public struct FieldsChangedEnumerator : IEnumerator<KeyValuePair<StringKey, object>> {
+		private Dictionary<StringKey, object>.Enumerator _Impl;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal FieldsChangedEnumerator(Dictionary<StringKey, object>? changes)
+			=> _Impl = (changes ?? EmptySource.Instance).GetEnumerator();
+
+		private static class EmptySource {
+			internal static readonly Dictionary<StringKey, object> Instance = new();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool MoveNext() => _Impl.MoveNext();
+
+		public KeyValuePair<StringKey, object> Current {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => _Impl.Current;
 		}

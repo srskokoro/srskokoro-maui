@@ -17,7 +17,26 @@ partial class FieldedEntity {
 	private struct FieldsWriterCore {
 		public int[] Offsets;
 		public FieldsWriter.Entry[] Entries;
-		public (FieldSpec FSpec, FieldVal FVal)[] FOverrides;
+		public FOverride[] FOverrides;
+
+		internal struct FOverride {
+			public FieldSpec FSpec, FSpec2;
+			public FieldVal? FVal;
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public FOverride(FieldSpec FSpec, FieldSpec FSpec2) {
+				this.FSpec = FSpec;
+				this.FSpec2 = FSpec2;
+				this.FVal = null;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public FOverride(FieldSpec FSpec, FieldVal FVal) {
+				this.FSpec = FSpec;
+				this.FSpec2 = 0;
+				this.FVal = FVal;
+			}
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]
@@ -40,8 +59,17 @@ partial class FieldedEntity {
 					U.Add(ref offsets_r0, i) = nextOffset;
 					ref var entry = ref U.Add(ref entries_r0, i);
 
+					FieldSpec fspec;
 					if (foverride.FSpec.Index != i) {
-						LatentFieldVal lfval = fr.ReadLater(new(i, FieldStoreType.Cold));
+						fspec = new(i, FieldStoreType.Cold);
+						goto NoOverride;
+					} else {
+						goto HasOverride;
+					}
+
+				NoOverride:
+					{
+						LatentFieldVal lfval = fr.ReadLater(fspec);
 						entry.OrigValue = lfval;
 
 						// It's a reference type: it should've been
@@ -54,17 +82,29 @@ partial class FieldedEntity {
 						} else {
 							entry.Override = FieldVal.Null;
 						}
-					} else {
-						FieldVal fval = foverride.FVal;
-						entry.Override = fval;
 
-						foverride = ref U.Add(ref foverride, 1);
-						if (foverride.FSpec.Index == i)
-							E_LocalFieldsWithSameIndex(fr.Owner);
+						continue;
+					}
 
-						checked {
-							nextOffset += (int)fval.CountEncodeLength();
+				HasOverride:
+					{
+						FieldVal? fval = foverride.FVal;
+						if (fval != null) {
+							entry.Override = fval;
+
+							foverride = ref U.Add(ref foverride, 1);
+							if (foverride.FSpec.Index == i)
+								E_LocalFieldsWithSameIndex(fr.Owner);
+
+							checked {
+								nextOffset += (int)fval.CountEncodeLength();
+							}
+						} else {
+							fspec = foverride.FSpec2;
+							goto NoOverride;
 						}
+
+						continue;
 					}
 				}
 			} catch (OverflowException) {
@@ -459,7 +499,7 @@ partial class FieldedEntity {
 		FieldsWriterCore fwc;
 		int foverrides_n_max = fchanges.Count + 1; // Extra 1 for sentinel value
 
-		using (BufferRenter<(FieldSpec FSpec, FieldVal FVal)>.Create(foverrides_n_max, out fwc.FOverrides)) {
+		using (BufferRenter<FieldsWriterCore.FOverride>.Create(foverrides_n_max, out fwc.FOverrides)) {
 			// Get a reference to avoid unnecessary range checking
 			ref var foverrides_r0 = ref fwc.FOverrides.DangerousGetReference();
 			int foverrides_n = 0;
@@ -478,7 +518,7 @@ partial class FieldedEntity {
 
 				db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 				do {
-					var (fname, fval) = fchanges_iter.Current;
+					var (fname, fchg) = fchanges_iter.Current;
 					long fld = db.LoadStaleOrEnsureNameId(fname);
 					cmd_fld.Value = fld;
 
@@ -493,8 +533,34 @@ partial class FieldedEntity {
 						fspec.StoreType.DAssert_Defined();
 
 						if (fspec.StoreType != FieldStoreType.Shared) {
-							Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
-							U.Add(ref foverrides_r0, foverrides_n++) = (fspec, fval);
+							if (fchg.GetType() != typeof(StringKey)) {
+								Debug.Assert(fchg is FieldVal);
+								var fval = U.As<FieldVal>(fchg);
+
+								Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
+								U.Add(ref foverrides_r0, foverrides_n++) = new(fspec, fval);
+							} else {
+								Debug.Assert(fchg is StringKey);
+								var fsrc = U.As<StringKey>(fchg);
+								long fld2 = db.LoadStaleNameId(fsrc);
+
+								cmd_fld.Value = fld2;
+								r.Dispose(); // So that `cmd` can be reused
+
+								using var r2 = cmd.ExecuteReader();
+								if (r2.Read()) {
+									r.DAssert_Name(0, "idx_sto");
+									FieldSpec fspec2 = r.GetInt32(0);
+
+									Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
+									U.Add(ref foverrides_r0, foverrides_n++) = new(fspec, fspec2);
+								} else {
+									var fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
+
+									Debug.Assert((uint)foverrides_n < (uint)foverrides_n_max);
+									U.Add(ref foverrides_r0, foverrides_n++) = new(fspec, fval);
+								}
+							}
 						} else {
 							// If there are any schema field changes, end here
 							// and perform a schema rewrite instead.
@@ -514,7 +580,31 @@ partial class FieldedEntity {
 						}
 
 					AddFloatingField:
-						floatingFields.Add((fld, new(fval)));
+						if (fchg.GetType() != typeof(StringKey)) {
+							Debug.Assert(fchg is FieldVal);
+							var fval = U.As<FieldVal>(fchg);
+
+							floatingFields.Add((fld, new(fval)));
+						} else {
+							Debug.Assert(fchg is StringKey);
+							var fsrc = U.As<StringKey>(fchg);
+							long fld2 = db.LoadStaleNameId(fsrc);
+
+							cmd_fld.Value = fld2;
+							r.Dispose(); // So that `cmd` can be reused
+
+							using var r2 = cmd.ExecuteReader();
+							if (r2.Read()) {
+								r.DAssert_Name(0, "idx_sto");
+								FieldSpec fspec2 = r.GetInt32(0);
+
+								LatentFieldVal lfval = fr.ReadLater(fspec2);
+								floatingFields.Add((fld, new(null, lfval)));
+							} else {
+								var fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
+								floatingFields.Add((fld, new(fval)));
+							}
+						}
 						goto DoneFloatingField;
 
 					InitFloatingFields:
@@ -538,7 +628,7 @@ partial class FieldedEntity {
 
 				// Set up sentinel value
 				ref var foverrides_r_sentinel = ref U.Add(ref foverrides_r0, foverrides_n);
-				foverrides_r_sentinel = (-1, null!);
+				foverrides_r_sentinel = new(-1, null!);
 
 				// Assert that the sentinel won't match any field spec
 				Debug.Assert((uint)foverrides_r_sentinel.FSpec.Index >= (uint)MaxFieldCount);

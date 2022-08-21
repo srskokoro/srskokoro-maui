@@ -302,43 +302,8 @@ partial class FieldedEntity {
 		// to a pair of field change value and old field spec.
 		// --
 
-		Dictionary<long, (FieldVal? FVal, FieldSpec FSpec)> fldMapOld;
+		Dictionary<long, (FieldVal? FVal, FieldSpec FSpec, FieldSpec FSpecActual)> fldMapOld = new(16);
 		{
-			// Process the field changes
-			// --
-
-			Fields? fields = _Fields;
-			if (fields == null) goto NoFieldChanges;
-
-			FieldChanges? fchanges = fields.Changes;
-			if (fchanges == null) goto NoFieldChanges;
-
-			var fchanges_iter = fchanges.GetEnumerator();
-			if (!fchanges_iter.MoveNext()) goto NoFieldChanges;
-
-			fldMapOld = new(fchanges.Count);
-
-			db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
-			do {
-				var (fname, fval) = fchanges_iter.Current;
-				long fld = db.LoadStaleOrEnsureNameId(fname);
-
-				bool added = fldMapOld.TryAdd(fld, (fval, -1));
-				Debug.Assert(added, $"Shouldn't happen if running in a " +
-					$"`{nameof(NestingWriteTransaction)}` or equivalent");
-			} while (fchanges_iter.MoveNext());
-
-			Debug.Assert(fldMapOld.Count == fchanges.Count);
-
-			// --
-			goto DoneWithFieldChanges;
-
-		NoFieldChanges:
-			fldMapOld = new();
-
-		DoneWithFieldChanges:
-			;
-
 			// Retrieve the old field specs from the old schema
 			// --
 
@@ -355,12 +320,60 @@ partial class FieldedEntity {
 					FieldSpec fspec = r.GetInt32(1);
 					Debug.Assert((int)fspec >= 0);
 
-					ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(
-						fldMapOld, key: fld, exists: out _
-					);
-					entry.FSpec = fspec;
+					bool added = fldMapOld.TryAdd(fld, (null, fspec, fspec));
+					Debug.Assert(added, $"Shouldn't happen if running in a " +
+						$"`{nameof(NestingWriteTransaction)}` or equivalent");
 				}
 			}
+
+			// Process the field changes
+			// --
+
+			Fields? fields = _Fields;
+			if (fields == null) goto NoFieldChanges;
+
+			FieldChanges? fchanges = fields.Changes;
+			if (fchanges == null) goto NoFieldChanges;
+
+			var fchanges_iter = fchanges.GetEnumerator();
+			if (!fchanges_iter.MoveNext()) goto NoFieldChanges;
+
+			db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
+			do {
+				var (fname, fchg) = fchanges_iter.Current;
+				long fld = db.LoadStaleOrEnsureNameId(fname);
+
+				ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(
+					fldMapOld, key: fld, out bool exists
+				);
+
+				if (fchg.GetType() != typeof(StringKey)) {
+					Debug.Assert(fchg is FieldVal);
+					var fval = U.As<FieldVal>(fchg);
+
+					entry.FVal = fval;
+					entry.FSpecActual |= exists.ToByte() - 1;
+					Debug.Assert(exists || entry.FSpecActual == -1);
+				} else {
+					Debug.Assert(fchg is StringKey);
+					var fsrc = U.As<StringKey>(fchg);
+					long fld2 = db.LoadStaleNameId(fsrc);
+
+					if (fldMapOld.TryGetValue(fld2, out var entry2)) {
+						FieldSpec fspec2 = entry2.FSpecActual;
+						if (fspec2 >= 0) {
+							entry.FSpec = fspec2;
+						} else {
+							entry.FVal = FieldVal.Null;
+						}
+					} else {
+						entry.FVal = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
+					}
+				}
+			} while (fchanges_iter.MoveNext());
+
+		NoFieldChanges:
+			;
 		}
 
 		// Gather the fields associated with each class, skipping duplicates,
@@ -411,27 +424,41 @@ partial class FieldedEntity {
 					if (!exists) {
 						i = fldList.Count; // The new entry's index in the list
 
-						FieldVal? new_fval;
-						FieldSpec old_idx_sto;
-
-						if (fldMapOld.Remove(fld, out var oldMapping)) {
-							(new_fval, old_idx_sto) = oldMapping;
-							Debug.Assert(new_fval != null || (int)old_idx_sto >= 0);
-						} else {
-							// Field not defined by the old schema
-							new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
-							old_idx_sto = -1;
+						if (!fldMapOld.Remove(fld, out (
+							FieldVal? new_fval,
+							FieldSpec old_idx_sto,
+							FieldSpec actual_idx_sto
+						) def)) {
+							// This becomes a conditional jump forward to not favor it
+							goto NotInOldMap;
 						}
 
-						// Add the new entry
+						Debug.Assert(def.new_fval != null || (int)def.actual_idx_sto >= 0);
+
+					AddNewEntry:
 						fldList.Add(new(
 							rowid: fld,
-							cls_ord: cls.ord, sto, ord, old_idx_sto,
-							name, new_fval
+							cls_ord: cls.ord, sto, ord, def.old_idx_sto,
+							name, def.new_fval
 #if DEBUG
 							, cls_uid: cls.uid
 #endif
 						));
+
+						goto Next;
+
+					NotInOldMap:
+						{
+							// Field not defined by the old schema
+							def.new_fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
+							Debug.Assert(def.old_idx_sto == 0,
+								$"Should be zero (the default) since no entry was removed.");
+
+							goto AddNewEntry;
+						}
+
+					Next:
+						;
 					} else {
 						// Get a `ref` to the already existing entry
 						ref var entry = ref fldList.AsSpan().DangerousGetReferenceAt(i);
