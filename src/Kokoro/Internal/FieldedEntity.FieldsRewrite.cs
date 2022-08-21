@@ -148,6 +148,64 @@ partial class FieldedEntity {
 			// the buffers were not initialized.
 			DeInitEntries();
 		}
+
+		// --
+
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal readonly int Load(ref FieldsReader fr, int nextOffset, int start, int end) {
+			try {
+				Debug.Assert((uint)end <= (uint)MaxFieldCount);
+
+				Debug.Assert((uint)end <= (uint?)_Offsets?.Length); // `false` on null array
+				Debug.Assert((uint)end <= (uint?)_Entries?.Length);
+
+				// Get references to avoid unnecessary range checking
+				ref var entries_r0 = ref _Entries.DangerousGetReference();
+				ref var offsets_r0 = ref _Offsets.DangerousGetReference();
+
+				for (int i = start; i < end; i++) {
+					U.Add(ref offsets_r0, i) = nextOffset;
+					ref var entry = ref U.Add(ref entries_r0, i);
+
+					FieldVal? fval = entry;
+					if (fval == null) {
+						FieldSpec fspec = new(i, FieldStoreType.Cold);
+						fval = fr.Read(fspec);
+						entry = fval;
+					}
+
+					checked {
+						nextOffset += (int)fval.CountEncodeLength();
+					}
+				}
+			} catch (OverflowException) {
+				goto E_FieldValsLengthTooLarge;
+			}
+
+			if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
+				return nextOffset; // Early exit
+			}
+
+		E_FieldValsLengthTooLarge:
+			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal readonly int LoadHot(ref FieldsReader fr, int end)
+			=> Load(ref fr, nextOffset: 0, start: 0, end);
+	}
+
+	[DoesNotReturn]
+	private static void E_FieldValsLengthTooLarge(uint currentSize)
+		=> E_FieldValsLengthTooLarge<int>(currentSize);
+
+	[DoesNotReturn]
+	private static T E_FieldValsLengthTooLarge<T>(uint currentSize) {
+		throw new InvalidOperationException(
+			$"Total number of bytes for fields data " +
+			$"{(currentSize <= MaxFieldValsLength ? "" : $"(currently {currentSize}) ")}" +
+			$"exceeded the limit of {MaxFieldValsLength} bytes.");
 	}
 
 
