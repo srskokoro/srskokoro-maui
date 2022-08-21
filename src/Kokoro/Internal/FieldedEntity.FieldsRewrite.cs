@@ -208,6 +208,7 @@ partial class FieldedEntity {
 			$"exceeded the limit of {MaxFieldValsLength} bytes.");
 	}
 
+	// --
 
 	[Conditional("DEBUG")]
 	private static void DAssert_FieldsWriterPriorRewrite(ref FieldsWriter fw) {
@@ -253,6 +254,7 @@ partial class FieldedEntity {
 		);
 	}
 
+	// --
 
 	private protected bool MayCompileFieldChanges {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
