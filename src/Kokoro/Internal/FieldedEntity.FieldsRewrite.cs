@@ -323,6 +323,23 @@ partial class FieldedEntity {
 			}
 		}
 
+		// The check below ensures `0 <= xhc <= xlc`
+		// - Necessary for when we finally allocate the "entries" buffer later
+		// below, which would be `xlc` in length, to be cut by `xhc`.
+		if (xlc < 0 || (uint)xhc > (uint)xlc) {
+			E_InvalidLocalFieldCounts(_SchemaId, xhc: xhc, xlc: xlc);
+		}
+
+		[DoesNotReturn]
+		static void E_InvalidLocalFieldCounts(long schemaId, int xhc, int xlc) {
+			throw new InvalidDataException(
+				$"Schema (with rowid {schemaId}) has {xhc} as its maximum " +
+				$"hot field count while having {xlc} as its maximum local " +
+				$"field count.");
+		}
+
+		// -=-
+
 		fw.InitEntries(xlc);
 
 		using (var cmd = db.CreateCommand()) {
@@ -378,7 +395,13 @@ partial class FieldedEntity {
 						fspec.StoreType.DAssert_Defined();
 
 						if (fspec.StoreType != FieldStoreType.Shared) {
-							fw._Entries[fspec.Index] = fval;
+							int i = fspec.Index;
+							if ((uint)i < (uint)xlc) {
+								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
+								fw._Entries.DangerousGetReferenceAt(i) = fval;
+							} else {
+								E_IndexBeyondLocalFieldCount(_SchemaId, i: i, xlc: xlc);
+							}
 						} else {
 							// If there are any schema field changes, end here
 							// and perform a schema rewrite instead.
@@ -411,6 +434,17 @@ partial class FieldedEntity {
 				}
 			} while (fchanges_iter.MoveNext());
 		}
+
+		[DoesNotReturn]
+		static void E_IndexBeyondLocalFieldCount(long schemaId, int i, int xlc) {
+			Debug.Assert((uint)i >= (uint)xlc);
+			throw new InvalidDataException(
+				$"Schema (with rowid {schemaId}) gave a local field index " +
+				$"(which is {i}) not under the expected maximum number of " +
+				$"local fields it defined (which is {xlc}).");
+		}
+
+		// -=-
 
 		// TODO Implement
 		;
