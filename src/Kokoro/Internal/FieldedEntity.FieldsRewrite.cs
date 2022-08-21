@@ -73,6 +73,7 @@ partial class FieldedEntity {
 		}
 	}
 
+
 	[Conditional("DEBUG")]
 	private static void DAssert_FieldsWriterPriorRewrite(ref FieldsWriter fw) {
 		Debug.Assert(fw._Offsets == null,
@@ -84,6 +85,39 @@ partial class FieldedEntity {
 		Debug.Assert(fw._FloatingFields is null or { Count: 0 },
 			$"`{nameof(fw._FloatingFields)}` must be null or empty prior a fields rewrite");
 	}
+
+	[Conditional("DEBUG")]
+	private static void DInit_StoreLengthsAndFDescs(ref FieldsWriter fw) {
+		fw._ColdStoreLength = fw._HotStoreLength = -2;
+		fw._ColdFieldsDesc = fw._HotFieldsDesc = -1;
+	}
+
+	[Conditional("DEBUG")]
+	private static void DAssert_FieldsWriterAfterRewrite(ref FieldsWriter fw) {
+		Debug.Assert(fw._HotStoreLength >= -1);
+		Debug.Assert(fw._ColdStoreLength >= -1);
+
+		// Necessary for the corrrectness of the code after
+		Debug.Assert(FieldsDesc.MaxValue == int.MaxValue);
+
+		Debug.Assert(
+			(fw._HotStoreLength <= 0 && fw._ColdStoreLength <= 0) ||
+			(uint)fw._HotFieldsDesc <= (uint)FieldsDesc.MaxValue
+		);
+		Debug.Assert(
+			fw._ColdStoreLength <= 0 ||
+			(uint)fw._ColdFieldsDesc <= (uint)FieldsDesc.MaxValue
+		);
+
+		Debug.Assert(
+			(fw._HotStoreLength <= 0 && fw._ColdStoreLength <= 0) ||
+			fw._Offsets != null
+		);
+		Debug.Assert(
+			fw._Offsets == null == (fw._Entries == null)
+		);
+	}
+
 
 	private protected bool MayCompileFieldChanges {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,31 +177,5 @@ partial class FieldedEntity {
 			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
 			$"{Environment.NewLine}Schema: {_SchemaId};");
-	}
-
-	// --
-
-	[Conditional("DEBUG")]
-	private static void DInit_StoreLengthsAndFDescs(ref FieldsWriter fw) {
-		fw._ColdStoreLength = fw._HotStoreLength = -2;
-		fw._ColdFieldsDesc = fw._HotFieldsDesc = -1;
-	}
-
-	[Conditional("DEBUG")]
-	private static void DAssert_StoreLengthsAndFDescs(ref FieldsWriter fw) {
-		Debug.Assert(fw._HotStoreLength >= -1);
-		Debug.Assert(fw._ColdStoreLength >= -1);
-
-		// Necessary for the corrrectness of the code after
-		Debug.Assert(FieldsDesc.MaxValue == int.MaxValue);
-
-		Debug.Assert(
-			(fw._HotStoreLength <= 0 && fw._ColdStoreLength <= 0) ||
-			(uint)fw._HotFieldsDesc <= (uint)FieldsDesc.MaxValue
-		);
-		Debug.Assert(
-			fw._ColdStoreLength <= 0 ||
-			(uint)fw._ColdFieldsDesc <= (uint)FieldsDesc.MaxValue
-		);
 	}
 }
