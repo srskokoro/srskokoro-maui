@@ -31,7 +31,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		if (fields != null && fields.TryGetValue(name, out value)) {
 			return true;
 		}
-		value = default;
+		value = null;
 		return false;
 	}
 
