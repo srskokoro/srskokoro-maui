@@ -272,7 +272,7 @@ partial class Item {
 	/// </para>
 	/// </remarks>
 	[SkipLocalsInit]
-	private static void InternalSaveFloatingFields(KokoroSqliteDb db, List<(long Id, FieldsWriter.Entry Entry)> changes, long itemId) {
+	private static void InternalSaveFloatingFields(KokoroSqliteDb db, List<(long Id, FieldVal Entry)> changes, long itemId) {
 		var changes_iter = changes.GetEnumerator();
 		if (!changes_iter.MoveNext()) goto NoChanges;
 
@@ -289,25 +289,12 @@ partial class Item {
 
 		try {
 		Loop:
-			var (fld, entry) = changes_iter.Current;
+			var (fld, fval) = changes_iter.Current;
 			cmd_fld.Value = fld;
 
-			var fval = entry.Override;
-			if (fval != null) {
-				if (fval.TypeHint != FieldTypeHint.Null) {
-					if (updCmd != null) {
-						goto UpdateFloatingField_FVal;
-					} else {
-						goto InitToUpdateFloatingField;
-					}
-				} else {
-					goto ReadyToDeleteFloatingField;
-				}
-			}
-
-			if (entry.OrigValue.Length > 0) {
+			if (fval.TypeHint != FieldTypeHint.Null) {
 				if (updCmd != null) {
-					goto UpdateFloatingField_LFVal;
+					goto UpdateFloatingField;
 				} else {
 					goto InitToUpdateFloatingField;
 				}
@@ -315,7 +302,7 @@ partial class Item {
 				goto ReadyToDeleteFloatingField;
 			}
 
-		UpdateFloatingField_FVal:
+		UpdateFloatingField:
 			{
 				uint dataLength = fval.CountEncodeLength();
 				Debug.Assert(dataLength > 0);
@@ -336,34 +323,6 @@ partial class Item {
 					rowid: itemId, canWrite: true, throwOnAccessFail: true
 				)!) {
 					fval.WriteTo(data);
-				}
-
-				goto Continue;
-			}
-
-		UpdateFloatingField_LFVal:
-			{
-				var lfval = entry.OrigValue;
-
-				int dataLength = lfval.Length;
-				Debug.Assert(dataLength > 0);
-				updCmd_dataLength.Value = dataLength;
-
-				try {
-					int updated = updCmd.ExecuteNonQuery();
-					Debug.Assert(updated == 1, $"Updated: {updated}");
-				} catch (SqliteException ex) when (
-					ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
-				) {
-					E_FloatingFieldDataTooLarge(db, (uint)dataLength);
-					return;
-				}
-
-				using (var data = SqliteBlobSlim.Open(db,
-					tableName: Prot.ItemToFloatingField, columnName: "data",
-					rowid: itemId, canWrite: true, throwOnAccessFail: true
-				)!) {
-					lfval.WriteTo(data);
 				}
 
 				goto Continue;
@@ -411,11 +370,7 @@ partial class Item {
 					cmd_item.Value != null &&
 					cmd_fld.Value != null
 				);
-				if (fval == null) {
-					goto UpdateFloatingField_LFVal;
-				} else {
-					goto UpdateFloatingField_FVal;
-				}
+				goto UpdateFloatingField;
 			}
 
 		InitToDeleteFloatingField:
