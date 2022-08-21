@@ -51,20 +51,24 @@ partial class FieldedEntity {
 #endif
 		}
 
+		internal void InitEntries(int count) {
+			_Entries = ArrayPool<FieldVal?>.Shared.Rent(count);
+			_Offsets = ArrayPool<int>.Shared.Rent(count);
+			// ^- NOTE: Must be done last. See code for `Dispose()`
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
 		public void Dispose() {
 			// NOTE: Client code should ensure that we're always disposed, even
 			// when rewriting fails (i.e., even when an exception occurs) and
 			// the buffers were not initialized.
-			var entries = _Entries;
-			if (entries != null) {
-				ArrayPool<FieldVal?>.Shared.ReturnClearingReferences(entries);
-				_Entries = null!;
-			}
 			var offsets = _Offsets;
 			if (offsets != null) {
-				ArrayPool<int>.Shared.ReturnClearingReferences(offsets);
+				ArrayPool<int>.Shared.Return(offsets, clearArray: false);
 				_Offsets = null!;
+
+				ArrayPool<FieldVal?>.Shared.ReturnClearingReferences(_Entries);
+				_Entries = null!;
 			}
 		}
 	}
