@@ -32,7 +32,42 @@ partial class FieldedEntity {
 			Debug.Assert(_HotStoreLength > 0, $"Shouldn't be called while data length <= 0 (currently {_HotStoreLength})");
 			long expectedEndPos = destination.Position + _HotStoreLength;
 #endif
-			// TODO Implement
+			FieldsDesc fDesc = _HotFieldsDesc;
+			destination.WriteVarInt(fDesc);
+
+			int fCount = fDesc.FieldCount;
+
+			Debug.Assert(_Offsets != null);
+			Debug.Assert(_Entries != null);
+
+			Debug.Assert(fCount <= _Offsets.Length);
+			Debug.Assert(fCount <= _Entries.Length);
+
+			// Get a reference to avoid unnecessary range checking
+			ref int offsets_r0 = ref _Offsets.DangerousGetReference();
+			{
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				Debug.Assert(fCount <= 0 || offsets_r0 == 0);
+
+				int i = 1; // Skips to the second offset value
+				if (i < fCount) {
+					int fOffsetSize = fDesc.FOffsetSize;
+					do {
+						destination.WriteUInt32AsUIntX(
+							(uint)U.Add(ref offsets_r0, i),
+							fOffsetSize);
+					} while (++i < fCount);
+				}
+			}
+
+			// Get a reference to avoid unnecessary range checking
+			ref var entries_r0 = ref _Entries.DangerousGetReference();
+			for (int i = 0; i < fCount; i++) {
+				FieldVal? entry = U.Add(ref entries_r0, i);
+				Debug.Assert(entry != null, $"Unexpected null entry at {i}");
+				entry.WriteTo(destination);
+			}
 #if DEBUG
 			Debug.Assert(destination.Position == expectedEndPos);
 #endif
@@ -45,7 +80,44 @@ partial class FieldedEntity {
 			Debug.Assert(_ColdStoreLength > 0, $"Shouldn't be called while data length <= 0 (currently {_ColdStoreLength})");
 			long expectedEndPos = destination.Position + _ColdStoreLength;
 #endif
-			// TODO Implement
+			FieldsDesc fDesc = _ColdFieldsDesc;
+			destination.WriteVarInt(fDesc);
+
+			int start = _HotFieldsDesc.FieldCount;
+			int fCount = fDesc.FieldCount;
+
+			Debug.Assert(_Offsets != null);
+			Debug.Assert(_Entries != null);
+
+			Debug.Assert(start + fCount <= _Offsets.Length);
+			Debug.Assert(start + fCount <= _Entries.Length);
+
+			// Get a reference to avoid unnecessary range checking
+			ref int offsets_r0 = ref _Offsets.DangerousGetReferenceAt(start);
+			{
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				Debug.Assert(fCount <= 0 || offsets_r0 == 0);
+
+				int i = 1; // Skips to the second offset value
+				if (i < fCount) {
+					int offsetAdjustment = offsets_r0;
+					int fOffsetSize = fDesc.FOffsetSize;
+					do {
+						destination.WriteUInt32AsUIntX(
+							(uint)(U.Add(ref offsets_r0, i) - offsetAdjustment),
+							fOffsetSize);
+					} while (++i < fCount);
+				}
+			}
+
+			// Get a reference to avoid unnecessary range checking
+			ref var entries_r0 = ref _Entries.DangerousGetReferenceAt(start);
+			for (int i = 0; i < fCount; i++) {
+				FieldVal? entry = U.Add(ref entries_r0, i);
+				Debug.Assert(entry != null, $"Unexpected null entry at {i}");
+				entry.WriteTo(destination);
+			}
 #if DEBUG
 			Debug.Assert(destination.Position == expectedEndPos);
 #endif
