@@ -197,6 +197,90 @@ partial class FieldedEntity {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal readonly int LoadHot(ref FieldsReader fr, int end)
 			=> Load(ref fr, nextOffset: 0, start: 0, end);
+
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		internal readonly int TrimNullFValsFromEnd(int end) {
+			int n = TrimNullFValsFromEnd(_Entries, end);
+			// Assert that it's also useable with `Offsets` array
+			Debug.Assert((uint)n <= (uint?)_Offsets?.Length);
+			return n;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		internal readonly int TrimNullFValsFromEndToStart(int end, int start) {
+			int n = TrimNullFValsFromEndToStart(_Entries, end, start);
+			// Assert that it's also useable with `Offsets` array
+			Debug.Assert((uint)n <= (uint?)_Offsets?.Length);
+			return n;
+		}
+
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEnd(FieldVal?[] entries, int end) {
+			// Ensure caller passed valid arguments
+			Debug.Assert((uint)end <= (uint?)entries?.Length);
+			// Method operates on reference to avoid unnecessary range checking
+			ref var entries_r0 = ref entries.DangerousGetReference();
+			return TrimNullFValsFromEnd(ref entries_r0, end);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEndToStart(FieldVal?[] entries, int end, int start) {
+			// Ensure caller passed valid arguments
+			Debug.Assert(start >= 0); // `start` can be `>= end` though
+			Debug.Assert((uint)end <= (uint?)entries?.Length);
+			// Method operates on reference to avoid unnecessary range checking
+			ref var entries_r0 = ref entries.DangerousGetReference();
+			return TrimNullFValsFromEndToStart(ref entries_r0, end, start);
+		}
+
+
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEnd(ref FieldVal? entries_r0, int end) {
+			// NOTE: `end` is excluded, as you'll see later below
+			int i = end;
+
+			for (; ; ) {
+				if (--i < 0) break;
+
+				FieldVal? fval = U.Add(ref entries_r0, i);
+				Debug.Assert(fval != null);
+
+				if (fval.TypeHint != FieldTypeHint.Null) break;
+				else continue; // See also, https://stackoverflow.com/q/47783926
+			}
+
+			int n = i + 1;
+			Debug.Assert(n >= 0);
+			return n;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal static int TrimNullFValsFromEndToStart(ref FieldVal? entries_r0, int end, int start) {
+			// NOTE: `end` is excluded, as you'll see later below
+			int i = end;
+
+			for (; ; ) {
+				if (--i < start) break;
+
+				FieldVal? fval = U.Add(ref entries_r0, i);
+				Debug.Assert(fval != null);
+
+				if (fval.TypeHint != FieldTypeHint.Null) break;
+				else continue; // See also, https://stackoverflow.com/q/47783926
+			}
+
+			int n = i + 1;
+			Debug.Assert(n >= start);
+			return n;
+		}
 	}
 
 	[DoesNotReturn]
