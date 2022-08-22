@@ -124,12 +124,15 @@ partial class FieldedEntity {
 #endif
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		internal void InitEntries(int count) {
 			_Entries = ArrayPool<FieldVal?>.Shared.Rent(count);
 			_Offsets = ArrayPool<int>.Shared.Rent(count);
 			// ^- NOTE: Must be done last. See code for `Dispose()`
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
 		internal void DeInitEntries() {
 			var offsets = _Offsets;
 			if (offsets != null) {
