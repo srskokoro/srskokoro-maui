@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal;
+using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
 using System.Buffers;
