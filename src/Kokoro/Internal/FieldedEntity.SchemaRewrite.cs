@@ -233,26 +233,6 @@ partial class FieldedEntity {
 		throw new NotImplementedException("TODO");
 	}
 
-	[DoesNotReturn]
-	private void E_TooManyFields(int count) {
-		Debug.Assert(count > MaxFieldCount);
-		throw new InvalidOperationException(
-			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
-			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Base Schema: {_SchemaId};");
-	}
-
-	[DoesNotReturn]
-	private void E_TooManyClasses(int count) {
-		Debug.Assert(count > MaxClassCount);
-		throw new InvalidOperationException(
-			$"Total number of classes (currently {count}) shouldn't exceed {MaxClassCount};" +
-			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Base Schema: {_SchemaId};");
-	}
-
-	// --
-
 	private const int SchemaUsumDigestLength = 31; // 248-bit hash
 
 	private byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, bool hasSharedData) {
@@ -271,5 +251,25 @@ partial class FieldedEntity {
 		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
 		// pass that as a `ReadOnlySpan<byte>` to `sqlite3_bind_blob()`.
 		return usum.ToArray();
+	}
+
+	// --
+
+	[DoesNotReturn]
+	private void E_TooManyFields(int count) {
+		Debug.Assert(count > MaxFieldCount);
+		throw new InvalidOperationException(
+			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
+			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
+			$"{Environment.NewLine}Base Schema: {_SchemaId};");
+	}
+
+	[DoesNotReturn]
+	private void E_TooManyClasses(int count) {
+		Debug.Assert(count > MaxClassCount);
+		throw new InvalidOperationException(
+			$"Total number of classes (currently {count}) shouldn't exceed {MaxClassCount};" +
+			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
+			$"{Environment.NewLine}Base Schema: {_SchemaId};");
 	}
 }
