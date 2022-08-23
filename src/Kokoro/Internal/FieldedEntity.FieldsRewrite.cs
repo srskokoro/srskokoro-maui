@@ -726,9 +726,6 @@ partial class FieldedEntity {
 			goto LoadAll_TryRewriteHotColdSplit;
 		}
 
-		// TODO Implement
-		throw new NotImplementedException("TODO");
-
 #pragma warning disable CS0162 // Unreachable code detected
 		Debug.Fail("This point should be unreachable.");
 #pragma warning restore CS0162
