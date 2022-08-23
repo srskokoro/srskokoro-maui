@@ -86,6 +86,10 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	}
 
 	internal void TearDown() {
+		if (HasActiveTransaction) {
+			this.Exec("ROLLBACK");
+		}
+
 		Context = null;
 		Owner = null;
 
