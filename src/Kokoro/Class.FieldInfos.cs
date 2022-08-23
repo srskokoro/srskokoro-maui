@@ -605,10 +605,16 @@ partial class Class {
 		const int CsumVer = 1; // The version varint
 		const int CsumVerLength = 1; // The varint length is a single byte for now
 		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLength);
+		Debug.Assert(VarInts.Bytes(CsumVer)[0] == CsumVer);
 
 		Span<byte> csum = stackalloc byte[CsumVerLength + FieldInfoCsumDigestLength];
 		csum[0] = CsumVer; // Prepend version varint
+
 		hasher.Finish(csum[CsumVerLength..]);
+
+		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
+		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
+		// pass that as a `ReadOnlySpan<byte>` to `sqlite3_bind_blob()`.
 		return csum.ToArray();
 	}
 }
