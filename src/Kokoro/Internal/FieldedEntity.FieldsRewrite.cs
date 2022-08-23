@@ -471,10 +471,10 @@ partial class FieldedEntity {
 			}
 		}
 
-		// The check below ensures `0 <= xhc <= xlc`
+		// The check below ensures `0 <= xhc <= xlc <= MaxFieldCount`
 		// - Necessary for when we finally allocate the "entries" buffer later
 		// below, which would be `xlc` in length, to be cut by `xhc`.
-		if (xlc < 0 || (uint)xhc > (uint)xlc) {
+		if ((uint)xlc > (uint)MaxFieldCount || (uint)xhc > (uint)xlc) {
 			E_InvalidLocalFieldCounts(_SchemaId, xhc: xhc, xlc: xlc);
 		}
 
@@ -483,7 +483,8 @@ partial class FieldedEntity {
 			throw new InvalidDataException(
 				$"Schema (with rowid {schemaId}) has {xhc} as its maximum " +
 				$"hot field count while having {xlc} as its maximum local " +
-				$"field count.");
+				$"field count" + (xlc <= MaxFieldCount ? $"." : $" (which " +
+				$"exceeds {MaxFieldCount}, the maximum allowed count)."));
 		}
 
 		// -=-
