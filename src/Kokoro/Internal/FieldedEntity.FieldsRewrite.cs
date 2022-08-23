@@ -599,6 +599,7 @@ partial class FieldedEntity {
 		}
 
 		Debug.Assert(fmi <= lmi);
+		Debug.Assert(lmi < xlc);
 
 		[DoesNotReturn]
 		static void E_IndexBeyondLocalFieldCount(long schemaId, int i, int xlc) {
