@@ -172,7 +172,7 @@ partial class FieldedEntity {
 
 	private const int SchemaUsumDigestLength = 31; // 248-bit hash
 
-	private byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher) {
+	private byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, bool hasSharedData) {
 		const int UsumVer = 1; // The version varint
 		const int UsumVerLength = 1; // The varint length is a single byte for now
 		Debug.Assert(VarInts.Length(UsumVer) == UsumVerLength);
@@ -180,6 +180,7 @@ partial class FieldedEntity {
 
 		Span<byte> usum = stackalloc byte[UsumVerLength + SchemaUsumDigestLength];
 		usum[0] = UsumVer; // Prepend version varint
+		usum[1] = (byte)((usum[1] & unchecked((sbyte)0xFE)) | hasSharedData.ToByte());
 
 		hasher.Finish(usum[UsumVerLength..]);
 
