@@ -981,13 +981,4 @@ partial class FieldedEntity {
 		fw.DeInitEntries();
 		RewriteSchema(_SchemaId, ref fr, ref fw, hotStoreLimit);
 	}
-
-	[DoesNotReturn]
-	private void E_TooManyFields(int count) {
-		Debug.Assert(count > MaxFieldCount);
-		throw new InvalidOperationException(
-			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
-			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Schema: {_SchemaId};");
-	}
 }
