@@ -704,6 +704,9 @@ partial class FieldedEntity {
 				}
 			} else {
 				// Case: Changes in both hot and cold zones
+				Debug.Assert(lmi >= xhc && xhc > fmi);
+
+				goto LoadAll_TryRewriteHotColdSplit;
 			}
 		} else {
 			// Case: Has real cold store (at least according to the flag), but
@@ -719,6 +722,37 @@ partial class FieldedEntity {
 #pragma warning disable CS0162 // Unreachable code detected
 		Debug.Fail("This point should be unreachable.");
 #pragma warning restore CS0162
+
+	LoadAll_TryRewriteHotColdSplit:
+		{
+			fr.InitColdStore();
+			int olc = ohc + fr.ColdFieldCountOrUND;
+			ldn = Math.Max(lmi+1, olc);
+
+			// This becomes a conditional jump forward to not favor it
+			if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
+
+			fValsSize = fw.LoadHot(ref fr, end: ldn);
+			ldn = fw.TrimNullFValsFromEnd(end: ldn);
+
+			if (fValsSize > hotStoreLimit) {
+				// Case: Beyond the hot limit
+				if (ldn > xhc) {
+					// Case: Still got cold fields loaded
+					// - This case should be the favored case, given that we're
+					// doing a hot-cold split rewrite anyway.
+					hotFValsSize = U.Add(ref offsets_r0, xhc);
+					goto RewriteHotColdSplit_ColdLoaded;
+				} else {
+					// Case: No cold fields at all
+					// - Perhaps all were null fields and got cleared
+					goto ClearCold_TryRewriteHot;
+				}
+			} else {
+				// Case: Within the hot limit
+				goto ClearCold_TryRewriteHot;
+			}
+		}
 
 	LoadHotOnPartialLoad_ClearCold_TryRewriteHot:
 		{
