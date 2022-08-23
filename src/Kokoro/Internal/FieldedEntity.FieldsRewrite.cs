@@ -626,9 +626,6 @@ partial class FieldedEntity {
 
 			ldn = Math.Max(Math.Min(ohc, xlc), lmi+1);
 
-			// This becomes a conditional jump forward to not favor it
-			if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
-
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
 			ldn = fw.TrimNullFValsFromEnd(end: ldn);
 
@@ -664,9 +661,6 @@ partial class FieldedEntity {
 				// Leave old cold store as is. Don't rewrite it.
 				fw._ColdStoreLength = -1;
 
-				// This becomes a conditional jump forward to not favor it
-				if (xhc > MaxFieldCount) goto LoadHotOnlyFull__E_TooManyFields;
-
 				// Rewrite hot store only, without trimming null fields
 				fValsSize = fw.LoadHot(ref fr, end: xhc);
 
@@ -680,9 +674,6 @@ partial class FieldedEntity {
 				Debug.Assert(xhc == ohc); // Future-proofing
 				int olc = xhc + fr.ColdFieldCountOrUND;
 				ldn = Math.Max(Math.Min(olc, xlc), lmi+1);
-
-				// This becomes a conditional jump forward to not favor it
-				if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
 
 				// Load only cold fields (for now)
 				fValsSize = fw.Load(ref fr,
@@ -745,9 +736,6 @@ partial class FieldedEntity {
 			fr.InitColdStore();
 			int olc = ohc + fr.ColdFieldCountOrUND;
 			ldn = Math.Max(Math.Min(olc, xlc), lmi+1);
-
-			// This becomes a conditional jump forward to not favor it
-			if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
 			ldn = fw.TrimNullFValsFromEnd(end: ldn);
@@ -982,13 +970,6 @@ partial class FieldedEntity {
 
 			goto Done;
 		}
-
-	LoadHotOnlyFull__E_TooManyFields:
-		ldn = xhc;
-		goto Load__E_TooManyFields;
-
-	Load__E_TooManyFields:
-		E_TooManyFields(ldn);
 
 	NoFieldChanges:
 	NoCoreFieldChanges:
