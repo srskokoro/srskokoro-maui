@@ -170,23 +170,18 @@ partial class FieldedEntity {
 
 	// --
 
-	private const int SchemaUsumDigestLength = 30; // 240-bit hash
+	private const int SchemaUsumDigestLength = 31; // 248-bit hash
 
-	private byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, byte fldLocalCount) {
+	private byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher) {
 		const int UsumVer = 1; // The version varint
 		const int UsumVerLength = 1; // The varint length is a single byte for now
 		Debug.Assert(VarInts.Length(UsumVer) == UsumVerLength);
 		Debug.Assert(VarInts.Bytes(UsumVer)[0] == UsumVer);
 
-		const int ExtraBytesNeeded = 1; // To encode `fldLocalCount`
-
-		const int UsumPrefixLength = UsumVerLength + ExtraBytesNeeded;
-		Span<byte> usum = stackalloc byte[UsumPrefixLength + SchemaUsumDigestLength];
-
+		Span<byte> usum = stackalloc byte[UsumVerLength + SchemaUsumDigestLength];
 		usum[0] = UsumVer; // Prepend version varint
-		usum[1] = fldLocalCount;
 
-		hasher.Finish(usum[UsumPrefixLength..]);
+		hasher.Finish(usum[UsumVerLength..]);
 
 		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
 		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
