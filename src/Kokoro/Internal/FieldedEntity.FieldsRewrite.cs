@@ -600,6 +600,35 @@ partial class FieldedEntity {
 
 		// -=-
 
+		DInit_StoreLengthsAndFDescs(ref fw);
+
+		int ohc = fr.HotFieldCount;
+		Debug.Assert(ohc >= 0); // Code below assumes this
+
+		if (!fr.HasRealColdStore) {
+			// Case: No real cold store (at least according to the flag)
+		} else if (xhc == ohc) {
+			// Case: Has real cold store (at least according to the flag), with
+			// hot store uncorrupted.
+			// - It should be that `xhc == ohc` whenever the "has real cold
+			// store" flag is set in the hot store. Otherwise, the hot store is
+			// considered corrupted.
+
+			if (lmi < xhc) {
+				// Case: All changes are in the hot zone only
+			} else if (xhc <= fmi) {
+				// Case: All changes are in the cold zone only
+			} else {
+				// Case: Changes in both hot and cold zones
+			}
+		} else {
+			// Case: Has real cold store (at least according to the flag), but
+			// hot store is corrupted.
+			// - Expecting `xhc == ohc` whenever the "has real cold store" flag
+			// is set in the hot store. But this isn't the case.
+			// - A full rewrite should fix the issue.
+		}
+
 		// TODO Implement
 		;
 
