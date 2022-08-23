@@ -921,23 +921,27 @@ partial class FieldedEntity {
 			Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
 			Debug.Assert(fValsSize > hotFValsSize && hotFValsSize >= 0);
 
-			int hotFOffsetSizeM1Or0 = xhc == 0 ? 0 : (
-				(uint)U.Add(ref offsets_r0, xhc-1)
-			).CountBytesNeededM1Or0();
+			if (xhc != 0) {
+				int hotFOffsetSizeM1Or0 = (
+					(uint)U.Add(ref offsets_r0, xhc-1)
+				).CountBytesNeededM1Or0();
 
-			FieldsDesc hotFDesc = new(
-				fCount: xhc,
-				fHasCold: true,
-				fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
-			);
+				FieldsDesc hotFDesc = new(
+					fCount: xhc,
+					fHasCold: true,
+					fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+				);
 
-			fw._HotFieldsDesc = hotFDesc;
+				fw._HotFieldsDesc = hotFDesc;
 
-			// NOTE: The first offset value is never stored, as it'll always be
-			// zero otherwise.
-			fw._HotStoreLength = VarInts.Length(hotFDesc)
-				+ (xhc - 1).NonNegOrBitCompl() * (hotFOffsetSizeM1Or0 + 1)
-				+ hotFValsSize;
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				fw._HotStoreLength = VarInts.Length(hotFDesc)
+					+ (xhc - 1) * (hotFOffsetSizeM1Or0 + 1)
+					+ hotFValsSize;
+			} else {
+				fw._HotStoreLength = 0;
+			}
 
 			int coldFOffsetSizeM1Or0 = (
 				(uint)(U.Add(ref offsets_r0, ldn-1) - hotFValsSize)
@@ -965,7 +969,7 @@ partial class FieldedEntity {
 			Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
 
 			fw._HotFieldsDesc = FieldsDesc.Empty;
-			fw._HotStoreLength = FieldsDesc.VarIntLengthForEmpty;
+			fw._HotStoreLength = 0;
 
 			goto Done;
 		}
