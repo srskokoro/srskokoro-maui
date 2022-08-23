@@ -624,7 +624,7 @@ partial class FieldedEntity {
 		if (!fr.HasRealColdStore) {
 			// Case: No real cold store (at least according to the flag)
 
-			ldn = Math.Max(lmi+1, ohc);
+			ldn = Math.Max(Math.Min(ohc, xlc), lmi+1);
 
 			// This becomes a conditional jump forward to not favor it
 			if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
@@ -679,7 +679,7 @@ partial class FieldedEntity {
 
 				Debug.Assert(xhc == ohc); // Future-proofing
 				int olc = xhc + fr.ColdFieldCountOrUND;
-				ldn = Math.Max(lmi+1, olc);
+				ldn = Math.Max(Math.Min(olc, xlc), lmi+1);
 
 				// This becomes a conditional jump forward to not favor it
 				if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
@@ -744,7 +744,7 @@ partial class FieldedEntity {
 		{
 			fr.InitColdStore();
 			int olc = ohc + fr.ColdFieldCountOrUND;
-			ldn = Math.Max(lmi+1, olc);
+			ldn = Math.Max(Math.Min(olc, xlc), lmi+1);
 
 			// This becomes a conditional jump forward to not favor it
 			if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
