@@ -603,8 +603,6 @@ partial class FieldedEntity {
 
 		DInit_StoreLengthsAndFDescs(ref fw);
 
-		ref var offsets_r0 = ref fw._Offsets.DangerousGetReference();
-
 		int ohc = fr.HotFieldCount;
 		Debug.Assert(ohc >= 0); // Code below assumes this
 
@@ -639,7 +637,7 @@ partial class FieldedEntity {
 				// Case: Beyond the hot limit with cold data
 				Debug.Assert(fValsSize > hotStoreLimit && ldn > xhc);
 
-				hotFValsSize = U.Add(ref offsets_r0, xhc);
+				hotFValsSize = fw._Offsets.DangerousGetReferenceAt(xhc);
 				goto RewriteHotColdSplit_ColdLoaded;
 			}
 		} else if (xhc == ohc) {
@@ -749,7 +747,7 @@ partial class FieldedEntity {
 					// Case: Still got cold fields loaded
 					// - This case should be the favored case, given that we're
 					// doing a hot-cold split rewrite anyway.
-					hotFValsSize = U.Add(ref offsets_r0, xhc);
+					hotFValsSize = fw._Offsets.DangerousGetReferenceAt(xhc);
 					goto RewriteHotColdSplit_ColdLoaded;
 				} else {
 					// Case: No cold fields at all
@@ -838,7 +836,7 @@ partial class FieldedEntity {
 			Debug.Assert(fValsSize >= 0);
 
 			int hotFOffsetSizeM1Or0 = (
-				(uint)U.Add(ref offsets_r0, ldn-1)
+				(uint)fw._Offsets.DangerousGetReferenceAt(ldn-1)
 			).CountBytesNeededM1Or0();
 
 			FieldsDesc hotFDesc = new(
@@ -865,7 +863,7 @@ partial class FieldedEntity {
 			Debug.Assert(fValsSize >= 0);
 
 			int hotFOffsetSizeM1Or0 = (
-				(uint)U.Add(ref offsets_r0, xhc-1)
+				(uint)fw._Offsets.DangerousGetReferenceAt(xhc-1)
 			).CountBytesNeededM1Or0();
 
 			FieldsDesc hotFDesc = new(
@@ -893,7 +891,7 @@ partial class FieldedEntity {
 			Debug.Assert(fValsSize > hotFValsSize && hotFValsSize >= 0);
 
 			int coldFOffsetSizeM1Or0 = (
-				(uint)(U.Add(ref offsets_r0, ldn-1) - hotFValsSize)
+				(uint)(fw._Offsets.DangerousGetReferenceAt(ldn-1) - hotFValsSize)
 			).CountBytesNeededM1Or0();
 
 			int ncc = ldn - xhc;
@@ -923,7 +921,7 @@ partial class FieldedEntity {
 
 			if (xhc != 0) {
 				int hotFOffsetSizeM1Or0 = (
-					(uint)U.Add(ref offsets_r0, xhc-1)
+					(uint)fw._Offsets.DangerousGetReferenceAt(xhc-1)
 				).CountBytesNeededM1Or0();
 
 				FieldsDesc hotFDesc = new(
@@ -944,7 +942,7 @@ partial class FieldedEntity {
 			}
 
 			int coldFOffsetSizeM1Or0 = (
-				(uint)(U.Add(ref offsets_r0, ldn-1) - hotFValsSize)
+				(uint)(fw._Offsets.DangerousGetReferenceAt(ldn-1) - hotFValsSize)
 			).CountBytesNeededM1Or0();
 
 			int ncc = ldn - xhc;
