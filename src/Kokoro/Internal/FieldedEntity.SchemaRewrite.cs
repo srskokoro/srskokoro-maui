@@ -239,7 +239,7 @@ partial class FieldedEntity {
 		throw new InvalidOperationException(
 			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
 			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Schema: {_SchemaId};");
+			$"{Environment.NewLine}Base Schema: {_SchemaId};");
 	}
 
 	[DoesNotReturn]
