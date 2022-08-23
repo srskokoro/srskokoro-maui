@@ -602,6 +602,8 @@ partial class FieldedEntity {
 
 		DInit_StoreLengthsAndFDescs(ref fw);
 
+		ref var offsets_r0 = ref fw._Offsets.DangerousGetReference();
+
 		int ohc = fr.HotFieldCount;
 		Debug.Assert(ohc >= 0); // Code below assumes this
 
@@ -611,6 +613,34 @@ partial class FieldedEntity {
 
 		if (!fr.HasRealColdStore) {
 			// Case: No real cold store (at least according to the flag)
+
+			ldn = Math.Max(lmi+1, ohc);
+
+			// This becomes a conditional jump forward to not favor it
+			if (ldn > MaxFieldCount) goto Load__E_TooManyFields;
+
+			fValsSize = fw.LoadHot(ref fr, end: ldn);
+			ldn = fw.TrimNullFValsFromEnd(end: ldn);
+
+			if (fValsSize <= hotStoreLimit || ldn <= xhc) {
+				// Case: Either within the hot limit or no cold data
+
+				// Leave old cold store as is. No real cold store anyway.
+				fw._ColdStoreLength = -1;
+
+				if (ldn != 0) {
+					// Case: Stil got fields loaded
+					goto RewriteHotOnly_HotLoaded_NoCold;
+				} else
+					goto ClearHotOnly_NoCold;
+
+			} else {
+				// Case: Beyond the hot limit with cold data
+				Debug.Assert(fValsSize > hotStoreLimit && ldn > xhc);
+
+				hotFValsSize = U.Add(ref offsets_r0, xhc);
+				goto RewriteHotColdSplit_ColdLoaded;
+			}
 		} else if (xhc == ohc) {
 			// Case: Has real cold store (at least according to the flag), with
 			// hot store uncorrupted.
@@ -697,6 +727,9 @@ partial class FieldedEntity {
 			Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
 			goto Done;
 		}
+
+	Load__E_TooManyFields:
+		E_TooManyFields(ldn);
 
 	NoFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
