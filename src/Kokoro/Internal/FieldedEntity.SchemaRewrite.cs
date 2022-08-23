@@ -158,6 +158,63 @@ partial class FieldedEntity {
 	private protected void RewriteSchema(long oldSchemaId, ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
+		var clsSet = _Classes;
+		// ^- NOTE: Soon, the class set will contain only the newly added
+		// classes (i.e., classes awaiting addition). The code after will make
+		// sure that happens. Later, it'll also include direct classes from the
+		// base schema, provided that those awaiting removal are filtered out.
+		// Afterwards, it'll also include the indirect classes, as included by
+		// the classes in the current set. In the end, the resulting set will
+		// contain all the classes of the fielded entity under a new schema.
+
+		KokoroSqliteDb db;
+		{
+			// Reinitialize the class set with only the classes awaiting
+			// addition, while also obtaining the class change set
+			// --
+
+			HashSet<long> clsChgSet; // The class change set
+
+			if (clsSet != null) {
+				clsChgSet = clsSet.Changes!;
+				if (clsChgSet == null) {
+					// NOTE: The favored case is schema rewrites due to shared
+					// field changes, often without any class changes.
+					clsSet.Clear();
+					goto FallbackForClsChgSet;
+				} else {
+					// NOTE: The intersection represents the newly added
+					// classes. Classes present in the change set but not in the
+					// resulting set, represent the classes awaiting removal.
+					clsSet.IntersectWith(clsChgSet);
+					goto DoneWithClsChgSet;
+				}
+			} else {
+				_Classes = clsSet = new();
+			}
+		FallbackForClsChgSet:
+			clsChgSet = clsSet;
+		DoneWithClsChgSet:
+			;
+
+			// Get the base schema's direct classes
+			// --
+
+			db = fr.Db;
+			using var cmd = db.CreateCommand();
+			cmd.Set($"SELECT cls FROM {Prot.SchemaToClass} WHERE (ind,schema)=(0,$schema)")
+				.AddParams(new("$schema", _SchemaId));
+
+			using var r = cmd.ExecuteReader();
+			while (r.Read()) {
+				r.DAssert_Name(0, "cls");
+				long cls = r.GetInt64(0);
+
+				if (!clsChgSet.Contains(cls))
+					clsSet.Add(cls);
+			}
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
