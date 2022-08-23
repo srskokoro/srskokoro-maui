@@ -714,6 +714,16 @@ partial class FieldedEntity {
 			// - Expecting `xhc == ohc` whenever the "has real cold store" flag
 			// is set in the hot store. But this isn't the case.
 			// - A full rewrite should fix the issue.
+
+			Debug.Assert(xhc != ohc); // Future-proofing
+
+			Debug.Fail(
+				$"Invalid: `xhc != ohc` while \"real cold store\" flag set;" +
+				$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
+				$"{Environment.NewLine}Schema: {_SchemaId}; " +
+				$"{Environment.NewLine}xhc={xhc}; ohc={ohc};");
+
+			goto LoadAll_TryRewriteHotColdSplit;
 		}
 
 		// TODO Implement
