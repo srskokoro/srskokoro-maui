@@ -156,7 +156,24 @@ partial class FieldedEntity {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private protected void RewriteSchema(long oldSchemaId, ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
+		DAssert_FieldsWriterPriorRewrite(ref fw);
+
 		// TODO Implement
+		throw new NotImplementedException("TODO");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	private static long InitBareSchema(Classes clsSet) {
+		// TODO Implement
+		throw new NotImplementedException("TODO");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	private static long InitFullSchema(long bareSchemaId, Classes? clsSet) {
+		// TODO Implement
+		throw new NotImplementedException("TODO");
 	}
 
 	[DoesNotReturn]
