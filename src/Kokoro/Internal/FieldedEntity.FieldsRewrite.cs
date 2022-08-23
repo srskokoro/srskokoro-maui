@@ -605,6 +605,10 @@ partial class FieldedEntity {
 		int ohc = fr.HotFieldCount;
 		Debug.Assert(ohc >= 0); // Code below assumes this
 
+		int ldn;
+		int fValsSize;
+		int hotFValsSize;
+
 		if (!fr.HasRealColdStore) {
 			// Case: No real cold store (at least according to the flag)
 		} else if (xhc == ohc) {
@@ -631,6 +635,68 @@ partial class FieldedEntity {
 
 		// TODO Implement
 		;
+
+#pragma warning disable CS0162 // Unreachable code detected
+		Debug.Fail("This point should be unreachable.");
+#pragma warning restore CS0162
+
+	Done:
+		DAssert_FieldsWriterAfterRewrite(ref fw);
+		return; // ---
+
+	ClearCold_TryRewriteHot:
+		{
+			// Plan: Clear the cold store and rewrite the hot store (to also
+			// unset the "has real cold store" flag if set).
+
+			// Clear the old cold store
+			fw._ColdStoreLength = 0;
+
+			if (ldn != 0) {
+				// Case: Stil got fields loaded
+				goto RewriteHotOnly_HotLoaded_NoCold;
+			} else
+				goto ClearHotOnly_NoCold;
+		}
+
+	RewriteHotOnly_HotLoaded_NoCold:
+		{
+			Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
+			Debug.Assert(ldn > 0, $"Needs at least 1 field loaded");
+			Debug.Assert(fValsSize >= 0);
+			goto Done;
+		}
+
+	RewriteHotOnly_HotLoadedFull_HasCold:
+		{
+			Debug.Assert(fw._ColdStoreLength == -1, $"Shouldn't rewrite cold store");
+			Debug.Assert(xhc == ohc && fr.HasRealColdStore, $"Should have cold store with hot store uncorrupted");
+			Debug.Assert(xhc > 0, $"Needs at least 1 field in the hot zone");
+			Debug.Assert(fValsSize >= 0);
+			goto Done;
+		}
+
+	RewriteColdOnly_ColdLoaded_HasCold:
+		{
+			Debug.Assert(fw._HotStoreLength == -1, $"Shouldn't rewrite hot store");
+			Debug.Assert(xhc == ohc && fr.HasRealColdStore, $"Should have cold store with hot store uncorrupted");
+			Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
+			Debug.Assert(fValsSize > hotFValsSize && hotFValsSize >= 0);
+			goto Done;
+		}
+
+	RewriteHotColdSplit_ColdLoaded:
+		{
+			Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded");
+			Debug.Assert(fValsSize > hotFValsSize && hotFValsSize >= 0);
+			goto Done;
+		}
+
+	ClearHotOnly_NoCold:
+		{
+			Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
+			goto Done;
+		}
 
 	NoFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
