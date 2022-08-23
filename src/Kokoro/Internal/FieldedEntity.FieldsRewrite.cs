@@ -491,7 +491,7 @@ partial class FieldedEntity {
 
 		fw.InitEntries(xlc);
 
-		int fmi = int.MaxValue;
+		int fmi = -1; Debug.Assert(uint.MaxValue == unchecked((uint)-1));
 		int lmi = 0;
 
 		using (var cmd = db.CreateCommand()) {
@@ -549,8 +549,8 @@ partial class FieldedEntity {
 						if (fspec.StoreType != FieldStoreType.Shared) {
 							int i = fspec.Index;
 
-							if (i < fmi) fmi = i;
-							if (i > lmi) lmi = i;
+							if ((uint)i < (uint)fmi) fmi = i;
+							if ((uint)i > (uint)lmi) lmi = i;
 
 							if ((uint)i < (uint)xlc) {
 								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
@@ -590,6 +590,15 @@ partial class FieldedEntity {
 				}
 			} while (fchanges_iter.MoveNext());
 		}
+
+		if (fmi < 0) {
+			// It's important that we don't proceed any further if we have an
+			// empty set of core field changes (as the code after assumes that
+			// we have at least 1 core field change).
+			goto NoCoreFieldChanges;
+		}
+
+		Debug.Assert(fmi <= lmi);
 
 		[DoesNotReturn]
 		static void E_IndexBeyondLocalFieldCount(long schemaId, int i, int xlc) {
@@ -981,6 +990,7 @@ partial class FieldedEntity {
 		E_TooManyFields(ldn);
 
 	NoFieldChanges:
+	NoCoreFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
 		return;
 
