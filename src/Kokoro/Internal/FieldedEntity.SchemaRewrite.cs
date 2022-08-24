@@ -308,7 +308,7 @@ partial class FieldedEntity {
 				hasher.UpdateLE(dclsCount);
 			}
 
-			// Hash the list of class's `csum`
+			// Hash the `csum`s from the list of classes
 			{
 				int i = 0;
 				int n = clsList.Count;
