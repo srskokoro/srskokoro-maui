@@ -271,8 +271,28 @@ partial class FieldedEntity {
 
 		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
 
-		// Sort class list by UID, mixing both direct and indirect classes
-		clsList.Sort(static (a, b) => a.Uid.CompareTo(b.Uid));
+		// Partition the list of classes into two, direct and indirect classes,
+		// then sort each partition by class UID.
+		{
+			var clsListSpan = clsList.AsSpan();
+
+			Comparison<(long RowId, UniqueId Uid, byte[] Csum)> comparison =
+				static (a, b) => a.Uid.CompareTo(b.Uid);
+
+			// NOTE: Partitioning the list of classes is necessary so that the
+			// resulting schema `usum` hash would be unique even if the set of
+			// classes hashed is the same for another but differs only in what
+			// classes are direct classes.
+
+			if (dclsCount != 0) {
+				Debug.Assert(dclsCount > 0);
+				clsListSpan[..dclsCount].Sort(comparison);
+				clsListSpan[dclsCount..].Sort(comparison);
+				// ^- NOTE: Unless we have at least one direct class, we won't
+				// have a nonempty list of indirect classes, since there won't
+				// be any direct classes to include the indirect classes.
+			}
+		}
 
 		long bareSchemaId;
 		{
@@ -281,8 +301,11 @@ partial class FieldedEntity {
 
 			var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
 
-			Debug.Assert(dclsCount >= 0);
-			hasher.UpdateLE(dclsCount); // Hash the number of direct classes
+			// Length-prepend for the (sub)list of direct classes
+			{
+				Debug.Assert(dclsCount >= 0);
+				hasher.UpdateLE(dclsCount);
+			}
 
 			// Hash the list of class's `csum`
 			{
