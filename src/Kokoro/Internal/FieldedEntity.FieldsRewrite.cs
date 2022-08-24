@@ -654,7 +654,7 @@ partial class FieldedEntity {
 		if (!fr.HasRealColdStore) {
 			// Case: No real cold store (at least according to the flag)
 
-			if (ohc > xlc) goto ReInitEntries_ohc; ReInitEntriesDone:;
+			if (ohc > xlc) goto GrowEntries_ohc; GrowEntries_Done:;
 			ldn = Math.Max(lmi+1, ohc);
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
@@ -682,9 +682,9 @@ partial class FieldedEntity {
 
 			Debug.Fail("This point should be unreachable.");
 
-		ReInitEntries_ohc:
+		GrowEntries_ohc:
 			fw.ReInitEntriesWithCheck(this, ohc);
-			goto ReInitEntriesDone;
+			goto GrowEntries_Done;
 
 		} else if (xhc == ohc) {
 			// Case: Has real cold store (at least according to the flag), with
@@ -711,7 +711,7 @@ partial class FieldedEntity {
 
 				Debug.Assert(xhc == ohc); // Future-proofing
 				int olc = xhc + fr.ColdFieldCountOrUND;
-				if (olc > xlc) goto ReInitEntries_olc; ReInitEntriesDone:;
+				if (olc > xlc) goto GrowEntries_olc; GrowEntries_Done:;
 				ldn = Math.Max(lmi+1, olc);
 
 				// Load only cold fields (for now)
@@ -745,9 +745,9 @@ partial class FieldedEntity {
 
 				Debug.Fail("This point should be unreachable.");
 
-			ReInitEntries_olc:
+			GrowEntries_olc:
 				fw.ReInitEntriesWithCheck(this, olc);
-				goto ReInitEntriesDone;
+				goto GrowEntries_Done;
 
 			} else {
 				// Case: Changes in both hot and cold zones
@@ -779,7 +779,7 @@ partial class FieldedEntity {
 		{
 			fr.InitColdStore();
 			int olc = ohc + fr.ColdFieldCountOrUND;
-			if (olc > xlc) goto ReInitEntries_olc; ReInitEntriesDone:;
+			if (olc > xlc) goto GrowEntries_olc; GrowEntries_Done:;
 			ldn = Math.Max(lmi+1, olc);
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
@@ -805,9 +805,9 @@ partial class FieldedEntity {
 
 			Debug.Fail("This point should be unreachable.");
 
-		ReInitEntries_olc:
+		GrowEntries_olc:
 			fw.ReInitEntriesWithCheck(this, olc);
-			goto ReInitEntriesDone;
+			goto GrowEntries_Done;
 		}
 
 	LoadHotOnPartialLoad_ClearCold_TryRewriteHot:
