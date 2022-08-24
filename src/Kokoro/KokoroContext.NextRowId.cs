@@ -22,10 +22,13 @@ partial class KokoroContext {
 		);
 
 		using var reader = cmd.ExecuteReader();
-		reader.Read(); _NextItemId = reader.GetInt64(0);
-		reader.Read(); _NextSchemaId = reader.GetInt64(0);
-		reader.Read(); _NextClassId = reader.GetInt64(0);
-		reader.Read(); _NextNameId = reader.GetInt64(0);
+		// NOTE: The `Math.Max(0, …)` is needed in case a rowid <= 0 exists in
+		// the DB, as the rowid generation routines all assume that our internal
+		// `_Next*Id` fields are nonnegative and zero only initially.
+		reader.Read(); _NextItemId = Math.Max(0, reader.GetInt64(0));
+		reader.Read(); _NextSchemaId = Math.Max(0, reader.GetInt64(0));
+		reader.Read(); _NextClassId = Math.Max(0, reader.GetInt64(0));
+		reader.Read(); _NextNameId = Math.Max(0, reader.GetInt64(0));
 	}
 
 	private long _NextItemId;
