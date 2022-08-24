@@ -310,7 +310,7 @@ internal static class Setup_v0w1 {
 		$"CREATE INDEX [" +
 			$"IX_{P.SchemaToClass}_C_schema_C_ind_C_cls" +
 		$"] ON " +
-			$"{P.SchemaToClass}(schema,ind,cls)" +
+			$"{P.SchemaToClass}(schema, ind, cls)" +
 		$"";
 
 	// -=-
