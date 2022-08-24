@@ -324,6 +324,8 @@ partial class FieldedEntity {
 				;
 			}
 
+			// Bare schemas are schemas without shared data (either there are no
+			// shared fields or all shared fields have null field vals).
 			schemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
 		}
 
