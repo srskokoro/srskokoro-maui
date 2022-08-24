@@ -287,8 +287,8 @@ partial class FieldedEntity {
 
 			if (dclsCount != 0) {
 				Debug.Assert(dclsCount > 0);
-				clsListSpan[..dclsCount].Sort(comparison);
-				clsListSpan[dclsCount..].Sort(comparison);
+				clsListSpan.Slice(0, dclsCount).Sort(comparison);
+				clsListSpan.Slice(dclsCount).Sort(comparison);
 				// ^- NOTE: Unless we have at least one direct class, we won't
 				// have a nonempty list of indirect classes, since there won't
 				// be any direct classes to include the indirect classes.
