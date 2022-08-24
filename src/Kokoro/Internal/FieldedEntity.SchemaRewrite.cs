@@ -297,10 +297,9 @@ partial class FieldedEntity {
 
 		long schemaId;
 		byte[] schemaUsum;
-		{
-			// Generate the `usum` for the bare schema
-			// --
 
+		// Generate the `usum` for the bare schema
+		{
 			var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
 
 			// Length-prepend for the (sub)list of direct classes
@@ -326,8 +325,10 @@ partial class FieldedEntity {
 			}
 
 			schemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
+		}
 
-			using var cmd = db.CreateCommand();
+		// Resolve the bare schema's rowid
+		using (var cmd = db.CreateCommand()) {
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
 				.AddParams(new("$usum", schemaUsum));
 
