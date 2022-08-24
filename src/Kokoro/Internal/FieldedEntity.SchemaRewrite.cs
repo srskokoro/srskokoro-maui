@@ -1,4 +1,5 @@
 ﻿namespace Kokoro.Internal;
+using Blake2Fast;
 using Blake2Fast.Implementation;
 using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
@@ -216,7 +217,7 @@ partial class FieldedEntity {
 			}
 		}
 
-		int dclsCount = clsSet.Count;
+		int dclsCount = clsSet.Count; // The number of direct classes
 		if (dclsCount > MaxClassCount) goto E_TooManyClasses;
 
 		List<(long RowId, UniqueId Uid, byte[] Csum)> clsList = new(dclsCount);
@@ -269,6 +270,50 @@ partial class FieldedEntity {
 		}
 
 		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
+
+		// Sort class list by UID, mixing both direct and indirect classes
+		clsList.Sort(static (a, b) => a.Uid.CompareTo(b.Uid));
+
+		long bareSchemaId;
+		{
+			// Generate the `usum` for the bare schema
+			// --
+
+			var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
+
+			Debug.Assert(dclsCount >= 0);
+			hasher.UpdateLE(dclsCount); // Hash the number of direct classes
+
+			// Hash the list of class's `csum`
+			{
+				int i = 0;
+				int n = clsList.Count;
+				if (i >= n) goto Hashed;
+
+				ref var r0 = ref clsList.AsSpan().DangerousGetReference();
+				do {
+					ref var cls = ref U.Add(ref r0, i);
+					hasher.Update(cls.Csum);
+				} while (++i < n);
+
+			Hashed:
+				;
+			}
+
+			byte[] bareSchemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
+
+			using var cmd = db.CreateCommand();
+			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
+				.AddParams(new("$usum", bareSchemaUsum));
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "rowid");
+				bareSchemaId = r.GetInt64(0);
+			} else {
+				bareSchemaId = InitBareSchema(clsList, bareSchemaUsum);
+			}
+		}
 
 		// TODO Implement
 		throw new NotImplementedException("TODO");
