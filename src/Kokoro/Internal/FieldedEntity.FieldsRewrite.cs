@@ -655,7 +655,7 @@ partial class FieldedEntity {
 			// Case: No real cold store (at least according to the flag)
 
 			if (ohc > xlc) goto ReInitEntries_ohc; ReInitEntriesDone:;
-			ldn = Math.Max(ohc, lmi+1);
+			ldn = Math.Max(lmi+1, ohc);
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
 			ldn = fw.TrimNullFValsFromEnd(end: ldn);
@@ -712,7 +712,7 @@ partial class FieldedEntity {
 				Debug.Assert(xhc == ohc); // Future-proofing
 				int olc = xhc + fr.ColdFieldCountOrUND;
 				if (olc > xlc) goto ReInitEntries_olc; ReInitEntriesDone:;
-				ldn = Math.Max(olc, lmi+1);
+				ldn = Math.Max(lmi+1, olc);
 
 				// Load only cold fields (for now)
 				fValsSize = fw.Load(ref fr,
@@ -780,7 +780,7 @@ partial class FieldedEntity {
 			fr.InitColdStore();
 			int olc = ohc + fr.ColdFieldCountOrUND;
 			if (olc > xlc) goto ReInitEntries_olc; ReInitEntriesDone:;
-			ldn = Math.Max(olc, lmi+1);
+			ldn = Math.Max(lmi+1, olc);
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
 			ldn = fw.TrimNullFValsFromEnd(end: ldn);
