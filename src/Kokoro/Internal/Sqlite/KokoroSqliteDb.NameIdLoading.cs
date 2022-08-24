@@ -58,11 +58,11 @@ partial class KokoroSqliteDb {
 			if (r.Read()) {
 				id = r.GetInt64(0);
 				Debug.Assert(id != 0, "Unexpected zero rowid.");
-				_NameToNameIdCache.Put(name, id);
 			} else {
 				id = 0;
 			}
 		}
+		_NameToNameIdCache.Put(name, id);
 		return id;
 	}
 
@@ -90,8 +90,7 @@ partial class KokoroSqliteDb {
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long EnsureNameId(StringKey name) {
-		if (!ReloadNameIdCaches() && _NameToNameIdCache.TryGet(name, out long id)) {
-			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
+		if (!ReloadNameIdCaches() && _NameToNameIdCache.TryGet(name, out long id) && id != 0) {
 			return id;
 		}
 		// NOTE: The following never returns zero.
@@ -101,8 +100,7 @@ partial class KokoroSqliteDb {
 	/// <remarks>Never returns zero.</remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public long LoadStaleOrEnsureNameId(StringKey name) {
-		if (_NameToNameIdCache.TryGet(name, out long id)) {
-			Debug.Assert(id != 0, "Unexpected zero rowid in cache.");
+		if (_NameToNameIdCache.TryGet(name, out long id) && id != 0) {
 			return id;
 		}
 		// NOTE: The following never returns zero.
