@@ -275,6 +275,8 @@ partial class FieldedEntity {
 			var clsListSpan = clsList.AsSpan();
 			if (clsListSpan.Length > MaxClassCount) goto E_TooManyClasses;
 
+			// Need to sort by UID so that the list of classes would have a
+			// canonical order.
 			Comparison<(long RowId, UniqueId Uid, byte[] Csum)> comparison =
 				static (a, b) => a.Uid.CompareTo(b.Uid);
 
