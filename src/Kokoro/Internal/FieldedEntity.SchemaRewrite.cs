@@ -279,7 +279,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(Classes clsSet) {
+	private static long InitBareSchema(List<(long RowId, UniqueId Uid, byte[] Csum)> clsList, byte[] usum) {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
