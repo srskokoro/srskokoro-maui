@@ -162,7 +162,7 @@ csharp_style_unused_value_expression_statement_preference = discard_variable
 csharp_using_directive_placement = inside_namespace:silent
 
 # CS0162: Unreachable code detected
-dotnet_diagnostic.CS0162.severity = suggestion
+dotnet_diagnostic.CS0162.severity = silent
 
 # New line preferences
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true
