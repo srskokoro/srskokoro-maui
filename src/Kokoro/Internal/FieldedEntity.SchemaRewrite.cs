@@ -269,12 +269,11 @@ partial class FieldedEntity {
 			}
 		}
 
-		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
-
 		// Partition the list of classes into two, direct and indirect classes,
 		// then sort each partition by class UID.
 		{
 			var clsListSpan = clsList.AsSpan();
+			if (clsListSpan.Length > MaxClassCount) goto E_TooManyClasses;
 
 			Comparison<(long RowId, UniqueId Uid, byte[] Csum)> comparison =
 				static (a, b) => a.Uid.CompareTo(b.Uid);
