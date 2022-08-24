@@ -132,6 +132,36 @@ partial class FieldedEntity {
 			// ^- NOTE: Must be done last. See code for `Dispose()`
 		}
 
+		/// <remarks>
+		/// The schema may change without rewriting the fields data, this can
+		/// happen either due to data corruption or during a `<see cref="Prot.Schema">Schema</see>.usum`
+		/// collision. If the latter, it might be better to keep any excess
+		/// fields (instead of discarding them), in case the original schema
+		/// will/might be reinstated later.
+		/// <para>
+		/// This helper method is useful in such scenarios, for when the buffers
+		/// have already been allocated but must be resized to accommodate
+		/// unexpected excess field entries.
+		/// </para>
+		/// </remarks>
+		/// <seealso cref="ReInitEntriesWithCheck(FieldedEntity, int)"/>
+		internal void ReInitEntries(int count) {
+			DeInitEntries();
+			InitEntries(count);
+		}
+
+		/// <summary>
+		/// Similar to <see cref="ReInitEntries(int)"/> but also makes sure <paramref name="count"/>
+		/// doesn't exceed <see cref="MaxFieldCount"/>.
+		/// </summary>
+		internal void ReInitEntriesWithCheck(FieldedEntity owner, int count) {
+			if (count <= MaxFieldCount) {
+				ReInitEntries(count);
+			} else {
+				owner.E_TooManyFields(count);
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		[SkipLocalsInit]
 		internal void DeInitEntries() {
@@ -624,7 +654,8 @@ partial class FieldedEntity {
 		if (!fr.HasRealColdStore) {
 			// Case: No real cold store (at least according to the flag)
 
-			ldn = Math.Max(Math.Min(ohc, xlc), lmi+1);
+			if (ohc > xlc) goto ReInitEntries_ohc; ReInitEntriesDone:;
+			ldn = Math.Max(ohc, lmi+1);
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
 			ldn = fw.TrimNullFValsFromEnd(end: ldn);
@@ -648,6 +679,13 @@ partial class FieldedEntity {
 				hotFValsSize = fw._Offsets.DangerousGetReferenceAt(xhc);
 				goto RewriteHotColdSplit_ColdLoaded;
 			}
+
+			Debug.Fail("This point should be unreachable.");
+
+		ReInitEntries_ohc:
+			fw.ReInitEntriesWithCheck(this, ohc);
+			goto ReInitEntriesDone;
+
 		} else if (xhc == ohc) {
 			// Case: Has real cold store (at least according to the flag), with
 			// hot store uncorrupted.
@@ -673,7 +711,8 @@ partial class FieldedEntity {
 
 				Debug.Assert(xhc == ohc); // Future-proofing
 				int olc = xhc + fr.ColdFieldCountOrUND;
-				ldn = Math.Max(Math.Min(olc, xlc), lmi+1);
+				if (olc > xlc) goto ReInitEntries_olc; ReInitEntriesDone:;
+				ldn = Math.Max(olc, lmi+1);
 
 				// Load only cold fields (for now)
 				fValsSize = fw.Load(ref fr,
@@ -703,6 +742,13 @@ partial class FieldedEntity {
 					// Case: Within the hot limit
 					goto LoadHotOnPartialLoad_ClearCold_TryRewriteHot;
 				}
+
+				Debug.Fail("This point should be unreachable.");
+
+			ReInitEntries_olc:
+				fw.ReInitEntriesWithCheck(this, olc);
+				goto ReInitEntriesDone;
+
 			} else {
 				// Case: Changes in both hot and cold zones
 				Debug.Assert(lmi >= xhc && xhc > fmi);
@@ -733,7 +779,8 @@ partial class FieldedEntity {
 		{
 			fr.InitColdStore();
 			int olc = ohc + fr.ColdFieldCountOrUND;
-			ldn = Math.Max(Math.Min(olc, xlc), lmi+1);
+			if (olc > xlc) goto ReInitEntries_olc; ReInitEntriesDone:;
+			ldn = Math.Max(olc, lmi+1);
 
 			fValsSize = fw.LoadHot(ref fr, end: ldn);
 			ldn = fw.TrimNullFValsFromEnd(end: ldn);
@@ -755,6 +802,12 @@ partial class FieldedEntity {
 				// Case: Within the hot limit
 				goto ClearCold_TryRewriteHot;
 			}
+
+			Debug.Fail("This point should be unreachable.");
+
+		ReInitEntries_olc:
+			fw.ReInitEntriesWithCheck(this, olc);
+			goto ReInitEntriesDone;
 		}
 
 	LoadHotOnPartialLoad_ClearCold_TryRewriteHot:
