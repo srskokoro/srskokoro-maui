@@ -296,6 +296,7 @@ partial class FieldedEntity {
 		}
 
 		long bareSchemaId;
+		byte[] bareSchemaUsum;
 		{
 			// Generate the `usum` for the bare schema
 			// --
@@ -324,7 +325,7 @@ partial class FieldedEntity {
 				;
 			}
 
-			byte[] bareSchemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
+			bareSchemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
 
 			using var cmd = db.CreateCommand();
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
