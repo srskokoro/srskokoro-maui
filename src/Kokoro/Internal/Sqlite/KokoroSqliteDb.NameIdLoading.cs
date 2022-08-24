@@ -49,35 +49,41 @@ partial class KokoroSqliteDb {
 
 	[SkipLocalsInit]
 	private long QueryNameId(StringKey name) {
-		using var cmd = CreateCommand();
-		cmd.Set($"SELECT rowid FROM {Prot.NameId} WHERE name=$name");
-		cmd.AddParams(new("$name", name.Value));
+		long id;
+		using (var cmd = CreateCommand()) {
+			cmd.Set($"SELECT rowid FROM {Prot.NameId} WHERE name=$name");
+			cmd.AddParams(new("$name", name.Value));
 
-		using var r = cmd.ExecuteReader();
-		if (r.Read()) {
-			long id = r.GetInt64(0);
-			Debug.Assert(id != 0, "Unexpected zero rowid.");
-			_NameToNameIdCache.Put(name, id);
-			return id;
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				id = r.GetInt64(0);
+				Debug.Assert(id != 0, "Unexpected zero rowid.");
+				_NameToNameIdCache.Put(name, id);
+			} else {
+				id = 0;
+			}
 		}
-		return 0;
+		return id;
 	}
 
 	[SkipLocalsInit]
 	private StringKey? QueryName(long nameId) {
-		using var cmd = CreateCommand();
-		cmd.Set($"SELECT name FROM {Prot.NameId} WHERE rowid=$rowid");
-		cmd.AddParams(new("$rowid", nameId));
+		StringKey? name;
+		using (var cmd = CreateCommand()) {
+			cmd.Set($"SELECT name FROM {Prot.NameId} WHERE rowid=$rowid");
+			cmd.AddParams(new("$rowid", nameId));
 
-		using var r = cmd.ExecuteReader();
-		if (r.Read()) {
-			Debug.Assert(nameId != 0, "Unexpected zero rowid.");
-			StringKey name = new(r.GetString(0));
-			name = _NameToNameIdCache.Normalize(name);
-			_NameIdToNameCache.Put(nameId, name);
-			return name;
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				Debug.Assert(nameId != 0, "Unexpected zero rowid.");
+				name = new(r.GetString(0));
+				name = _NameToNameIdCache.Normalize(name);
+				_NameIdToNameCache.Put(nameId, name);
+			} else {
+				name = null;
+			}
 		}
-		return null;
+		return name;
 	}
 
 
