@@ -280,6 +280,9 @@ partial class FieldedEntity {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private static long InitBareSchema(List<(long RowId, UniqueId Uid, byte[] Csum)> clsList, byte[] usum) {
+		Debug.Assert(usum[0] == 1); // Expects version 1
+		Debug.Assert((usum[1] & 1) == 0); // Expects "has shared data" bit cleared
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
