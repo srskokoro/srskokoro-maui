@@ -2,6 +2,7 @@
 using Blake2Fast.Implementation;
 using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
 
 partial class FieldedEntity {
 	internal const int MaxClassCount = byte.MaxValue;
@@ -215,8 +216,65 @@ partial class FieldedEntity {
 			}
 		}
 
+		int dclsCount = clsSet.Count;
+		if (dclsCount > MaxClassCount) goto E_TooManyClasses;
+
+		List<(long RowId, UniqueId Uid, byte[] Csum)> clsList = new(dclsCount);
+
+		foreach (long rowid in clsSet) {
+			clsList.Add((RowId: rowid, Uid: default, Csum: null!));
+		}
+
+		// --
+		{
+			SqliteParameter cmd_rowid = new() { ParameterName = "$rowid" };
+
+			using var clsCmd = db.CreateCommand();
+			clsCmd.Set($"SELECT uid,csum FROM {Prot.Class} WHERE rowid=$rowid")
+				.AddParams(cmd_rowid);
+
+			using var inclCmd = db.CreateCommand();
+			inclCmd.Set($"SELECT incl FROM {Prot.ClassToInclude} WHERE cls=$rowid")
+				.AddParams(cmd_rowid);
+
+			for (int i = 0; i < clsList.Count; i++) {
+				ref var cls = ref clsList.AsSpan().DangerousGetReferenceAt(i);
+				cmd_rowid.Value = cls.RowId;
+
+				// Get the needed class info
+				using (var r = clsCmd.ExecuteReader()) {
+					if (r.Read()) {
+						r.DAssert_Name(0, "uid");
+						cls.Uid = r.GetUniqueId(0);
+
+						r.DAssert_Name(1, "csum");
+						cls.Csum = r.GetBytes(1);
+					} else {
+						// The user probably attached a nonexistent class to the
+						// fielded entity. Ignore it then.
+					}
+				}
+
+				// Get the included classes, adding them as indirect classes
+				using (var r = inclCmd.ExecuteReader()) {
+					while (r.Read()) {
+						r.DAssert_Name(0, "incl");
+						long incl = r.GetInt64(0);
+						if (clsSet.Add(incl)) {
+							clsList.Add((RowId: incl, Uid: default, Csum: null!));
+						}
+					}
+				}
+			}
+		}
+
+		if (clsSet.Count > MaxClassCount) goto E_TooManyClasses;
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
+
+	E_TooManyClasses:
+		E_TooManyClasses(clsSet.Count);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
