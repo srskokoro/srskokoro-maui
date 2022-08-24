@@ -295,8 +295,8 @@ partial class FieldedEntity {
 			}
 		}
 
-		long bareSchemaId;
-		byte[] bareSchemaUsum;
+		long schemaId;
+		byte[] schemaUsum;
 		{
 			// Generate the `usum` for the bare schema
 			// --
@@ -325,18 +325,18 @@ partial class FieldedEntity {
 				;
 			}
 
-			bareSchemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
+			schemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: false);
 
 			using var cmd = db.CreateCommand();
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
-				.AddParams(new("$usum", bareSchemaUsum));
+				.AddParams(new("$usum", schemaUsum));
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				r.DAssert_Name(0, "rowid");
-				bareSchemaId = r.GetInt64(0);
+				schemaId = r.GetInt64(0);
 			} else {
-				bareSchemaId = InitBareSchema(clsList, bareSchemaUsum);
+				schemaId = InitBareSchema(clsList, schemaUsum);
 			}
 		}
 
