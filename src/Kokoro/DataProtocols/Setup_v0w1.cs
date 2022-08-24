@@ -266,7 +266,10 @@ internal static class Setup_v0w1 {
 
 			$"PRIMARY KEY(schema, fld)," +
 
-			$"UNIQUE(schema, idx_loc)" +
+			// NOTE: To utilize this index to query "all local fields" or "all
+			// shared fields", involve all of the indexed columns in the query,
+			// i.e., in the `WHERE` clause, `ORDER BY` clause, or both.
+			$"UNIQUE(schema, loc, idx)" +
 
 		$") WITHOUT ROWID";
 
