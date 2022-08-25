@@ -416,7 +416,7 @@ partial class FieldedEntity {
 
 			Continue:
 				if (!changes_iter.MoveNext()) {
-					goto Done;
+					goto Break;
 				} else {
 					// This becomes a conditional jump backward -- similar to a
 					// `do…while` loop.
@@ -436,7 +436,7 @@ partial class FieldedEntity {
 					goto ResolveFieldVal;
 				}
 
-			Done:
+			Break:
 				;
 
 			} finally {

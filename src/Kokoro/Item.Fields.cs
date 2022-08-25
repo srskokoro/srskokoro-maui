@@ -347,7 +347,7 @@ partial class Item {
 
 		Continue:
 			if (!changes_iter.MoveNext()) {
-				goto Done;
+				goto Break;
 			} else {
 				// This becomes a conditional jump backward -- similar to a
 				// `do…while` loop.
@@ -389,7 +389,7 @@ partial class Item {
 				goto DeleteFloatingField;
 			}
 
-		Done:
+		Break:
 			;
 
 		} finally {
