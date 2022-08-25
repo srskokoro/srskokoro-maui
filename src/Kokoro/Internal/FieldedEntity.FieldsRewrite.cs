@@ -629,11 +629,14 @@ partial class FieldedEntity {
 
 		[DoesNotReturn]
 		static void E_IndexBeyondLocalFieldCount_InvDat(long schemaId, int i, int xlc) {
+			Debug.Assert(xlc >= 0);
 			Debug.Assert((uint)i >= (uint)xlc);
+
 			throw new InvalidDataException(
-				$"Schema (with rowid {schemaId}) gave a local field index " +
-				$"(which is {i}) not under the expected maximum number of " +
-				$"local fields it defined (which is {xlc}).");
+				$"Schema (with rowid {schemaId}) gave an invalid local field " +
+				$"index {i}, which is " + (i < 0 ? "negative." : "not under " +
+				$"{xlc}, the expected maximum number of local fields defined " +
+				$"by the schema."));
 		}
 
 		// -=-
