@@ -546,7 +546,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitFullSchema(long bareSchemaId) {
+	private static long InitNonBareSchema(long bareSchemaId) {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
