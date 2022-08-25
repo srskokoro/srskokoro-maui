@@ -491,6 +491,43 @@ partial class FieldedEntity {
 			xsc = r.GetInt32(2); // The expected max shared count
 		}
 
+		// --
+		{
+			if ((uint)xhc > (uint)xlc) {
+				goto E_InvalidFieldCounts_InvDat;
+			}
+
+			int capacity = (int)Math.Max((uint)xsc, (uint)xlc);
+
+			if ((uint)capacity > (uint)MaxFieldCount) {
+				goto E_InvalidFieldCounts_InvDat;
+			}
+
+			fw.InitEntries(capacity);
+			goto Done;
+
+		E_InvalidFieldCounts_InvDat:
+			E_InvalidFieldCounts_InvDat(schemaId,
+				xhc: xhc,
+				xlc: xlc,
+				xsc: xsc
+			);
+
+			[DoesNotReturn]
+			static void E_InvalidFieldCounts_InvDat(long schemaId, int xhc, int xlc, int xsc) {
+				throw new InvalidDataException(
+					$"Schema (with rowid {schemaId}) has {xhc} as its maximum " +
+					$"hot field count while having {xlc} as its maximum local " +
+					$"field count, with {xsc} as its maximum shared field count." +
+					(Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
+					$"Note that, one of them exceeds {MaxFieldCount}, the maximum " +
+					$"allowed count."));
+			}
+
+		Done:
+			;
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
