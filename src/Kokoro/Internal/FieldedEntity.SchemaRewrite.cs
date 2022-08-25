@@ -513,19 +513,19 @@ partial class FieldedEntity {
 				xsc: xsc
 			);
 
-			[DoesNotReturn]
-			static void E_InvalidFieldCounts_InvDat(long schemaId, int xhc, int xlc, int xsc) {
-				throw new InvalidDataException(
-					$"Schema (with rowid {schemaId}) has {xhc} as its maximum " +
-					$"hot field count while having {xlc} as its maximum local " +
-					$"field count, with {xsc} as its maximum shared field count." +
-					(Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
-					$"Note that, one of them exceeds {MaxFieldCount}, the maximum " +
-					$"allowed count."));
-			}
-
 		Done:
 			;
+		}
+
+		[DoesNotReturn]
+		static void E_InvalidFieldCounts_InvDat(long schemaId, int xhc, int xlc, int xsc) {
+			throw new InvalidDataException(
+				$"Schema (with rowid {schemaId}) has {xhc} as its maximum hot" +
+				$" field count while having {xlc} as its maximum local field " +
+				$"count, with {xsc} as its maximum shared field count." + (
+				Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
+				$"Note that, one of them exceeds {MaxFieldCount}, the maximum" +
+				$" allowed count."));
 		}
 
 		// TODO Implement
