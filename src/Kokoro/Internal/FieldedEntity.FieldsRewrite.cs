@@ -505,11 +505,11 @@ partial class FieldedEntity {
 		// - Necessary for when we finally allocate the "entries" buffer later
 		// below, which would be `xlc` in length, to be cut by `xhc`.
 		if ((uint)xlc > (uint)MaxFieldCount || (uint)xhc > (uint)xlc) {
-			E_InvalidLocalFieldCounts(_SchemaId, xhc: xhc, xlc: xlc);
+			E_InvalidLocalFieldCounts_InvDat(_SchemaId, xhc: xhc, xlc: xlc);
 		}
 
 		[DoesNotReturn]
-		static void E_InvalidLocalFieldCounts(long schemaId, int xhc, int xlc) {
+		static void E_InvalidLocalFieldCounts_InvDat(long schemaId, int xhc, int xlc) {
 			throw new InvalidDataException(
 				$"Schema (with rowid {schemaId}) has {xhc} as its maximum " +
 				$"hot field count while having {xlc} as its maximum local " +
@@ -582,7 +582,7 @@ partial class FieldedEntity {
 								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
 								fw._Entries.DangerousGetReferenceAt(i) = fval;
 							} else {
-								E_IndexBeyondLocalFieldCount(_SchemaId, i: i, xlc: xlc);
+								E_IndexBeyondLocalFieldCount_InvDat(_SchemaId, i: i, xlc: xlc);
 							}
 						} else {
 							// If there are any schema field changes, end here
@@ -628,7 +628,7 @@ partial class FieldedEntity {
 		Debug.Assert(lmi < xlc);
 
 		[DoesNotReturn]
-		static void E_IndexBeyondLocalFieldCount(long schemaId, int i, int xlc) {
+		static void E_IndexBeyondLocalFieldCount_InvDat(long schemaId, int i, int xlc) {
 			Debug.Assert((uint)i >= (uint)xlc);
 			throw new InvalidDataException(
 				$"Schema (with rowid {schemaId}) gave a local field index " +
