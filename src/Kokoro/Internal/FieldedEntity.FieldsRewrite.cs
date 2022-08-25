@@ -582,7 +582,7 @@ partial class FieldedEntity {
 								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
 								fw._Entries.DangerousGetReferenceAt(i) = fval;
 							} else {
-								E_IndexBeyondLocalFieldCount_InvDat(_SchemaId, i: i, xlc: xlc);
+								E_IndexBeyondLocalFieldCount_InvDat(_SchemaId, i, xlc: xlc);
 							}
 						} else {
 							// If there are any schema field changes, end here
