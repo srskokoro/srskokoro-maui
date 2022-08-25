@@ -337,8 +337,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 			if (r.Read()) {
 				r.DAssert_Name(0, "idx_sto");
 				fspec = r.GetInt32(0);
-				Debug.Assert(fspec.Index >= 0);
-				fspec.StoreType.DAssert_Defined();
+				fspec.DAssert_Valid();
 				goto WithFieldSpec;
 			} else {
 				goto WithoutFieldSpec;

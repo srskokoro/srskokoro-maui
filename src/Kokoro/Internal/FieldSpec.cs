@@ -52,9 +52,17 @@ internal readonly struct FieldSpec {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public FieldSpec(int index, FieldStoreType sto) {
-		Debug.Assert(index <= MaxIndex);
-		Debug.Assert(((FieldStoreTypeInt)sto & StoreType_Mask) == (FieldStoreTypeInt)sto);
+		DAssert_Valid(index, sto);
 		Value = (uint)index << Index_Shift | (uint)sto;
+	}
+
+	[Conditional("DEBUG")]
+	public void DAssert_Valid() => DAssert_Valid(Index, StoreType);
+
+	[Conditional("DEBUG")]
+	private static void DAssert_Valid(int index, FieldStoreType sto) {
+		Debug.Assert((uint)index <= (uint)MaxIndex, $"{nameof(Index)}: {index}");
+		sto.DAssert_Defined();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

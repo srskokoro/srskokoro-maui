@@ -553,9 +553,7 @@ partial class FieldedEntity {
 					if (r.Read()) {
 						r.DAssert_Name(0, "idx_sto");
 						FieldSpec fspec2 = r.GetInt32(0);
-
-						Debug.Assert(fspec2.Index >= 0);
-						fspec2.StoreType.DAssert_Defined();
+						fspec2.DAssert_Valid();
 
 						fval = fr.Read(fspec2);
 					} else {
@@ -572,9 +570,7 @@ partial class FieldedEntity {
 
 						r.DAssert_Name(0, "idx_sto");
 						FieldSpec fspec = r.GetInt32(0);
-
-						Debug.Assert(fspec.Index >= 0);
-						fspec.StoreType.DAssert_Defined();
+						fspec.DAssert_Valid();
 
 						if (fspec.StoreType != FieldStoreType.Shared) {
 							int i = fspec.Index;
