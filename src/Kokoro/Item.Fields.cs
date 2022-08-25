@@ -1,4 +1,4 @@
-namespace Kokoro;
+﻿namespace Kokoro;
 using Kokoro.Common.Sqlite;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
@@ -350,7 +350,7 @@ partial class Item {
 				goto Break;
 			} else {
 				// This becomes a conditional jump backward -- similar to a
-				// `do�while` loop.
+				// `do…while` loop.
 				goto Loop;
 			}
 
