@@ -466,6 +466,31 @@ partial class FieldedEntity {
 			}
 		}
 
+		// -=-
+
+		int xlc, xhc, xsc;
+
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set(
+				$"SELECT hotCount,coldCount,sharedCount\n" +
+				$"FROM {Prot.Schema} WHERE rowid=$rowid"
+			).AddParams(new("$rowid", schemaId));
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "hotCount"); // The max hot field count
+				xhc = r.GetInt32(0); // The expected max hot count
+
+				r.DAssert_Name(1, "coldCount"); // The max cold field count
+				xlc = r.GetInt32(1) + xhc; // The expected max local count
+
+				r.DAssert_Name(2, "sharedCount"); // The max shared field count
+				xsc = r.GetInt32(2); // The expected max shared count
+			} else {
+				xsc = xlc = xhc = 0;
+			}
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
