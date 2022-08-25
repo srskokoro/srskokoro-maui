@@ -447,6 +447,25 @@ partial class FieldedEntity {
 			;
 		}
 
+		// Get the old field values via the old schema
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set($"SELECT fld,idx_sto FROM {Prot.SchemaToField} WHERE schema=$schema")
+				.AddParams(new("$schema", oldSchemaId));
+
+			using var r = cmd.ExecuteReader();
+			while (r.Read()) {
+				r.DAssert_Name(0, "fld");
+				long fld = r.GetInt64(0);
+
+				r.DAssert_Name(1, "idx_sto");
+				FieldSpec fspec = r.GetInt32(1);
+				fspec.DAssert_Valid();
+
+				var fval = fr.Read(fspec);
+				fldMapOld.TryAdd(fld, fval);
+			}
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
