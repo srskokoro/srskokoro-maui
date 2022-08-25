@@ -538,8 +538,7 @@ partial class FieldedEntity {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private static long InitBareSchema(List<(long RowId, UniqueId Uid, byte[] Csum)> clsList, byte[] usum) {
-		Debug.Assert(usum[0] == 1); // Expects version 1
-		Debug.Assert((usum[1] & 1) == 0); // Expects "has shared data" bit cleared
+		DAssert_BareSchemaUsum(usum);
 
 		// TODO Implement
 		throw new NotImplementedException("TODO");
@@ -570,6 +569,14 @@ partial class FieldedEntity {
 		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
 		// pass that as a `ReadOnlySpan<byte>` to `sqlite3_bind_blob()`.
 		return usum.ToArray();
+	}
+
+	[Conditional("DEBUG")]
+	private static void DAssert_BareSchemaUsum(byte[] usum) {
+		// Expect version 1 (since the check after is valid only for that)
+		Debug.Assert(usum[0] == 1);
+		// Expect that the "has shared data" bit is cleared
+		Debug.Assert((usum[1] & 1) == 0);
 	}
 
 	// --
