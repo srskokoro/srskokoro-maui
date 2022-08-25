@@ -199,7 +199,7 @@ internal static class Setup_v0w1 {
 
 			// The cryptographic checksum of the schema's primary data, which
 			// includes other tables that comprises the schema, but excludes the
-			// `rowid`, `localCount`, `hotCount` and `coldCount`.
+			// `rowid`, `localCount`, `hotCount`, `coldCount` and `sharedCount`.
 			//
 			// This is used as both a unique key and a lookup key to quickly
 			// find an existing schema comprising the same data as another.
@@ -230,6 +230,13 @@ internal static class Setup_v0w1 {
 			// This should always be equal to the number of cold fields defined
 			// by the schema -- see `SchemaToField` table.
 			$"coldCount INTEGER NOT NULL CHECK(coldCount {BetweenInt32RangeGE0})," +
+
+			// The maximum number of shared field data expected to be in this
+			// schema's `data` column.
+			//
+			// This should always be equal to the number of shared fields
+			// defined by the schema -- see `SchemaToField` table.
+			$"sharedCount INTEGER NOT NULL CHECK(sharedCount {BetweenInt32RangeGE0})," +
 
 			// The BLOB comprising the list of field offsets and field values
 			// for shared fields.
