@@ -477,18 +477,18 @@ partial class FieldedEntity {
 			).AddParams(new("$rowid", schemaId));
 
 			using var r = cmd.ExecuteReader();
-			if (r.Read()) {
-				r.DAssert_Name(0, "hotCount"); // The max hot field count
-				xhc = r.GetInt32(0); // The expected max hot count
-
-				r.DAssert_Name(1, "coldCount"); // The max cold field count
-				xlc = r.GetInt32(1) + xhc; // The expected max local count
-
-				r.DAssert_Name(2, "sharedCount"); // The max shared field count
-				xsc = r.GetInt32(2); // The expected max shared count
-			} else {
-				xsc = xlc = xhc = 0;
+			if (!r.Read()) {
+				Debug.Fail("Bare schema should already exist at this point.");
 			}
+
+			r.DAssert_Name(0, "hotCount"); // The max hot field count
+			xhc = r.GetInt32(0); // The expected max hot count
+
+			r.DAssert_Name(1, "coldCount"); // The max cold field count
+			xlc = r.GetInt32(1) + xhc; // The expected max local count
+
+			r.DAssert_Name(2, "sharedCount"); // The max shared field count
+			xsc = r.GetInt32(2); // The expected max shared count
 		}
 
 		// TODO Implement
