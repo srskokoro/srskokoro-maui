@@ -343,6 +343,110 @@ partial class FieldedEntity {
 			}
 		}
 
+		// -=-
+
+		Dictionary<long, FieldVal> fldMapOld = new(16);
+
+		// Process the field changes
+		{
+			Fields? fields = _Fields;
+			if (fields == null) goto NoFieldChanges;
+
+			FieldChanges? changes = fields.Changes;
+			if (changes == null) goto NoFieldChanges;
+
+			var changes_iter = changes.GetEnumerator();
+			if (!changes_iter.MoveNext()) goto NoFieldChanges;
+
+			db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
+
+			SqliteCommand? resCmd = null;
+			SqliteParameter resCmd_fld = null!;
+
+			try {
+			Loop:
+				var (fname, fchg) = changes_iter.Current;
+
+				if (fchg.GetType() == typeof(StringKey)) {
+					goto ReadyToResolveFieldVal;
+				}
+
+				Debug.Assert(fchg is FieldVal);
+				var fval = U.As<FieldVal>(fchg);
+
+			MapFieldVal:
+				{
+					long fld = db.LoadStaleOrEnsureNameId(fname);
+
+					bool added = fldMapOld.TryAdd(fld, fval);
+					Debug.Assert(added, $"Shouldn't happen if running in a " +
+						$"`{nameof(NestingWriteTransaction)}` or equivalent");
+
+					goto Continue;
+				}
+
+			ReadyToResolveFieldVal:
+				if (resCmd != null) {
+					goto ResolveFieldVal;
+				} else {
+					goto InitToResolveFieldVal;
+				}
+
+			ResolveFieldVal:
+				{
+					Debug.Assert(fchg is StringKey);
+					var fsrc = U.As<StringKey>(fchg);
+
+					long fld2 = db.LoadStaleNameId(fsrc);
+					resCmd_fld.Value = fld2;
+
+					using (var r = resCmd.ExecuteReader()) {
+						if (r.Read()) {
+							r.DAssert_Name(0, "idx_sto");
+							FieldSpec fspec2 = r.GetInt32(0);
+							fspec2.DAssert_Valid();
+
+							fval = fr.Read(fspec2);
+						} else {
+							fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
+						}
+					}
+					goto MapFieldVal;
+				}
+
+			Continue:
+				if (!changes_iter.MoveNext()) {
+					goto Done;
+				} else {
+					// This becomes a conditional jump backward -- similar to a
+					// `do…while` loop.
+					goto Loop;
+				}
+
+			InitToResolveFieldVal:
+				{
+					resCmd = db.CreateCommand();
+					resCmd.Set(
+						$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
+						$"WHERE (schema,fld)=($schema,$fld)"
+					).AddParams(
+						new("$schema", oldSchemaId),
+						resCmd_fld = new() { ParameterName = "$fld" }
+					);
+					goto ResolveFieldVal;
+				}
+
+			Done:
+				;
+
+			} finally {
+				resCmd?.Dispose();
+			}
+
+		NoFieldChanges:
+			;
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
