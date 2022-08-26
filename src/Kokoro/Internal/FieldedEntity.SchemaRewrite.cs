@@ -604,18 +604,6 @@ partial class FieldedEntity {
 			}
 		}
 
-		[DoesNotReturn]
-		static void E_IndexBeyondSharedFieldCount_InvDat(long schemaId, int i, int xsc) {
-			Debug.Assert(xsc >= 0);
-			Debug.Assert((uint)i >= (uint)xsc);
-
-			throw new InvalidDataException(
-				$"Schema (with rowid {schemaId}) gave an invalid shared field" +
-				$" index {i}, which is " + (i < 0 ? "negative." : "not under " +
-				$"{xsc}, the expected maximum number of shared fields defined" +
-				$" by the schema."));
-		}
-
 		// Resolve the non-bare schema's rowid
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
@@ -729,6 +717,18 @@ partial class FieldedEntity {
 		throw new InvalidDataException(
 			$"Schema (with rowid {schemaId}) is missing a shared field " +
 			$"definition.");
+	}
+
+	[DoesNotReturn]
+	private static void E_IndexBeyondSharedFieldCount_InvDat(long schemaId, int i, int xsc) {
+		Debug.Assert(xsc >= 0);
+		Debug.Assert((uint)i >= (uint)xsc);
+
+		throw new InvalidDataException(
+			$"Schema (with rowid {schemaId}) gave an invalid shared field " +
+			$"index {i}, which is " + (i < 0 ? "negative." : "not under " +
+			$"{xsc}, the expected maximum number of shared fields defined " +
+			$"by the schema."));
 	}
 
 	// --
