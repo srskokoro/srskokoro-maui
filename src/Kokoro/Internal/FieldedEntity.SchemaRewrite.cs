@@ -731,6 +731,8 @@ partial class FieldedEntity {
 			$"definition.");
 	}
 
+	// --
+
 	[DoesNotReturn]
 	private void E_TooManyFields(int count) {
 		Debug.Assert(count > MaxFieldCount);
