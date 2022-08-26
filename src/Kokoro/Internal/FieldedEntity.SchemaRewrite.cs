@@ -504,28 +504,6 @@ partial class FieldedEntity {
 			}
 
 			fw.InitEntries(capacity);
-			goto Done;
-
-		E_InvalidFieldCounts_InvDat:
-			E_InvalidFieldCounts_InvDat(schemaId,
-				xhc: xhc,
-				xlc: xlc,
-				xsc: xsc
-			);
-
-		Done:
-			;
-		}
-
-		[DoesNotReturn]
-		static void E_InvalidFieldCounts_InvDat(long schemaId, int xhc, int xlc, int xsc) {
-			throw new InvalidDataException(
-				$"Schema (with rowid {schemaId}) has {xhc} as its maximum hot" +
-				$" field count while having {xlc} as its maximum local field " +
-				$"count, with {xsc} as its maximum shared field count." + (
-				Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
-				$"Note that, one of them exceeds {MaxFieldCount}, the maximum" +
-				$" allowed count."));
 		}
 
 		// -=-
@@ -678,6 +656,13 @@ partial class FieldedEntity {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
+	E_InvalidFieldCounts_InvDat:
+		E_InvalidFieldCounts_InvDat(schemaId,
+			xhc: xhc,
+			xlc: xlc,
+			xsc: xsc
+		);
+
 	E_TooManyClasses:
 		E_TooManyClasses(clsSet.Count);
 	}
@@ -740,6 +725,17 @@ partial class FieldedEntity {
 	}
 
 	// --
+
+	[DoesNotReturn]
+	private static void E_InvalidFieldCounts_InvDat(long schemaId, int xhc, int xlc, int xsc) {
+		throw new InvalidDataException(
+			$"Schema (with rowid {schemaId}) has {xhc} as its maximum hot " +
+			$"field count while having {xlc} as its maximum local field " +
+			$"count, with {xsc} as its maximum shared field count." + (
+				Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
+			$"Note that, one of them exceeds {MaxFieldCount}, the maximum " +
+			$"allowed count."));
+	}
 
 	[DoesNotReturn]
 	private void E_TooManyFields(int count) {
