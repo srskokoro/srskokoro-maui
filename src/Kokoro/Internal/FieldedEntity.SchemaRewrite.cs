@@ -546,7 +546,9 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitNonBareSchema(long bareSchemaId) {
+	private static long InitNonBareSchema(long bareSchemaId, byte[] nonBareUsum, ref FieldsWriter fw, int nsc) {
+		DAssert_NonBareSchemaUsum(nonBareUsum);
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
