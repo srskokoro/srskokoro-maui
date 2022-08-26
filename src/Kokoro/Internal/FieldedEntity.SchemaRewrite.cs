@@ -599,18 +599,9 @@ partial class FieldedEntity {
 				// Non-bare schemas are schemas with shared data, having shared
 				// fields with at least one not set to a null field value.
 				schemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: true);
-				goto Done;
 			} else {
 				goto SchemaResolved;
 			}
-
-			Debug.Fail("This point should be unreachable.");
-
-		E_MissingSharedField_InvDat:
-			E_MissingSharedField_InvDat(schemaId);
-
-		Done:
-			;
 		}
 
 		[DoesNotReturn]
@@ -623,13 +614,6 @@ partial class FieldedEntity {
 				$" index {i}, which is " + (i < 0 ? "negative." : "not under " +
 				$"{xsc}, the expected maximum number of shared fields defined" +
 				$" by the schema."));
-		}
-
-		[DoesNotReturn]
-		static void E_MissingSharedField_InvDat(long schemaId) {
-			throw new InvalidDataException(
-				$"Schema (with rowid {schemaId}) is missing a shared field " +
-				$"definition.");
 		}
 
 		// Resolve the non-bare schema's rowid
@@ -655,6 +639,9 @@ partial class FieldedEntity {
 
 		// TODO Implement
 		throw new NotImplementedException("TODO");
+
+	E_MissingSharedField_InvDat:
+		E_MissingSharedField_InvDat(schemaId);
 
 	E_InvalidFieldCounts_InvDat:
 		E_InvalidFieldCounts_InvDat(schemaId,
@@ -735,6 +722,13 @@ partial class FieldedEntity {
 				Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
 			$"Note that, one of them exceeds {MaxFieldCount}, the maximum " +
 			$"allowed count."));
+	}
+
+	[DoesNotReturn]
+	private static void E_MissingSharedField_InvDat(long schemaId) {
+		throw new InvalidDataException(
+			$"Schema (with rowid {schemaId}) is missing a shared field " +
+			$"definition.");
 	}
 
 	[DoesNotReturn]
