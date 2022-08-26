@@ -288,7 +288,7 @@ internal static class SqliteCommandExtensions {
 		=> command.ConsumeScalar<T>();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static T? ExecuteScalarOrDefault<T>(this SqliteCommand command) {
+	public static T? ExecuteScalarOrDefaultIfEmpty<T>(this SqliteCommand command) {
 		object? obj = command.ExecuteScalar();
 		if (obj != null) return (T)obj;
 		return default;
@@ -350,13 +350,13 @@ internal static class SqliteCommandExtensions {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static T? ExecScalarOrDefault<T>(this SqliteCommand command)
-		=> command.ExecuteScalarOrDefault<T>();
+	public static T? ExecScalarOrDefaultIfEmpty<T>(this SqliteCommand command)
+		=> command.ExecuteScalarOrDefaultIfEmpty<T>();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static T? ConsumeScalarOrDefault<T>(this SqliteCommand command) {
+	public static T? ConsumeScalarOrDefaultIfEmpty<T>(this SqliteCommand command) {
 		using (command) {
-			return command.ExecuteScalarOrDefault<T>();
+			return command.ExecuteScalarOrDefaultIfEmpty<T>();
 		}
 	}
 }

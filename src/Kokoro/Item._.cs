@@ -113,7 +113,7 @@ public sealed partial class Item : FieldedEntity {
 		using var cmd = db.CreateCommand();
 		return cmd.Set($"SELECT rowid FROM {Prot.Item} WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
-			.ExecScalarOrDefault<long>();
+			.ExecScalarOrDefaultIfEmpty<long>();
 	}
 
 	[SkipLocalsInit]

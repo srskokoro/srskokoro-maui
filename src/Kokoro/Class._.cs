@@ -98,7 +98,7 @@ public sealed partial class Class : DataEntity {
 		using var cmd = db.CreateCommand();
 		return cmd.Set($"SELECT rowid FROM {Prot.Class} WHERE uid=$uid")
 			.AddParams(new("$uid", uid.ToByteArray()))
-			.ExecScalarOrDefault<long>();
+			.ExecScalarOrDefaultIfEmpty<long>();
 	}
 
 
