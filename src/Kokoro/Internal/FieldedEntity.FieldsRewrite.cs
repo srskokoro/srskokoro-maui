@@ -627,18 +627,6 @@ partial class FieldedEntity {
 		Debug.Assert(fmi <= lmi);
 		Debug.Assert(lmi < xlc);
 
-		[DoesNotReturn]
-		static void E_IndexBeyondLocalFieldCount_InvDat(long schemaId, int i, int xlc) {
-			Debug.Assert(xlc >= 0);
-			Debug.Assert((uint)i >= (uint)xlc);
-
-			throw new InvalidDataException(
-				$"Schema (with rowid {schemaId}) gave an invalid local field " +
-				$"index {i}, which is " + (i < 0 ? "negative." : "not under " +
-				$"{xlc}, the expected maximum number of local fields defined " +
-				$"by the schema."));
-		}
-
 		// -=-
 
 		DInit_StoreLengthsAndFDescs(ref fw);
@@ -1030,5 +1018,17 @@ partial class FieldedEntity {
 		fw._FloatingFields?.Clear();
 		fw.DeInitEntries();
 		RewriteSchema(_SchemaId, ref fr, ref fw, hotStoreLimit);
+	}
+
+	[DoesNotReturn]
+	private static void E_IndexBeyondLocalFieldCount_InvDat(long schemaId, int i, int xlc) {
+		Debug.Assert(xlc >= 0);
+		Debug.Assert((uint)i >= (uint)xlc);
+
+		throw new InvalidDataException(
+			$"Schema (with rowid {schemaId}) gave an invalid local field " +
+			$"index {i}, which is " + (i < 0 ? "negative." : "not under " +
+			$"{xlc}, the expected maximum number of local fields defined " +
+			$"by the schema."));
 	}
 }
