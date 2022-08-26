@@ -133,6 +133,23 @@ partial class FieldedEntity {
 				return U.Add(ref r0, x).uid.CompareTo(U.Add(ref r0, y).uid);
 			}
 		}
+
+		internal static class Comparison_clsList {
+			private static Comparison<(long RowId, UniqueId Uid, byte[] Csum)>? _Inst;
+
+			internal static Comparison<(long RowId, UniqueId Uid, byte[] Csum)> Inst {
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => _Inst ??= Impl;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+			private static int Impl(
+				(long RowId, UniqueId Uid, byte[] Csum) a,
+				(long RowId, UniqueId Uid, byte[] Csum) b
+			) {
+				return a.Uid.CompareTo(b.Uid);
+			}
+		}
 	}
 
 	/// <remarks>
@@ -282,12 +299,7 @@ partial class FieldedEntity {
 
 			if (dclsCount != 0) {
 				Debug.Assert(dclsCount > 0);
-
-				// Need to sort by UID so that the list of classes would have a
-				// canonical order.
-				Comparison<(long RowId, UniqueId Uid, byte[] Csum)> comparison =
-					static (a, b) => a.Uid.CompareTo(b.Uid);
-
+				var comparison = SchemaRewrite.Comparison_clsList.Inst;
 				clsListSpan.Slice(0, dclsCount).Sort(comparison);
 				clsListSpan.Slice(dclsCount).Sort(comparison);
 				// ^- NOTE: Unless we have at least one direct class, we won't
