@@ -275,11 +275,6 @@ partial class FieldedEntity {
 			var clsListSpan = clsList.AsSpan();
 			if (clsListSpan.Length > MaxClassCount) goto E_TooManyClasses;
 
-			// Need to sort by UID so that the list of classes would have a
-			// canonical order.
-			Comparison<(long RowId, UniqueId Uid, byte[] Csum)> comparison =
-				static (a, b) => a.Uid.CompareTo(b.Uid);
-
 			// NOTE: Partitioning the list of classes is necessary so that the
 			// resulting schema `usum` hash would be unique even if the set of
 			// classes hashed is the same for another but differs only in what
@@ -287,6 +282,12 @@ partial class FieldedEntity {
 
 			if (dclsCount != 0) {
 				Debug.Assert(dclsCount > 0);
+
+				// Need to sort by UID so that the list of classes would have a
+				// canonical order.
+				Comparison<(long RowId, UniqueId Uid, byte[] Csum)> comparison =
+					static (a, b) => a.Uid.CompareTo(b.Uid);
+
 				clsListSpan.Slice(0, dclsCount).Sort(comparison);
 				clsListSpan.Slice(dclsCount).Sort(comparison);
 				// ^- NOTE: Unless we have at least one direct class, we won't
