@@ -528,6 +528,156 @@ partial class FieldedEntity {
 				$" allowed count."));
 		}
 
+		// -=-
+
+		int nsc; // The new shared field count
+
+		// Generate the `usum` for the actual schema
+		{
+			Blake2bHashState hasher;
+
+			using (var cmd = db.CreateCommand()) {
+				cmd.Set(
+					$"SELECT idx,fld FROM {Prot.SchemaToField}\n" +
+					$"WHERE schema=$schema AND loc=0\n" +
+					$"ORDER BY idx" // Needed only to force usage of DB index
+				).AddParams(new("$schema", schemaId));
+
+				using var r = cmd.ExecuteReader();
+				if (r.Read()) {
+					hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
+
+					DAssert_BareSchemaUsum(schemaUsum);
+					hasher.Update(schemaUsum);
+
+					do {
+						r.DAssert_Name(0, "idx");
+						int i = r.GetInt32(0);
+
+						if ((uint)i >= (uint)xsc) {
+							goto E_IndexBeyondSharedFieldCount_InvDat;
+						}
+
+						r.DAssert_Name(1, "fld");
+						long fld = r.GetInt64(1);
+
+						if (!fldMapOld.Remove(fld, out var fval)) {
+							// This becomes a conditional jump forward to not favor it
+							goto NotInOldMap;
+						}
+
+					GotEntry:
+						{
+							Debug.Assert((uint)i < (uint)fw._Entries.Length);
+							fw._Entries.DangerousGetReferenceAt(i) = fval;
+
+							fval.FeedTo(ref hasher);
+							goto Next;
+						}
+
+					NotInOldMap:
+						// Field not defined by the old schema + No field change
+						{
+							fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
+							goto GotEntry;
+						}
+
+					E_IndexBeyondSharedFieldCount_InvDat:
+						E_IndexBeyondSharedFieldCount_InvDat(schemaId, i, xsc: xsc);
+
+					Next:
+						;
+
+					} while (r.Read());
+
+				} else {
+					goto SchemaResolved;
+				}
+			}
+
+			// Trim null shared field values from the end
+			// --
+
+			Debug.Assert((uint)xsc <= (uint)fw._Entries.Length);
+
+			try {
+				nsc = fw.TrimNullFValsFromEnd(end: xsc);
+			} catch (NullReferenceException) when (HasGapInEntries(ref fw, end: xsc)) {
+				goto E_MissingSharedField_InvDat;
+			}
+
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			static bool HasGapInEntries(ref FieldsWriter fw, int end) {
+				if ((uint)end <= (uint)fw._Entries.Length) {
+					var entries = fw._Entries.AsDangerousSpanShortened(end);
+					foreach (var entry in entries) {
+						if (entry == null) {
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
+			if (nsc != 0) {
+				Debug.Assert(nsc > 0);
+				// Non-bare schemas are schemas with shared data, having shared
+				// fields with at least one not set to a null field value.
+				schemaUsum = FinishWithSchemaUsum(ref hasher, hasSharedData: true);
+				goto Done;
+			} else {
+				goto SchemaResolved;
+			}
+
+			Debug.Fail("This point should be unreachable.");
+
+		E_MissingSharedField_InvDat:
+			E_MissingSharedField_InvDat(schemaId);
+
+		Done:
+			;
+		}
+
+		[DoesNotReturn]
+		static void E_IndexBeyondSharedFieldCount_InvDat(long schemaId, int i, int xsc) {
+			Debug.Assert(xsc >= 0);
+			Debug.Assert((uint)i >= (uint)xsc);
+
+			throw new InvalidDataException(
+				$"Schema (with rowid {schemaId}) gave an invalid shared field" +
+				$" index {i}, which is " + (i < 0 ? "negative." : "not under " +
+				$"{xsc}, the expected maximum number of shared fields defined" +
+				$" by the schema."));
+		}
+
+		[DoesNotReturn]
+		static void E_MissingSharedField_InvDat(long schemaId) {
+			throw new InvalidDataException(
+				$"Schema (with rowid {schemaId}) is missing a shared field " +
+				$"definition.");
+		}
+
+		// Resolve the non-bare schema's rowid
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
+				.AddParams(new("$usum", schemaUsum));
+
+			using var r = cmd.ExecuteReader();
+			if (r.Read()) {
+				r.DAssert_Name(0, "rowid");
+				schemaId = r.GetInt64(0);
+			} else {
+				schemaId = InitNonBareSchema(
+					bareSchemaId: schemaId,
+					nonBareUsum: schemaUsum,
+					ref fw, nsc: nsc
+				);
+			}
+		}
+
+	SchemaResolved:
+		;
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
