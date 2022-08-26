@@ -572,7 +572,7 @@ partial class FieldedEntity {
 							fw._Entries.DangerousGetReferenceAt(i) = fval;
 
 							fval.FeedTo(ref hasher);
-							goto Next;
+							continue;
 						}
 
 					NotInOldMap:
@@ -584,9 +584,6 @@ partial class FieldedEntity {
 
 					E_IndexBeyondSharedFieldCount_InvDat:
 						E_IndexBeyondSharedFieldCount_InvDat(schemaId, i, xsc: xsc);
-
-					Next:
-						;
 
 					} while (r.Read());
 
