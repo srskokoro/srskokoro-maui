@@ -572,14 +572,22 @@ partial class FieldedEntity {
 	}
 
 	[Conditional("DEBUG")]
-	private static void DAssert_BareSchemaUsum(byte[] usum) {
+	private static void DAssert_BareSchemaUsum(byte[] usum)
+		=> DAssert_SchemaUsum_HasSharedDataBit(usum, hasSharedData: false);
+
+	[Conditional("DEBUG")]
+	private static void DAssert_NonBareSchemaUsum(byte[] usum)
+		=> DAssert_SchemaUsum_HasSharedDataBit(usum, hasSharedData: true);
+
+	[Conditional("DEBUG")]
+	private static void DAssert_SchemaUsum_HasSharedDataBit(byte[] usum, bool hasSharedData) {
 		Debug.Assert(usum != null);
 		Debug.Assert(usum.Length == SchemaUsumDigestLength);
 
 		// Expect version 1 (since the check after is valid only for that)
 		Debug.Assert(usum[0] == 1);
-		// Expect that the "has shared data" bit is cleared
-		Debug.Assert((usum[1] & 1) == 0);
+		// Expect that the "has shared data" bit flag matches
+		Debug.Assert((usum[1] & 1) == hasSharedData.ToByte());
 	}
 
 	// --
