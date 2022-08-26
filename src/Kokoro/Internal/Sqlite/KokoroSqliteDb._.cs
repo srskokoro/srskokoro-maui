@@ -54,6 +54,11 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 			"triggers in the connection string (as it isn't).");
 	}
 
+	[Conditional("DEBUG")]
+	private static void DAssert_Open(KokoroSqliteDb db) {
+		Debug.Assert(db.ExecScalar<long>("PRAGMA foreign_keys") == 1);
+	}
+
 	public override void Open() {
 		DAssert_ConnectionString(ConnectionString);
 		base.Open();
@@ -64,6 +69,8 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 #endif
 		sqlite3_rollback_hook(Handle, OnSqliteRollback, null);
 		sqlite3_commit_hook(Handle, OnSqliteCommit, null);
+
+		DAssert_Open(this);
 	}
 
 	public override void Close() {
