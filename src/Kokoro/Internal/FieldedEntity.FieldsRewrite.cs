@@ -195,11 +195,10 @@ partial class FieldedEntity {
 				Debug.Assert((uint)end <= (uint?)_Entries?.Length);
 
 				// Get references to avoid unnecessary range checking
-				ref var entries_r0 = ref _Entries.DangerousGetReference();
 				ref var offsets_r0 = ref _Offsets.DangerousGetReference();
+				ref var entries_r0 = ref _Entries.DangerousGetReference();
 
 				for (int i = start; i < end; i++) {
-					U.Add(ref offsets_r0, i) = nextOffset;
 					ref var entry = ref U.Add(ref entries_r0, i);
 
 					FieldVal? fval = entry;
@@ -208,6 +207,8 @@ partial class FieldedEntity {
 						fval = fr.Read(fspec);
 						entry = fval;
 					}
+
+					U.Add(ref offsets_r0, i) = nextOffset;
 
 					checked {
 						nextOffset += (int)fval.CountEncodeLength();
