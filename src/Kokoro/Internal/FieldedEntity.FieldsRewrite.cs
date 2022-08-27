@@ -391,10 +391,13 @@ partial class FieldedEntity {
 		);
 
 		Debug.Assert(
-			fw._ColdStoreLength != 0 ||
-			!fw._HotFieldsDesc.HasColdComplement,
+			fw._ColdStoreLength < 0 || // Negative if won't rewrite cold store
+			fw._HotStoreLength < 0 || // Negative if won't rewrite hot store
+			fw._HotFieldsDesc.HasColdComplement == (fw._ColdStoreLength != 0),
 			$"Hot store flag `{nameof(FieldsDesc.HasColdComplement)}` should " +
-			$"not be set if cold store length is zero"
+			$"be consistent with the presence/absence of cold store data;" +
+			$"{Environment.NewLine}Flag in hot store: {fw._HotFieldsDesc.HasColdComplement};" +
+			$"{Environment.NewLine}Length of cold store: {fw._ColdStoreLength};"
 		);
 
 		Debug.Assert(
