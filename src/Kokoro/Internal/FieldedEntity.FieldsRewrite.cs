@@ -349,7 +349,7 @@ partial class FieldedEntity {
 	private static T E_FieldValsLengthTooLarge<T>(uint currentSize) {
 		throw new InvalidOperationException(
 			$"Total number of bytes for fields data " +
-			$"{(currentSize <= MaxFieldValsLength ? "" : $"(currently {currentSize}) ")}" +
+			(currentSize <= MaxFieldValsLength ? "" : $"(currently {currentSize}) ") +
 			$"exceeded the limit of {MaxFieldValsLength} bytes.");
 	}
 
