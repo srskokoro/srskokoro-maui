@@ -1043,10 +1043,7 @@ partial class FieldedEntity {
 	ClearHotOnly_NoCold:
 		{
 			Debug.Assert(fw._ColdStoreLength == (fr.HasRealColdStore ? 0 : -1));
-
-			fw._HotFieldsDesc = FieldsDesc.Empty;
 			fw._HotStoreLength = 0;
-
 			goto Done;
 		}
 
