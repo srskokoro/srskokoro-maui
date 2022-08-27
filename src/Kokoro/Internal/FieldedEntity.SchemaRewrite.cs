@@ -688,6 +688,19 @@ partial class FieldedEntity {
 			goto E_FieldValsLengthTooLarge;
 		}
 
+		int ldn;
+
+		// Trim null local field values from the end
+		{
+			Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
+
+			try {
+				ldn = fw.TrimNullFValsFromEnd(end: xlc);
+			} catch (NullReferenceException) when (fw.HasEntryMissing(0, xlc)) {
+				goto E_MissingLocalField_InvDat;
+			}
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
@@ -696,6 +709,9 @@ partial class FieldedEntity {
 
 	E_FieldValsLengthTooLarge:
 		E_FieldValsLengthTooLarge((uint)nextOffset);
+
+	E_MissingLocalField_InvDat:
+		E_MissingLocalField_InvDat(schemaId);
 
 	E_MissingSharedField_InvDat:
 		E_MissingSharedField_InvDat(schemaId);
@@ -779,6 +795,13 @@ partial class FieldedEntity {
 				Math.Max(xsc, xlc) <= MaxFieldCount ? "" : Environment.NewLine +
 			$"Note that, one of them exceeds {MaxFieldCount}, the maximum " +
 			$"allowed count."));
+	}
+
+	[DoesNotReturn]
+	private static void E_MissingLocalField_InvDat(long schemaId) {
+		throw new InvalidDataException(
+			$"Schema (with rowid {schemaId}) is missing a local field " +
+			$"definition.");
 	}
 
 	[DoesNotReturn]
