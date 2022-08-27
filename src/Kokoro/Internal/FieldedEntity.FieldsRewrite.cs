@@ -408,6 +408,15 @@ partial class FieldedEntity {
 		);
 
 		Debug.Assert(
+			fw._ColdStoreLength <= 0 ||
+			fw._ColdStoreLength >= VarInts.Length(fw._ColdFieldsDesc)
+		);
+		Debug.Assert(
+			fw._HotStoreLength <= 0 ||
+			fw._HotStoreLength >= VarInts.Length(fw._HotFieldsDesc)
+		);
+
+		Debug.Assert(
 			(fw._HotStoreLength <= 0 && fw._ColdStoreLength <= 0) ||
 			fw._Offsets != null
 		);
