@@ -312,6 +312,33 @@ partial class FieldedEntity {
 			Debug.Assert(n >= start);
 			return n;
 		}
+
+		// --
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal bool HasEntryMissing(int start, int end)
+			=> HasEntryMissing(_Entries, start, end);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SkipLocalsInit]
+		internal static bool HasEntryMissing(FieldVal?[] entries, int start, int end) {
+			// Ensure caller passed valid arguments
+			Debug.Assert((uint)start <= (uint)end);
+			Debug.Assert((uint)end <= (uint?)entries?.Length);
+			// Method operates on reference to avoid unnecessary range checking
+			ref var entries_r0 = ref entries.DangerousGetReference();
+			return HasEntryMissing(ref entries_r0, start, end);
+		}
+
+		[SkipLocalsInit]
+		internal static bool HasEntryMissing(ref FieldVal? entries_r0, int start, int end) {
+			for (int i = start; i < end; i++) {
+				if (U.Add(ref entries_r0, i) == null) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 	[DoesNotReturn]

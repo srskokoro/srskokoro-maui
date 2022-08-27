@@ -590,21 +590,8 @@ partial class FieldedEntity {
 
 			try {
 				nsc = fw.TrimNullFValsFromEnd(end: xsc);
-			} catch (NullReferenceException) when (HasGapInEntries(ref fw, end: xsc)) {
+			} catch (NullReferenceException) when (fw.HasEntryMissing(0, xsc)) {
 				goto E_MissingSharedField_InvDat;
-			}
-
-			[MethodImpl(MethodImplOptions.NoInlining)]
-			static bool HasGapInEntries(ref FieldsWriter fw, int end) {
-				if ((uint)end <= (uint)fw._Entries.Length) {
-					var entries = fw._Entries.AsDangerousSpanShortened(end);
-					foreach (var entry in entries) {
-						if (entry == null) {
-							return true;
-						}
-					}
-				}
-				return false;
 			}
 
 			if (nsc != 0) {
