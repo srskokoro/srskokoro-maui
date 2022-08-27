@@ -625,8 +625,74 @@ partial class FieldedEntity {
 	SchemaResolved:
 		;
 
+		// -=-
+
+		int nextOffset = 0;
+
+		using (var cmd = db.CreateCommand()) {
+			cmd.Set(
+				$"SELECT idx,fld FROM {Prot.SchemaToField}\n" +
+				$"WHERE schema=$schema AND loc=1\n" +
+				$"ORDER BY idx" // Needed only to force usage of DB index
+			).AddParams(new("$schema", schemaId));
+
+			using var r = cmd.ExecuteReader();
+			try {
+				while (r.Read()) {
+					r.DAssert_Name(0, "idx");
+					int i = r.GetInt32(0);
+
+					if ((uint)i >= (uint)xlc) {
+						goto E_IndexBeyondLocalFieldCount_InvDat;
+					}
+
+					r.DAssert_Name(1, "fld");
+					long fld = r.GetInt64(1);
+
+					if (!fldMapOld.Remove(fld, out var fval)) {
+						// This becomes a conditional jump forward to not favor it
+						goto NotInOldMap;
+					}
+
+				GotEntry:
+					{
+						Debug.Assert((uint)i < (uint)fw._Entries.Length);
+						fw._Entries.DangerousGetReferenceAt(i) = fval;
+
+						Debug.Assert((uint)i < (uint)fw._Offsets.Length);
+						fw._Offsets.DangerousGetReferenceAt(i) = nextOffset;
+
+						checked {
+							nextOffset += (int)fval.CountEncodeLength();
+						}
+
+						continue;
+					}
+
+				NotInOldMap:
+					// Field not defined by the old schema + No field change
+					{
+						fval = OnSupplantFloatingField(db, fld) ?? FieldVal.Null;
+						goto GotEntry;
+					}
+
+				E_IndexBeyondLocalFieldCount_InvDat:
+					E_IndexBeyondLocalFieldCount_InvDat(schemaId, i, xlc: xlc);
+				}
+			} catch (OverflowException) {
+				goto E_FieldValsLengthTooLarge;
+			}
+		}
+
+		if ((uint)nextOffset > (uint)MaxFieldValsLength) {
+			goto E_FieldValsLengthTooLarge;
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
+
+	E_FieldValsLengthTooLarge:
+		E_FieldValsLengthTooLarge((uint)nextOffset);
 
 	E_MissingSharedField_InvDat:
 		E_MissingSharedField_InvDat(schemaId);
