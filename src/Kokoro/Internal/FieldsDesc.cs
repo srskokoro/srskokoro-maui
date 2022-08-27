@@ -19,8 +19,8 @@ internal readonly struct FieldsDesc {
 	public readonly uint Value;
 
 	private const int FOffsetSizeM1Or0_Mask = 0b11; // 3
-	private const int HasColdComplement_Shift = 2;
-	private const int FieldCount_Shift = 3;
+	private const int HasColdComplement_Shift = 2; // 4 == 1 << 2
+	private const int FieldCount_Shift = 3; // 8 == 1 << 3
 
 	// --
 
@@ -40,7 +40,7 @@ internal readonly struct FieldsDesc {
 	// --
 
 	public const int VarIntLengthForEmpty = VarInts.LengthForZero;
-	public const int VarIntLengthForEmptyWithCold = 1;
+	public const int VarIntLengthForEmptyWithCold = VarInts.LengthFor0xF0OrLess;
 
 	public static FieldsDesc Empty {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
