@@ -691,6 +691,9 @@ partial class FieldedEntity {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
+		DAssert_FieldsWriterAfterRewrite(ref fw);
+		return; // ---
+
 	E_FieldValsLengthTooLarge:
 		E_FieldValsLengthTooLarge((uint)nextOffset);
 
