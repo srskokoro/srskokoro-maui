@@ -40,11 +40,19 @@ internal readonly struct FieldsDesc {
 	// --
 
 	public const int VarIntLengthForEmpty = VarInts.LengthForZero;
+	public const int VarIntLengthForEmptyWithCold = 1;
 
 	public static FieldsDesc Empty {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => default;
 	}
+
+	public static FieldsDesc EmptyWithCold {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => 1 << HasColdComplement_Shift;
+	}
+
+	// --
 
 	public int FieldCount {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

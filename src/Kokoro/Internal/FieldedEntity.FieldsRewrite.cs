@@ -1016,7 +1016,10 @@ partial class FieldedEntity {
 					+ (xhc - 1) * (hotFOffsetSizeM1Or0 + 1)
 					+ hotFValsSize;
 			} else {
-				fw._HotStoreLength = 0;
+				// Still need to at least set the "has real cold store" flag in
+				// the hot store.
+				fw._HotFieldsDesc = FieldsDesc.EmptyWithCold;
+				fw._HotStoreLength = FieldsDesc.VarIntLengthForEmptyWithCold;
 			}
 
 			int coldFOffsetSizeM1Or0 = (
