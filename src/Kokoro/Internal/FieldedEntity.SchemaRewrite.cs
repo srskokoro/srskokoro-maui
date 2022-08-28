@@ -521,6 +521,10 @@ partial class FieldedEntity {
 				goto E_InvalidFieldCounts_InvDat;
 			}
 
+			// The checks above should've ensured the following to be true
+			Debug.Assert(0 <= xhc && xhc <= xlc && xlc <= MaxFieldCount);
+			Debug.Assert(0 <= xsc);
+
 			fw.InitEntries(capacity);
 		}
 
