@@ -344,6 +344,8 @@ partial class FieldedEntity {
 		}
 
 		// Resolve the bare schema's rowid
+		// --
+
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
 				.AddParams(new("$usum", schemaUsum));
@@ -353,9 +355,17 @@ partial class FieldedEntity {
 				r.DAssert_Name(0, "rowid");
 				schemaId = r.GetInt64(0);
 			} else {
-				schemaId = InitBareSchema(clsList, schemaUsum);
+				schemaId = 0;
 			}
 		}
+
+		// NOTE: Must also ensure that the schema rowid is never zero, even if
+		// the rowid came from the DB.
+		if (schemaId == 0) {
+			goto InitBareSchema;
+		}
+	InitBareSchema_Done:
+		Debug.Assert(schemaId != 0);
 
 		// -=-
 
@@ -614,6 +624,8 @@ partial class FieldedEntity {
 		}
 
 		// Resolve the non-bare schema's rowid
+		// --
+
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
 				.AddParams(new("$usum", schemaUsum));
@@ -623,13 +635,17 @@ partial class FieldedEntity {
 				r.DAssert_Name(0, "rowid");
 				schemaId = r.GetInt64(0);
 			} else {
-				schemaId = InitNonBareSchema(
-					bareSchemaId: schemaId,
-					nonBareUsum: schemaUsum,
-					ref fw, nsc: nsc
-				);
+				schemaId = 0;
 			}
 		}
+
+		// NOTE: Must also ensure that the schema rowid is never zero, even if
+		// the rowid came from the DB.
+		if (schemaId == 0) {
+			goto InitNonBareSchema;
+		}
+	InitNonBareSchema_Done:
+		Debug.Assert(schemaId != 0);
 
 	SchemaResolved:
 		;
@@ -824,6 +840,18 @@ partial class FieldedEntity {
 
 		DAssert_FieldsWriterAfterRewrite(ref fw);
 		return; // ---
+
+	InitBareSchema:
+		schemaId = InitBareSchema(clsList, schemaUsum);
+		goto InitBareSchema_Done;
+
+	InitNonBareSchema:
+		schemaId = InitNonBareSchema(
+			bareSchemaId: schemaId,
+			nonBareUsum: schemaUsum,
+			ref fw, nsc: nsc
+		);
+		goto InitNonBareSchema_Done;
 
 	E_FieldValsLengthTooLarge:
 		E_FieldValsLengthTooLarge((uint)nextOffset);
