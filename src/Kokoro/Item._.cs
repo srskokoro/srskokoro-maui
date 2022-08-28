@@ -469,7 +469,7 @@ public sealed partial class Item : FieldedEntity {
 						if ((state & StateFlags.Change_SchemaId) == 0) {
 							_SchemaId = oldSchemaId;
 						} else {
-							fr.OverrideSharedStore(_SchemaId);
+							fr.OverrideSharedStore(oldSchemaId);
 						}
 						/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
 						/// may be changed/updated by the following.
