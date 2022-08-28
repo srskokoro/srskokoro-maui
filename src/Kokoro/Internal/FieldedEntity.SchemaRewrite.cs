@@ -813,8 +813,8 @@ partial class FieldedEntity {
 				} else {
 					floFlds.EnsureCapacity(fldMapOldCount);
 				}
-				foreach ((long fld, FieldVal fval) in fldMapOld) {
-					floFlds.Add((fld, fval));
+				foreach (var pair in fldMapOld) {
+					floFlds.Add((pair.Key, pair.Value));
 				}
 			}
 		}
