@@ -461,7 +461,7 @@ public sealed partial class Item : FieldedEntity {
 
 				try {
 					if ((state & MustRewriteSchema_Mask) == 0) {
-						// Needed by `CompileFieldChanges(…)` contract
+						/// Needed by contract of <see cref="FieldedEntity.CompileFieldChanges"/>
 						_SchemaId = schemaId; // The old schema rowid loaded
 
 						long newSchemaId = CompileFieldChanges(ref fr, ref fw);
@@ -471,7 +471,7 @@ public sealed partial class Item : FieldedEntity {
 							goto UpdateSchemaId;
 						}
 					} else {
-						// Needed by `RewriteSchema(…)` contract
+						/// Needed by contract of <see cref="FieldedEntity.RewriteSchema"/>
 						if ((state & StateFlags.Change_SchemaId) == 0) {
 							_SchemaId = schemaId; // The old schema rowid loaded
 						} else {
