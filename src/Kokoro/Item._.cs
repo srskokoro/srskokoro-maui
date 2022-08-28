@@ -278,19 +278,23 @@ public sealed partial class Item : FieldedEntity {
 			FieldsReader fr = new(this, db);
 			U.SkipInit(out FieldsWriter fw);
 			try {
+				/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
+				/// may be changed/updated by the following.
+
+				// NOTE: Even if the base schema changes, it is guaranteed to
+				// still be compatible with the old base schema, since it would
+				// still hold the same classes and shared fields as would be
+				// applied to the old base schema. If it is important that the
+				// old base schema be kept on failure, the client code should
+				// simply do a manual backup of it prior to the operation.
+
 				if ((state & StateFlags.Change_SchemaId) == 0) {
 					_SchemaId = 0; // Ensure zero
 				}
-				/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
-				/// may be changed/updated by the following.
 				RewriteSchema(0, ref fr, ref fw);
+
+				// Make the (new) base schema the actual schema
 				cmdParams.Add(new("$schema", _SchemaId));
-				// ^- NOTE: Even if the base schema changes, it is guaranteed to
-				// still be compatible with the old base schema, since it would
-				// still hold the same classes and shared fields as would be
-				// applied to the old base schema. If it's important that the
-				// old base schema be kept on failure, the client code should
-				// simply do a manual backup of it prior to the operation.
 
 				int hotStoreLength = fw.HotStoreLength;
 				Debug.Assert(hotStoreLength >= 0, $"Should never be negative when schema (re)writing");
