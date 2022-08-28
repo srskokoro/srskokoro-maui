@@ -281,7 +281,7 @@ public sealed partial class Item : FieldedEntity {
 				if ((state & StateFlags.Change_SchemaId) == 0) {
 					_SchemaId = 0; // Ensure zero
 				}
-				long schemaId = RewriteSchema(0, ref fr, ref fw);
+				long schemaId = RewriteSchema(oldSchemaId: 0, ref fr, ref fw);
 				cmdParams.Add(new("$schema", schemaId));
 
 				int hotStoreLength = fw.HotStoreLength;
@@ -461,6 +461,7 @@ public sealed partial class Item : FieldedEntity {
 
 				try {
 					if ((state & MustRewriteSchema_Mask) == 0) {
+						// Needed by `CompileFieldChanges(…)` contract
 						_SchemaId = schemaId; // The old schema rowid loaded
 						long newSchemaId = CompileFieldChanges(ref fr, ref fw);
 						if (newSchemaId == 0) {
@@ -469,12 +470,13 @@ public sealed partial class Item : FieldedEntity {
 							goto UpdateSchemaId;
 						}
 					} else {
+						// Needed by `RewriteSchema(…)` contract
 						if ((state & StateFlags.Change_SchemaId) == 0) {
 							_SchemaId = schemaId; // The old schema rowid loaded
 						} else {
 							fr.OverrideSharedStore(schemaId);
 						}
-						schemaId = RewriteSchema(schemaId, ref fr, ref fw);
+						schemaId = RewriteSchema(oldSchemaId: schemaId, ref fr, ref fw);
 						/// TODO Optimize case for when only the schema rowid changes (without class changes, without
 						/// shared field changes).
 						/// - i.e., avoid <see cref="FieldedEntity.RewriteSchema"/>
