@@ -435,7 +435,7 @@ public sealed partial class Item : FieldedEntity {
 
 			if ((state & StateFlags.Change_Uid) != 0) {
 				// This becomes a conditional jump forward to not favor it
-				goto OnUidChanged;
+				goto UpdateUid;
 			}
 
 		CheckForOtherChanges:
@@ -626,7 +626,7 @@ public sealed partial class Item : FieldedEntity {
 			// `goto` statement can become a conditional jump forward.
 			goto Missing;
 
-		OnUidChanged:
+		UpdateUid:
 			{
 				// NOTE: Changing the UID should be considerd similar to
 				// removing an entry with the old UID, then recreating that
