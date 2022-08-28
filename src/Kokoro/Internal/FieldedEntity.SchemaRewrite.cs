@@ -4,6 +4,7 @@ using Blake2Fast.Implementation;
 using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.Runtime.InteropServices;
 
 partial class FieldedEntity {
 	internal const int MaxClassCount = byte.MaxValue;
@@ -470,12 +471,16 @@ partial class FieldedEntity {
 				r.DAssert_Name(0, "fld");
 				long fld = r.GetInt64(0);
 
-				r.DAssert_Name(1, "idx_sto");
-				FieldSpec fspec = r.GetInt32(1);
-				fspec.DAssert_Valid();
+				ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(
+					fldMapOld, key: fld, out _
+				);
+				if (entry == null) {
+					r.DAssert_Name(1, "idx_sto");
+					FieldSpec fspec = r.GetInt32(1);
+					fspec.DAssert_Valid();
 
-				var fval = fr.Read(fspec);
-				fldMapOld.TryAdd(fld, fval);
+					entry = fr.Read(fspec);
+				}
 			}
 		}
 
