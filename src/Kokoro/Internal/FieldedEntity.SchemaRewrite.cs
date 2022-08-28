@@ -701,6 +701,98 @@ partial class FieldedEntity {
 			}
 		}
 
+		// Using `goto` here (instead of `if…else…`) just so to reduce indention
+		if (ldn == 0) goto ClearLocalFields;
+
+		Debug.Assert(ldn > 0);
+		Debug.Assert(xhc >= 0);
+
+		if ((uint)ldn <= (uint)xhc || nextOffset <= hotStoreLimit) {
+			// Case: Hot store only (no real cold store)
+
+			int hotFOffsetSizeM1Or0 = (
+				(uint)fw._Offsets.DangerousGetReferenceAt(ldn-1)
+			).CountBytesNeededM1Or0();
+
+			FieldsDesc hotFDesc = new(
+				fCount: ldn,
+				fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+			);
+
+			fw._HotFieldsDesc = hotFDesc;
+
+			// NOTE: The first offset value is never stored, as it'll always be
+			// zero otherwise.
+			fw._HotStoreLength = VarInts.Length(hotFDesc)
+				+ (ldn - 1) * (hotFOffsetSizeM1Or0 + 1)
+				+ nextOffset;
+
+			fw._ColdStoreLength = 0;
+
+		} else {
+			Debug.Assert(ldn > xhc, $"Needs at least 1 cold field loaded"); // Future-proofing
+
+			// Case: Hot store (with maybe no hot fields) with real cold store
+			// (with at least 1 cold field).
+
+			int hotFValsSize = fw._Offsets.DangerousGetReferenceAt(xhc);
+
+			if (xhc != 0) {
+				int hotFOffsetSizeM1Or0 = (
+					(uint)fw._Offsets.DangerousGetReferenceAt(xhc-1)
+				).CountBytesNeededM1Or0();
+
+				FieldsDesc hotFDesc = new(
+					fCount: xhc,
+					fHasCold: true,
+					fOffsetSizeM1Or0: hotFOffsetSizeM1Or0
+				);
+
+				fw._HotFieldsDesc = hotFDesc;
+
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				fw._HotStoreLength = VarInts.Length(hotFDesc)
+					+ (xhc - 1) * (hotFOffsetSizeM1Or0 + 1)
+					+ hotFValsSize;
+			} else {
+				// Still need to at least set the "has real cold store" flag in
+				// the hot store.
+				fw._HotFieldsDesc = FieldsDesc.EmptyWithCold;
+				fw._HotStoreLength = FieldsDesc.VarIntLengthForEmptyWithCold;
+			}
+
+			int coldFOffsetSizeM1Or0 = (
+				(uint)(fw._Offsets.DangerousGetReferenceAt(ldn-1) - hotFValsSize)
+			).CountBytesNeededM1Or0();
+
+			int ncc = ldn - xhc;
+			FieldsDesc coldFDesc = new(
+				fCount: ncc,
+				fOffsetSizeM1Or0: coldFOffsetSizeM1Or0
+			);
+
+			fw._ColdFieldsDesc = coldFDesc;
+
+			// NOTE: The first offset value is never stored, as it'll always be
+			// zero otherwise.
+			fw._ColdStoreLength = VarInts.Length(coldFDesc)
+				+ (ncc - 1) * (coldFOffsetSizeM1Or0 + 1)
+				+ (nextOffset - hotFValsSize);
+		}
+
+		// Skip below
+		goto DoneWithLocalFields;
+
+	ClearLocalFields:
+		{
+			fw._ColdStoreLength = fw._HotStoreLength = 0;
+			goto DoneWithLocalFields;
+		}
+
+	DoneWithLocalFields:
+		;
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
