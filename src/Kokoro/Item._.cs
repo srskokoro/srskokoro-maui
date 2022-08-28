@@ -487,7 +487,6 @@ public sealed partial class Item : FieldedEntity {
 							fr.OverrideSharedStore(oldSchemaId);
 						}
 						RewriteSchema(oldSchemaId, ref fr, ref fw);
-
 						/// TODO Optimize case for when only the schema rowid changes (without class changes, without
 						/// shared field changes).
 						/// - i.e., avoid <see cref="FieldedEntity.RewriteSchema"/>
