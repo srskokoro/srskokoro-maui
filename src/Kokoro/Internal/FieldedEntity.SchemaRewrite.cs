@@ -833,8 +833,7 @@ partial class FieldedEntity {
 			}
 		}
 
-		// TODO Implement
-		throw new NotImplementedException("TODO");
+	// -=-
 
 	Done:
 		DAssert_FieldsWriterAfterRewrite(ref fw);
