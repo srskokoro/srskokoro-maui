@@ -802,6 +802,23 @@ partial class FieldedEntity {
 	DoneWithLocalFields:
 		;
 
+		// The remaining old field mappings will become floating fields -- i.e.,
+		// fields not defined by the (new) schema.
+		{
+			int fldMapOldCount = fldMapOld.Count;
+			if (fldMapOldCount != 0) {
+				var floFlds = fw._FloatingFields;
+				if (floFlds == null) {
+					fw._FloatingFields = floFlds = new(fldMapOldCount);
+				} else {
+					floFlds.EnsureCapacity(fldMapOldCount);
+				}
+				foreach ((long fld, FieldVal fval) in fldMapOld) {
+					floFlds.Add((fld, fval));
+				}
+			}
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
