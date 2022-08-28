@@ -462,6 +462,17 @@ public sealed partial class Item : FieldedEntity {
 				U.SkipInit(out FieldsWriter fw);
 
 				try {
+					/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
+					/// may be changed/updated by the following.
+
+					// NOTE: Even if the base schema changes, it is guaranteed
+					// to still be compatible with the old base schema, since it
+					// would still hold the same classes and shared fields as
+					// would be applied to the old base schema. If it is
+					// important that the old base schema be kept on failure,
+					// the client code should simply do a manual backup of it
+					// prior to the operation.
+
 					if ((state & MustRewriteSchema_Mask) == 0) {
 						_SchemaId = oldSchemaId;
 						CompileFieldChanges(ref fr, ref fw);
@@ -471,16 +482,7 @@ public sealed partial class Item : FieldedEntity {
 						} else {
 							fr.OverrideSharedStore(oldSchemaId);
 						}
-						/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
-						/// may be changed/updated by the following.
 						RewriteSchema(oldSchemaId, ref fr, ref fw);
-						// ^- NOTE: Even if the base schema changes, it is
-						// guaranteed to still be compatible with the old base
-						// schema, since it would still hold the same classes
-						// and shared fields as would be applied to the old base
-						// schema. If it's important that the old base schema be
-						// kept on failure, the client code should simply do a
-						// manual backup of it prior to the operation.
 
 						/// TODO Optimize case for when only the schema ID changes (without class changes, without
 						/// shared field changes).
@@ -488,11 +490,11 @@ public sealed partial class Item : FieldedEntity {
 						/// in that case.
 						///   - Provide and use a counterpart that avoids schema
 						///   rewriting.
-
-						// Make the base schema the actual schema
-						cmdParams.Add(new("$schema", _SchemaId));
-						cmdSb.Append("schema=$schema,");
 					}
+
+					// Make the (new) base schema the actual schema
+					cmdParams.Add(new("$schema", _SchemaId));
+					cmdSb.Append("schema=$schema,");
 
 					long dataModstamp;
 					if ((state & StateFlags.Change_DataModStamp) == 0) {
