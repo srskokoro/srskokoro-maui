@@ -13,7 +13,7 @@ internal static class VarInts {
 	public const int MaxLength64 = 9;
 	public const int MaxLength32 = 5;
 
-	public const int LengthForZero = 1;
+	public const int LengthForZero = LengthFor0xF0OrLess;
 	public const int LengthFor0xF0OrLess = 1;
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)] // Use fully optimizing JIT, right from the start!
