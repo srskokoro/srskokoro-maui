@@ -440,11 +440,6 @@ partial class FieldedEntity {
 	}
 
 	/// <remarks>
-	/// <para>
-	/// NOTE: This method may modify <see cref="_SchemaId"/> on successful
-	/// return. If it's important that the old value of <see cref="_SchemaId"/>
-	/// be preserved, perform a manual backup of the old value before the call.
-	/// </para>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must load <see cref="_SchemaId"/> beforehand, at least once,
@@ -456,9 +451,13 @@ partial class FieldedEntity {
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
 	/// </remarks>
+	/// <returns>
+	/// Zero if there were no changes in shared fields, or a new schema rowid if
+	/// otherwise.
+	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private protected void CompileFieldChanges(ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
+	private protected long CompileFieldChanges(ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		Fields? fields = _Fields;
@@ -903,7 +902,7 @@ partial class FieldedEntity {
 
 	Done:
 		DAssert_FieldsWriterAfterRewrite(ref fw);
-		return; // ---
+		return 0; // ---
 
 	ClearCold_TryRewriteHot:
 		{
@@ -1066,12 +1065,12 @@ partial class FieldedEntity {
 	NoFieldChanges:
 	NoCoreFieldChanges:
 		fw._ColdStoreLength = fw._HotStoreLength = -1;
-		return;
+		goto Done;
 
 	RewriteSchema:
 		fw._FloatingFields?.Clear();
 		fw.DeInitEntries();
-		RewriteSchema(_SchemaId, ref fr, ref fw, hotStoreLimit);
+		return RewriteSchema(_SchemaId, ref fr, ref fw, hotStoreLimit);
 	}
 
 	[DoesNotReturn]

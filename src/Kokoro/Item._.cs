@@ -278,23 +278,11 @@ public sealed partial class Item : FieldedEntity {
 			FieldsReader fr = new(this, db);
 			U.SkipInit(out FieldsWriter fw);
 			try {
-				/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
-				/// may be changed/updated by the following.
-
-				// NOTE: Even if the base schema changes, it is guaranteed to
-				// still be compatible with the old base schema, since it would
-				// still hold the same classes and shared fields as would be
-				// applied to the old base schema. If it is important that the
-				// old base schema be kept on failure, the client code should
-				// simply do a manual backup of it prior to the operation.
-
 				if ((state & StateFlags.Change_SchemaId) == 0) {
 					_SchemaId = 0; // Ensure zero
 				}
-				RewriteSchema(0, ref fr, ref fw);
-
-				// Make the (new) base schema the actual schema
-				cmdParams.Add(new("$schema", _SchemaId));
+				long schemaId = RewriteSchema(0, ref fr, ref fw);
+				cmdParams.Add(new("$schema", schemaId));
 
 				int hotStoreLength = fw.HotStoreLength;
 				Debug.Assert(hotStoreLength >= 0, $"Should never be negative when schema (re)writing");
@@ -343,11 +331,17 @@ public sealed partial class Item : FieldedEntity {
 				if (floatingFields != null) {
 					InternalSaveFloatingFields(db, floatingFields, rowid);
 				}
+
+				// Wrap up!
+				_SchemaId = schemaId;
+				goto Commit;
+
 			} finally {
 				fw.Dispose();
 				fr.Dispose();
 			}
 
+		Commit:
 			// COMMIT (or RELEASE) should be guaranteed to not fail at this
 			// point if there's at least one operation that started a write.
 			// - See, https://www.sqlite.org/rescode.html#busy
@@ -446,7 +440,7 @@ public sealed partial class Item : FieldedEntity {
 
 		CheckForOtherChanges:
 			if (mustRecompileFields) {
-				long oldSchemaId;
+				long schemaId;
 				using (var oldSchemaCmd = db.CreateCommand()) {
 					oldSchemaCmd.Set(
 						$"SELECT schema FROM {Prot.Item}\n" +
@@ -456,7 +450,7 @@ public sealed partial class Item : FieldedEntity {
 					using var r = oldSchemaCmd.ExecuteReader();
 					if (r.Read()) {
 						r.DAssert_Name(0, "schema");
-						oldSchemaId = r.GetInt64(0);
+						schemaId = r.GetInt64(0);
 					} else {
 						goto Missing_0;
 					}
@@ -466,27 +460,21 @@ public sealed partial class Item : FieldedEntity {
 				U.SkipInit(out FieldsWriter fw);
 
 				try {
-					/// The base schema (i.e., <see cref="FieldedEntity._SchemaId"/>)
-					/// may be changed/updated by the following.
-
-					// NOTE: Even if the base schema changes, it is guaranteed
-					// to still be compatible with the old base schema, since it
-					// would still hold the same classes and shared fields as
-					// would be applied to the old base schema. If it is
-					// important that the old base schema be kept on failure,
-					// the client code should simply do a manual backup of it
-					// prior to the operation.
-
 					if ((state & MustRewriteSchema_Mask) == 0) {
-						_SchemaId = oldSchemaId;
-						CompileFieldChanges(ref fr, ref fw);
+						_SchemaId = schemaId; // The old schema rowid loaded
+						long newSchemaId = CompileFieldChanges(ref fr, ref fw);
+						if (newSchemaId == 0) {
+							goto DoneWithSchemaId;
+						} else {
+							goto UpdateSchemaId;
+						}
 					} else {
 						if ((state & StateFlags.Change_SchemaId) == 0) {
-							_SchemaId = oldSchemaId;
+							_SchemaId = schemaId; // The old schema rowid loaded
 						} else {
-							fr.OverrideSharedStore(oldSchemaId);
+							fr.OverrideSharedStore(schemaId);
 						}
-						RewriteSchema(oldSchemaId, ref fr, ref fw);
+						schemaId = RewriteSchema(schemaId, ref fr, ref fw);
 						/// TODO Optimize case for when only the schema rowid changes (without class changes, without
 						/// shared field changes).
 						/// - i.e., avoid <see cref="FieldedEntity.RewriteSchema"/>
@@ -495,10 +483,11 @@ public sealed partial class Item : FieldedEntity {
 						///   rewriting.
 					}
 
-					// Make the (new) base schema the actual schema
-					cmdParams.Add(new("$schema", _SchemaId));
+				UpdateSchemaId:
+					cmdParams.Add(new("$schema", schemaId));
 					cmdSb.Append("schema=$schema,");
 
+				DoneWithSchemaId:
 					long dataModstamp;
 					if ((state & StateFlags.Change_DataModStamp) == 0) {
 						dataModstamp = now;
@@ -576,13 +565,15 @@ public sealed partial class Item : FieldedEntity {
 					if (floatingFields != null) {
 						InternalSaveFloatingFields(db, floatingFields, rowid);
 					}
+
+					// Wrap up!
+					_SchemaId = schemaId;
+					goto Commit;
+
 				} finally {
 					fw.Dispose();
 					fr.Dispose();
 				}
-
-				goto Commit;
-
 			} else {
 				if ((state & StateFlags.Change_DataModStamp) != 0) {
 					cmdParams.Add(new("$dataModSt", _DataModStamp));

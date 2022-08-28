@@ -154,11 +154,6 @@ partial class FieldedEntity {
 	}
 
 	/// <remarks>
-	/// <para>
-	/// NOTE: This method will modify <see cref="_SchemaId"/> on successful
-	/// return. If it's important that the old value of <see cref="_SchemaId"/>
-	/// be preserved, perform a manual backup of the old value before the call.
-	/// </para>
 	/// CONTRACT:
 	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
 	/// <br/>- Must set <see cref="_SchemaId"/> beforehand to the rowid of the
@@ -173,9 +168,12 @@ partial class FieldedEntity {
 	/// Violation of the above contract may result in undefined behavior.
 	/// </para>
 	/// </remarks>
+	/// <returns>
+	/// The new schema rowid (never zero).
+	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private protected void RewriteSchema(long oldSchemaId, ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
+	private protected long RewriteSchema(long oldSchemaId, ref FieldsReader fr, ref FieldsWriter fw, int hotStoreLimit = DefaultHotStoreLimit) {
 		DAssert_FieldsWriterPriorRewrite(ref fw);
 
 		var clsSet = _Classes;
@@ -838,8 +836,10 @@ partial class FieldedEntity {
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 
+	Done:
 		DAssert_FieldsWriterAfterRewrite(ref fw);
-		return; // ---
+		Debug.Assert(schemaId != 0);
+		return schemaId; // ---
 
 	InitBareSchema:
 		schemaId = InitBareSchema(clsList, schemaUsum);
@@ -871,6 +871,12 @@ partial class FieldedEntity {
 
 	E_TooManyClasses:
 		E_TooManyClasses(clsSet.Count);
+
+		// -=-
+
+		Debug.Fail("This point should be unreachable.");
+		schemaId = 0;
+		goto Done;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
