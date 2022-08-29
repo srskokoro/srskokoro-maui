@@ -11,6 +11,40 @@ partial class FieldedEntity {
 
 	private static class SchemaRewrite {
 
+		internal struct FieldInfo {
+			public long RowId;
+
+			public int ClsOrd;
+			public FieldStoreType Sto;
+			public int Ord;
+
+			public string Name;
+#if DEBUG
+			public long ClsRowId;
+#endif
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public FieldInfo(
+				long RowId,
+				int ClsOrd, FieldStoreType Sto, int Ord,
+				string Name
+#if DEBUG
+				, long ClsRowId
+#endif
+			) {
+				this.RowId = RowId;
+
+				this.ClsOrd = ClsOrd;
+				this.Sto = Sto;
+				this.Ord = Ord;
+
+				this.Name = Name;
+#if DEBUG
+				this.ClsRowId = ClsRowId;
+#endif
+			}
+		}
+
 		internal static class Comparison_clsList {
 			private static Comparison<(long RowId, byte[]? Csum)>? _Inst;
 
@@ -780,14 +814,7 @@ partial class FieldedEntity {
 		Debug.Assert(db.Context != null);
 		long schemaId = db.Context.NextSchemaId();
 
-		List<(
-			long RowId,
-			int ClsOrd, FieldStoreType Sto, int Ord,
-			string Name
-#if DEBUG
-			, long ClsRowId
-#endif
-		)> fldList = new();
+		List<SchemaRewrite.FieldInfo> fldList = new();
 
 		int fldSharedCount = 0;
 		int fldHotCount = 0;
@@ -872,7 +899,7 @@ partial class FieldedEntity {
 					if (!exists) {
 						i = fldList.Count; // The new entry's index in the list
 
-						fldList.Add((
+						fldList.Add(new(
 							RowId: fldId,
 							ClsOrd: clsOrd, Sto: sto, Ord: ord,
 							Name: name
@@ -930,7 +957,7 @@ partial class FieldedEntity {
 								fldSharedCount--;
 							}
 						}
-						fld = (
+						fld = new(
 							RowId: fldId,
 							ClsOrd: clsOrd, Sto: sto, Ord: ord,
 							Name: name
