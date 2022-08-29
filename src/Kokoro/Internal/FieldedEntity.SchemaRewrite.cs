@@ -268,7 +268,14 @@ partial class FieldedEntity {
 						cls.Csum = r.GetBytes(1);
 					} else {
 						// The user probably attached a nonexistent class to the
-						// fielded entity. Ignore it then.
+						// fielded entity. Ignore it then. We'll skip it later.
+
+						// A null `csum` indicates that it should be skipped.
+						Debug.Assert(cls.Csum == null);
+
+						// Remove from set (since the set describes the fielded
+						// entity's classes under the new schema).
+						clsSet.Remove(cls.RowId);
 					}
 				}
 
@@ -328,8 +335,9 @@ partial class FieldedEntity {
 
 				ref var r0 = ref clsList.AsSpan().DangerousGetReference();
 				do {
-					ref var cls = ref U.Add(ref r0, i);
-					hasher.Update(cls.Csum);
+					byte[]? csum = U.Add(ref r0, i).Csum;
+					// Skips nonexistent classes (indicated by null `csum`)
+					if (csum != null) hasher.Update(csum);
 				} while (++i < n);
 
 			Hashed:
