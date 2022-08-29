@@ -8,8 +8,16 @@ internal static class ArrayExtensions {
 		=> array.AsDangerousSpanShortened(array.Length);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ReadOnlySpan<T> AsDangerousROSpan<T>(this T[] array)
+		=> array.AsDangerousROSpanShortened(array.Length);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Span<T> AsDangerousSpan<T>(this T[] array, int start)
 		=> array.AsDangerousSpan(start, array.Length);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ReadOnlySpan<T> AsDangerousROSpan<T>(this T[] array, int start)
+		=> array.AsDangerousROSpan(start, array.Length);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Span<T> AsDangerousSpan<T>(this T[] array, int start, int length) {
@@ -17,6 +25,14 @@ internal static class ArrayExtensions {
 
 		ref T r0 = ref array.DangerousGetReferenceAt(start);
 		return MemoryMarshal.CreateSpan(ref r0, length);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ReadOnlySpan<T> AsDangerousROSpan<T>(this T[] array, int start, int length) {
+		/// See note in <see cref="AsDangerousSpanShortened{T}(T[], int)"/>
+
+		ref T r0 = ref array.DangerousGetReferenceAt(start);
+		return MemoryMarshal.CreateReadOnlySpan(ref r0, length);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,5 +45,13 @@ internal static class ArrayExtensions {
 
 		ref T r0 = ref array.DangerousGetReference();
 		return MemoryMarshal.CreateSpan(ref r0, length);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ReadOnlySpan<T> AsDangerousROSpanShortened<T>(this T[] array, int length) {
+		/// See note in <see cref="AsDangerousSpanShortened{T}(T[], int)"/>
+
+		ref T r0 = ref array.DangerousGetReference();
+		return MemoryMarshal.CreateReadOnlySpan(ref r0, length);
 	}
 }
