@@ -301,7 +301,7 @@ partial class FieldedEntity {
 		}
 
 		// Partition the list of classes into two, direct and indirect classes,
-		// then sort each partition into a predictable order.
+		// then sort each partition to a predictable order.
 		{
 			var clsListSpan = clsList.AsSpan();
 			if (clsListSpan.Length > MaxClassCount) goto E_TooManyClasses;
