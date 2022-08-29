@@ -859,11 +859,11 @@ partial class FieldedEntity {
 		return schemaId; // ---
 
 	InitBareSchema:
-		schemaId = InitBareSchema(clsList, schemaUsum);
+		schemaId = InitBareSchema(db, clsList, schemaUsum);
 		goto InitBareSchema_Done;
 
 	InitNonBareSchema:
-		schemaId = InitNonBareSchema(
+		schemaId = InitNonBareSchema(db,
 			bareSchemaId: schemaId,
 			nonBareUsum: schemaUsum,
 			ref fw, nsc: nsc
@@ -898,7 +898,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(List<(long RowId, byte[]? Csum)> clsList, byte[] usum) {
+	private static long InitBareSchema(KokoroSqliteDb db, List<(long RowId, byte[]? Csum)> clsList, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
 		// TODO Implement
@@ -907,7 +907,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitNonBareSchema(long bareSchemaId, byte[] nonBareUsum, ref FieldsWriter fw, int nsc) {
+	private static long InitNonBareSchema(KokoroSqliteDb db, long bareSchemaId, byte[] nonBareUsum, ref FieldsWriter fw, int nsc) {
 		DAssert_NonBareSchemaUsum(nonBareUsum);
 
 		// TODO Implement
