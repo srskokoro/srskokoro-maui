@@ -144,6 +144,7 @@ partial class FieldedEntity {
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+			[SkipLocalsInit]
 			private static int Impl(
 				(long RowId, byte[]? Csum) a,
 				(long RowId, byte[]? Csum) b
