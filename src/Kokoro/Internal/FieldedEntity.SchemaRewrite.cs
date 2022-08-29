@@ -136,17 +136,17 @@ partial class FieldedEntity {
 		}
 
 		internal static class Comparison_clsList {
-			private static Comparison<(long RowId, UniqueId Uid, byte[] Csum)>? _Inst;
+			private static Comparison<(long RowId, UniqueId Uid, byte[]? Csum)>? _Inst;
 
-			internal static Comparison<(long RowId, UniqueId Uid, byte[] Csum)> Inst {
+			internal static Comparison<(long RowId, UniqueId Uid, byte[]? Csum)> Inst {
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => _Inst ??= Impl;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 			private static int Impl(
-				(long RowId, UniqueId Uid, byte[] Csum) a,
-				(long RowId, UniqueId Uid, byte[] Csum) b
+				(long RowId, UniqueId Uid, byte[]? Csum) a,
+				(long RowId, UniqueId Uid, byte[]? Csum) b
 			) {
 				return a.Uid.CompareTo(b.Uid);
 			}
@@ -236,10 +236,10 @@ partial class FieldedEntity {
 		int dclsCount = clsSet.Count; // The number of direct classes
 		if (dclsCount > MaxClassCount) goto E_TooManyClasses;
 
-		List<(long RowId, UniqueId Uid, byte[] Csum)> clsList = new(dclsCount);
+		List<(long RowId, UniqueId Uid, byte[]? Csum)> clsList = new(dclsCount);
 
 		foreach (long rowid in clsSet) {
-			clsList.Add((RowId: rowid, Uid: default, Csum: null!));
+			clsList.Add((RowId: rowid, Uid: default, Csum: null));
 		}
 
 		// --
@@ -285,7 +285,7 @@ partial class FieldedEntity {
 						r.DAssert_Name(0, "incl");
 						long incl = r.GetInt64(0);
 						if (clsSet.Add(incl)) {
-							clsList.Add((RowId: incl, Uid: default, Csum: null!));
+							clsList.Add((RowId: incl, Uid: default, Csum: null));
 						}
 					}
 				}
@@ -888,7 +888,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(List<(long RowId, UniqueId Uid, byte[] Csum)> clsList, byte[] usum) {
+	private static long InitBareSchema(List<(long RowId, UniqueId Uid, byte[]? Csum)> clsList, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
 		// TODO Implement
