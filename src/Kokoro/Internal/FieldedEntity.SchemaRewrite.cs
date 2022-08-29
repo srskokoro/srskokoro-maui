@@ -789,6 +789,38 @@ partial class FieldedEntity {
 			Debug.Assert(clsCount > 0);
 			Debug.Assert(clsCount >= dclsCount);
 
+			using var insClsCmd = db.CreateCommand();
+			SqliteParameter insClsCmd_csum, insClsCmd_ind;
+			insClsCmd.Set(
+				$"INSERT INTO {Prot.SchemaToClass}" +
+				$"(schema,cls,csum,ind)" +
+				$"\nVALUES" +
+				$"($schema,$rowid,$csum,$ind)"
+			).AddParams(
+				cmd_schema, cmd_rowid,
+				insClsCmd_csum = new() { ParameterName = "$csum" },
+				insClsCmd_ind = new() { ParameterName = "$ind" }
+			);
+
+			int c = 0;
+			do {
+				ref var cls = ref U.Add(ref cls_r0, c);
+
+				// --
+				{
+					byte[]? csum = cls.Csum;
+
+					// Skips nonexistent classes (indicated by null `csum`)
+					if (csum == null) continue;
+
+					insClsCmd_csum.Value = csum;
+					insClsCmd_ind.Value = c >= dclsCount;
+					cmd_rowid.Value = cls.RowId;
+
+					int updated = insClsCmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+				}
+			} while (++c < clsCount);
 		}
 
 		// TODO Implement
