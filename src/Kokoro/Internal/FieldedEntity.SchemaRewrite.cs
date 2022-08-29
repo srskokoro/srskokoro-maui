@@ -148,6 +148,7 @@ partial class FieldedEntity {
 				(long RowId, UniqueId Uid, byte[]? Csum) a,
 				(long RowId, UniqueId Uid, byte[]? Csum) b
 			) {
+				// TODO Consider removing `Uid` and just sort by `Csum` instead
 				return a.Uid.CompareTo(b.Uid);
 			}
 		}
@@ -293,7 +294,7 @@ partial class FieldedEntity {
 		}
 
 		// Partition the list of classes into two, direct and indirect classes,
-		// then sort each partition by class UID.
+		// then sort each partition into a predictable order.
 		{
 			var clsListSpan = clsList.AsSpan();
 			if (clsListSpan.Length > MaxClassCount) goto E_TooManyClasses;
