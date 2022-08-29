@@ -386,7 +386,7 @@ public sealed partial class Class : DataEntity {
 			/// 0. `uid`
 			/// 1. `ord`
 			/// 2. The 512-bit hash of, the list of `csum` data from `<see cref="Prot.ClassToField"/>`,
-			/// ordered by `<see cref="Prot.ClassToField"/>.ord,<see cref="Prot.NameId"/>.name`
+			/// ordered by `csum` -- see, https://crypto.stackexchange.com/q/54544
 			/// 3. The 512-bit hash of, the list of `uid` data from `<see cref="Prot.Class"/> ON <see cref="Prot.Class"/>.rowid=<see cref="Prot.ClassToInclude"/>.incl`,
 			/// ordered by `<see cref="Prot.Class"/>.uid`
 			///
@@ -535,10 +535,10 @@ public sealed partial class Class : DataEntity {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			$"SELECT cls2fld.csum AS csum\n" +
-			$"FROM {Prot.ClassToField} AS cls2fld,{Prot.NameId} AS fld\n" +
-			$"WHERE cls2fld.cls=$cls AND fld.rowid=cls2fld.fld\n" +
-			$"ORDER BY cls2fld.ord,fld.name"
+			$"SELECT csum\n" +
+			$"FROM {Prot.ClassToField}\n" +
+			$"WHERE cls=$cls\n" +
+			$"ORDER BY csum" // See, https://crypto.stackexchange.com/q/54544
 		).AddParams(new("$cls", cls));
 
 		using var r = cmd.ExecuteReader();

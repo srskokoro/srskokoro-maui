@@ -414,6 +414,13 @@ internal static class Setup_v0w1 {
 
 		$") WITHOUT ROWID";
 
+	public const string CreateIndex_IX_ClassToField_C_cls_C_csum =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToField}_C_cls_C_csum" +
+		$"] ON " +
+			$"{P.ClassToField}(cls, csum)" +
+		$"";
+
 	public const string CreateTable_ClassToInclude =
 		$"CREATE TABLE {P.ClassToInclude}(" +
 
