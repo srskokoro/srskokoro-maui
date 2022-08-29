@@ -859,7 +859,7 @@ partial class FieldedEntity {
 		return schemaId; // ---
 
 	InitBareSchema:
-		schemaId = InitBareSchema(db, clsList, schemaUsum);
+		schemaId = InitBareSchema(db, clsList, dclsCount, schemaUsum);
 		goto InitBareSchema_Done;
 
 	InitNonBareSchema:
@@ -898,7 +898,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(KokoroSqliteDb db, List<(long RowId, byte[]? Csum)> clsList, byte[] usum) {
+	private static long InitBareSchema(KokoroSqliteDb db, List<(long RowId, byte[]? Csum)> clsList, int dclsCount, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
 		// TODO Implement
