@@ -156,7 +156,7 @@ partial class FieldedEntity {
 				if (y == null) goto GT; // This becomes a conditional jump forward to not favor it
 
 				// See also, https://crypto.stackexchange.com/questions/54544/how-to-to-calculate-the-hash-of-an-unordered-set
-				return x.AsDangerousSpan().SequenceCompareTo(y.AsDangerousSpan());
+				return x.AsDangerousROSpan().SequenceCompareTo(y.AsDangerousROSpan());
 
 			LT: return -1;
 			GT: return 1;
