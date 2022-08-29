@@ -8,15 +8,14 @@ internal static class Setup_v0w1 {
 
 	// --
 
-	const string RowIdPk = $"rowid INTEGER PRIMARY KEY CHECK(rowid != 0)";
+	const string WithFkDfr = "DEFERRABLE INITIALLY DEFERRED";
 
+	const string RowIdPk = $"rowid INTEGER PRIMARY KEY CHECK(rowid != 0)";
 	// NOTE: Even without `ON DELETE RESTRICT`, SQLite prohibits parent key
 	// deletions -- consult the SQLite docs for details.
 	const string OnRowIdFk = "ON UPDATE CASCADE";
 	const string OnRowIdFkCascDel = "ON DELETE CASCADE"+" "+"ON UPDATE CASCADE";
 	const string OnRowIdFkNullDel = "ON DELETE SET NULL"+" "+"ON UPDATE CASCADE";
-	const string WithFkDfr = "DEFERRABLE INITIALLY DEFERRED";
-
 
 	const string UidUkCk = $"uid BLOB UNIQUE NOT NULL CHECK(length(uid) = 16)";
 
