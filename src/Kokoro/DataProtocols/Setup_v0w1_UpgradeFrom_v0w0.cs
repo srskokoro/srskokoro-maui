@@ -48,6 +48,7 @@ internal static class Setup_v0w1_UpgradeFrom_v0w0 {
 		db.Exec(S.CreateTable_ClassToField);
 		db.Exec(S.CreateIndex_IX_ClassToField_C_cls_C_csum);
 		db.Exec(S.CreateTable_ClassToInclude);
+		db.Exec(S.CreateIndex_IX_ClassToInclude_C_cls_C_uid);
 
 		// -=-
 

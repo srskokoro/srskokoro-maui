@@ -387,8 +387,8 @@ public sealed partial class Class : DataEntity {
 			/// 1. `ord`
 			/// 2. The 512-bit hash of, the list of `csum` data from `<see cref="Prot.ClassToField"/>`,
 			/// ordered by `csum` -- see, https://crypto.stackexchange.com/q/54544
-			/// 3. The 512-bit hash of, the list of `uid` data from `<see cref="Prot.Class"/> ON <see cref="Prot.Class"/>.rowid=<see cref="Prot.ClassToInclude"/>.incl`,
-			/// ordered by `<see cref="Prot.Class"/>.uid`
+			/// 3. The 512-bit hash of, the list of `uid` data from `<see cref="Prot.ClassToInclude"/>`,
+			/// ordered by `uid`
 			///
 			/// Unless stated otherwise, all integer inputs should be consumed
 			/// in their little-endian form.
@@ -559,8 +559,8 @@ public sealed partial class Class : DataEntity {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			$"SELECT cls.uid AS uid FROM {Prot.ClassToInclude} AS cls2incl,{Prot.Class} AS cls\n" +
-			$"WHERE cls2incl.cls=$cls AND cls.rowid=cls2incl.incl\n" +
+			$"SELECT uid FROM {Prot.ClassToInclude}\n" +
+			$"WHERE cls=$cls\n" +
 			$"ORDER BY uid"
 		).AddParams(new("$cls", cls));
 

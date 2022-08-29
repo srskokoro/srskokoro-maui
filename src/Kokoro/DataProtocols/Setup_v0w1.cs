@@ -18,6 +18,7 @@ internal static class Setup_v0w1 {
 	const string OnRowIdFkNullDel = "ON DELETE SET NULL"+" "+"ON UPDATE CASCADE";
 
 	const string UidUkCk = $"uid BLOB UNIQUE NOT NULL CHECK(length(uid) = 16)";
+	const string OnUidFk = "ON UPDATE CASCADE";
 
 	const string Ord_Int32Nn = $"ord INTEGER NOT NULL CHECK(ord {BetweenInt32Range})";
 	const string Ord_Int64Nn = $"ord INTEGER NOT NULL";
@@ -430,7 +431,17 @@ internal static class Setup_v0w1 {
 			// The included entity class.
 			$"incl INTEGER NOT NULL REFERENCES {P.Class} {OnRowIdFk}," +
 
+			// The included entity class's `uid`
+			$"uid BLOB NOT NULL REFERENCES {P.Class}(uid) {OnUidFk}," +
+
 			$"PRIMARY KEY(cls, incl)" +
 
 		$") WITHOUT ROWID";
+
+	public const string CreateIndex_IX_ClassToInclude_C_cls_C_uid =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToInclude}_C_cls_C_uid" +
+		$"] ON " +
+			$"{P.ClassToInclude}(cls, uid)" +
+		$"";
 }
