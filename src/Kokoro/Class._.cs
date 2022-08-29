@@ -544,7 +544,7 @@ public sealed partial class Class : DataEntity {
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
 			r.DAssert_Name(0, "csum");
-			// Will be empty span on null (i.e., won't throw NRE)
+			// NOTE: Will be empty span on null (i.e., won't throw NRE)
 			var csum = (ReadOnlySpan<byte>)r.GetBytesOrNull(0);
 			Debug.Assert(csum.Length > 0, $"Unexpected: field info has no `csum` (under class rowid {cls})");
 			hasher_flds.Update(csum);
