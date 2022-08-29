@@ -780,6 +780,20 @@ partial class FieldedEntity {
 		Debug.Assert(db.Context != null);
 		long schemaId = db.Context.NextSchemaId();
 
+		List<(
+			long RowId,
+			int ClsOrd,
+			FieldStoreType Sto,
+			int Ord,
+			string Name
+#if DEBUG
+			, long ClsRowId
+#endif
+		)> fldList = new();
+
+		int fldSharedCount = 0;
+		int fldHotCount = 0;
+
 		SqliteParameter cmd_schema = new("$schema", schemaId);
 		SqliteParameter cmd_rowid = new() { ParameterName = "$rowid" };
 
@@ -788,6 +802,21 @@ partial class FieldedEntity {
 		if (clsCount != 0) {
 			Debug.Assert(clsCount > 0);
 			Debug.Assert(clsCount >= dclsCount);
+
+			// Used to spot duplicate entries
+			Dictionary<long, int> fldMap = new();
+
+			using var fldInfoCmd = db.CreateCommand();
+			fldInfoCmd.Set(
+				$"SELECT\n" +
+					$"fld.rowid AS fld,\n" +
+					$"fld.name AS name,\n" +
+					$"cls2fld.ord AS ord,\n" +
+					$"cls2fld.sto AS sto,\n" +
+					$"cls.ord AS clsOrd\n" +
+				$"FROM {Prot.Class} AS cls,{Prot.ClassToField} AS cls2fld,{Prot.NameId} AS fld\n" +
+				$"WHERE cls.rowid=$rowid AND cls2fld.cls=cls.rowid AND fld.rowid=cls2fld.fld"
+			).AddParams(cmd_rowid);
 
 			using var insClsCmd = db.CreateCommand();
 			SqliteParameter insClsCmd_csum, insClsCmd_ind;
@@ -819,6 +848,32 @@ partial class FieldedEntity {
 
 					int updated = insClsCmd.ExecuteNonQuery();
 					Debug.Assert(updated == 1, $"Updated: {updated}");
+				}
+
+				using var r = fldInfoCmd.ExecuteReader();
+				while (r.Read()) {
+					r.DAssert_Name(0, "fld");
+					long fldId = r.GetInt64(0);
+
+					r.DAssert_Name(1, "name");
+					string name = r.GetString(1);
+
+					r.DAssert_Name(2, "ord");
+					int ord = r.GetInt32(2);
+
+					r.DAssert_Name(3, "sto");
+					FieldStoreType sto = (FieldStoreType)r.GetInt32(3);
+					sto.DAssert_Defined();
+
+					r.DAssert_Name(4, "clsOrd");
+					int clsOrd = r.GetInt32(4);
+
+					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(
+						fldMap, key: fldId, out bool exists
+					);
+					if (!exists) {
+					} else {
+					}
 				}
 			} while (++c < clsCount);
 		}
