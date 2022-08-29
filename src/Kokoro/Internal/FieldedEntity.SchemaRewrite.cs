@@ -136,20 +136,29 @@ partial class FieldedEntity {
 		}
 
 		internal static class Comparison_clsList {
-			private static Comparison<(long RowId, UniqueId Uid, byte[]? Csum)>? _Inst;
+			private static Comparison<(long RowId, byte[]? Csum)>? _Inst;
 
-			internal static Comparison<(long RowId, UniqueId Uid, byte[]? Csum)> Inst {
+			internal static Comparison<(long RowId, byte[]? Csum)> Inst {
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => _Inst ??= Impl;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 			private static int Impl(
-				(long RowId, UniqueId Uid, byte[]? Csum) a,
-				(long RowId, UniqueId Uid, byte[]? Csum) b
+				(long RowId, byte[]? Csum) a,
+				(long RowId, byte[]? Csum) b
 			) {
-				// TODO Consider removing `Uid` and just sort by `Csum` instead
-				return a.Uid.CompareTo(b.Uid);
+				var x = a.Csum;
+				if (x == null) goto LT; // This becomes a conditional jump forward to not favor it
+
+				var y = b.Csum;
+				if (y == null) goto GT; // This becomes a conditional jump forward to not favor it
+
+				// See also, https://crypto.stackexchange.com/questions/54544/how-to-to-calculate-the-hash-of-an-unordered-set
+				return x.AsDangerousSpan().SequenceCompareTo(y.AsDangerousSpan());
+
+			LT: return -1;
+			GT: return 1;
 			}
 		}
 	}
@@ -237,10 +246,10 @@ partial class FieldedEntity {
 		int dclsCount = clsSet.Count; // The number of direct classes
 		if (dclsCount > MaxClassCount) goto E_TooManyClasses;
 
-		List<(long RowId, UniqueId Uid, byte[]? Csum)> clsList = new(dclsCount);
+		List<(long RowId, byte[]? Csum)> clsList = new(dclsCount);
 
 		foreach (long rowid in clsSet) {
-			clsList.Add((RowId: rowid, Uid: default, Csum: null));
+			clsList.Add((RowId: rowid, Csum: null));
 		}
 
 		// --
@@ -248,7 +257,7 @@ partial class FieldedEntity {
 			SqliteParameter cmd_rowid = new() { ParameterName = "$rowid" };
 
 			using var clsCmd = db.CreateCommand();
-			clsCmd.Set($"SELECT uid,csum FROM {Prot.Class} WHERE rowid=$rowid")
+			clsCmd.Set($"SELECT csum FROM {Prot.Class} WHERE rowid=$rowid")
 				.AddParams(cmd_rowid);
 
 			using var inclCmd = db.CreateCommand();
@@ -262,11 +271,8 @@ partial class FieldedEntity {
 				// Get the needed class info
 				using (var r = clsCmd.ExecuteReader()) {
 					if (r.Read()) {
-						r.DAssert_Name(0, "uid");
-						cls.Uid = r.GetUniqueId(0);
-
-						r.DAssert_Name(1, "csum");
-						cls.Csum = r.GetBytes(1);
+						r.DAssert_Name(0, "csum");
+						cls.Csum = r.GetBytes(0);
 					} else {
 						// The user probably attached a nonexistent class to the
 						// fielded entity. Ignore it then. We'll skip it later.
@@ -286,7 +292,7 @@ partial class FieldedEntity {
 						r.DAssert_Name(0, "incl");
 						long incl = r.GetInt64(0);
 						if (clsSet.Add(incl)) {
-							clsList.Add((RowId: incl, Uid: default, Csum: null));
+							clsList.Add((RowId: incl, Csum: null));
 						}
 					}
 				}
@@ -889,7 +895,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(List<(long RowId, UniqueId Uid, byte[]? Csum)> clsList, byte[] usum) {
+	private static long InitBareSchema(List<(long RowId, byte[]? Csum)> clsList, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
 		// TODO Implement
