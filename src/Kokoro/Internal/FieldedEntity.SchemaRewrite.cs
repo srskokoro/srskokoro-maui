@@ -777,6 +777,20 @@ partial class FieldedEntity {
 	private static long InitBareSchema(KokoroSqliteDb db, List<(long RowId, byte[]? Csum)> clsList, int dclsCount, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
+		Debug.Assert(db.Context != null);
+		long schemaId = db.Context.NextSchemaId();
+
+		SqliteParameter cmd_schema = new("$schema", schemaId);
+		SqliteParameter cmd_rowid = new() { ParameterName = "$rowid" };
+
+		ref var cls_r0 = ref clsList.AsSpan().DangerousGetReference();
+		int clsCount = clsList.Count;
+		if (clsCount != 0) {
+			Debug.Assert(clsCount > 0);
+			Debug.Assert(clsCount >= dclsCount);
+
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
