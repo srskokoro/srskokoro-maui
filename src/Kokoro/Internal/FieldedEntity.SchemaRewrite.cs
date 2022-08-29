@@ -11,6 +11,17 @@ partial class FieldedEntity {
 
 	private static class SchemaRewrite {
 
+		internal struct ClassInfo {
+			public long RowId;
+			public byte[]? Csum;
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public ClassInfo(long RowId, byte[]? Csum) {
+				this.RowId = RowId;
+				this.Csum = Csum;
+			}
+		}
+
 		internal struct FieldInfo {
 			public long RowId;
 
@@ -46,19 +57,16 @@ partial class FieldedEntity {
 		}
 
 		internal static class Comparison_clsList {
-			private static Comparison<(long RowId, byte[]? Csum)>? _Inst;
+			private static Comparison<ClassInfo>? _Inst;
 
-			internal static Comparison<(long RowId, byte[]? Csum)> Inst {
+			internal static Comparison<ClassInfo> Inst {
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => _Inst ??= Impl;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 			[SkipLocalsInit]
-			private static int Impl(
-				(long RowId, byte[]? Csum) a,
-				(long RowId, byte[]? Csum) b
-			) {
+			private static int Impl(ClassInfo a, ClassInfo b) {
 				var x = a.Csum;
 				var y = b.Csum;
 
@@ -159,10 +167,10 @@ partial class FieldedEntity {
 		int dclsCount = clsSet.Count; // The number of direct classes
 		if (dclsCount > MaxClassCount) goto E_TooManyClasses;
 
-		List<(long RowId, byte[]? Csum)> clsList = new(dclsCount);
+		List<SchemaRewrite.ClassInfo> clsList = new(dclsCount);
 
 		foreach (long rowid in clsSet) {
-			clsList.Add((RowId: rowid, Csum: null));
+			clsList.Add(new(RowId: rowid, Csum: null));
 		}
 
 		// --
@@ -205,7 +213,7 @@ partial class FieldedEntity {
 						r.DAssert_Name(0, "incl");
 						long incl = r.GetInt64(0);
 						if (clsSet.Add(incl)) {
-							clsList.Add((RowId: incl, Csum: null));
+							clsList.Add(new(RowId: incl, Csum: null));
 						}
 					}
 				}
@@ -808,7 +816,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(KokoroSqliteDb db, List<(long RowId, byte[]? Csum)> clsList, int dclsCount, byte[] usum) {
+	private static long InitBareSchema(KokoroSqliteDb db, List<SchemaRewrite.ClassInfo> clsList, int dclsCount, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
 		Debug.Assert(db.Context != null);
