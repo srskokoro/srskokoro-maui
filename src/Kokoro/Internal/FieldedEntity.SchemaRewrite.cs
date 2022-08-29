@@ -782,9 +782,7 @@ partial class FieldedEntity {
 
 		List<(
 			long RowId,
-			int ClsOrd,
-			FieldStoreType Sto,
-			int Ord,
+			int ClsOrd, FieldStoreType Sto, int Ord,
 			string Name
 #if DEBUG
 			, long ClsRowId
@@ -876,9 +874,7 @@ partial class FieldedEntity {
 
 						fldList.Add((
 							RowId: fldId,
-							ClsOrd: clsOrd,
-							Sto: sto,
-							Ord: ord,
+							ClsOrd: clsOrd, Sto: sto, Ord: ord,
 							Name: name
 #if DEBUG
 							, ClsRowId: cls.RowId
@@ -936,9 +932,7 @@ partial class FieldedEntity {
 						}
 						fld = (
 							RowId: fldId,
-							ClsOrd: clsOrd,
-							Sto: sto,
-							Ord: ord,
+							ClsOrd: clsOrd, Sto: sto, Ord: ord,
 							Name: name
 #if DEBUG
 							, ClsRowId: cls.RowId
