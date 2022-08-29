@@ -153,13 +153,15 @@ partial class FieldedEntity {
 				var y = b.Csum;
 
 				if (x == null) goto Null_x; // This becomes a conditional jump forward to not favor it
-				if (y == null) goto Null_y; // ^
+				if (y == null) goto NonNull_x_Null_y; // ^
 
 				// See also, https://crypto.stackexchange.com/questions/54544/how-to-to-calculate-the-hash-of-an-unordered-set
 				return x.AsDangerousROSpan().SequenceCompareTo(y.AsDangerousROSpan());
 
-			Null_x: return y == null ? 0 : -1;
-			Null_y: return x == null ? 0 : 1;
+			Null_x:
+				return y == null ? 0 : -1;
+			NonNull_x_Null_y:
+				return 1;
 			}
 		}
 	}
