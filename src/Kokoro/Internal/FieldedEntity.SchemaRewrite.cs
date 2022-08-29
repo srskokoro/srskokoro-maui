@@ -872,7 +872,24 @@ partial class FieldedEntity {
 						fldMap, key: fldId, out bool exists
 					);
 					if (!exists) {
+						i = fldList.Count; // The new entry's index in the list
+
+						fldList.Add((
+							RowId: fldId,
+							ClsOrd: clsOrd,
+							Sto: sto,
+							Ord: ord,
+							Name: name
+						));
 					} else {
+					}
+
+					if (sto != FieldStoreType.Shared) {
+						if (sto == FieldStoreType.Hot) {
+							fldHotCount++;
+						}
+					} else {
+						fldSharedCount++;
 					}
 				}
 			} while (++c < clsCount);
