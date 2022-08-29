@@ -882,6 +882,49 @@ partial class FieldedEntity {
 							Name: name
 						));
 					} else {
+						// Get a `ref` to the already existing entry
+						ref var fld = ref fldList.AsSpan().DangerousGetReferenceAt(i);
+
+						// Attempt to replace existing entry
+						// --
+						{
+							var a = clsOrd; var b = fld.ClsOrd;
+							if (a < b) goto ReplaceEntry;
+							if (a > b) goto LeaveEntry;
+						}
+						{
+							var a = sto; var b = fld.Sto;
+							if (a < b) goto ReplaceEntry;
+							if (a > b) goto LeaveEntry;
+						}
+						{
+							var a = ord; var b = fld.Ord;
+							if (a < b) goto ReplaceEntry;
+							//if (a > b) goto LeaveEntry;
+						}
+						{
+							// Same entry or practically the same
+							goto LeaveEntry;
+						}
+
+					ReplaceEntry:
+						{
+							var oldSto = fld.Sto;
+							if (oldSto != FieldStoreType.Shared) {
+								if (oldSto == FieldStoreType.Hot) {
+									fldHotCount--;
+								}
+							} else {
+								fldSharedCount--;
+							}
+						}
+						fld = (
+							RowId: fldId,
+							ClsOrd: clsOrd,
+							Sto: sto,
+							Ord: ord,
+							Name: name
+						);
 					}
 
 					if (sto != FieldStoreType.Shared) {
@@ -891,6 +934,9 @@ partial class FieldedEntity {
 					} else {
 						fldSharedCount++;
 					}
+
+				LeaveEntry:
+					;
 				}
 			} while (++c < clsCount);
 		}
