@@ -880,10 +880,19 @@ partial class FieldedEntity {
 							Sto: sto,
 							Ord: ord,
 							Name: name
+#if DEBUG
+							, ClsRowId: cls.RowId
+#endif
 						));
 					} else {
 						// Get a `ref` to the already existing entry
 						ref var fld = ref fldList.AsSpan().DangerousGetReferenceAt(i);
+
+						Debug.Assert(fldId == fld.RowId);
+						Debug.Assert(name == fld.Name, $"Impossible! " +
+							$"Two fields have the same name ID (which is {fldId}) but different names:" +
+							$"{Environment.NewLine}Name of 1st instance: {name}" +
+							$"{Environment.NewLine}Name of 2nd instance: {fld.Name}");
 
 						// Attempt to replace existing entry
 						// --
@@ -903,6 +912,13 @@ partial class FieldedEntity {
 							//if (a > b) goto LeaveEntry;
 						}
 						{
+#if DEBUG
+							Debug.Assert(cls.RowId != fld.ClsRowId,
+								$"Unexpected! Duplicate rows returned for class-and-field pair:" +
+								$"{Environment.NewLine}Class ID: {cls.RowId}" +
+								$"{Environment.NewLine}Field Name: {name}" +
+								$"{Environment.NewLine}Field ID: {fldId}");
+#endif
 							// Same entry or practically the same
 							goto LeaveEntry;
 						}
@@ -924,6 +940,9 @@ partial class FieldedEntity {
 							Sto: sto,
 							Ord: ord,
 							Name: name
+#if DEBUG
+							, ClsRowId: cls.RowId
+#endif
 						);
 					}
 
