@@ -490,6 +490,7 @@ public sealed partial class Item : FieldedEntity {
 					}
 
 				UpdateSchemaId:
+					Debug.Assert(newSchemaId != 0);
 					cmdParams.Add(new("$schema", newSchemaId));
 					cmdSb.Append("schema=$schema,");
 
