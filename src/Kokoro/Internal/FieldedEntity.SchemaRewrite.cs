@@ -67,6 +67,15 @@ partial class FieldedEntity {
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 			[SkipLocalsInit]
 			private static int Impl(ClassInfo a, ClassInfo b) {
+				/// WARNING: This is used for sorting, and if the way things are
+				/// sorted changes, the <see cref="SchemaUsumVer"/> version
+				/// integer must either increment or change.
+				///
+				/// The way the elements are compared may still be changed
+				/// (especially to optimize code), provided that the sorting
+				/// doesn't change -- otherwise, the aforesaid version integer
+				/// must increment or change.
+
 				var x = a.Csum;
 				var y = b.Csum;
 
@@ -94,6 +103,15 @@ partial class FieldedEntity {
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 			[SkipLocalsInit]
 			private static int Impl(FieldInfo a, FieldInfo b) {
+				/// WARNING: This is used for sorting, and if the way things are
+				/// sorted changes, the <see cref="SchemaUsumVer"/> version
+				/// integer must either increment or change.
+				///
+				/// The way the elements are compared may still be changed
+				/// (especially to optimize code), provided that the sorting
+				/// doesn't change -- otherwise, the aforesaid version integer
+				/// must increment or change.
+
 				int cmp;
 				{
 					// Partition the sorted entries by field store type
