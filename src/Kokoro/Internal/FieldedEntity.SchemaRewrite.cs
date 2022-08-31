@@ -315,6 +315,40 @@ partial class FieldedEntity {
 		// Generate the `usum` for the bare schema
 		{
 			var hasher = Blake2b.CreateIncrementalHasher(SchemaUsumDigestLength);
+			/// WARNING: The expected order of inputs to be fed to the above
+			/// hasher must be strictly as follows:
+			///
+			/// 0. The number of direct classes, as a 32-bit integer, in little-
+			/// endian format.
+			/// 1. The `csum`s from the list of direct classes (with the list of
+			/// classes sorted by <see cref="SchemaRewrite.Comparison_clsList.Inst"/>
+			/// beforehand).
+			/// 2. The `csum`s from the list of indirect classes (with the list
+			/// of classes sorted by <see cref="SchemaRewrite.Comparison_clsList.Inst"/>
+			/// beforehand).
+			///   - WARNING: Notice that, this last entry is variable-sized but
+			///   not length-prepended. There is no clear termination.
+			///
+			/// Unless stated otherwise, all integer inputs should be consumed
+			/// in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
+			///
+			/// The <see cref="SchemaUsumVer"/> version integer must increment
+			/// or change, should any of the following happens:
+			///
+			/// - The resulting hash BLOB length changes.
+			/// - The algorithm for the resulting hash BLOB changes.
+			/// - An input entry (from the list of inputs above) was removed.
+			/// - The order of an input entry (from the list of inputs above)
+			/// was changed or shifted.
+			/// - An input entry's size (in bytes) changed while it's expected
+			/// to be fixed-sized (e.g., not length-prepended).
+			///
+			/// The aforesaid version integer needs not to change if further
+			/// input entries were to be appended (from the list of inputs
+			/// above), provided that the last input entry has a clear
+			/// termination, i.e., fixed-sized or length-prepended.
+
+			// --
 
 			// Length-prepend for the (sub)list of direct classes
 			{
@@ -546,6 +580,47 @@ partial class FieldedEntity {
 		// Generate the `usum` for the actual schema
 		{
 			Blake2bHashState hasher;
+			/// WARNING: The expected order of inputs to be fed to the above
+			/// hasher must be strictly as follows:
+			///
+			/// 0. The bare schema `usum`.
+			/// 1. The result of each shared field's <see cref="FieldVal.FeedTo(ref Blake2bHashState)"/>
+			/// method, including those with null field values, provided that,
+			/// the aforesaid method treats each shared field data as several
+			/// inputs composed of the following, in strict order:
+			///   1.1. The type hint, as a 32-bit integer.
+			///   1.2. If not a null field value (indicated by the type hint),
+			///   then the data bytes with its (32-bit) length prepended.
+			///     - NOTE: The length said here is the length of the data
+			///     bytes, excluding the type hint.
+			///
+			///   - WARNING: There can be zero or more shared fields, and this
+			///   last entry is variable-sized but not length-prepended. There
+			///   is no clear termination.
+			///
+			///   - The shared fields must be fed to the hasher in the order of
+			///   their indices.
+			///
+			/// Unless stated otherwise, all integer inputs should be consumed
+			/// in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
+			///
+			/// The <see cref="SchemaUsumVer"/> version integer must increment
+			/// or change, should any of the following happens:
+			///
+			/// - The resulting hash BLOB length changes.
+			/// - The algorithm for the resulting hash BLOB changes.
+			/// - An input entry (from the list of inputs above) was removed.
+			/// - The order of an input entry (from the list of inputs above)
+			/// was changed or shifted.
+			/// - An input entry's size (in bytes) changed while it's expected
+			/// to be fixed-sized (e.g., not length-prepended).
+			///
+			/// The aforesaid version integer needs not to change if further
+			/// input entries were to be appended (from the list of inputs
+			/// above), provided that the last input entry has a clear
+			/// termination, i.e., fixed-sized or length-prepended.
+
+			// --
 
 			using (var cmd = db.CreateCommand()) {
 				cmd.Set(
