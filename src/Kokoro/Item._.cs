@@ -467,6 +467,7 @@ public sealed partial class Item : FieldedEntity {
 
 						newSchemaId = CompileFieldChanges(ref fr, ref fw);
 						if (newSchemaId == 0) {
+							newSchemaId = oldSchemaId;
 							goto DoneWithSchemaId;
 						} else {
 							goto UpdateSchemaId;
@@ -574,9 +575,7 @@ public sealed partial class Item : FieldedEntity {
 					}
 
 					// Wrap up!
-					if (newSchemaId != 0) {
-						_SchemaId = newSchemaId;
-					}
+					_SchemaId = newSchemaId;
 					goto Commit;
 
 				} finally {
