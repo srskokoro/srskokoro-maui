@@ -1009,6 +1009,11 @@ partial class FieldedEntity {
 		}
 
 		int fldCount = fldList.Count;
+		Debug.Assert(fldCount > 0);
+		Debug.Assert((uint)fldSharedCount <= (uint)fldCount);
+		Debug.Assert((uint)fldHotCount <= (uint)fldCount);
+		Debug.Assert((uint)(fldSharedCount + fldHotCount) <= (uint)fldCount);
+
 		if (fldCount > MaxFieldCount) goto E_TooManyFields;
 
 		// TODO Implement
