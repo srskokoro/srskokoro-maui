@@ -664,6 +664,8 @@ partial class FieldedEntity {
 
 				GotEntry:
 					{
+						/// <seealso cref="FieldsWriter.LoadOffsets"/>
+
 						Debug.Assert((uint)i < (uint)fw._Entries.Length);
 						fw._Entries.DangerousGetReferenceAt(i) = fval;
 

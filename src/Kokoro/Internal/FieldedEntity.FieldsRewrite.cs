@@ -230,6 +230,41 @@ partial class FieldedEntity {
 		internal readonly int LoadHot(ref FieldsReader fr, int end)
 			=> Load(ref fr, nextOffset: 0, start: 0, end);
 
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		[SkipLocalsInit]
+		internal readonly int LoadOffsets(int nextOffset, int start, int end) {
+			try {
+				Debug.Assert((uint)end <= (uint)MaxFieldCount);
+
+				Debug.Assert((uint)end <= (uint?)_Offsets?.Length); // `false` on null array
+				Debug.Assert((uint)end <= (uint?)_Entries?.Length);
+
+				// Get references to avoid unnecessary range checking
+				ref var offsets_r0 = ref _Offsets.DangerousGetReference();
+				ref var entries_r0 = ref _Entries.DangerousGetReference();
+
+				for (int i = start; i < end; i++) {
+					FieldVal? fval = U.Add(ref entries_r0, i);
+					Debug.Assert(fval != null, $"Unexpected null entry at {i}");
+
+					U.Add(ref offsets_r0, i) = nextOffset;
+
+					checked {
+						nextOffset += (int)fval.CountEncodeLength();
+					}
+				}
+			} catch (OverflowException) {
+				goto E_FieldValsLengthTooLarge;
+			}
+
+			if ((uint)nextOffset <= (uint)MaxFieldValsLength) {
+				return nextOffset; // Early exit
+			}
+
+		E_FieldValsLengthTooLarge:
+			return E_FieldValsLengthTooLarge<int>((uint)nextOffset);
+		}
+
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[SkipLocalsInit]
@@ -895,7 +930,7 @@ partial class FieldedEntity {
 					$"{Environment.NewLine}Actual hot data size:   {newHotFValsSize};");
 
 				Debug.Assert(xhc == ohc); // Future-proofing
-				fValsSize = fw.Load(ref fr, nextOffset: newHotFValsSize, start: xhc, end: ldn);
+				fValsSize = fw.LoadOffsets(nextOffset: newHotFValsSize, start: xhc, end: ldn);
 				goto TrimFull_ClearCold_TryRewriteHot;
 			}
 		}
