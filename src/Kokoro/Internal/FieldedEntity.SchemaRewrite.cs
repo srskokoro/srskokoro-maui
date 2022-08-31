@@ -1014,6 +1014,9 @@ partial class FieldedEntity {
 		Debug.Assert((uint)fldHotCount <= (uint)fldCount);
 		Debug.Assert((uint)(fldSharedCount + fldHotCount) <= (uint)fldCount);
 
+		int fldLocalCount = fldCount - fldSharedCount;
+		Debug.Assert((uint)fldHotCount <= (uint)fldLocalCount);
+
 		if (fldCount > MaxFieldCount) goto E_TooManyFields;
 		if (fldCount != 0) {
 			fldList.Sort(SchemaRewrite.Comparison_fldList.Inst);
@@ -1049,9 +1052,6 @@ partial class FieldedEntity {
 					FieldStoreType.Hot
 				);
 			}
-
-			int fldLocalCount = fldCount - fldSharedCount;
-			Debug.Assert((uint)fldHotCount <= (uint)fldLocalCount);
 
 			if (fldHotCount < fldLocalCount) {
 				SaveFieldInfos(
@@ -1092,6 +1092,31 @@ partial class FieldedEntity {
 					idx_sto_c += FieldSpec.IndexIncrement
 				).Value < idx_sto_n.Value);
 			}
+		}
+
+		using (var cmd = db.CreateCommand()) {
+			const string DataWithNoSharedFieldVals = "x'00'"; // An SQLite BLOB literal
+			Debug.Assert(
+				stackalloc byte[FieldsDesc.VarIntLengthForEmpty] { 0x00 }.SequenceEqual(
+					VarInts.Bytes(FieldsDesc.Empty)
+				)
+			);
+
+			cmd.Set(
+				$"INSERT INTO {Prot.Schema}" +
+				$"(rowid,usum,hotCount,coldCount,sharedCount,data)" +
+				$"\nVALUES" +
+				$"($schema,$usum,$hotCount,$coldCount,$sharedCount,${DataWithNoSharedFieldVals})"
+			).AddParams(
+				cmd_schema,
+				new("$usum", usum),
+				new("$hotCount", fldHotCount),
+				new("$coldCount", fldLocalCount - fldHotCount),
+				new("$sharedCount", fldSharedCount)
+			);
+
+			int updated = cmd.ExecuteNonQuery();
+			Debug.Assert(updated == 1, $"Updated: {updated}");
 		}
 
 		// TODO Implement
