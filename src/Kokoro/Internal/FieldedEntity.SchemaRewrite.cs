@@ -94,7 +94,41 @@ partial class FieldedEntity {
 			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 			[SkipLocalsInit]
 			private static int Impl(FieldInfo a, FieldInfo b) {
-				throw null;
+				int cmp;
+				{
+					// Partition the sorted entries by field store type
+
+					// NOTE: Using `Enum.CompareTo()` has a boxing cost, which
+					// sadly, JIT doesn't optimize out (for now). So we must
+					// cast the enums to their int counterparts to avoid the
+					// unnecessary box.
+					var aSto = (FieldStoreTypeInt)a.Sto;
+					var bSto = (FieldStoreTypeInt)b.Sto;
+
+					cmp = aSto.CompareTo(bSto);
+					if (cmp != 0) goto Return;
+				}
+				{
+					cmp = a.ClsOrd.CompareTo(b.ClsOrd);
+					if (cmp != 0) goto Return;
+				}
+				{
+					cmp = a.Ord.CompareTo(b.Ord);
+					if (cmp != 0) goto Return;
+				}
+				{
+					Debug.Assert(a.RowId != b.RowId, $"Expecting no " +
+						$"duplicates but found a duplicate field entry with " +
+						$"name id {a.RowId}");
+				}
+				{
+					cmp = string.CompareOrdinal(a.Name, b.Name);
+					Debug.Assert(cmp != 0, $"Impossible! Two fields have " +
+						$"different name ids ({a.RowId} and {b.RowId}) but " +
+						$"same name: {a.Name}");
+				}
+			Return:
+				return cmp;
 			}
 		}
 	}
