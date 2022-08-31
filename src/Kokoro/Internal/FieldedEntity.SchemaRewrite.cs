@@ -1015,6 +1015,84 @@ partial class FieldedEntity {
 		Debug.Assert((uint)(fldSharedCount + fldHotCount) <= (uint)fldCount);
 
 		if (fldCount > MaxFieldCount) goto E_TooManyFields;
+		if (fldCount != 0) {
+			fldList.Sort(SchemaRewrite.Comparison_fldList.Inst);
+
+			using var cmd = db.CreateCommand();
+			SqliteParameter cmd_idx_sto;
+			cmd.Set(
+				$"INSERT INTO {Prot.SchemaToField}" +
+				$"(schema,fld,idx_sto)" +
+				$"\nVALUES" +
+				$"($schema,$rowid,$idx_sto)"
+			).AddParams(
+				cmd_schema, cmd_rowid,
+				cmd_idx_sto = new() { ParameterName = "$idx_sto" }
+			);
+
+			ref var fld_r0 = ref fldList.AsSpan().DangerousGetReference();
+
+			if (fldSharedCount != 0) {
+				SaveFieldInfos(
+					cmd, cmd_rowid, cmd_idx_sto,
+					ref fld_r0,
+					start: 0, end: fldSharedCount,
+					FieldStoreType.Shared
+				);
+			}
+
+			if (fldHotCount != 0) {
+				SaveFieldInfos(
+					cmd, cmd_rowid, cmd_idx_sto,
+					ref fld_r0,
+					start: 0, end: fldHotCount,
+					FieldStoreType.Hot
+				);
+			}
+
+			int fldLocalCount = fldCount - fldSharedCount;
+			Debug.Assert((uint)fldHotCount <= (uint)fldLocalCount);
+
+			if (fldHotCount < fldLocalCount) {
+				SaveFieldInfos(
+					cmd, cmd_rowid, cmd_idx_sto,
+					ref fld_r0,
+					start: fldHotCount, end: fldLocalCount,
+					FieldStoreType.Cold
+				);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[SkipLocalsInit]
+			static void SaveFieldInfos(
+				SqliteCommand cmd,
+				SqliteParameter cmd_fld,
+				SqliteParameter cmd_idx_sto,
+
+				ref SchemaRewrite.FieldInfo fld_r0,
+
+				int start, int end,
+				FieldStoreType storeType
+			) {
+				Debug.Assert(start < end);
+				Debug.Assert((uint)end
+					<= (uint)MaxFieldCount && (uint)MaxFieldCount
+					<= (uint)FieldSpec.MaxIndex);
+
+				FieldSpec idx_sto_c = new(start, storeType);
+				FieldSpec idx_sto_n = new(end, storeType);
+
+				do {
+					cmd_fld.Value = U.Add(ref fld_r0, idx_sto_c.Index).RowId;
+					cmd_idx_sto.Value = idx_sto_c.Value;
+
+					int updated = cmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+				} while ((
+					idx_sto_c += FieldSpec.IndexIncrement
+				).Value < idx_sto_n.Value);
+			}
+		}
 
 		// TODO Implement
 		throw new NotImplementedException("TODO");
