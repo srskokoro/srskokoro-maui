@@ -2,19 +2,19 @@
 
 internal static class Prot_v0w1 {
 
-	public const string NameId = "NameId";
+	public const string NameId = nameof(NameId);
 
-	public const string Item = "Item";
-	public const string ItemToColdStore = "ItemToColdStore";
-	public const string ItemToFloatingField = "ItemToFloatingField";
+	public const string Item = nameof(Item);
+	public const string ItemToColdStore = nameof(ItemToColdStore);
+	public const string ItemToFloatingField = nameof(ItemToFloatingField);
 
-	public const string Schema = "Schema";
-	public const string SchemaToField = "SchemaToField";
-	public const string SchemaToClass = "SchemaToClass";
+	public const string Schema = nameof(Schema);
+	public const string SchemaToField = nameof(SchemaToField);
+	public const string SchemaToClass = nameof(SchemaToClass);
 
-	public const string Class = "Class";
-	public const string ClassToField = "ClassToField";
-	public const string ClassToInclude = "ClassToInclude";
+	public const string Class = nameof(Class);
+	public const string ClassToField = nameof(ClassToField);
+	public const string ClassToInclude = nameof(ClassToInclude);
 
 	// --
 
