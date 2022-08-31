@@ -1250,8 +1250,6 @@ partial class FieldedEntity {
 			$"by the schema."));
 	}
 
-	// --
-
 	[DoesNotReturn]
 	private static void E_TooManyFields(int count) {
 		Debug.Assert(count > MaxFieldCount);
