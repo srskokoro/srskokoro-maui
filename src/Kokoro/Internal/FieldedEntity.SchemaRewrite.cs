@@ -1300,6 +1300,8 @@ partial class FieldedEntity {
 		return schemaId;
 	}
 
+	private const int SchemaUsumLength = 32;
+
 	private const int SchemaUsumDigestLength = 31; // 248-bit hash
 
 	private static byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, bool hasSharedData) {
@@ -1308,7 +1310,8 @@ partial class FieldedEntity {
 		Debug.Assert(VarInts.Length(UsumVer) == UsumVerLength);
 		Debug.Assert(VarInts.Bytes(UsumVer)[0] == UsumVer);
 
-		Span<byte> usum = stackalloc byte[UsumVerLength + SchemaUsumDigestLength];
+		Debug.Assert(SchemaUsumLength == UsumVerLength + SchemaUsumDigestLength);
+		Span<byte> usum = stackalloc byte[SchemaUsumLength];
 		usum[0] = UsumVer; // Prepend version varint
 		usum[1] = (byte)((usum[1] & unchecked((sbyte)0xFE)) | hasSharedData.ToByte());
 
@@ -1331,7 +1334,7 @@ partial class FieldedEntity {
 	[Conditional("DEBUG")]
 	private static void DAssert_SchemaUsum_HasSharedDataBit(byte[] usum, bool hasSharedData) {
 		Debug.Assert(usum != null);
-		Debug.Assert(usum.Length == SchemaUsumDigestLength);
+		Debug.Assert(usum.Length == SchemaUsumLength);
 
 		// Expect version 1 (since the check after is valid only for that)
 		Debug.Assert(usum[0] == 1);
