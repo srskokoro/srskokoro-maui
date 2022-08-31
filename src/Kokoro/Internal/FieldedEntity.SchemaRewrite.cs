@@ -1157,6 +1157,7 @@ partial class FieldedEntity {
 		return schemaId; // ---
 
 	E_TooManyFields:
+		db.Context?.UndoSchemaId(schemaId);
 		E_TooManyFields(fldCount);
 
 		// -=-
@@ -1217,7 +1218,14 @@ partial class FieldedEntity {
 
 		byte[] sharedData;
 		{
-			int sharedFValsSize = fw.LoadOffsets(nextOffset: 0, start: 0, end: nsc);
+			int sharedFValsSize;
+			try {
+				sharedFValsSize = fw.LoadOffsets(nextOffset: 0, start: 0, end: nsc);
+			} catch (Exception) {
+				db.Context?.UndoSchemaId(schemaId);
+				throw;
+			}
+
 			ref int offsets_r0 = ref fw._Offsets.DangerousGetReference();
 
 			int sharedFOffsetSizeM1Or0 = (
