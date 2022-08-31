@@ -1337,9 +1337,9 @@ partial class FieldedEntity {
 		Debug.Assert(usum.Length == SchemaUsumLength);
 
 		// Expect version 1 (since the check after is valid only for that)
-		Debug.Assert(usum[0] == 1);
+		Debug.Assert(usum[0] == 1, $"Bytes: {Convert.ToHexString(usum)}");
 		// Expect that the "has shared data" bit flag matches
-		Debug.Assert((usum[1] & 1) == hasSharedData.ToByte());
+		Debug.Assert((usum[1] & 1) == hasSharedData.ToByte(), $"Bytes: {Convert.ToHexString(usum)}");
 	}
 
 	// --
