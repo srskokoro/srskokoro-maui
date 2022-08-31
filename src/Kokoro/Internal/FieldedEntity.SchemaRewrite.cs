@@ -621,14 +621,14 @@ partial class FieldedEntity {
 					newSchemaId = 0;
 				}
 			}
-
 			// NOTE: Must also ensure that the schema rowid is never zero, even
 			// if the rowid came from the DB.
-			if (newSchemaId == 0) {
-				goto InitNonBareSchema;
+			if (newSchemaId != 0) {
+				schemaId = newSchemaId;
+				goto SchemaResolved;
 			}
-			schemaId = newSchemaId;
 		}
+		goto InitNonBareSchema;
 	InitNonBareSchema_Done:
 		Debug.Assert(schemaId != 0);
 
