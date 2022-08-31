@@ -1314,7 +1314,9 @@ partial class FieldedEntity {
 		Span<byte> usum = stackalloc byte[SchemaUsumLength];
 		hasher.Finish(usum[UsumVerLength..]);
 
-		usum[0] = UsumVer; // Prepend version varint
+		// Prepend version varint
+		usum[0] = UsumVer;
+		// Apply desired "has shared data" bit flag
 		usum[1] = (byte)((usum[1] & unchecked((sbyte)0xFE)) | hasSharedData.ToByte());
 
 		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
