@@ -210,13 +210,6 @@ internal static class Setup_v0w1 {
 			// considered a draft, yet to be finalized and not yet immutable.
 			$"usum BLOB NOT NULL UNIQUE," +
 
-			// The maximum number of field data expected to be in the fielded
-			// entity where the schema is applied.
-			//
-			// This should always be equal to the number of local fields defined
-			// by the schema -- see `SchemaToField` table.
-			$"localCount INTEGER NOT NULL CHECK(localCount {BetweenInt32RangeGE0}) AS (hotCount + coldCount)," +
-
 			// The maximum number of hot field data expected to be in the
 			// fielded entity where the schema is applied.
 			//
@@ -254,7 +247,24 @@ internal static class Setup_v0w1 {
 			// for shared fields.
 			//
 			// The BLOB format is similar to the `Item.data` column.
-			$"data BLOB NOT NULL" +
+			$"data BLOB NOT NULL," +
+
+			// The maximum number of field data expected to be in the fielded
+			// entity where the schema is applied.
+			//
+			// This should always be equal to the number of local fields defined
+			// by the schema -- see `SchemaToField` table.
+			//
+			// *** WARNING ***
+			// Do not move this column before any BLOB column that may be
+			// accessed by `sqlite3_blob_open()` API (e.g., `data` column), as
+			// it seems that there's a bug in either "SQLitePCL.raw" or "SQLite"
+			// itself that prevents such access if the BLOB column appears later
+			// after any generated column.
+			// TODO Investigate further and report this issue (to whom?)
+			// ***
+			//
+			$"localCount INTEGER NOT NULL CHECK(localCount {BetweenInt32RangeGE0}) AS (hotCount + coldCount)" +
 
 		$")";
 
