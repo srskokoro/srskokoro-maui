@@ -1170,6 +1170,48 @@ partial class FieldedEntity {
 	private static long InitNonBareSchema(KokoroSqliteDb db, long bareSchemaId, byte[] nonBareUsum, ref FieldsWriter fw, int nsc) {
 		DAssert_NonBareSchemaUsum(nonBareUsum);
 
+		Debug.Assert(db.Context != null);
+		long schemaId = db.Context.NextSchemaId();
+
+		SqliteParameter cmd_schema = new("$schema", schemaId);
+		SqliteParameter cmd_bareSchema = new("$bareSchema", bareSchemaId);
+
+		using (var cmd = db.CreateCommand()) {
+			const string Table = Prot.SchemaToClass;
+			const string Vals = "$schema";
+			const string ValCols = "schema";
+			const string Cols = "cls,csum,ind";
+
+			cmd.Set(
+				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
+				$"SELECT {Cols},{Vals} FROM {Table}\n" +
+				$"WHERE schema=$bareSchema"
+			).AddParams(
+				cmd_schema,
+				cmd_bareSchema
+			);
+
+			cmd.ExecuteNonQuery();
+		}
+
+		using (var cmd = db.CreateCommand()) {
+			const string Table = Prot.SchemaToField;
+			const string Vals = "$schema";
+			const string ValCols = "schema";
+			const string Cols = "fld,idx_sto";
+
+			cmd.Set(
+				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
+				$"SELECT {Cols},{Vals} FROM {Table}\n" +
+				$"WHERE schema=$bareSchema"
+			).AddParams(
+				cmd_schema,
+				cmd_bareSchema
+			);
+
+			cmd.ExecuteNonQuery();
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
 	}
