@@ -1076,6 +1076,8 @@ partial class FieldedEntity {
 				);
 			}
 
+			fld_r0 = ref U.Add(ref fld_r0, fldSharedCount);
+
 			if (fldHotCount != 0) {
 				SaveFieldInfos(
 					cmd, cmd_rowid, cmd_idx_sto,
