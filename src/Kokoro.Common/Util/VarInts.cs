@@ -251,4 +251,30 @@ internal static class VarInts {
 		int len = Write(buffer, value);
 		return buffer.Slice(0, len).ToArray();
 	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static bool Equals(ReadOnlySpan<byte> bytes, ulong value) {
+		Span<byte> buffer = stackalloc byte[MaxLength64];
+		int len = Write(buffer, value);
+		return bytes.SequenceEqual(buffer.Slice(0, len));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static bool Equals(ReadOnlySpan<byte> bytes, uint value) {
+		Span<byte> buffer = stackalloc byte[MaxLength32];
+		int len = Write(buffer, value);
+		return bytes.SequenceEqual(buffer.Slice(0, len));
+	}
+
+	[Conditional("DEBUG")]
+	public static void DAssert_Equals(ReadOnlySpan<byte> bytes, ulong value)
+		=> Debug.Assert(Equals(bytes, value));
+
+	[Conditional("DEBUG")]
+	public static void DAssert_Equals(ReadOnlySpan<byte> bytes, uint value)
+		=> Debug.Assert(Equals(bytes, value));
 }
