@@ -99,7 +99,6 @@ partial class FieldedEntity {
 			{
 				// NOTE: The first offset value is never stored, as it'll always
 				// be zero otherwise.
-				Debug.Assert(fCount <= 0 || offsets_r0 == 0);
 
 				int i = 1; // Skips to the second offset value
 				if (i < fCount) {
