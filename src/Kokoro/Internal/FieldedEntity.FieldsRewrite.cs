@@ -66,9 +66,9 @@ partial class FieldedEntity {
 			// Get a reference to avoid unnecessary range checking
 			ref var entries_r0 = ref _Entries.DangerousGetReference();
 			for (int i = 0; i < fCount; i++) {
-				FieldVal? entry = U.Add(ref entries_r0, i);
-				Debug.Assert(entry != null, $"Unexpected null entry at {i}");
-				entry.WriteTo(destination);
+				FieldVal? fval = U.Add(ref entries_r0, i);
+				Debug.Assert(fval != null, $"Unexpected null entry at {i}");
+				fval.WriteTo(destination);
 			}
 #if DEBUG
 			Debug.Assert(destination.Position == expectedEndPos);
@@ -116,9 +116,9 @@ partial class FieldedEntity {
 			// Get a reference to avoid unnecessary range checking
 			ref var entries_r0 = ref _Entries.DangerousGetReferenceAt(start);
 			for (int i = 0; i < fCount; i++) {
-				FieldVal? entry = U.Add(ref entries_r0, i);
-				Debug.Assert(entry != null, $"Unexpected null entry at {i}");
-				entry.WriteTo(destination);
+				FieldVal? fval = U.Add(ref entries_r0, i);
+				Debug.Assert(fval != null, $"Unexpected null entry at {i}");
+				fval.WriteTo(destination);
 			}
 #if DEBUG
 			Debug.Assert(destination.Position == expectedEndPos);
@@ -282,7 +282,7 @@ partial class FieldedEntity {
 				if (--i < 0) break;
 
 				FieldVal? fval = U.Add(ref entries_r0, i);
-				Debug.Assert(fval != null);
+				Debug.Assert(fval != null, $"Unexpected null entry at {i}");
 
 				if (fval.TypeHint != FieldTypeHint.Null) break;
 				else continue; // See also, https://stackoverflow.com/q/47783926
@@ -303,7 +303,7 @@ partial class FieldedEntity {
 				if (--i < start) break;
 
 				FieldVal? fval = U.Add(ref entries_r0, i);
-				Debug.Assert(fval != null);
+				Debug.Assert(fval != null, $"Unexpected null entry at {i}");
 
 				if (fval.TypeHint != FieldTypeHint.Null) break;
 				else continue; // See also, https://stackoverflow.com/q/47783926
