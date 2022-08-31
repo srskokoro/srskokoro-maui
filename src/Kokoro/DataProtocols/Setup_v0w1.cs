@@ -17,7 +17,7 @@ internal static class Setup_v0w1 {
 	const string OnRowIdFkCascDel = "ON DELETE CASCADE"+" "+"ON UPDATE CASCADE";
 	const string OnRowIdFkNullDel = "ON DELETE SET NULL"+" "+"ON UPDATE CASCADE";
 
-	const string UidUkCk = $"uid BLOB UNIQUE NOT NULL CHECK(length(uid) = 16)";
+	const string UidUkCk = $"uid BLOB NOT NULL UNIQUE CHECK(length(uid) = 16)";
 	const string OnUidFk = "ON UPDATE CASCADE";
 
 	const string Ord_Int32Nn = $"ord INTEGER NOT NULL CHECK(ord {BetweenInt32Range})";
@@ -45,7 +45,7 @@ internal static class Setup_v0w1 {
 
 			$"{RowIdPk}," +
 
-			$"name TEXT UNIQUE NOT NULL" +
+			$"name TEXT NOT NULL UNIQUE" +
 
 		$")";
 
