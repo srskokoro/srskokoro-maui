@@ -1312,10 +1312,10 @@ partial class FieldedEntity {
 
 		Debug.Assert(SchemaUsumLength == UsumVerLength + SchemaUsumDigestLength);
 		Span<byte> usum = stackalloc byte[SchemaUsumLength];
+		hasher.Finish(usum[UsumVerLength..]);
+
 		usum[0] = UsumVer; // Prepend version varint
 		usum[1] = (byte)((usum[1] & unchecked((sbyte)0xFE)) | hasSharedData.ToByte());
-
-		hasher.Finish(usum[UsumVerLength..]);
 
 		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
 		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
