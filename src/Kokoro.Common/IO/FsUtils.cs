@@ -44,7 +44,7 @@ internal static class FsUtils {
 
 			FileSystemInfo fsInfo;
 			if ((attr & FileAttributes.ReparsePoint) != 0) {
-				string childDestDir = childDest[destDir.Length..];
+				string childDestDir = childDest.Substring(destDir.Length);
 				Directory.CreateDirectory(childDestDir);
 				if ((attr & FileAttributes.Directory) != 0) {
 					if (new DirectoryInfo(child).LinkTarget is string linkTarget) {
@@ -62,7 +62,7 @@ internal static class FsUtils {
 				fsInfo = Directory.CreateDirectory(childDest);
 				goto RestoreMetadataLikeFileCopy;
 			} else {
-				string childDestDir = childDest[destDir.Length..];
+				string childDestDir = childDest.Substring(destDir.Length);
 				Directory.CreateDirectory(childDestDir);
 				File.Copy(child, childDest, overwrite: true);
 				// ^- Copies timestamps & permission attributes automatically
