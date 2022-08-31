@@ -188,7 +188,7 @@ partial class Item {
 	// --
 
 	private protected sealed override FieldVal? OnLoadFloatingField(KokoroSqliteDb db, long fieldId) {
-		Span<byte> encoded;
+		ReadOnlySpan<byte> encoded;
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
@@ -218,7 +218,7 @@ partial class Item {
 	}
 
 	private protected sealed override FieldVal? OnSupplantFloatingField(KokoroSqliteDb db, long fieldId) {
-		Span<byte> encoded;
+		ReadOnlySpan<byte> encoded;
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
@@ -248,7 +248,7 @@ partial class Item {
 		return null;
 	}
 
-	private static FieldVal DecodeFloatingFieldVal(Span<byte> encoded) {
+	private static FieldVal DecodeFloatingFieldVal(ReadOnlySpan<byte> encoded) {
 		int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
 
 		Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
