@@ -44,12 +44,20 @@ internal readonly struct FieldsDesc {
 
 	public static FieldsDesc Empty {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => default;
+		get {
+			FieldsDesc _ = default;
+			Debug.Assert(VarInts.Length(_) == VarIntLengthForEmpty);
+			return _;
+		}
 	}
 
 	public static FieldsDesc EmptyWithCold {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => 1 << HasColdComplement_Shift;
+		get {
+			FieldsDesc _ = 1 << HasColdComplement_Shift;
+			Debug.Assert(VarInts.Length(_) == VarIntLengthForEmptyWithCold);
+			return _;
+		}
 	}
 
 	// --
