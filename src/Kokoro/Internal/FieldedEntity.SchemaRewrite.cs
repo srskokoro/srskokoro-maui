@@ -1308,22 +1308,25 @@ partial class FieldedEntity {
 		return schemaId;
 	}
 
-	private const int SchemaUsumLength = 32;
+	private const int SchemaUsumLength = SchemaUsumVerLength + SchemaUsumDigestLength;
+
+	// The version varint
+	private const int SchemaUsumVer = 1;
+	// The varint length is a single byte for now
+	private const int SchemaUsumVerLength = 1;
 
 	private const int SchemaUsumDigestLength = 31; // 248-bit hash
 
 	private static byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, bool hasSharedData) {
-		const int UsumVer = 1; // The version varint
-		const int UsumVerLength = 1; // The varint length is a single byte for now
-		Debug.Assert(VarInts.Length(UsumVer) == UsumVerLength);
-		Debug.Assert(VarInts.Bytes(UsumVer)[0] == UsumVer);
+		Debug.Assert(VarInts.Length(SchemaUsumVer) == SchemaUsumVerLength);
+		Debug.Assert(VarInts.Bytes(SchemaUsumVer)[0] == SchemaUsumVer);
 
-		Debug.Assert(SchemaUsumLength == UsumVerLength + SchemaUsumDigestLength);
+		Debug.Assert(SchemaUsumLength == SchemaUsumVerLength + SchemaUsumDigestLength);
 		Span<byte> usum = stackalloc byte[SchemaUsumLength];
-		hasher.Finish(usum.Slice(UsumVerLength));
+		hasher.Finish(usum.Slice(SchemaUsumVerLength));
 
 		// Prepend version varint
-		usum[0] = UsumVer;
+		usum[0] = SchemaUsumVer;
 		// Apply desired "has shared data" bit flag
 		usum[1] = (byte)((usum[1] & unchecked((sbyte)0xFE)) | hasSharedData.ToByte());
 
