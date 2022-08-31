@@ -1290,7 +1290,7 @@ partial class FieldedEntity {
 			cmd.Set(
 				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
 				$"SELECT {Cols},{Vals} FROM {Table}\n" +
-				$"WHERE schema=$bareSchema"
+				$"WHERE rowid=$bareSchema"
 			).AddParams(
 				cmd_schema,
 				cmd_bareSchema,
