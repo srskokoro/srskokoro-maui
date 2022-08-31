@@ -1134,9 +1134,9 @@ partial class FieldedEntity {
 
 			cmd.Set(
 				$"INSERT INTO {Prot.Schema}" +
-				$"(rowid,usum,hotCount,coldCount,sharedCount,data)" +
+				$"(rowid,usum,hotCount,coldCount,sharedCount,bareSchema,data)" +
 				$"\nVALUES" +
-				$"($schema,$usum,$hotCount,$coldCount,$sharedCount,${DataWithNoSharedFieldVals})"
+				$"($schema,$usum,$hotCount,$coldCount,$sharedCount,$schema,${DataWithNoSharedFieldVals})"
 			).AddParams(
 				cmd_schema,
 				new("$usum", usum),

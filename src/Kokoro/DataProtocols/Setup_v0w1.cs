@@ -238,6 +238,18 @@ internal static class Setup_v0w1 {
 			// defined by the schema -- see `SchemaToField` table.
 			$"sharedCount INTEGER NOT NULL CHECK(sharedCount {BetweenInt32RangeGE0})," +
 
+			// The bare schema that this schema is based off.
+			//
+			// The bare schema of this schema is exactly like this schema except
+			// that, it must also hold the following quirk: bare schemas should
+			// not have shared data (see `data` column), either there are no
+			// shared fields or all shared fields have null field values. That
+			// is, the `data` column of a bare schema has no field entries.
+			//
+			// Every schema must have a corresponding bare schema. Also, the
+			// bare schema of a bare schema should be itself.
+			$"bareSchema INTEGER NOT NULL REFERENCES {P.Schema} {OnRowIdFk}," +
+
 			// The BLOB comprising the list of field offsets and field values
 			// for shared fields.
 			//
