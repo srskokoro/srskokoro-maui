@@ -1168,6 +1168,9 @@ partial class FieldedEntity {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	private static long InitNonBareSchema(KokoroSqliteDb db, long bareSchemaId, byte[] nonBareUsum, ref FieldsWriter fw, int nsc) {
+		Debug.Assert(nsc > 0);
+		Debug.Assert(nsc <= fw._Offsets?.Length); // `false` on null array
+		Debug.Assert(nsc <= fw._Entries?.Length);
 		DAssert_NonBareSchemaUsum(nonBareUsum);
 
 		Debug.Assert(db.Context != null);
@@ -1210,6 +1213,36 @@ partial class FieldedEntity {
 			);
 
 			cmd.ExecuteNonQuery();
+		}
+
+		byte[] sharedData;
+		{
+			int sharedFValsSize = fw.LoadOffsets(nextOffset: 0, start: 0, end: nsc);
+			ref int offsets_r0 = ref fw._Offsets.DangerousGetReference();
+
+			int sharedFOffsetSizeM1Or0 = (
+				(uint)U.Add(ref offsets_r0, nsc-1)
+			).CountBytesNeededM1Or0();
+
+			FieldsDesc sharedFDesc = new(
+				fCount: nsc,
+				fOffsetSizeM1Or0: sharedFOffsetSizeM1Or0
+			);
+
+			Span<byte> buffer_sharedFDesc = stackalloc byte[VarInts.MaxLength32];
+			buffer_sharedFDesc = buffer_sharedFDesc.Slice(0, VarInts.Write(buffer_sharedFDesc, sharedFDesc));
+
+			int sharedFOffsetSize = sharedFOffsetSizeM1Or0 + 1;
+
+			// NOTE: The first offset value is never stored, as it'll always be
+			// zero otherwise.
+			int sharedStoreLength = buffer_sharedFDesc.Length
+				+ (nsc - 1) * sharedFOffsetSize
+				+ sharedFValsSize;
+
+			sharedData = GC.AllocateUninitializedArray<byte>(sharedStoreLength);
+			MemoryStream destination = new(sharedData);
+
 		}
 
 		// TODO Implement
