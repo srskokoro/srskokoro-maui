@@ -263,7 +263,6 @@ internal static class Setup_v0w1 {
 			// appears later than that of any generated column.
 			// TODO Investigate further and report this issue (to whom?)
 			// ***
-			//
 			$"localCount INTEGER NOT NULL CHECK(localCount {BetweenInt32RangeGE0}) AS (hotCount + coldCount)" +
 
 		$")";
