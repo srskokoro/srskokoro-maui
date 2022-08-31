@@ -277,4 +277,21 @@ internal static class VarInts {
 	[Conditional("DEBUG")]
 	public static void DAssert_Equals(ReadOnlySpan<byte> bytes, uint value)
 		=> Debug.Assert(Equals(bytes, value));
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static bool Equals(ulong value, ReadOnlySpan<byte> bytes) => Equals(bytes, value);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static bool Equals(uint value, ReadOnlySpan<byte> bytes) => Equals(bytes, value);
+
+	[Conditional("DEBUG")]
+	public static void DAssert_Equals(ulong value, ReadOnlySpan<byte> bytes)
+		=> Debug.Assert(Equals(value, bytes));
+
+	[Conditional("DEBUG")]
+	public static void DAssert_Equals(uint value, ReadOnlySpan<byte> bytes)
+		=> Debug.Assert(Equals(value, bytes));
 }
