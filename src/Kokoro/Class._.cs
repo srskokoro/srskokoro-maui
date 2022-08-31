@@ -391,7 +391,7 @@ public sealed partial class Class : DataEntity {
 			/// ordered by `uid`
 			///
 			/// Unless stated otherwise, all integer inputs should be consumed
-			/// in their little-endian form.
+			/// in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
 			///
 			/// The resulting hash BLOB shall be prepended with a version
 			/// varint. Should any of the following happens, the version varint
@@ -403,10 +403,12 @@ public sealed partial class Class : DataEntity {
 			/// - The order of an input entry (from the list of inputs above)
 			/// was changed or shifted.
 			/// - An input entry's size (in bytes) changed while it's expected
-			/// to be fixed-size (e.g., not length-prepended).
+			/// to be fixed-sized (e.g., not length-prepended).
 			///
 			/// The version varint needs not to change if further input entries
-			/// were to be appended (from the list of inputs above).
+			/// were to be appended (from the list of inputs above), provided
+			/// that the last input entry has a clear termination, i.e., fixed-
+			/// sized or length-prepended.
 			///
 			int hasher_debug_i = 0; // Used only to help assert the above
 
