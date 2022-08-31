@@ -1257,12 +1257,16 @@ partial class FieldedEntity {
 
 			// Write the field offsets
 			{
-				int i = 0;
-				do {
+				// NOTE: The first offset value is never stored, as it'll always
+				// be zero otherwise.
+				Debug.Assert(offsets_r0 == 0);
+
+				// Skips to the second offset value (at index 1)
+				for (int i = 1; i < nsc; i++) {
 					destination.WriteUInt32AsUIntX(
 						(uint)U.Add(ref offsets_r0, i),
 						sharedFOffsetSize);
-				} while (++i < nsc);
+				}
 			}
 
 			// Write the field values
