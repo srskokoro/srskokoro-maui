@@ -1,5 +1,4 @@
 ﻿namespace Kokoro;
-using Kokoro.Common.Sqlite;
 using Kokoro.Common.Util;
 using Kokoro.Internal;
 using Kokoro.Internal.Sqlite;
@@ -285,7 +284,7 @@ partial class Item {
 			cmd_fld = new() { ParameterName = "$fld" };
 
 		SqliteParameter
-			updCmd_dataLength = null!;
+			updCmd_data = null!;
 
 		try {
 		Loop:
@@ -306,7 +305,11 @@ partial class Item {
 			{
 				uint dataLength = fval.CountEncodeLength();
 				Debug.Assert(dataLength > 0);
-				updCmd_dataLength.Value = dataLength;
+
+				byte[] data = new byte[dataLength];
+				fval.WriteTo(new MemoryStream(data));
+
+				updCmd_data.Value = data;
 
 				try {
 					int updated = updCmd.ExecuteNonQuery();
@@ -318,12 +321,8 @@ partial class Item {
 					return;
 				}
 
-				using (var data = SqliteBlobSlim.Open(db,
-					tableName: Prot.ItemToFloatingField, columnName: "data",
-					rowid: itemId, canWrite: true, throwOnAccessFail: true
-				)!) {
-					fval.WriteTo(data);
-				}
+				// Allow early GC
+				updCmd_data.Value = null;
 
 				goto Continue;
 			}
@@ -359,12 +358,12 @@ partial class Item {
 				updCmd = db.CreateCommand();
 				updCmd.Set(
 					$"INSERT INTO {Prot.ItemToFloatingField}(item,fld,data)\n" +
-					$"VALUES($item,$fld,zeroblob($dataLength))\n" +
+					$"VALUES($item,$fld,$data)\n" +
 					$"ON CONFLICT DO UPDATE\n" +
-					$"SET data=zeroblob($dataLength)"
+					$"SET data=$data"
 				).AddParams(
 					cmd_item, cmd_fld,
-					updCmd_dataLength = new() { ParameterName = "$dataLength" }
+					updCmd_data = new() { ParameterName = "$data" }
 				);
 				Debug.Assert(
 					cmd_item.Value != null &&
