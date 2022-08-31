@@ -631,7 +631,7 @@ partial class FieldedEntity {
 		Debug.Assert(schemaId != 0);
 
 	SchemaResolved:
-		;
+		DInit_StoreLengthsAndFDescs(ref fw);
 
 		// -=-
 
