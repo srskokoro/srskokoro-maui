@@ -1108,7 +1108,7 @@ partial class FieldedEntity {
 				int start, int end,
 				FieldStoreType storeType
 			) {
-				Debug.Assert(start < end);
+				Debug.Assert((uint)start < (uint)end);
 				Debug.Assert((uint)end
 					<= (uint)MaxFieldCount && (uint)MaxFieldCount
 					<= (uint)FieldSpec.MaxIndex);
