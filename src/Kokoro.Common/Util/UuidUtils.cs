@@ -40,7 +40,7 @@ internal static class UuidUtils {
 	[SkipLocalsInit]
 	public static Guid GuidFromUuid(ReadOnlySpan<byte> uuidBytes) {
 		// This initial check should force JIT to avoid unnecessary range
-		// checking, except that for some unknown reasons, it doesn't...
+		// checking, except that for some unknown reasons, it doesn't…
 		if (16 > uuidBytes.Length) {
 			// ^ See also, https://github.com/dotnet/runtime/issues/10950
 			throw new ArgumentOutOfRangeException(nameof(uuidBytes), "Span is too short.");
