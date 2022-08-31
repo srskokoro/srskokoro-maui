@@ -82,6 +82,21 @@ partial class FieldedEntity {
 				return 1;
 			}
 		}
+
+		internal static class Comparison_fldList {
+			private static Comparison<FieldInfo>? _Inst;
+
+			internal static Comparison<FieldInfo> Inst {
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => _Inst ??= Impl;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+			[SkipLocalsInit]
+			private static int Impl(FieldInfo a, FieldInfo b) {
+				throw null;
+			}
+		}
 	}
 
 	/// <remarks>
