@@ -440,7 +440,7 @@ public sealed partial class Item : FieldedEntity {
 
 		CheckForOtherChanges:
 			if (mustRecompileFields) {
-				long schemaId;
+				long oldSchemaId;
 				using (var oldSchemaCmd = db.CreateCommand()) {
 					oldSchemaCmd.Set(
 						$"SELECT schema FROM {Prot.Item}\n" +
@@ -450,7 +450,7 @@ public sealed partial class Item : FieldedEntity {
 					using var r = oldSchemaCmd.ExecuteReader();
 					if (r.Read()) {
 						r.DAssert_Name(0, "schema");
-						schemaId = r.GetInt64(0);
+						oldSchemaId = r.GetInt64(0);
 					} else {
 						goto Missing_0;
 					}
@@ -460,11 +460,12 @@ public sealed partial class Item : FieldedEntity {
 				U.SkipInit(out FieldsWriter fw);
 
 				try {
+					long newSchemaId;
 					if ((state & MustRewriteSchema_Mask) == 0) {
 						/// Needed by contract of <see cref="FieldedEntity.CompileFieldChanges"/>
-						_SchemaId = schemaId; // The old schema rowid loaded
+						_SchemaId = oldSchemaId;
 
-						long newSchemaId = CompileFieldChanges(ref fr, ref fw);
+						newSchemaId = CompileFieldChanges(ref fr, ref fw);
 						if (newSchemaId == 0) {
 							goto DoneWithSchemaId;
 						} else {
@@ -473,12 +474,12 @@ public sealed partial class Item : FieldedEntity {
 					} else {
 						/// Needed by contract of <see cref="FieldedEntity.RewriteSchema"/>
 						if ((state & StateFlags.Change_SchemaId) == 0) {
-							_SchemaId = schemaId; // The old schema rowid loaded
+							_SchemaId = oldSchemaId;
 						} else {
-							fr.OverrideSharedStore(schemaId);
+							fr.OverrideSharedStore(oldSchemaId);
 						}
 
-						schemaId = RewriteSchema(oldSchemaId: schemaId, ref fr, ref fw);
+						newSchemaId = RewriteSchema(oldSchemaId, ref fr, ref fw);
 
 						/// TODO Optimize case for when only the schema rowid changes (without class changes, without
 						/// shared field changes).
@@ -489,7 +490,7 @@ public sealed partial class Item : FieldedEntity {
 					}
 
 				UpdateSchemaId:
-					cmdParams.Add(new("$schema", schemaId));
+					cmdParams.Add(new("$schema", newSchemaId));
 					cmdSb.Append("schema=$schema,");
 
 				DoneWithSchemaId:
@@ -572,7 +573,9 @@ public sealed partial class Item : FieldedEntity {
 					}
 
 					// Wrap up!
-					_SchemaId = schemaId;
+					if (newSchemaId != 0) {
+						_SchemaId = newSchemaId;
+					}
 					goto Commit;
 
 				} finally {
