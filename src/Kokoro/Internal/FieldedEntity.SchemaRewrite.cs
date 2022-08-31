@@ -1153,9 +1153,6 @@ partial class FieldedEntity {
 			Debug.Assert(updated == 1, $"Updated: {updated}");
 		}
 
-		// TODO Implement
-		throw new NotImplementedException("TODO");
-
 	// -=-
 
 	Done:
