@@ -255,7 +255,7 @@ partial class Item {
 		FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
 
 		if (typeHint != FieldTypeHint.Null) {
-			byte[] data = encoded[fValSpecLen..].ToArray();
+			byte[] data = encoded.Slice(fValSpecLen).ToArray();
 			return new(typeHint, data);
 		}
 		return FieldVal.Null;

@@ -99,14 +99,14 @@ public class AssertionCaptureStrategy : IAssertionStrategy {
 				if (d >= nl_len && stCur.Slice(d-nl_len, nl_len).SequenceEqual(nl)) {
 					d -= nl_len; // Omit the trailing newline
 				}
-				stCur = stCur[..d];
+				stCur = stCur.Slice(0, d);
 				break; // No more characters to compare
 			}
 			if (U.Add(ref x, --i) != U.Add(ref y, --j)) {
 				int d = swap ? i : j;
-				int p = stCur[d..].IndexOf(Environment.NewLine);
+				int p = stCur.Slice(d).IndexOf(Environment.NewLine);
 				if (p >= 0) {
-					stCur = stCur[..(d+p)]; // Omit the trailing newline
+					stCur = stCur.Slice(0, d+p); // Omit the trailing newline
 				}
 				break; // Split already found
 			}

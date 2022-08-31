@@ -18,7 +18,7 @@ internal static partial class Blake2bHashStateExtensions {
 	public static void UpdateWithVarInt(ref this Blake2bHashState state, uint input) {
 		Span<byte> buffer = stackalloc byte[5];
 		int written = VarInts.Write(buffer, input);
-		state.Update(buffer[..written]);
+		state.Update(buffer.Slice(0, written));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,6 +26,6 @@ internal static partial class Blake2bHashStateExtensions {
 	public static void UpdateWithVarInt(ref this Blake2bHashState state, ulong input) {
 		Span<byte> buffer = stackalloc byte[9];
 		int written = VarInts.Write(buffer, input);
-		state.Update(buffer[..written]);
+		state.Update(buffer.Slice(0, written));
 	}
 }

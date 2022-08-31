@@ -251,7 +251,7 @@ internal sealed class SqliteBlobSlim : Stream {
 			}
 		}
 
-		int rc = sqlite3_blob_read(_Blob, buffer[..count], (int)position);
+		int rc = sqlite3_blob_read(_Blob, buffer.Slice(0, count), (int)position);
 		if (rc == SQLITE_OK) {
 			_Position += count;
 			return count;
@@ -307,7 +307,7 @@ internal sealed class SqliteBlobSlim : Stream {
 			}
 		}
 
-		int rc = sqlite3_blob_write(_Blob, buffer[..count], (int)position);
+		int rc = sqlite3_blob_write(_Blob, buffer.Slice(0, count), (int)position);
 		if (rc == SQLITE_OK) {
 			_Position += count;
 			return; // Early exit

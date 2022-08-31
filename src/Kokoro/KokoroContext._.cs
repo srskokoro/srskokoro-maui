@@ -137,7 +137,7 @@ public partial class KokoroContext : IDisposable {
 					E_UnexpectedHeaderFormat_InvDat(verPath);
 				}
 
-				verBytes = verBytes[..verBytesRead];
+				verBytes = verBytes.Slice(0, verBytesRead);
 				var verEnc = TextUtils.GetEncoding(verBytes);
 
 				Span<char> verChars = stackalloc char[verEnc.GetCharCount(verBytes)];
@@ -146,9 +146,9 @@ public partial class KokoroContext : IDisposable {
 				if (!verChars.StartsWith(DataVersionFileHeader))
 					E_UnexpectedHeaderFormat_InvDat(verPath);
 
-				var verNums = verChars[DataVersionFileHeader.Length..];
+				var verNums = verChars.Slice(DataVersionFileHeader.Length);
 				int verNumsEnd = verNums.IndexOfAny('\r', '\n');
-				if (verNumsEnd >= 0) verNums = verNums[..verNumsEnd];
+				if (verNumsEnd >= 0) verNums = verNums.Slice(0, verNumsEnd);
 
 				try {
 					_Version = KokoroDataVersion.Parse(verNums);

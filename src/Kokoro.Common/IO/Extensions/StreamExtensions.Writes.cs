@@ -132,7 +132,7 @@ internal static partial class StreamExtensions {
 	public static void WriteVarInt(this Stream stream, ulong value) {
 		Span<byte> buffer = stackalloc byte[VarInts.MaxLength64];
 		int vlen = VarInts.Write(buffer, value);
-		stream.Write(buffer[..vlen]);
+		stream.Write(buffer.Slice(0, vlen));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,6 +140,6 @@ internal static partial class StreamExtensions {
 	public static void WriteVarInt(this Stream stream, uint value) {
 		Span<byte> buffer = stackalloc byte[VarInts.MaxLength32];
 		int vlen = VarInts.Write(buffer, value);
-		stream.Write(buffer[..vlen]);
+		stream.Write(buffer.Slice(0, vlen));
 	}
 }

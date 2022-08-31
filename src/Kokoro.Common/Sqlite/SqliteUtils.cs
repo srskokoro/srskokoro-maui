@@ -30,7 +30,7 @@ internal static class SqliteUtils {
 			var extLen = Path.GetExtension(pathSpan).Length; // NOTE: Includes '.'
 			if (extLen is > 1 and <= 4) {
 				if (Path.GetFileNameWithoutExtension(pathSpan).Length <= 8) {
-					var pathNoExt = pathSpan[..^extLen];
+					var pathNoExt = pathSpan.Slice(0, pathSpan.Length - extLen);
 					File.Delete($"{pathNoExt}.wal");
 					File.Delete($"{pathNoExt}.shm");
 					File.Delete($"{pathNoExt}.nal");
@@ -203,7 +203,7 @@ internal static class SqliteUtils {
 			n += 2;
 		}
 
-		string uri = Encoding.UTF8.GetString(buffer[..n]);
+		string uri = Encoding.UTF8.GetString(buffer.Slice(0, n));
 
 		if (rented != null)
 			ArrayPool<byte>.Shared.Return(rented);

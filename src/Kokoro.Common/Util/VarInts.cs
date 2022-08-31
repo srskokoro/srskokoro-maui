@@ -241,7 +241,7 @@ internal static class VarInts {
 	public static byte[] Bytes(ulong value) {
 		Span<byte> buffer = stackalloc byte[MaxLength64];
 		int len = Write(buffer, value);
-		return buffer[..len].ToArray();
+		return buffer.Slice(0, len).ToArray();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -249,6 +249,6 @@ internal static class VarInts {
 	public static byte[] Bytes(uint value) {
 		Span<byte> buffer = stackalloc byte[MaxLength32];
 		int len = Write(buffer, value);
-		return buffer[..len].ToArray();
+		return buffer.Slice(0, len).ToArray();
 	}
 }

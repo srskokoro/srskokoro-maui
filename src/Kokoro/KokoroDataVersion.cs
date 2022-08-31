@@ -55,8 +55,8 @@ public readonly struct KokoroDataVersion : IEquatable<KokoroDataVersion>, ICompa
 			uint major = ParseMajorVersion(s);
 			return new(major, 0);
 		} else {
-			uint major = ParseMajorVersion(s[..dotIndex]);
-			uint minor = ParseMinorVersion(s[(dotIndex+1)..]);
+			uint major = ParseMajorVersion(s.Slice(0, dotIndex));
+			uint minor = ParseMinorVersion(s.Slice(dotIndex+1));
 			return new(major, minor);
 		}
 	}
