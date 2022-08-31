@@ -609,6 +609,7 @@ partial class FieldedEntity {
 		// Resolve the non-bare schema's rowid
 		// --
 
+		long newSchemaId;
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set($"SELECT rowid FROM {Prot.Schema} WHERE usum=$usum")
 				.AddParams(new("$usum", schemaUsum));
@@ -616,17 +617,18 @@ partial class FieldedEntity {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				r.DAssert_Name(0, "rowid");
-				schemaId = r.GetInt64(0);
+				newSchemaId = r.GetInt64(0);
 			} else {
-				schemaId = 0;
+				newSchemaId = 0;
 			}
 		}
 
 		// NOTE: Must also ensure that the schema rowid is never zero, even if
 		// the rowid came from the DB.
-		if (schemaId == 0) {
+		if (newSchemaId == 0) {
 			goto InitNonBareSchema;
 		}
+		schemaId = newSchemaId;
 	InitNonBareSchema_Done:
 		Debug.Assert(schemaId != 0);
 
