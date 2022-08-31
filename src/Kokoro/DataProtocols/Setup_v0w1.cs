@@ -259,8 +259,8 @@ internal static class Setup_v0w1 {
 			// Do not move this column before any BLOB column that may be
 			// accessed by `sqlite3_blob_open()` API (e.g., `data` column), as
 			// it seems that there's a bug in either "SQLitePCL.raw" or "SQLite"
-			// itself that prevents such access if the BLOB column appears later
-			// after any generated column.
+			// itself that prevents such access if the BLOB column's definition
+			// appears later than that of any generated column.
 			// TODO Investigate further and report this issue (to whom?)
 			// ***
 			//
