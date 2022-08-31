@@ -991,6 +991,8 @@ partial class FieldedEntity {
 
 		// TODO Implement
 		throw new NotImplementedException("TODO");
+
+		return schemaId; // ---
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
