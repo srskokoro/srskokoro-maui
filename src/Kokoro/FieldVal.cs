@@ -62,24 +62,15 @@ public sealed class FieldVal {
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public void FeedTo(ref Blake2bHashState hasher) {
-		FieldTypeHintUInt typeHint = (FieldTypeHintUInt)_TypeHint;
-		if (typeHint != (FieldTypeHintUInt)FieldTypeHint.Null) {
-			Debug.Assert(typeof(FieldTypeHintUInt) == typeof(uint));
-			Span<byte> typeHintBuffer = stackalloc byte[VarInts.MaxLength32];
-			int typeHintLength = VarInts.Write(typeHintBuffer, typeHint);
+		FieldTypeHint typeHint = _TypeHint;
 
-			byte[] data = _Data;
-			uint encodeLength = (uint)typeHintLength + (uint)data.Length;
-			/// See also, <see cref="CountEncodeLength"/>
+		Debug.Assert(typeof(FieldTypeHintUInt) == typeof(uint));
+		hasher.UpdateLE((FieldTypeHintUInt)typeHint);
 
-			hasher.UpdateLE(encodeLength); // i.e., length-prepended
-
-			typeHintBuffer = typeHintBuffer.Slice(0, typeHintLength);
-			hasher.Update(typeHintBuffer);
-
+		if (typeHint != FieldTypeHint.Null) {
+			ReadOnlySpan<byte> data = _Data.AsDangerousROSpan();
+			hasher.UpdateLE(data.Length); // i.e., length-prepended
 			hasher.Update(data);
-		} else {
-			hasher.UpdateLE((uint)0); // i.e., zero length
 		}
 	}
 }
