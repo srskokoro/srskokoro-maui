@@ -1312,7 +1312,7 @@ partial class FieldedEntity {
 
 		Debug.Assert(SchemaUsumLength == UsumVerLength + SchemaUsumDigestLength);
 		Span<byte> usum = stackalloc byte[SchemaUsumLength];
-		hasher.Finish(usum[UsumVerLength..]);
+		hasher.Finish(usum.Slice(UsumVerLength));
 
 		// Prepend version varint
 		usum[0] = UsumVer;

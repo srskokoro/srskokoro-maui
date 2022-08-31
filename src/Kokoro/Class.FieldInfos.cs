@@ -608,7 +608,7 @@ partial class Class {
 		Debug.Assert(VarInts.Bytes(CsumVer)[0] == CsumVer);
 
 		Span<byte> csum = stackalloc byte[CsumVerLength + FieldInfoCsumDigestLength];
-		hasher.Finish(csum[CsumVerLength..]);
+		hasher.Finish(csum.Slice(CsumVerLength));
 
 		// Prepend version varint
 		csum[0] = CsumVer;

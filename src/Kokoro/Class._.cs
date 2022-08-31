@@ -583,7 +583,7 @@ public sealed partial class Class : DataEntity {
 		Debug.Assert(VarInts.Bytes(CsumVer)[0] == CsumVer);
 
 		Span<byte> csum = stackalloc byte[CsumVerLength + ClassCsumDigestLength];
-		hasher.Finish(csum[CsumVerLength..]);
+		hasher.Finish(csum.Slice(CsumVerLength));
 
 		// Prepend version varint
 		csum[0] = CsumVer;
