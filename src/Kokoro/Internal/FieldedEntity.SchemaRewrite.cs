@@ -1267,8 +1267,32 @@ partial class FieldedEntity {
 			}
 		}
 
+		using (var cmd = db.CreateCommand()) {
+			const string Table = Prot.Schema;
+			const string Vals = "$schema,$bareSchema,$usum,$data";
+			const string ValCols = "rowid,bareSchema,usum,data";
+			const string Cols = "hotCount,coldCount,sharedCount";
+
+			cmd.Set(
+				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
+				$"SELECT {Cols},{Vals} FROM {Table}\n" +
+				$"WHERE schema=$bareSchema"
+			).AddParams(
+				cmd_schema,
+				cmd_bareSchema,
+				new("$usum", nonBareUsum),
+				new("$data", sharedData)
+			);
+
+			int updated = cmd.ExecuteNonQuery();
+			Debug.Assert(updated == 1, $"Updated: {updated}");
+		}
+
 		// TODO Implement
 		throw new NotImplementedException("TODO");
+
+		// Done!
+		return schemaId;
 	}
 
 	private const int SchemaUsumDigestLength = 31; // 248-bit hash
