@@ -1243,6 +1243,28 @@ partial class FieldedEntity {
 			sharedData = GC.AllocateUninitializedArray<byte>(sharedStoreLength);
 			MemoryStream destination = new(sharedData);
 
+			destination.Write(buffer_sharedFDesc);
+
+			// Write the field offsets
+			{
+				int i = 0;
+				do {
+					destination.WriteUInt32AsUIntX(
+						(uint)U.Add(ref offsets_r0, i),
+						sharedFOffsetSize);
+				} while (++i < nsc);
+			}
+
+			// Write the field values
+			{
+				ref var entries_r0 = ref fw._Entries.DangerousGetReference();
+				int i = 0;
+				do {
+					FieldVal? fval = U.Add(ref entries_r0, i);
+					Debug.Assert(fval != null, $"Unexpected null entry at {i}");
+					fval.WriteTo(destination);
+				} while (++i < nsc);
+			}
 		}
 
 		// TODO Implement
