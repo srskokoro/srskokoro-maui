@@ -533,7 +533,7 @@ partial class FieldedEntity {
 				cmd.Set(
 					$"SELECT idx,fld FROM {Prot.SchemaToField}\n" +
 					$"WHERE schema=$schema AND loc=0\n" +
-					$"ORDER BY idx" // Needed only to force usage of DB index
+					$"ORDER BY idx" // Needed also to force usage of DB index
 				).AddParams(new("$schema", schemaId));
 
 				using var r = cmd.ExecuteReader();
