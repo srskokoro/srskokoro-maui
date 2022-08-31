@@ -154,11 +154,11 @@ partial class FieldedEntity {
 		/// Similar to <see cref="ReInitEntries(int)"/> but also makes sure <paramref name="count"/>
 		/// doesn't exceed <see cref="MaxFieldCount"/>.
 		/// </summary>
-		internal void ReInitEntriesWithCheck(FieldedEntity owner, int count) {
+		internal void ReInitEntriesWithCheck(int count) {
 			if (count <= MaxFieldCount) {
 				ReInitEntries(count);
 			} else {
-				owner.E_TooManyFields(count);
+				E_TooManyFields(count);
 			}
 		}
 
@@ -723,7 +723,7 @@ partial class FieldedEntity {
 			Debug.Fail("This point should be unreachable.");
 
 		GrowEntries_ohc:
-			fw.ReInitEntriesWithCheck(this, ohc);
+			fw.ReInitEntriesWithCheck(ohc);
 			goto GrowEntries_Done;
 
 		} else if (xhc == ohc) {
@@ -786,7 +786,7 @@ partial class FieldedEntity {
 				Debug.Fail("This point should be unreachable.");
 
 			GrowEntries_olc:
-				fw.ReInitEntriesWithCheck(this, olc);
+				fw.ReInitEntriesWithCheck(olc);
 				goto GrowEntries_Done;
 
 			} else {
@@ -846,7 +846,7 @@ partial class FieldedEntity {
 			Debug.Fail("This point should be unreachable.");
 
 		GrowEntries_olc:
-			fw.ReInitEntriesWithCheck(this, olc);
+			fw.ReInitEntriesWithCheck(olc);
 			goto GrowEntries_Done;
 		}
 

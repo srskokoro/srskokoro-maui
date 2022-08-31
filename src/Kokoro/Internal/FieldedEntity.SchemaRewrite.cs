@@ -826,11 +826,7 @@ partial class FieldedEntity {
 		return schemaId; // ---
 
 	InitBareSchema:
-		schemaId = InitBareSchema(
-			this, db,
-			clsList, dclsCount,
-			schemaUsum
-		);
+		schemaId = InitBareSchema(db, clsList, dclsCount, schemaUsum);
 		goto InitBareSchema_Done;
 
 	InitNonBareSchema:
@@ -869,7 +865,7 @@ partial class FieldedEntity {
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private static long InitBareSchema(FieldedEntity initiator, KokoroSqliteDb db, List<SchemaRewrite.ClassInfo> clsList, int dclsCount, byte[] usum) {
+	private static long InitBareSchema(KokoroSqliteDb db, List<SchemaRewrite.ClassInfo> clsList, int dclsCount, byte[] usum) {
 		DAssert_BareSchemaUsum(usum);
 
 		Debug.Assert(db.Context != null);
@@ -1159,7 +1155,7 @@ partial class FieldedEntity {
 		return schemaId; // ---
 
 	E_TooManyFields:
-		initiator.E_TooManyFields(fldCount);
+		E_TooManyFields(fldCount);
 
 		// -=-
 
@@ -1257,12 +1253,10 @@ partial class FieldedEntity {
 	// --
 
 	[DoesNotReturn]
-	private void E_TooManyFields(int count) {
+	private static void E_TooManyFields(int count) {
 		Debug.Assert(count > MaxFieldCount);
 		throw new InvalidOperationException(
-			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount};" +
-			$"{Environment.NewLine}Entity: {GetDebugLabel()};" +
-			$"{Environment.NewLine}Base Schema: {_SchemaId};");
+			$"Total number of fields (currently {count}) shouldn't exceed {MaxFieldCount}.");
 	}
 
 	[DoesNotReturn]
