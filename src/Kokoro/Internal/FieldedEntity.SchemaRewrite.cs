@@ -1132,11 +1132,7 @@ partial class FieldedEntity {
 
 		using (var cmd = db.CreateCommand()) {
 			const string DataWithNoSharedFieldVals = "x'00'"; // An SQLite BLOB literal
-			Debug.Assert(
-				stackalloc byte[FieldsDesc.VarIntLengthForEmpty] { 0x00 }.SequenceEqual(
-					VarInts.Bytes(FieldsDesc.Empty)
-				)
-			);
+			VarInts.DAssert_Equals(stackalloc byte[FieldsDesc.VarIntLengthForEmpty] { 0x00 }, FieldsDesc.Empty);
 
 			cmd.Set(
 				$"INSERT INTO {Prot.Schema}" +
@@ -1318,8 +1314,7 @@ partial class FieldedEntity {
 	private const int SchemaUsumDigestLength = 31; // 248-bit hash
 
 	private static byte[] FinishWithSchemaUsum(ref Blake2bHashState hasher, bool hasSharedData) {
-		Debug.Assert(VarInts.Length(SchemaUsumVer) == SchemaUsumVerLength);
-		Debug.Assert(VarInts.Bytes(SchemaUsumVer)[0] == SchemaUsumVer);
+		VarInts.DAssert_Equals(stackalloc byte[SchemaUsumVerLength] { SchemaUsumVer }, SchemaUsumVer);
 
 		Debug.Assert(SchemaUsumLength == SchemaUsumVerLength + SchemaUsumDigestLength);
 		Span<byte> usum = stackalloc byte[SchemaUsumLength];

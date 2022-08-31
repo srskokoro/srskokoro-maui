@@ -604,8 +604,7 @@ partial class Class {
 	private static byte[] FinishWithFieldInfoCsum(ref Blake2bHashState hasher) {
 		const int CsumVer = 1; // The version varint
 		const int CsumVerLength = 1; // The varint length is a single byte for now
-		Debug.Assert(VarInts.Length(CsumVer) == CsumVerLength);
-		Debug.Assert(VarInts.Bytes(CsumVer)[0] == CsumVer);
+		VarInts.DAssert_Equals(stackalloc byte[CsumVerLength] { CsumVer }, CsumVer);
 
 		Span<byte> csum = stackalloc byte[CsumVerLength + FieldInfoCsumDigestLength];
 		hasher.Finish(csum.Slice(CsumVerLength));
