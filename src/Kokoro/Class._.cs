@@ -583,9 +583,10 @@ public sealed partial class Class : DataEntity {
 		Debug.Assert(VarInts.Bytes(CsumVer)[0] == CsumVer);
 
 		Span<byte> csum = stackalloc byte[CsumVerLength + ClassCsumDigestLength];
-		csum[0] = CsumVer; // Prepend version varint
-
 		hasher.Finish(csum[CsumVerLength..]);
+
+		// Prepend version varint
+		csum[0] = CsumVer;
 
 		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
 		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
