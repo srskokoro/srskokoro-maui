@@ -401,19 +401,23 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	#region To Base58
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void UnsafeWriteBase58Chars(Span<char> destination) {
+		Debug.Assert(_Base58Size <= destination.Length);
+		UnsafeWriteBase58Chars(ref MemoryMarshal.GetReference(destination));
+	}
+
 	/// <summary>
 	/// Strategy: Treats the underlying data as a 128-bit unsigned integer then converts it to a Base58 integer.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	private void UnsafeWriteBase58Chars(Span<char> destination) {
+	private void UnsafeWriteBase58Chars(ref char destRef) {
 		uint u3 = _UInt32s[3], u2 = _UInt32s[2], u1 = _UInt32s[1], u0 = _UInt32s[0];
 
-		// Get references to avoid unnecessary range checking
-		ref char destRef = ref MemoryMarshal.GetReference(destination);
+		// Get a reference to avoid unnecessary range checking
 		ref byte mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 
-		Debug.Assert(_Base58Size <= destination.Length);
 		for (int i = _Base58Size; i-- > 0;) {
 			ulong q, v;
 			ulong c; // carry
@@ -471,7 +475,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	public override string ToString() {
 		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
 		string str = new('\0', _Base58Size);
-		UnsafeWriteBase58Chars(MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(str.AsSpan()), _Base58Size));
+		UnsafeWriteBase58Chars(ref MemoryMarshal.GetReference(str.AsSpan()));
 		// Given how strings are represented in memory, and that we're creating
 		// via `new string()`, it's unlikely that the above trick will break
 		// something. That is, it should be guaranteed that we'll get a
