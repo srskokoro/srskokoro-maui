@@ -355,6 +355,15 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public Guid ToGuid() => UuidUtils.GuidFromUuid(Span);
 
+	/// <seealso cref="ToString()"/>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public string ToHexString() {
+		// See,
+		// - https://stackoverflow.com/a/10048895
+		// - https://stackoverflow.com/a/71904920
+		return Convert.ToHexString(Span);
+	}
+
 	#region Base58 Conversions
 
 	public static int Base58Size => _Base58Size;
