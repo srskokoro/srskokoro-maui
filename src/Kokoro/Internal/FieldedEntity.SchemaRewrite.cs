@@ -1164,7 +1164,10 @@ partial class FieldedEntity {
 
 			if (fldSharedCount != 0) {
 				SaveFieldInfos(
-					cmd, cmd_rowid, cmd_idx_sto,
+					cmd,
+					cmd_fld: cmd_rowid,
+					cmd_idx_sto: cmd_idx_sto,
+
 					ref fld_r0,
 					start: 0, end: fldSharedCount,
 					FieldStoreType.Shared
@@ -1175,7 +1178,10 @@ partial class FieldedEntity {
 
 			if (fldHotCount != 0) {
 				SaveFieldInfos(
-					cmd, cmd_rowid, cmd_idx_sto,
+					cmd,
+					cmd_fld: cmd_rowid,
+					cmd_idx_sto: cmd_idx_sto,
+
 					ref fld_r0,
 					start: 0, end: fldHotCount,
 					FieldStoreType.Hot
@@ -1184,7 +1190,10 @@ partial class FieldedEntity {
 
 			if (fldHotCount < fldLocalCount) {
 				SaveFieldInfos(
-					cmd, cmd_rowid, cmd_idx_sto,
+					cmd,
+					cmd_fld: cmd_rowid,
+					cmd_idx_sto: cmd_idx_sto,
+
 					ref fld_r0,
 					start: fldHotCount, end: fldLocalCount,
 					FieldStoreType.Cold
