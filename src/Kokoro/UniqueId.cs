@@ -405,6 +405,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	/// Strategy: Treats the underlying data as a 128-bit unsigned integer then converts it to a Base58 integer.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	private void UnsafeWriteBase58Chars(Span<char> destination) {
 		uint u3 = _UInt32s[3], u2 = _UInt32s[2], u1 = _UInt32s[1], u0 = _UInt32s[0];
 
