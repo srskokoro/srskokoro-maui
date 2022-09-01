@@ -13,11 +13,11 @@ internal static class ArrayExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Span<T> AsDangerousSpan<T>(this T[] array, int start)
-		=> array.AsDangerousSpan(start, array.Length);
+		=> array.AsDangerousSpan(start, array.Length - start);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static ReadOnlySpan<T> AsDangerousROSpan<T>(this T[] array, int start)
-		=> array.AsDangerousROSpan(start, array.Length);
+		=> array.AsDangerousROSpan(start, array.Length - start);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Span<T> AsDangerousSpan<T>(this T[] array, int start, int length) {
