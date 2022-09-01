@@ -5,8 +5,11 @@ internal static partial class TextUtils {
 	public static byte[] ToUTF8BytesWithBom(this string s) {
 		var utf8 = Encoding.UTF8;
 		var bom = utf8.Preamble;
+
 		var bytes = new byte[bom.Length + utf8.GetByteCount(s)];
-		utf8.GetBytes(s, bytes);
+		bom.CopyTo(bytes.AsDangerousSpan());
+
+		utf8.GetBytes(s, bytes.AsDangerousSpan(bom.Length));
 		return bytes;
 	}
 
