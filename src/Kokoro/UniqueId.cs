@@ -410,8 +410,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		uint u3 = _UInt32s[3], u2 = _UInt32s[2], u1 = _UInt32s[1], u0 = _UInt32s[0];
 
 		// Get references to avoid unnecessary range checking
-		ref byte mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 		ref char destRef = ref MemoryMarshal.GetReference(destination);
+		ref byte mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 
 		Debug.Assert(_Base58Size <= destination.Length);
 		for (int i = _Base58Size; i-- > 0;) {
@@ -490,8 +490,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		input = input.Trim();
 
 		// Get references to avoid unnecessary range checking
-		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
 		ref char srcRef = ref MemoryMarshal.GetReference(input);
+		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
+
 		int length = Math.Min(_Base58Size, input.Length);
 
 		for (int i = 0; i < length; i++) {
