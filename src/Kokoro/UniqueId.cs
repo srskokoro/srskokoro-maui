@@ -637,7 +637,50 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	// Clockwork Base32 is a simple variant of Base32 inspired by Crockford's Base32.
 	// - Official spec at, https://gist.github.com/szktty/228f85794e4187882a77734c89c384a8
 
+	public static int CwBase32Size => _CwBase32Size;
+
+	// Equiv. to, ceil(N * 8 / 5)
+	private const int _CwBase32Size = (_Size * 8 - 1) / 5 + 1;
+
+	private static ReadOnlySpan<byte> CwBase32EncodingMap => new byte[32] {
+		// Relies on C# compiler optimization to reference static data
+		// - See, https://github.com/dotnet/csharplang/issues/5295
+		(byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7',
+		(byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F',
+		(byte)'G', (byte)'H', (byte)'J', (byte)'K', (byte)'M', (byte)'N', (byte)'P', (byte)'Q',
+		(byte)'R', (byte)'S', (byte)'T', (byte)'V', (byte)'W', (byte)'X', (byte)'Y', (byte)'Z',
+	};
+
+	private static ReadOnlySpan<sbyte> CwBase32DecodingMap => new sbyte[256] {
+		// Relies on C# compiler optimization to reference static data
+		// - See, https://github.com/dotnet/csharplang/issues/5295
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		 0, 1, 2, 3, 4, 5, 6, 7,  8, 9, 0,-1,-1,-1,-1,-1,
+		-1,10,11,12,13,14,15,16, 17, 1,18,19, 1,20,21, 0,
+		22,23,24,25,26,-2,27,28, 29,30,31,-1,-1,-1,-1,-1,
+		-1,10,11,12,13,14,15,16, 17, 1,18,19, 1,20,21, 0,
+		22,23,24,25,26,-1,27,28, 29,30,31,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
+	};
+
 	// TODO Implement. Needed for creating unique filenames.
+
+	#region To Clockwork Base32
+
+	#endregion
+
+	#region From Clockwork Base32
+
+	#endregion
 
 	#endregion
 
