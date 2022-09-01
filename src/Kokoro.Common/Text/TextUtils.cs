@@ -1,15 +1,19 @@
 ﻿namespace Kokoro.Common.Text;
+using System.Runtime.InteropServices;
 
 internal static partial class TextUtils {
 
 	public static byte[] ToUTF8BytesWithBom(this string s) {
 		var utf8 = Encoding.UTF8;
-		var bom = utf8.Preamble;
 
-		var bytes = new byte[bom.Length + utf8.GetByteCount(s)];
-		bom.CopyTo(bytes.AsDangerousSpan());
+		int count = utf8.GetByteCount(s);
+		var bytes = new byte[3 + count];
 
-		utf8.GetBytes(s, bytes.AsDangerousSpan(bom.Length));
+		ref byte r0 = ref bytes.DangerousGetReference();
+		r0 = 0xef; U.Add(ref r0, 1) = 0xbb; U.Add(ref r0, 2) = 0xbf;
+		Debug.Assert(utf8.Preamble.SequenceEqual(MemoryMarshal.CreateSpan(ref r0, 3)));
+
+		utf8.GetBytes(s, MemoryMarshal.CreateSpan(ref U.Add(ref r0, 3), count));
 		return bytes;
 	}
 
