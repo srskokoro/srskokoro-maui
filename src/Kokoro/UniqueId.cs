@@ -599,8 +599,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 				}
 				case ParseFailCode.OverflowCarry: {
 					return new OverflowException(
-						$"Accumulated value of Base58 input is too high.{Environment.NewLine}" +
-						$"Parsing halted at index {current.Index}, with overflow carry."
+						$"Accumulated value of encoded input is too high.{Environment.NewLine}" +
+						$"Decoding halted at index {current.Index}, with overflow carry."
 					);
 				}
 				default: {
