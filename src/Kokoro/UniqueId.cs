@@ -510,16 +510,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		int length = Math.Min(_Base58Size, input.Length);
 
-		for (int i = 0; i < length; i++) {
-			ulong c;
+		int i = 0;
+		ulong c;
 
+		for (; i < length; i++) {
 			var x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
-			if (x < 0) {
-				ref var fail = ref ParseFail.Current;
-				fail.Code = ParseFailCode.InvalidSymbol;
-				fail.Index = i;
-				goto Fail;
-			}
+			if (x < 0) goto Fail_InvalidSymbol;
 
 			Debug.Assert(x < 58);
 			c = (ulong)u0 * 58 + (ulong)x;
@@ -538,13 +534,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			u3 = (uint)c;
 			c >>= 32;
 
-			if (c != 0) {
-				ref var fail = ref ParseFail.Current;
-				fail.Code = ParseFailCode.OverflowCarry;
-				fail.Index = i;
-				fail.Carry = c;
-				goto Fail;
-			}
+			if (c != 0) goto Fail_OverflowCarry;
 		}
 
 		result = new(u3, u2, u1, u0);
@@ -553,6 +543,23 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	Fail:
 		result = default;
 		return false;
+
+	Fail_InvalidSymbol:
+		{
+			ref var fail = ref ParseFail.Current;
+			fail.Code = ParseFailCode.InvalidSymbol;
+			fail.Index = i;
+			goto Fail;
+		}
+
+	Fail_OverflowCarry:
+		{
+			ref var fail = ref ParseFail.Current;
+			fail.Code = ParseFailCode.OverflowCarry;
+			fail.Index = i;
+			fail.Carry = c;
+			goto Fail;
+		}
 	}
 
 	private enum ParseFailCode : byte {
