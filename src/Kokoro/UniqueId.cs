@@ -502,7 +502,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public static bool TryParse(ReadOnlySpan<char> input, out UniqueId result) {
 		uint u3 = 0, u2 = 0, u1 = 0, u0 = 0;
-		input = input.Trim();
 
 		// Get references to avoid unnecessary range checking
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
@@ -511,6 +510,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		ulong c;
 		int i = 0;
+	Loop:
 		for (; i < length; i++) {
 			var x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
@@ -535,6 +535,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			if (c != 0) goto Fail_OverflowCarry;
 		}
 
+	Success:
 		result = new(u3, u2, u1, u0);
 		return true;
 
@@ -544,6 +545,21 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	Fail_InvalidSymbol:
 		{
+			int s = i;
+			do {
+				if (!char.IsWhiteSpace(U.Add(ref srcRef, i))) {
+					goto MaybeFail;
+				}
+			} while (++i < length);
+
+			goto Success;
+
+		MaybeFail:
+			if (s == 0) {
+				// White space simply trimmed from start
+				goto Loop; // Try again
+			}
+
 			ref var fail = ref ParseFail.Current;
 			fail.Code = ParseFailCode.InvalidSymbol;
 			fail.Index = i;
