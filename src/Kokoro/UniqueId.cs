@@ -512,7 +512,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		int i = 0;
 	Loop:
 		for (; i < length; i++) {
-			var x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
+			sbyte x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
 
 			Debug.Assert(x < 58);
