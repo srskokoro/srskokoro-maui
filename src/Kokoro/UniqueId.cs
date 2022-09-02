@@ -785,6 +785,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		shift = -shift;
 		bits |= (uint)(byte)x >> shift;
+
 		if (++i < 14) {
 			Debug.Assert(i == 13);
 			Debug.Assert(shift == 1);
@@ -793,12 +794,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			bits <<= 63;
 			shift = 63;
 			goto LoopStart; // Decode the low bits this time
-		} else {
-			Debug.Assert(i == _CwBase32Size);
-			Debug.Assert(shift == 2);
-			if ((x & 0b11) != 0) {
-				goto Fail_OverflowCarry;
-			}
+		}
+
+		Debug.Assert(i == _CwBase32Size);
+		Debug.Assert(shift == 2);
+		if ((x & 0b11) != 0) {
+			goto Fail_OverflowCarry;
 		}
 
 		// Success!
