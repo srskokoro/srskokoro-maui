@@ -539,10 +539,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		result = new(u3, u2, u1, u0);
 		return true;
 
-	Fail:
-		result = default;
-		return false;
-
 	Fail_InvalidSymbol:
 		{
 			int s = i;
@@ -565,6 +561,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			fail.Index = i;
 			goto Fail;
 		}
+
+	Fail:
+		result = default;
+		return false;
 
 	Fail_OverflowCarry:
 		{
