@@ -471,14 +471,14 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteBase58Chars(Span<char> destination) {
 		if (_Base58Size > destination.Length) {
-			WriteBase58Chars__E_DestinationTooShort_AOOR(nameof(destination));
+			WriteBase58Chars__E_DestinationTooShort_AOOR_destination();
 		}
 		UnsafeWriteBase58Chars(destination);
 	}
 
 	[DoesNotReturn]
-	private static void WriteBase58Chars__E_DestinationTooShort_AOOR(string? paramName)
-		=> throw new ArgumentOutOfRangeException(paramName, "Destination is too short.");
+	private static void WriteBase58Chars__E_DestinationTooShort_AOOR_destination()
+		=> throw Ex_DestinationTooShort_AOOR_destination();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public override string ToString() {
@@ -613,7 +613,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
 		if (_Base58Size != input.Length) {
-			ParseExact__E_LengthNotExact_AOOR(nameof(input));
+			ParseExact__E_LengthNotExact_AOOR_input();
 		}
 		if (!TryParse(input, out var result)) {
 			ParseExact__E_Fail();
@@ -622,8 +622,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[DoesNotReturn]
-	private static void ParseExact__E_LengthNotExact_AOOR(string? paramName)
-		=> throw new ArgumentOutOfRangeException(paramName, $"Input span needs to be exactly {_Base58Size} in length.");
+	private static void ParseExact__E_LengthNotExact_AOOR_input()
+		=> throw new ArgumentOutOfRangeException(paramName: "input", $"Input span needs to be exactly {_Base58Size} in length.");
 
 	[DoesNotReturn]
 	private static void ParseExact__E_Fail() => throw ParseFail.ConsumeException();
@@ -741,14 +741,14 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteCwBase32Chars(Span<char> destination) {
 		if (_CwBase32Size > destination.Length) {
-			WriteCwBase32Chars__E_DestinationTooShort_AOOR(nameof(destination));
+			WriteCwBase32Chars__E_DestinationTooShort_AOOR_destination();
 		}
 		UnsafeWriteCwBase32Chars(destination);
 	}
 
 	[DoesNotReturn]
-	private static void WriteCwBase32Chars__E_DestinationTooShort_AOOR(string? paramName)
-		=> throw new ArgumentOutOfRangeException(paramName, "Destination is too short.");
+	private static void WriteCwBase32Chars__E_DestinationTooShort_AOOR_destination()
+		=> throw Ex_DestinationTooShort_AOOR_destination();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public string ToCwBase32String() {
@@ -944,6 +944,13 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	#endregion
+
+	#endregion
+
+	#region Common Exceptions
+
+	private static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR_destination()
+		=> new(paramName: "destination", "Destination is too short.");
 
 	#endregion
 }
