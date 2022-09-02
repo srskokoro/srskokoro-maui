@@ -505,9 +505,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		input = input.Trim();
 
 		// Get references to avoid unnecessary range checking
-		ref char srcRef = ref MemoryMarshal.GetReference(input);
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
-
+		ref char srcRef = ref MemoryMarshal.GetReference(input);
 		int length = Math.Min(_Base58Size, input.Length);
 
 		ulong c;
