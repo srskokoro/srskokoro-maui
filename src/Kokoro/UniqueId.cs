@@ -551,7 +551,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			goto Success;
 
 		MaybeFail:
-			if (s == 0) {
+			if (i > 0 && s == 0) {
 				// White space simply trimmed from start
 				goto Loop; // Try again
 			}
