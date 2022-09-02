@@ -473,14 +473,14 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteBase58Chars(Span<char> destination) {
 		if (_Base58Size > destination.Length) {
-			WriteBase58Chars__E_DestinationTooShort_AOOR_destination();
+			E_DestinationTooShort_AOOR();
 		}
 		UnsafeWriteBase58Chars(destination);
-	}
 
-	[DoesNotReturn]
-	private static void WriteBase58Chars__E_DestinationTooShort_AOOR_destination()
-		=> throw Ex_DestinationTooShort_AOOR(paramName: "destination");
+		[DoesNotReturn]
+		static void E_DestinationTooShort_AOOR()
+			=> throw Ex_DestinationTooShort_AOOR(nameof(destination));
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public string ToBase58String() {
@@ -729,14 +729,14 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void WriteCwBase32Chars(Span<char> destination) {
 		if (_CwBase32Size > destination.Length) {
-			WriteCwBase32Chars__E_DestinationTooShort_AOOR_destination();
+			E_DestinationTooShort_AOOR();
 		}
 		UnsafeWriteCwBase32Chars(destination);
-	}
 
-	[DoesNotReturn]
-	private static void WriteCwBase32Chars__E_DestinationTooShort_AOOR_destination()
-		=> throw Ex_DestinationTooShort_AOOR(paramName: "destination");
+		[DoesNotReturn]
+		static void E_DestinationTooShort_AOOR()
+			=> throw Ex_DestinationTooShort_AOOR(nameof(destination));
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public string ToCwBase32String() {
