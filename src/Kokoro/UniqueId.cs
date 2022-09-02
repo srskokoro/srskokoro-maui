@@ -480,7 +480,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[DoesNotReturn]
 	private static void WriteBase58Chars__E_DestinationTooShort_AOOR_destination()
-		=> throw Ex_DestinationTooShort_AOOR_destination();
+		=> throw Ex_DestinationTooShort_AOOR(paramName: "destination");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public string ToBase58String() {
@@ -736,7 +736,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[DoesNotReturn]
 	private static void WriteCwBase32Chars__E_DestinationTooShort_AOOR_destination()
-		=> throw Ex_DestinationTooShort_AOOR_destination();
+		=> throw Ex_DestinationTooShort_AOOR(paramName: "destination");
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public string ToCwBase32String() {
@@ -937,8 +937,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	#region Common Exceptions
 
-	private static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR_destination()
-		=> new(paramName: "destination", "Destination is too short.");
+	private static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR(string paramName)
+		=> new(paramName, "Destination is too short.");
 
 	// --
 
