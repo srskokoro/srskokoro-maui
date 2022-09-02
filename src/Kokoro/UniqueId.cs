@@ -571,7 +571,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			ref var fail = ref ParseFail.Current;
 			fail.Code = ParseFailCode.OverflowCarry;
 			fail.Index = i;
-			fail.Carry = c;
 			goto Fail;
 		}
 	}
@@ -586,7 +585,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	private struct ParseFail {
 		public ParseFailCode Code;
 		public int Index;
-		public ulong Carry;
 
 		[ThreadStatic]
 		public static ParseFail Current;
@@ -602,7 +600,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 				case ParseFailCode.OverflowCarry: {
 					return new OverflowException(
 						$"Accumulated value of Base58 input is too high.{Environment.NewLine}" +
-						$"Parsing halted at index {current.Index}, with overflow carry: {current.Carry} (0x{current.Carry:X})"
+						$"Parsing halted at index {current.Index}, with overflow carry."
 					);
 				}
 				default: {
