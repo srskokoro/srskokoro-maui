@@ -589,32 +589,32 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[SkipLocalsInit]
 	public static UniqueId Parse(ReadOnlySpan<char> input) {
 		if (!TryParse(input, out var result)) {
-			Parse__E_Fail();
+			E_ParseFail();
 		}
-		return result;
-	}
+		return result; // ---
 
-	[DoesNotReturn]
-	private static void Parse__E_Fail() => throw ParseFail.ConsumeException();
+		[DoesNotReturn]
+		static void E_ParseFail() => throw ParseFail.ConsumeException();
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
 	public static UniqueId ParseExact(ReadOnlySpan<char> input) {
 		if (_Base58Size != input.Length) {
-			ParseExact__E_LengthNotExact_AOOR_input();
+			E_LengthNotExact_AOOR();
 		}
 		if (!TryParse(input, out var result)) {
-			ParseExact__E_Fail();
+			E_ParseFail();
 		}
-		return result;
+		return result; // ---
+
+		[DoesNotReturn]
+		static void E_LengthNotExact_AOOR()
+			=> throw Ex_LengthNotExact_AOOR(nameof(input), _Base58Size);
+
+		[DoesNotReturn]
+		static void E_ParseFail() => throw ParseFail.ConsumeException();
 	}
-
-	[DoesNotReturn]
-	private static void ParseExact__E_LengthNotExact_AOOR_input()
-		=> throw new ArgumentOutOfRangeException(paramName: "input", $"Input span needs to be exactly {_Base58Size} in length.");
-
-	[DoesNotReturn]
-	private static void ParseExact__E_Fail() => throw ParseFail.ConsumeException();
 
 	#endregion
 
@@ -939,6 +939,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	private static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR(string paramName)
 		=> new(paramName, "Destination is too short.");
+
+	private static ArgumentOutOfRangeException Ex_LengthNotExact_AOOR(string paramName, int requiredLength)
+		=> new(paramName, $"Input span needs to be exactly {requiredLength} in length.");
 
 	// --
 
