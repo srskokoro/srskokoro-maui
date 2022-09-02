@@ -512,7 +512,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		// Get references to avoid unnecessary range checking
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
 		ref char srcRef = ref MemoryMarshal.GetReference(input);
-		int length = Math.Min(_Base58Size, input.Length);
+		int length = input.Length;
 
 		ulong c;
 		int i = 0;
@@ -764,7 +764,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		// Get references to avoid unnecessary range checking
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(CwBase32DecodingMap);
 		ref char srcRef = ref MemoryMarshal.GetReference(input);
-		int length = Math.Min(_CwBase32Size, input.Length);
+		int length = input.Length;
 
 		U.SkipInit(out ulong h);
 		ulong bits = 0;
