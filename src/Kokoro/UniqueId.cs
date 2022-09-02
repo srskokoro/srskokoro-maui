@@ -435,7 +435,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		// Get a reference to avoid unnecessary range checking
 		ref byte mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 
-		for (int i = _Base58Size; i-- > 0;) {
+		int i = _Base58Size - 1;
+		do {
 			ulong q, v;
 			ulong c; // carry
 
@@ -459,7 +460,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			u0 = (uint)q;
 
 			U.Add(ref destRef, i) = (char)U.Add(ref mapRef, (int)c);
-		}
+
+		} while (--i >= 0);
 
 		Debug.Assert(u3 == 0, $"{nameof(u3)}: {u3} (0x{u3:X})");
 		Debug.Assert(u2 == 0, $"{nameof(u2)}: {u2} (0x{u2:X})");
@@ -513,8 +515,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
 
 		int i = 0;
-		// TODO Use a `do…while` loop instead
-		for (; i < _Base58Size; i++) {
+		do {
 			sbyte x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
 
@@ -536,7 +537,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			c >>= 32;
 
 			if (c != 0) goto Fail_OverflowCarry;
-		}
+
+		} while (++i < _Base58Size);
 
 		result = new(u3, u2, u1, u0);
 		return true;
@@ -762,8 +764,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		int i = 0;
 	Loop:
 		sbyte x;
-		// TODO Use a `do…while` loop instead
-		for (; i < _CwBase32Size; i++) {
+		do {
 			x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
 
@@ -771,7 +772,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			if (shift < 0) goto Transition;
 
 			bits |= (ulong)(byte)x << shift;
-		}
+		} while (++i < _CwBase32Size);
 
 	Success:
 		result = new(h, bits);
