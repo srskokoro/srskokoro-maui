@@ -366,6 +366,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public override string ToString() => ToBase58String(); // Alias
 
+	/// <summary>
+	/// Useful for creating unique filenames.
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public string ToFsString() => ToCwBase32String(); // Alias
+
 	#region Base58 Conversions
 
 	public static int Base58Size => _Base58Size;
@@ -660,8 +666,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		-1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
 	};
 
-	// TODO Implement. Needed for creating unique filenames.
-
 	#region To Clockwork Base32
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -753,6 +757,148 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	#endregion
 
 	#region From Clockwork Base32
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static bool TryParseCwBase32(ReadOnlySpan<char> input, out UniqueId result) {
+		// Get references to avoid unnecessary range checking
+		ref sbyte mapRef = ref MemoryMarshal.GetReference(CwBase32DecodingMap);
+		ref char srcRef = ref MemoryMarshal.GetReference(input);
+		int length = Math.Min(_CwBase32Size, input.Length);
+
+		U.SkipInit(out ulong h);
+		ulong bits = 0;
+		int shift = 64;
+		int i = 0;
+	Loop:
+		sbyte x;
+		for (; i < length; i++) {
+			x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
+			if (x < 0) goto Fail_InvalidSymbol;
+
+			shift -= 5;
+			if (shift < 0) goto Transition;
+
+			bits |= (ulong)(byte)x << shift;
+		}
+		Debug.Assert(i == length);
+	LoopEnd:
+		if (i > 12) {
+			Debug.Assert(i < _CwBase32Size);
+			goto Success;
+		} else {
+			goto TooShortToTransition;
+		}
+
+	Success:
+		result = new(h, bits);
+		return true;
+
+	Transition:
+		shift = -shift;
+		bits |= (uint)(byte)x >> shift;
+		if (++i < 14) {
+			Debug.Assert(i == 13);
+			Debug.Assert(shift == 1);
+			h = bits; // The high bits
+			bits = (byte)x;
+			bits <<= 63;
+			shift = 63;
+			goto Loop; // Decode the low bits this time
+		} else {
+			Debug.Assert(i == _CwBase32Size);
+			Debug.Assert(shift == 2);
+			if ((x & 0b11) != 0) {
+				goto Fail_OverflowCarry;
+			} else {
+				// This becomes a conditional jump backward which favors it
+				goto Success;
+			}
+		}
+
+	TooShortToTransition:
+		h = bits; // The high bits
+		bits = 0; // The low bits
+		goto Success;
+
+	Fail_InvalidSymbol:
+		{
+			// Plan: Try to trim whitespace from both ends of the input if the
+			// whitespace is the reason for the invalid symbol. Otherwise, fail.
+
+			int j = i;
+			do {
+				if (!char.IsWhiteSpace(U.Add(ref srcRef, j))) {
+					goto MaybeFail;
+				}
+			} while (++j < length);
+
+			goto LoopEnd;
+
+		MaybeFail:
+			srcRef = ref U.Add(ref srcRef, j);
+			length -= j;
+			if (j > 0 && i == 0) {
+				// White space simply trimmed from start of input
+				goto Loop; // Try again
+			}
+
+			ref var fail = ref ParseFail.Current;
+			fail.Code = ParseFailCode.InvalidSymbol;
+			fail.Index = i;
+			goto Fail;
+		}
+
+	Fail:
+		result = default;
+		return false;
+
+	Fail_OverflowCarry:
+		{
+			ref var fail = ref ParseFail.Current;
+			fail.Code = ParseFailCode.OverflowCarry;
+			fail.Index = i;
+			goto Fail;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool TryParseCwBase32Exact(ReadOnlySpan<char> input, out UniqueId result) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return _CwBase32Size != input.Length || !TryParseCwBase32(input, out result) ? false : true;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SkipLocalsInit]
+	public static UniqueId ParseCwBase32(ReadOnlySpan<char> input) {
+		if (!TryParseCwBase32(input, out var result)) {
+			E_ParseFail();
+		}
+		return result; // ---
+
+		[DoesNotReturn]
+		static void E_ParseFail() => throw ParseFail.ConsumeException();
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	public static UniqueId ParseCwBase32Exact(ReadOnlySpan<char> input) {
+		if (_CwBase32Size != input.Length) {
+			E_LengthNotExact_AOOR();
+		}
+		if (!TryParseCwBase32(input, out var result)) {
+			E_ParseFail();
+		}
+		return result; // ---
+
+		[DoesNotReturn]
+		static void E_LengthNotExact_AOOR()
+			=> throw Ex_LengthNotExact_AOOR(nameof(input), _CwBase32Size);
+
+		[DoesNotReturn]
+		static void E_ParseFail() => throw ParseFail.ConsumeException();
+	}
 
 	#endregion
 
