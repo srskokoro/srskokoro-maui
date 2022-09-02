@@ -771,23 +771,18 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		++i;
 
 	LoopStart:
-		x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
-		if (x < 0) goto Fail_InvalidSymbol;
+		{
+			x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
+			if (x < 0) goto Fail_InvalidSymbol;
 
-		shift -= 5;
-		if (shift < 0) {
-			goto Transition;
-		} else {
-			// This becomes a conditional jump backward -- similar to a
-			// `do…while` loop.
-			goto Loop;
+			shift -= 5;
+			if (shift >= 0) {
+				// This becomes a conditional jump backward -- similar to a
+				// `do…while` loop.
+				goto Loop;
+			}
 		}
 
-	Success:
-		result = new(h, bits);
-		return true;
-
-	Transition:
 		shift = -shift;
 		bits |= (uint)(byte)x >> shift;
 		if (++i < 14) {
@@ -803,11 +798,12 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			Debug.Assert(shift == 2);
 			if ((x & 0b11) != 0) {
 				goto Fail_OverflowCarry;
-			} else {
-				// This becomes a conditional jump backward which favors it
-				goto Success;
 			}
 		}
+
+		// Success!
+		result = new(h, bits);
+		return true;
 
 	Fail_InvalidSymbol:
 		{
