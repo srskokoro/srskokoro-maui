@@ -506,17 +506,15 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public static bool TryParse(ReadOnlySpan<char> input, out UniqueId result) {
+	private static bool TryUnsafeParse(ref char srcRef, out UniqueId result) {
 		uint u3 = 0, u2 = 0, u1 = 0, u0 = 0;
 
-		// Get references to avoid unnecessary range checking
+		// Get a reference to avoid unnecessary range checking
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
-		ref char srcRef = ref MemoryMarshal.GetReference(input);
-		int length = input.Length;
 
 		int i = 0;
-	Loop:
-		for (; i < length; i++) {
+		// TODO Use a `do…while` loop instead
+		for (; i < _Base58Size; i++) {
 			sbyte x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
 
@@ -540,30 +538,11 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			if (c != 0) goto Fail_OverflowCarry;
 		}
 
-	Success:
 		result = new(u3, u2, u1, u0);
 		return true;
 
 	Fail_InvalidSymbol:
 		{
-			// Plan: Try to trim whitespace from both ends of the input if the
-			// whitespace is the reason for the invalid symbol. Otherwise, fail.
-
-			int s = i;
-			do {
-				if (!char.IsWhiteSpace(U.Add(ref srcRef, i))) {
-					goto MaybeFail;
-				}
-			} while (++i < length);
-
-			goto Success;
-
-		MaybeFail:
-			if (i > 0 && s == 0) {
-				// White space simply trimmed from start of input
-				goto Loop; // Try again
-			}
-
 			ref var fail = ref ParseFail.Current;
 			fail.Code = ParseFailCode.InvalidSymbol;
 			fail.Index = i;
@@ -584,19 +563,33 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool TryParse(ReadOnlySpan<char> input, out UniqueId result) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return _Base58Size > input.Length || !TryUnsafeParse(ref MemoryMarshal.GetReference(input), out result) ? false : true;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool TryParseExact(ReadOnlySpan<char> input, out UniqueId result) {
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		return _Base58Size != input.Length || !TryParse(input, out result) ? false : true;
+		return _Base58Size != input.Length || !TryUnsafeParse(ref MemoryMarshal.GetReference(input), out result) ? false : true;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static UniqueId Parse(ReadOnlySpan<char> input) {
-		if (!TryParse(input, out var result)) {
+		if (_Base58Size > input.Length) {
+			E_InputTooShort_AOOR();
+		}
+		if (!TryUnsafeParse(ref MemoryMarshal.GetReference(input), out var result)) {
 			E_ParseFail();
 		}
 		return result; // ---
+
+		[DoesNotReturn]
+		static void E_InputTooShort_AOOR()
+			=> throw Ex_InputTooShort_AOOR(nameof(input));
 
 		[DoesNotReturn]
 		static void E_ParseFail() => throw ParseFail.ConsumeException();
@@ -608,7 +601,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		if (_Base58Size != input.Length) {
 			E_LengthNotExact_AOOR();
 		}
-		if (!TryParse(input, out var result)) {
+		if (!TryUnsafeParse(ref MemoryMarshal.GetReference(input), out var result)) {
 			E_ParseFail();
 		}
 		return result; // ---
@@ -759,11 +752,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	[SkipLocalsInit]
-	public static bool TryParseCwBase32(ReadOnlySpan<char> input, out UniqueId result) {
-		// Get references to avoid unnecessary range checking
+	private static bool TryUnsafeParseCwBase32(ref char srcRef, out UniqueId result) {
+		// Get a reference to avoid unnecessary range checking
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(CwBase32DecodingMap);
-		ref char srcRef = ref MemoryMarshal.GetReference(input);
-		int length = input.Length;
 
 		U.SkipInit(out ulong h);
 		ulong bits = 0;
@@ -771,7 +762,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		int i = 0;
 	Loop:
 		sbyte x;
-		for (; i < length; i++) {
+		// TODO Use a `do…while` loop instead
+		for (; i < _CwBase32Size; i++) {
 			x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
 
@@ -779,14 +771,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			if (shift < 0) goto Transition;
 
 			bits |= (ulong)(byte)x << shift;
-		}
-		Debug.Assert(i == length);
-	LoopEnd:
-		if (i > 12) {
-			Debug.Assert(i < _CwBase32Size);
-			goto Success;
-		} else {
-			goto TooShortToTransition;
 		}
 
 	Success:
@@ -815,33 +799,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			}
 		}
 
-	TooShortToTransition:
-		h = bits; // The high bits
-		bits = 0; // The low bits
-		goto Success;
-
 	Fail_InvalidSymbol:
 		{
-			// Plan: Try to trim whitespace from both ends of the input if the
-			// whitespace is the reason for the invalid symbol. Otherwise, fail.
-
-			int j = i;
-			do {
-				if (!char.IsWhiteSpace(U.Add(ref srcRef, j))) {
-					goto MaybeFail;
-				}
-			} while (++j < length);
-
-			goto LoopEnd;
-
-		MaybeFail:
-			srcRef = ref U.Add(ref srcRef, j);
-			length -= j;
-			if (j > 0 && i == 0) {
-				// White space simply trimmed from start of input
-				goto Loop; // Try again
-			}
-
 			ref var fail = ref ParseFail.Current;
 			fail.Code = ParseFailCode.InvalidSymbol;
 			fail.Index = i;
@@ -862,19 +821,33 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public static bool TryParseCwBase32(ReadOnlySpan<char> input, out UniqueId result) {
+		// Ternary operator returning true/false prevents redundant asm generation:
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+		return _CwBase32Size > input.Length || !TryUnsafeParseCwBase32(ref MemoryMarshal.GetReference(input), out result) ? false : true;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool TryParseCwBase32Exact(ReadOnlySpan<char> input, out UniqueId result) {
 		// Ternary operator returning true/false prevents redundant asm generation:
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-		return _CwBase32Size != input.Length || !TryParseCwBase32(input, out result) ? false : true;
+		return _CwBase32Size != input.Length || !TryUnsafeParseCwBase32(ref MemoryMarshal.GetReference(input), out result) ? false : true;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	public static UniqueId ParseCwBase32(ReadOnlySpan<char> input) {
-		if (!TryParseCwBase32(input, out var result)) {
+		if (_CwBase32Size > input.Length) {
+			E_InputTooShort_AOOR();
+		}
+		if (!TryUnsafeParseCwBase32(ref MemoryMarshal.GetReference(input), out var result)) {
 			E_ParseFail();
 		}
 		return result; // ---
+
+		[DoesNotReturn]
+		static void E_InputTooShort_AOOR()
+			=> throw Ex_InputTooShort_AOOR(nameof(input));
 
 		[DoesNotReturn]
 		static void E_ParseFail() => throw ParseFail.ConsumeException();
@@ -886,7 +859,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		if (_CwBase32Size != input.Length) {
 			E_LengthNotExact_AOOR();
 		}
-		if (!TryParseCwBase32(input, out var result)) {
+		if (!TryUnsafeParseCwBase32(ref MemoryMarshal.GetReference(input), out var result)) {
 			E_ParseFail();
 		}
 		return result; // ---
@@ -1081,6 +1054,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	#endregion
 
 	#region Common Exceptions
+
+	private static ArgumentOutOfRangeException Ex_InputTooShort_AOOR(string paramName)
+		=> new(paramName, "Input is too short.");
 
 	private static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR(string paramName)
 		=> new(paramName, "Destination is too short.");
