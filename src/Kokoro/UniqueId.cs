@@ -355,7 +355,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public Guid ToGuid() => UuidUtils.GuidFromUuid(Span);
 
-	/// <seealso cref="ToString()"/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public string ToHexString() {
 		// See,
@@ -363,6 +362,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		// - https://stackoverflow.com/a/71904920
 		return Convert.ToHexString(Span);
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public override string ToString() => ToBase58String(); // Alias
 
 	#region Base58 Conversions
 
@@ -481,7 +483,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		=> throw Ex_DestinationTooShort_AOOR_destination();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-	public override string ToString() {
+	public string ToBase58String() {
 		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
 		string str = new('\0', _Base58Size);
 		UnsafeWriteBase58Chars(ref MemoryMarshal.GetReference(str.AsSpan()));
