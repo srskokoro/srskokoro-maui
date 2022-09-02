@@ -514,7 +514,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		ref char srcRef = ref MemoryMarshal.GetReference(input);
 		int length = input.Length;
 
-		ulong c;
 		int i = 0;
 	Loop:
 		for (; i < length; i++) {
@@ -522,7 +521,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			if (x < 0) goto Fail_InvalidSymbol;
 
 			Debug.Assert(x < 58);
-			c = (ulong)u0 * 58 + (ulong)x;
+			ulong c = (ulong)u0 * 58 + (ulong)x;
 			u0 = (uint)c;
 			c >>= 32; // carry
 
