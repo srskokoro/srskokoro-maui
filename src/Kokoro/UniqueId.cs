@@ -762,17 +762,26 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		ulong bits = 0;
 		int shift = 64;
 		int i = 0;
-	Loop:
+
 		sbyte x;
-		do {
-			x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
-			if (x < 0) goto Fail_InvalidSymbol;
+		goto LoopStart;
 
-			shift -= 5;
-			if (shift < 0) goto Transition;
+	Loop:
+		bits |= (ulong)(byte)x << shift;
+		++i;
 
-			bits |= (ulong)(byte)x << shift;
-		} while (++i < _CwBase32Size);
+	LoopStart:
+		x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
+		if (x < 0) goto Fail_InvalidSymbol;
+
+		shift -= 5;
+		if (shift < 0) {
+			goto Transition;
+		} else {
+			// This becomes a conditional jump backward -- similar to a
+			// `do…while` loop.
+			goto Loop;
+		}
 
 	Success:
 		result = new(h, bits);
@@ -788,7 +797,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			bits = (byte)x;
 			bits <<= 63;
 			shift = 63;
-			goto Loop; // Decode the low bits this time
+			goto LoopStart; // Decode the low bits this time
 		} else {
 			Debug.Assert(i == _CwBase32Size);
 			Debug.Assert(shift == 2);
