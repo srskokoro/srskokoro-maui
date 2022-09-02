@@ -575,42 +575,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		}
 	}
 
-	private enum ParseFailCode : byte {
-		NA = 0,
-		InvalidSymbol = 1,
-		OverflowCarry = 2,
-	}
-
-	[StructLayout(LayoutKind.Auto)]
-	private struct ParseFail {
-		public ParseFailCode Code;
-		public int Index;
-
-		[ThreadStatic]
-		public static ParseFail Current;
-
-		public static Exception ConsumeException() {
-			var current = Current;
-			Current = default;
-
-			switch (current.Code) {
-				case ParseFailCode.InvalidSymbol: {
-					return new FormatException($"Invalid symbol at index {current.Index}");
-				}
-				case ParseFailCode.OverflowCarry: {
-					return new OverflowException(
-						$"Accumulated value of encoded input is too high.{Environment.NewLine}" +
-						$"Decoding halted at index {current.Index}, with overflow carry."
-					);
-				}
-				default: {
-					Trace.Fail("Unexpected exception path");
-					return new FormatException("NA");
-				}
-			}
-		}
-	}
-
 	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 	public static bool TryParseExact(ReadOnlySpan<char> input, out UniqueId result) {
 		// Ternary operator returning true/false prevents redundant asm generation:
@@ -972,6 +936,44 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	private static ArgumentOutOfRangeException Ex_DestinationTooShort_AOOR_destination()
 		=> new(paramName: "destination", "Destination is too short.");
+
+	// --
+
+	private enum ParseFailCode : byte {
+		NA = 0,
+		InvalidSymbol = 1,
+		OverflowCarry = 2,
+	}
+
+	[StructLayout(LayoutKind.Auto)]
+	private struct ParseFail {
+		public ParseFailCode Code;
+		public int Index;
+
+		[ThreadStatic]
+		public static ParseFail Current;
+
+		public static Exception ConsumeException() {
+			var current = Current;
+			Current = default;
+
+			switch (current.Code) {
+				case ParseFailCode.InvalidSymbol: {
+					return new FormatException($"Invalid symbol at index {current.Index}");
+				}
+				case ParseFailCode.OverflowCarry: {
+					return new OverflowException(
+						$"Accumulated value of encoded input is too high.{Environment.NewLine}" +
+						$"Decoding halted at index {current.Index}, with overflow carry."
+					);
+				}
+				default: {
+					Trace.Fail("Unexpected exception path");
+					return new FormatException("NA");
+				}
+			}
+		}
+	}
 
 	#endregion
 }
