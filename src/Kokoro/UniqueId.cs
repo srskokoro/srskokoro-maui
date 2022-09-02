@@ -541,6 +541,9 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	Fail_InvalidSymbol:
 		{
+			// Plan: Try to trim whitespace from both ends of the input if the
+			// whitespace is the reason for the invalid symbol. Otherwise, fail.
+
 			int s = i;
 			do {
 				if (!char.IsWhiteSpace(U.Add(ref srcRef, i))) {
@@ -552,7 +555,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 		MaybeFail:
 			if (i > 0 && s == 0) {
-				// White space simply trimmed from start
+				// White space simply trimmed from start of input
 				goto Loop; // Try again
 			}
 
