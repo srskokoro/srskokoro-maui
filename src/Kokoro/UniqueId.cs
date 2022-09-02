@@ -676,6 +676,92 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 
 	#region To Clockwork Base32
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void UnsafeWriteCwBase32Chars(Span<char> destination) {
+		Debug.Assert(_CwBase32Size <= destination.Length);
+		UnsafeWriteCwBase32Chars(ref MemoryMarshal.GetReference(destination));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
+	private void UnsafeWriteCwBase32Chars(ref char destRef) {
+		// Get a reference to avoid unnecessary range checking
+		ref byte mapRef = ref MemoryMarshal.GetReference(CwBase32EncodingMap);
+
+		ulong bits = LowBits;
+
+		Debug.Assert(_CwBase32Size == 26);
+		U.Add(ref destRef, 25) = (char)U.Add(ref mapRef, ((nuint)bits << 2) & 0x1F);
+		U.Add(ref destRef, 24) = (char)U.Add(ref mapRef, (nuint)(bits >>= 3) & 0x1F);
+
+		U.Add(ref destRef, 23) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 22) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 21) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 20) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 19) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 18) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 17) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 16) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 15) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 14) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 13) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+
+		nuint leftover = (nuint)bits >> 5;
+		Debug.Assert(leftover == (leftover & 0x1)); // Expect only 1 bit left
+
+		bits = HighBits;
+
+		U.Add(ref destRef, 12) = (char)U.Add(ref mapRef, (((nuint)bits << 1) | leftover) & 0x1F);
+		U.Add(ref destRef, 11) = (char)U.Add(ref mapRef, (nuint)(bits >>= 4) & 0x1F);
+		U.Add(ref destRef, 10) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+
+		U.Add(ref destRef, 9) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 8) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 7) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 6) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 5) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 4) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 3) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 2) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 1) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+		U.Add(ref destRef, 0) = (char)U.Add(ref mapRef, (nuint)(bits >>= 5) & 0x1F);
+
+		Debug.Assert(bits >> 5 == 0); // Expect no bits left
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool TryWriteCwBase32Chars(Span<char> destination) {
+		if (_CwBase32Size <= destination.Length) {
+			UnsafeWriteCwBase32Chars(destination);
+			return true;
+		}
+		return false;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public void WriteCwBase32Chars(Span<char> destination) {
+		if (_CwBase32Size > destination.Length) {
+			WriteCwBase32Chars__E_DestinationTooShort_AOOR(nameof(destination));
+		}
+		UnsafeWriteCwBase32Chars(destination);
+	}
+
+	[DoesNotReturn]
+	private static void WriteCwBase32Chars__E_DestinationTooShort_AOOR(string? paramName)
+		=> throw new ArgumentOutOfRangeException(paramName, "Destination is too short.");
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+	public string ToCwBase32String() {
+		// Equiv. to `string.Create<TState>(…)` without having to allocate a `SpanAction`
+		string str = new('\0', _CwBase32Size);
+		UnsafeWriteCwBase32Chars(ref MemoryMarshal.GetReference(str.AsSpan()));
+		// Given how strings are represented in memory, and that we're creating
+		// via `new string()`, it's unlikely that the above trick will break
+		// something. That is, it should be guaranteed that we'll get a
+		// different reference (or `ref char` location) every time.
+		return str;
+	}
+
 	#endregion
 
 	#region From Clockwork Base32
