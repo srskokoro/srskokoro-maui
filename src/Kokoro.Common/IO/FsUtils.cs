@@ -297,8 +297,9 @@ internal static class FsUtils {
 			if (Directory.Exists(trashPath)) {
 				DeleteDirectory(trashPath);
 			} else if (File.Exists(trashPath)) {
-				// Bypass read-only attribute (as it would prevent deletion)
 				File.SetAttributes(trashPath, 0);
+				// ^ Bypass read-only attribute (as it would prevent deletion)
+				// ^ Side effect: also clears other file attributes.
 				File.Delete(trashPath);
 			} else {
 				throw;
