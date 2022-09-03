@@ -295,7 +295,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	internal static Stream ReadSharedStore(KokoroSqliteDb db, long schemaId) {
 		return SqliteBlobSlim.Open(db,
 			tableName: Prot.Schema, columnName: "data", rowid: schemaId,
-			canWrite: false, throwOnAccessFail: false) ?? Stream.Null;
+			canWrite: false, throwOnAccessFail: DEBUG) ?? Stream.Null;
 	}
 
 	// --
