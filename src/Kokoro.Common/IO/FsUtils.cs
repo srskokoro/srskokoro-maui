@@ -125,10 +125,9 @@ internal static class FsUtils {
 	/// </remarks>
 	public static void DeleteDirectory(string path) {
 		ClearDirectory(path); // Will throw if not a directory
-
-		// Bypass read-only attribute (as it would prevent deletion)
-		// - Side effect: also clears other file attributes.
 		File.SetAttributes(path, 0);
+		// ^ Bypass read-only attribute (as it would prevent deletion)
+		// ^ Side effect: also clears other file attributes.
 		Directory.Delete(path);
 	}
 
@@ -267,9 +266,9 @@ internal static class FsUtils {
 		if (!Directory.Exists(path)) {
 			if (!File.Exists(path)) goto NotExists; // Reduces indention
 			string deleteLater = ForceTrash(path, trashDir);
-			// Bypass read-only attribute (as it would prevent deletion)
-			// - Side effect: also clears other file attributes.
 			File.SetAttributes(deleteLater, 0);
+			// ^ Bypass read-only attribute (as it would prevent deletion)
+			// ^ Side effect: also clears other file attributes.
 			File.Delete(deleteLater);
 			return true;
 		} else {
