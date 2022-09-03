@@ -146,6 +146,8 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 
 	// --
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	private int OnSqliteCommit(object user_data) {
 		try {
 			Invalidate();
@@ -157,6 +159,8 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		return 0;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	[SkipLocalsInit]
 	private void OnSqliteRollback(object user_data) {
 		try {
 			ClearCaches();
