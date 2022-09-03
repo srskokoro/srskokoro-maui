@@ -236,4 +236,34 @@ internal static class FsUtils {
 		}
 		return false;
 	}
+
+	/// <summary>
+	/// Renames or moves a file or a directory, to a path on the same volume.
+	/// </summary>
+	/// <remarks>
+	/// If <paramref name="src"/> is a file, it will overwrite <paramref name="dest"/>
+	/// if it's also a file.
+	/// </remarks>
+	public static void Rename(string src, string dest) {
+		// Specification:
+		// - Both the source and destination can be directories. The code must
+		// be able to handle that case.
+		// - When moving to a different volume, the code must throw.
+
+		if (File.Exists(dest)) {
+			// NOTE: The destination is a file. The source should be a file too,
+			// or else, throw.
+			File.Replace(src, dest, null);
+			// ^ Will throw when moving to a different volume
+		} else {
+			// NOTE: The destination doesn't exist as a file. It might exist as
+			// a directory though.
+			Directory.Move(src, dest);
+			// ^ Will throw when moving to a different volume -- unlike `File.Move()`
+		}
+
+		// See also,
+		// - https://stackoverflow.com/questions/19875329/can-using-fileshare-delete-cause-a-unauthorizedaccessexception
+		// - https://stackoverflow.com/questions/8958094/reliable-file-saving-file-replace-in-a-busy-environment
+	}
 }
