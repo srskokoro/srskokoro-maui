@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 using static SQLitePCL.raw;
 
 /// <remarks>Not thread-safe.</remarks>
-internal sealed partial class KokoroSqliteDb : SqliteConnection {
+internal sealed partial class KokoroSqliteDb : SqliteConnectionBase {
 
 	public bool HasActiveTransaction {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -22,25 +22,16 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	public KokoroSqliteDb(string? connectionString) : base(connectionString) { }
 
 	#region `BeginTransaction(…)` overrides
-	// NOTE: We disallowed `BeginTransaction(…)` so that we can set up custom
-	// hooks for commits and rollbacks.
+	// NOTE: We disallowed `BeginTransaction(…)` in the base class so that we
+	// can set up custom hooks for commits and rollbacks.
 	//
-	// We also hid various `BeginTransaction(…)` overloads (via `new` modifier)
+	// Here, we hid various `BeginTransaction(…)` overloads (via `new` modifier)
 	// so that we can annotate them with `[Obsolete(…, error: true)]` attribute.
 
-	[Obsolete("Not supported", error: true)]
-	public new SqliteTransaction BeginTransaction() => throw new NotSupportedException();
-
-	[Obsolete("Not supported", error: true)]
-	public new SqliteTransaction BeginTransaction(bool deferred) => BeginTransaction();
-
-	[Obsolete("Not supported", error: true)]
-	public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel) => BeginTransaction();
-
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-	[Obsolete("Not supported", error: true)]
-	public sealed override SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel, bool deferred) => BeginTransaction();
-#pragma warning restore CS0809
+	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction() => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction(bool deferred) => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel) => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel, bool deferred) => E_BeginTransaction_NS();
 
 	#endregion
 
