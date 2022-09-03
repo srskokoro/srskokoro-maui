@@ -139,8 +139,8 @@ internal static class FsUtils {
 	/// </summary>
 	[SkipLocalsInit]
 	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
-		string deleteLater = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
 		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
+		string deleteLater = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
 
 		try {
 			Directory.Move(path, deleteLater);
