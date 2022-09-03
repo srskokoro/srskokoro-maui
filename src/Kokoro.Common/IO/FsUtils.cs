@@ -19,6 +19,7 @@ internal static class FsUtils {
 		(DateTimeOffset LastAccessUtc, DateTimeOffset LastWriteUtc) FileTimes
 	);
 
+	[SkipLocalsInit]
 	public static void CopyDirContents(string srcDir, string destDir) {
 		// Will throw (on enumeration) if not a directory
 		FileSystemEnumerable<CopyDirContents_FseResult> fse = new(srcDir,
@@ -136,6 +137,7 @@ internal static class FsUtils {
 	/// directory or file with the same name already exists under the trash
 	/// directory, it is deleted first.
 	/// </summary>
+	[SkipLocalsInit]
 	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
 		string deleteLater = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
 		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
@@ -174,6 +176,7 @@ internal static class FsUtils {
 	/// attribute</see> of each file/directory being deleted, in order to
 	/// bypass 'access denied' errors.
 	/// </remarks>
+	[SkipLocalsInit]
 	public static void ClearDirectory(string path) {
 		// Will throw (on enumeration) if not a directory
 		FileSystemEnumerable<(string, FileAttributes)> fse = new(path
