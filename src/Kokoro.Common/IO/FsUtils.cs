@@ -244,6 +244,30 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
+	/// Deletes the specified file, atomically, by first moving the specified
+	/// file inside the given trash directory. If a directory or file with the
+	/// same name already exists under the trash directory, it is deleted first.
+	/// </summary>
+	/// <remarks>
+	/// Unlike <see cref="File.Delete(string)"/>, this clears the
+	/// <see cref="FileAttributes.ReadOnly">read-only attribute</see> of the
+	/// file being deleted, in order to bypass 'access denied' errors.
+	/// <para>
+	/// Moving the file first to the provided trash directory is necessary to
+	/// guarantee atomicity, since clearing the read-only attribute and deleting
+	/// the file are two separate actions.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	public static void DeleteFileAtomic(string path, ReadOnlySpan<char> trashDir) {
+		string deleteLater = ForceTrash(path, trashDir);
+		File.SetAttributes(deleteLater, 0);
+		// ^ Bypass read-only attribute (as it would prevent deletion)
+		// ^ Side effect: also clears other file attributes.
+		File.Delete(deleteLater);
+	}
+
+	/// <summary>
 	/// Deletes the target file or directory, atomically, by first moving the
 	/// target inside the given trash directory. If a directory or file with the
 	/// same name already exists under the trash directory, it is deleted first.
