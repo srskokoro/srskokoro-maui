@@ -149,7 +149,7 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	private int OnSqliteCommit(object user_data) {
 		try {
 			Invalidate();
-		} catch (Exception) {
+		} catch {
 #if DEBUG
 			throw;
 #endif
@@ -160,7 +160,7 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 	private void OnSqliteRollback(object user_data) {
 		try {
 			ClearCaches();
-		} catch (Exception) {
+		} catch {
 #if DEBUG
 			throw;
 #endif
