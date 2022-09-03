@@ -266,4 +266,64 @@ internal static class FsUtils {
 		// - https://stackoverflow.com/questions/19875329/can-using-fileshare-delete-cause-a-unauthorizedaccessexception
 		// - https://stackoverflow.com/questions/8958094/reliable-file-saving-file-replace-in-a-busy-environment
 	}
+
+	/// <summary>
+	/// Deletes the target file or directory, atomically, by first moving the
+	/// target inside the given trash directory. If a directory or file with the
+	/// same name already exists under the trash directory, it is deleted first.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// If the specified target is a directory, it is deleted recursively.
+	/// </para>
+	/// <para>
+	///	If the specified target does not exist, no exception is thrown (<see langword="false"/>
+	///	is returned instead).
+	/// </para>
+	/// </remarks>
+	/// <returns>
+	/// Whether or not the target exists and was deleted successfully.
+	/// </returns>
+	[SkipLocalsInit]
+	public static bool DeleteAtomic(string path, ReadOnlySpan<char> trashDir) {
+		if (Directory.Exists(path)) goto DeleteDirectory;
+		if (!File.Exists(path)) goto FileNotFound;
+
+		string deleteLater = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
+
+		try {
+			Directory.Move(path, deleteLater);
+			// ^ Will NOT throw if `path` isn't a directory
+			// ^ Will throw if `trashDir` isn't a directory
+			// ^ Will throw when moving to a different volume
+		} catch (IOException) {
+			// Check if we bumped into an existing file or directory, and if so,
+			// delete it first instead.
+			if (Directory.Exists(deleteLater)) {
+				DeleteDirectory(deleteLater);
+			} else if (File.Exists(deleteLater)) {
+				// Bypass read-only attribute (as it would prevent deletion)
+				File.SetAttributes(deleteLater, 0);
+				File.Delete(deleteLater);
+			} else {
+				throw;
+			}
+
+			// Now, try again
+			Directory.Move(path, deleteLater);
+		}
+
+		// Bypass read-only attribute (as it would prevent deletion)
+		// - Side effect: also clears other file attributes.
+		File.SetAttributes(deleteLater, 0);
+		File.Delete(deleteLater);
+		return true;
+
+	DeleteDirectory:
+		DeleteDirectoryAtomic(path, trashDir);
+		return true;
+
+	FileNotFound:
+		return false;
+	}
 }
