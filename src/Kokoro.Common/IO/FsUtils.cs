@@ -140,6 +140,7 @@ internal static class FsUtils {
 	[SkipLocalsInit]
 	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
 		Debug.Assert(!File.Exists(path), $"Directory expected but is a file: {path}");
+		Debug.Assert(Directory.Exists(path), $"Existing directory expected: {path}");
 		string deleteLater = ForceTrash(path, trashDir);
 		DeleteDirectory(deleteLater);
 	}
