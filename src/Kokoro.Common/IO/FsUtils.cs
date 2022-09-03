@@ -263,21 +263,18 @@ internal static class FsUtils {
 	/// </returns>
 	[SkipLocalsInit]
 	public static bool DeleteAtomic(string path, ReadOnlySpan<char> trashDir) {
-		if (Directory.Exists(path)) goto DeleteDirectory;
-		if (!File.Exists(path)) goto FileNotFound;
-
-		string deleteLater = ForceTrash(path, trashDir);
-
-		// Bypass read-only attribute (as it would prevent deletion)
-		// - Side effect: also clears other file attributes.
-		File.SetAttributes(deleteLater, 0);
-		File.Delete(deleteLater);
-		return true;
-
-	DeleteDirectory:
-		DeleteDirectoryAtomic(path, trashDir);
-		return true;
-
+		if (!Directory.Exists(path)) {
+			if (!File.Exists(path)) goto FileNotFound; // Reduces indention
+			string deleteLater = ForceTrash(path, trashDir);
+			// Bypass read-only attribute (as it would prevent deletion)
+			// - Side effect: also clears other file attributes.
+			File.SetAttributes(deleteLater, 0);
+			File.Delete(deleteLater);
+			return true;
+		} else {
+			DeleteDirectoryAtomic(path, trashDir);
+			return true;
+		}
 	FileNotFound:
 		return false;
 	}
