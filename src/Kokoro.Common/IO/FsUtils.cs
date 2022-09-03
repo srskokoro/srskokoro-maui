@@ -127,6 +127,7 @@ internal static class FsUtils {
 		ClearDirectory(path); // Will throw if not a directory
 
 		// Bypass read-only attribute (as it would prevent deletion)
+		// - Side effect: also clears other file attributes.
 		File.SetAttributes(path, 0);
 		Directory.Delete(path);
 	}
