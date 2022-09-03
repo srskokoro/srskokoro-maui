@@ -157,7 +157,15 @@ internal sealed partial class KokoroSqliteDb : SqliteConnection {
 		return 0;
 	}
 
-	private void OnSqliteRollback(object user_data) => ClearCaches();
+	private void OnSqliteRollback(object user_data) {
+		try {
+			ClearCaches();
+		} catch (Exception) {
+#if DEBUG
+			throw;
+#endif
+		}
+	}
 
 	internal void OnNestingWriteRollback() => ClearCaches();
 
