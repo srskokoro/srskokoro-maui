@@ -261,7 +261,7 @@ internal static class FsUtils {
 	/// Whether or not the target exists and was deleted successfully.
 	/// </returns>
 	[SkipLocalsInit]
-	public static bool DeleteAtomic(string path, ReadOnlySpan<char> trashDir) {
+	public static bool DeleteAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
 		if (!Directory.Exists(path)) {
 			if (!File.Exists(path)) goto NotExists; // Reduces indention
 			string deleteLater = ForceTrash(path, trashDir);
