@@ -310,6 +310,7 @@ internal static class FsUtils {
 	[SkipLocalsInit]
 	private static string TrashPriorDelete(string path, ReadOnlySpan<char> trashDir) {
 		string trashPath = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
+
 		try {
 			Directory.Move(path, trashPath);
 			// ^ Will NOT throw if `path` isn't a directory
@@ -332,6 +333,7 @@ internal static class FsUtils {
 			// Now, try again
 			Directory.Move(path, trashPath);
 		}
+
 		File.SetAttributes(trashPath, 0);
 		// ^ Goal: bypass read-only attribute (as it would prevent deletion).
 		// ^ Side effect: also clears other file attributes.
