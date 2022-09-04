@@ -260,9 +260,6 @@ internal static class FsUtils {
 	[SkipLocalsInit]
 	public static void DeleteFileAtomic(string path, ReadOnlySpan<char> trashDir) {
 		string deleteLater = ForceTrash(path, trashDir);
-		File.SetAttributes(deleteLater, 0);
-		// ^ Bypass read-only attribute (as it would prevent deletion)
-		// ^ Side effect: also clears other file attributes.
 		File.Delete(deleteLater);
 	}
 
@@ -303,8 +300,9 @@ internal static class FsUtils {
 
 	/// <summary>
 	/// Moves the target file or directory to be inside the given trash
-	/// directory. If a directory or file with the same name already exists
-	/// under the trash directory, it is deleted first.
+	/// directory, then clears the file attributes, in order to get ready for
+	/// deletion. If a directory or file with the same name already exists under
+	/// the trash directory, it is deleted first.
 	/// </summary>
 	[SkipLocalsInit]
 	private static string ForceTrash(string path, ReadOnlySpan<char> trashDir) {
@@ -331,6 +329,9 @@ internal static class FsUtils {
 			// Now, try again
 			Directory.Move(path, trashPath);
 		}
+		File.SetAttributes(trashPath, 0);
+		// ^ Goal: bypass read-only attribute (as it would prevent deletion).
+		// ^ Side effect: also clears other file attributes.
 		return trashPath;
 	}
 }
