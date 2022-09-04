@@ -149,6 +149,19 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
+	/// Performs <see cref="ClearDirectory(string)"/> if the given path is an
+	/// <see cref="Directory.Exists(string?)">existing directory</see>.
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool ClearDirectoryIfExists(string path) {
+		if (Directory.Exists(path)) {
+			ClearDirectory(path);
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
 	/// Deletes the specified directory recursively.
 	/// </summary>
 	/// <remarks>
@@ -165,17 +178,6 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
-	/// Deletes the specified directory recursively, atomically, by first
-	/// moving the specified directory inside the given trash directory. If a
-	/// directory or file with the same name already exists under the trash
-	/// directory, it is deleted first.
-	/// </summary>
-	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
-		Debug.Assert(Directory.Exists(path), $"Existing directory expected: {path}");
-		DeleteDirectory(TrashPriorDelete(path, trashDir));
-	}
-
-	/// <summary>
 	/// Performs <see cref="DeleteDirectory(string)"/> if the given path is an
 	/// <see cref="Directory.Exists(string?)">existing directory</see>.
 	/// </summary>
@@ -189,6 +191,17 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
+	/// Deletes the specified directory recursively, atomically, by first
+	/// moving the specified directory inside the given trash directory. If a
+	/// directory or file with the same name already exists under the trash
+	/// directory, it is deleted first.
+	/// </summary>
+	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
+		Debug.Assert(Directory.Exists(path), $"Existing directory expected: {path}");
+		DeleteDirectory(TrashPriorDelete(path, trashDir));
+	}
+
+	/// <summary>
 	/// Performs <see cref="DeleteDirectoryAtomic(string, ReadOnlySpan{char})"/>
 	/// if the given path is an <see cref="Directory.Exists(string?)">existing
 	/// directory</see>.
@@ -197,19 +210,6 @@ internal static class FsUtils {
 	public static bool DeleteDirectoryAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
 		if (Directory.Exists(path)) {
 			DeleteDirectoryAtomic(path, trashDir);
-			return true;
-		}
-		return false;
-	}
-
-	/// <summary>
-	/// Performs <see cref="ClearDirectory(string)"/> if the given path is an
-	/// <see cref="Directory.Exists(string?)">existing directory</see>.
-	/// </summary>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool ClearDirectoryIfExists(string path) {
-		if (Directory.Exists(path)) {
-			ClearDirectory(path);
 			return true;
 		}
 		return false;
