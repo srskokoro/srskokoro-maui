@@ -147,7 +147,7 @@ public sealed partial class Item : FieldedEntity {
 	private void Load(KokoroSqliteDb db) {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
-			$"SELECT uid,ifnull(parent,0)AS parent,ord,ordModSt,schema,dataModSt FROM {Prot.Item}\n" +
+			$"SELECT uid,ifnull(parent,0)parent,ord,ordModSt,schema,dataModSt FROM {Prot.Item}\n" +
 			$"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));
 

@@ -122,8 +122,8 @@ public sealed partial class Class : DataEntity {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			$"SELECT uid,csum,modst,ord," +
-				$"ifnull(grp,0)AS grp," +
-				$"ifnull(name,0)AS name\n" +
+				$"ifnull(grp,0)grp," +
+				$"ifnull(name,0)name\n" +
 			$"FROM {Prot.Class}\n" +
 			$"WHERE rowid=$rowid"
 		).AddParams(new("$rowid", _RowId));

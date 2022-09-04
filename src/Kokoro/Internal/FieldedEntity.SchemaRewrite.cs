@@ -988,12 +988,12 @@ partial class FieldedEntity {
 			using var fldInfoCmd = db.CreateCommand();
 			fldInfoCmd.Set(
 				$"SELECT\n" +
-					$"fld.rowid AS fld,\n" +
-					$"fld.name AS name,\n" +
-					$"cls2fld.ord AS ord,\n" +
-					$"cls2fld.sto AS sto,\n" +
-					$"cls.ord AS clsOrd\n" +
-				$"FROM {Prot.Class} AS cls,{Prot.ClassToField} AS cls2fld,{Prot.NameId} AS fld\n" +
+					$"fld.rowid fld,\n" +
+					$"fld.name name,\n" +
+					$"cls2fld.ord ord,\n" +
+					$"cls2fld.sto sto,\n" +
+					$"cls.ord clsOrd\n" +
+				$"FROM {Prot.Class} cls,{Prot.ClassToField} cls2fld,{Prot.NameId} fld\n" +
 				$"WHERE cls.rowid=$rowid AND cls2fld.cls=cls.rowid AND fld.rowid=cls2fld.fld"
 			).AddParams(cmd_rowid);
 
