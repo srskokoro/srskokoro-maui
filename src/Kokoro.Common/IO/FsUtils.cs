@@ -139,7 +139,7 @@ internal static class FsUtils {
 	/// </summary>
 	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
 		Debug.Assert(Directory.Exists(path), $"Existing directory expected: {path}");
-		DeleteDirectory(ForceTrash(path, trashDir));
+		DeleteDirectory(TrashPriorDelete(path, trashDir));
 	}
 
 	/// <summary>
@@ -260,7 +260,7 @@ internal static class FsUtils {
 	[SkipLocalsInit]
 	public static void DeleteFileAtomic(string path, ReadOnlySpan<char> trashDir) {
 		Debug.Assert(File.Exists(path), $"Existing file expected: {path}");
-		File.Delete(ForceTrash(path, trashDir));
+		File.Delete(TrashPriorDelete(path, trashDir));
 	}
 
 	/// <summary>
@@ -301,7 +301,7 @@ internal static class FsUtils {
 	/// the trash directory, it is deleted first.
 	/// </summary>
 	[SkipLocalsInit]
-	private static string ForceTrash(string path, ReadOnlySpan<char> trashDir) {
+	private static string TrashPriorDelete(string path, ReadOnlySpan<char> trashDir) {
 		string trashPath = Path.Join(trashDir, Path.GetDirectoryName(path = Path.GetFullPath(path)));
 		try {
 			Directory.Move(path, trashPath);
