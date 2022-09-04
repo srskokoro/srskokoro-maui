@@ -272,11 +272,21 @@ internal static class FsUtils {
 	/// <para>
 	/// If the specified target is a directory, it is deleted recursively.
 	/// </para>
-	/// <para>
-	///	If the specified target does not exist, no exception is thrown (<see langword="false"/>
-	///	is returned instead).
-	/// </para>
 	/// </remarks>
+	[SkipLocalsInit]
+	public static void DeleteAtomic(string path, ReadOnlySpan<char> trashDir) {
+		if (!Directory.Exists(path)) {
+			DeleteFileAtomic(path, trashDir);
+		} else {
+			DeleteDirectoryAtomic(path, trashDir);
+		}
+	}
+
+	/// <summary>
+	/// Performs <see cref="DeleteAtomic(string, ReadOnlySpan{char})"/> if the
+	/// given path is an existing <see cref="File.Exists(string?)">file</see> or
+	/// <see cref="Directory.Exists(string?)">directory</see>.
+	/// </summary>
 	/// <returns>
 	/// Whether or not the target exists and was deleted successfully.
 	/// </returns>
