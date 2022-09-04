@@ -259,8 +259,7 @@ internal static class FsUtils {
 	/// </remarks>
 	[SkipLocalsInit]
 	public static void DeleteFileAtomic(string path, ReadOnlySpan<char> trashDir) {
-		string deleteLater = ForceTrash(path, trashDir);
-		File.Delete(deleteLater);
+		File.Delete(ForceTrash(path, trashDir));
 	}
 
 	/// <summary>
