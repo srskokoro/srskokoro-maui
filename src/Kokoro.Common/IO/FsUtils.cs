@@ -257,7 +257,6 @@ internal static class FsUtils {
 	/// the file are two separate actions.
 	/// </para>
 	/// </remarks>
-	[SkipLocalsInit]
 	public static void DeleteFileAtomic(string path, ReadOnlySpan<char> trashDir) {
 		Debug.Assert(File.Exists(path), $"Existing file expected: {path}");
 		File.Delete(TrashPriorDelete(path, trashDir));
@@ -273,7 +272,6 @@ internal static class FsUtils {
 	/// If the specified target is a directory, it is deleted recursively.
 	/// </para>
 	/// </remarks>
-	[SkipLocalsInit]
 	public static void DeleteAtomic(string path, ReadOnlySpan<char> trashDir) {
 		if (!Directory.Exists(path)) {
 			DeleteFileAtomic(path, trashDir);
@@ -290,7 +288,6 @@ internal static class FsUtils {
 	/// <returns>
 	/// Whether or not the target exists and was deleted successfully.
 	/// </returns>
-	[SkipLocalsInit]
 	public static bool DeleteAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
 		if (!Directory.Exists(path)) {
 			if (!File.Exists(path)) goto NotExists; // Reduces indention
