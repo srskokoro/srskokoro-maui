@@ -285,7 +285,8 @@ internal static class FsUtils {
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// If the specified target is a directory, it is deleted recursively.
+	/// Performs either <see cref="DeleteFileAtomic(string, ReadOnlySpan{char})"/>
+	/// or <see cref="DeleteDirectoryAtomic(string, ReadOnlySpan{char})"/>
 	/// </para>
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
