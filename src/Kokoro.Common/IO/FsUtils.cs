@@ -116,33 +116,6 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
-	/// Deletes the specified directory recursively.
-	/// </summary>
-	/// <remarks>
-	/// Unlike <see cref="Directory.Delete(string, bool)"/>, this clears the
-	/// <see cref="FileAttributes.ReadOnly">read-only attribute</see> of each
-	/// file/directory being deleted, in order to bypass 'access denied' errors.
-	/// </remarks>
-	public static void DeleteDirectory(string path) {
-		ClearDirectory(path); // Will throw if not a directory
-		File.SetAttributes(path, 0);
-		// ^ Bypass read-only attribute (as it would prevent deletion)
-		// ^ Side effect: also clears other file attributes.
-		Directory.Delete(path);
-	}
-
-	/// <summary>
-	/// Deletes the specified directory recursively, atomically, by first
-	/// moving the specified directory inside the given trash directory. If a
-	/// directory or file with the same name already exists under the trash
-	/// directory, it is deleted first.
-	/// </summary>
-	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
-		Debug.Assert(Directory.Exists(path), $"Existing directory expected: {path}");
-		DeleteDirectory(TrashPriorDelete(path, trashDir));
-	}
-
-	/// <summary>
 	/// Deletes directory contents recursively until the directory is empty.
 	/// </summary>
 	/// <remarks>
@@ -173,6 +146,33 @@ internal static class FsUtils {
 				File.Delete(child);
 			}
 		}
+	}
+
+	/// <summary>
+	/// Deletes the specified directory recursively.
+	/// </summary>
+	/// <remarks>
+	/// Unlike <see cref="Directory.Delete(string, bool)"/>, this clears the
+	/// <see cref="FileAttributes.ReadOnly">read-only attribute</see> of each
+	/// file/directory being deleted, in order to bypass 'access denied' errors.
+	/// </remarks>
+	public static void DeleteDirectory(string path) {
+		ClearDirectory(path); // Will throw if not a directory
+		File.SetAttributes(path, 0);
+		// ^ Bypass read-only attribute (as it would prevent deletion)
+		// ^ Side effect: also clears other file attributes.
+		Directory.Delete(path);
+	}
+
+	/// <summary>
+	/// Deletes the specified directory recursively, atomically, by first
+	/// moving the specified directory inside the given trash directory. If a
+	/// directory or file with the same name already exists under the trash
+	/// directory, it is deleted first.
+	/// </summary>
+	public static void DeleteDirectoryAtomic(string path, ReadOnlySpan<char> trashDir) {
+		Debug.Assert(Directory.Exists(path), $"Existing directory expected: {path}");
+		DeleteDirectory(TrashPriorDelete(path, trashDir));
 	}
 
 	/// <summary>
