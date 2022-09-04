@@ -263,6 +263,18 @@ internal static class FsUtils {
 	}
 
 	/// <summary>
+	/// Performs <see cref="DeleteFileAtomic(string, ReadOnlySpan{char})"/> if
+	/// the given path is an <see cref="File.Exists(string?)">existing file</see>.
+	/// </summary>
+	public static bool DeleteFileAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
+		if (File.Exists(path)) {
+			DeleteFileAtomic(path, trashDir);
+			return true;
+		}
+		return false;
+	}
+
+	/// <summary>
 	/// Deletes the target file or directory, atomically, by first moving the
 	/// target inside the given trash directory. If a directory or file with the
 	/// same name already exists under the trash directory, it is deleted first.
