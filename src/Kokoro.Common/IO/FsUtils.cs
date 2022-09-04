@@ -259,6 +259,7 @@ internal static class FsUtils {
 	/// </remarks>
 	[SkipLocalsInit]
 	public static void DeleteFileAtomic(string path, ReadOnlySpan<char> trashDir) {
+		Debug.Assert(File.Exists(path), $"Existing file expected: {path}");
 		File.Delete(ForceTrash(path, trashDir));
 	}
 
