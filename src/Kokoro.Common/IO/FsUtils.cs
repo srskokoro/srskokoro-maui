@@ -179,6 +179,7 @@ internal static class FsUtils {
 	/// Performs <see cref="DeleteDirectory(string)"/> if the given path is an
 	/// <see cref="Directory.Exists(string?)">existing directory</see>.
 	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool DeleteDirectoryIfExists(string path) {
 		if (Directory.Exists(path)) {
 			DeleteDirectory(path);
@@ -192,6 +193,7 @@ internal static class FsUtils {
 	/// if the given path is an <see cref="Directory.Exists(string?)">existing
 	/// directory</see>.
 	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool DeleteDirectoryAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
 		if (Directory.Exists(path)) {
 			DeleteDirectoryAtomic(path, trashDir);
@@ -204,6 +206,7 @@ internal static class FsUtils {
 	/// Performs <see cref="ClearDirectory(string)"/> if the given path is an
 	/// <see cref="Directory.Exists(string?)">existing directory</see>.
 	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool ClearDirectoryIfExists(string path) {
 		if (Directory.Exists(path)) {
 			ClearDirectory(path);
@@ -266,6 +269,7 @@ internal static class FsUtils {
 	/// Performs <see cref="DeleteFileAtomic(string, ReadOnlySpan{char})"/> if
 	/// the given path is an <see cref="File.Exists(string?)">existing file</see>.
 	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool DeleteFileAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
 		if (File.Exists(path)) {
 			DeleteFileAtomic(path, trashDir);
@@ -284,6 +288,7 @@ internal static class FsUtils {
 	/// If the specified target is a directory, it is deleted recursively.
 	/// </para>
 	/// </remarks>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void DeleteAtomic(string path, ReadOnlySpan<char> trashDir) {
 		if (!Directory.Exists(path)) {
 			DeleteFileAtomic(path, trashDir);
@@ -300,6 +305,7 @@ internal static class FsUtils {
 	/// <returns>
 	/// Whether or not the target exists and was deleted successfully.
 	/// </returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool DeleteAtomicIfExists(string path, ReadOnlySpan<char> trashDir) {
 		if (!Directory.Exists(path)) {
 			if (!File.Exists(path)) goto NotExists; // Reduces indention
