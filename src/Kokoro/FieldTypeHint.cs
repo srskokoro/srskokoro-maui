@@ -60,7 +60,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	 */
 
 	/// <summary>A UTF-8 string.</summary>
-	Text     = 0x57,
+	Text     = 0x54,
 
 	Blob     = 0x58,
 
