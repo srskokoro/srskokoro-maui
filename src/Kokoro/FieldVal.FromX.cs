@@ -40,25 +40,25 @@ public sealed partial class FieldVal {
 
 	public static FieldVal From(sbyte value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((byte)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((byte)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(short value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((ushort)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((ushort)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(int value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((uint)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((uint)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(long value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((ulong)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((ulong)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
@@ -66,25 +66,25 @@ public sealed partial class FieldVal {
 
 	public static FieldVal From(byte value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((byte)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((byte)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(ushort value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((ushort)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((ushort)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(uint value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((uint)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((uint)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(ulong value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((ulong)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
+		if ((ulong)value > 1u) return new(Type, MakeData(value.BigEndian()));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
