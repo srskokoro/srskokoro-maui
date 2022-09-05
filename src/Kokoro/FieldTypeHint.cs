@@ -1,5 +1,6 @@
 ﻿global using FieldTypeHintInt = System.UInt32;
 global using FieldTypeHintUInt = System.UInt32;
+global using FieldTypeHintSInt = System.Int32;
 
 namespace Kokoro;
 using Kokoro.Common.Util;
