@@ -86,6 +86,15 @@ public static class FieldTypeHintExtensions {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static int GetZeroOrOne(this FieldTypeHint @enum) {
+		int r = (FieldTypeHintSInt)@enum & 1;
+		Debug.Assert(r == 0
+			? @enum == FieldTypeHint.Zero
+			: @enum == FieldTypeHint.One);
+		return r;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool IsIntOrUInt(this FieldTypeHint @enum) {
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Int == 0x4);
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.UInt == 0x5);
