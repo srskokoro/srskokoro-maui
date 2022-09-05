@@ -1,7 +1,7 @@
 ﻿namespace Kokoro.Common;
 using System.Numerics;
 
-internal static class Bytes {
+internal static partial class Bytes {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static unsafe bool ToUnsafeBool(this byte flag) {
