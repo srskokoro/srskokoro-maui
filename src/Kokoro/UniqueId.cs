@@ -823,7 +823,6 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 			ref var fail = ref ParseFail.Current;
 			fail.Code = ParseFailCode.CwBase32ExcessBits;
 			Debug.Assert(i == _CwBase32Size);
-			fail.Index = _CwBase32Size-1;
 			goto Fail;
 		}
 	}
@@ -1106,7 +1105,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 				case ParseFailCode.CwBase32ExcessBits: {
 					return new OverflowException(
 						$"Last 2 bits of Clockwork Base32 input bytes should be unset (zero).{Environment.NewLine}" +
-						$"Parsing halted at index {current.Index}, with 1 or 2 excess bits set."
+						$"Parsing halted at index {_CwBase32Size-1}, with 1 or 2 excess bits set."
 					);
 				}
 				default: {
