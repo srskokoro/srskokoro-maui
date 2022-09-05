@@ -74,10 +74,10 @@ public enum FieldTypeHint : FieldTypeHintInt {
 public static class FieldTypeHintExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
+	internal static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool IsZeroOrOne(this FieldTypeHint @enum) {
+	internal static bool IsZeroOrOne(this FieldTypeHint @enum) {
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Zero == 0x2);
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.One == 0x3);
 		return ((FieldTypeHintInt)@enum | 1) != 0x3 ? false : true;
@@ -95,7 +95,7 @@ public static class FieldTypeHintExtensions {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool IsIntOrUInt(this FieldTypeHint @enum) {
+	internal static bool IsIntOrUInt(this FieldTypeHint @enum) {
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Int == 0x4);
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.UInt == 0x5);
 		return ((FieldTypeHintInt)@enum | 1) != 0x5 ? false : true;
