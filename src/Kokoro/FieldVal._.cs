@@ -2,7 +2,7 @@
 using Blake2Fast.Implementation;
 using Kokoro.Common.Util;
 
-public sealed class FieldVal {
+public sealed partial class FieldVal {
 
 	public static FieldVal Null => NullInstHolder.Instance;
 
