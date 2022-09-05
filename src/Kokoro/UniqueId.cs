@@ -822,7 +822,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		{
 			ref var fail = ref ParseFail.Current;
 			fail.Code = ParseFailCode.OverflowCarry;
-			fail.Index = i;
+			Debug.Assert(i == _CwBase32Size);
+			fail.Index = i-1;
 			goto Fail;
 		}
 	}
