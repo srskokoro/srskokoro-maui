@@ -436,6 +436,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		ref byte mapRef = ref MemoryMarshal.GetReference(Base58EncodingMap);
 
 		int i = _Base58Size - 1;
+		// TODO Optimize
 		do {
 			ulong q, v;
 			ulong c; // carry
@@ -515,6 +516,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		ref sbyte mapRef = ref MemoryMarshal.GetReference(Base58DecodingMap);
 
 		int i = 0;
+		// TODO Can be optimized
+		// …by simply decoding the first 10 bytes into a `ulong`, make that the
+		// low bits, right shift (`>>`) the `ulong` by 32 bits, which you could
+		// then use to get the carry, in order to decode the other bytes.
 		do {
 			sbyte x = U.Add(ref mapRef, (byte)U.Add(ref srcRef, i));
 			if (x < 0) goto Fail_InvalidSymbol;
