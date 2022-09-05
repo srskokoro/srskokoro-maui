@@ -90,7 +90,9 @@ public sealed partial class FieldVal {
 
 	// --
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(string text) => new(FieldTypeHint.Text, text.ToUTF8Bytes());
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(byte[] blob) => new(FieldTypeHint.Blob, blob);
 }
