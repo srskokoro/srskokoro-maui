@@ -22,6 +22,7 @@ public sealed partial class FieldVal {
 		_Data = Array.Empty<byte>();
 	}
 
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
 	private static byte[] MakeData<T>(T value, int count) where T : unmanaged {
@@ -35,11 +36,19 @@ public sealed partial class FieldVal {
 		return data;
 	}
 
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static byte[] MakeData(sbyte value) => MakeData((byte)value);
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static byte[] MakeData(int value) => MakeData((uint)value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static byte[] MakeData(long value) => MakeData((ulong)value);
+
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static byte[] MakeData(byte value) => new byte[1] { value };
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static byte[] MakeData(uint value) => MakeData(value.BigEndian(), value.CountBytesNeeded());
