@@ -28,4 +28,9 @@ internal static partial class TextUtils {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int GetUTF8ByteCount(this string s) => Encoding.UTF8.GetByteCount(s);
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static string UTF8ToString(Span<byte> bytes) => Encoding.UTF8.GetString(bytes);
 }
