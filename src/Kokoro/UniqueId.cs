@@ -172,6 +172,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		public void Deconstruct(out ulong highBits, out ulong lowBits) {
 			highBits = this[1]; lowBits = this[0];
 		}
+
+		public override string ToString() => $"(0x{this[1]:X},0x{this[0]:X})";
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
