@@ -1100,13 +1100,13 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 				case ParseFailCode.Base58OverflowCarry: {
 					return new OverflowException(
 						$"Accumulated value of Base58 input is too high.{Environment.NewLine}" +
-						$"Decoding halted at index {current.Index}, with overflow/carry."
+						$"Parsing halted at index {current.Index}, with overflow/carry."
 					);
 				}
 				case ParseFailCode.CwBase32ExcessBits: {
 					return new OverflowException(
 						$"Last 2 bits of Clockwork Base32 input bytes should be unset (zero).{Environment.NewLine}" +
-						$"Decoding halted at index {current.Index}, with 1 or 2 excess bits set."
+						$"Parsing halted at index {current.Index}, with 1 or 2 excess bits set."
 					);
 				}
 				default: {
