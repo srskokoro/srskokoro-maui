@@ -549,6 +549,7 @@ partial class Class {
 					hasher_fld.UpdateLE(info.Ordinal);
 					Debug.Assert(1 == hasher_fld_debug_i++);
 
+					if (!info.StoreType.IsValid()) goto E_InvalidFieldStoreType;
 					updCmd_sto.Value = info.StoreType;
 					Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
 					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
@@ -597,7 +598,17 @@ partial class Class {
 		}
 
 	NoChanges:
-		;
+		return;
+
+	E_InvalidFieldStoreType:
+		E_InvalidFieldStoreType(changes_iter.Current);
+
+		[DoesNotReturn]
+		static void E_InvalidFieldStoreType(KeyValuePair<StringKey, FieldInfo> current) {
+			var (fieldName, info) = current;
+			throw new InvalidOperationException(
+				$"Invalid store type (currently {info.StoreType}) for field: {fieldName}");
+		}
 	}
 
 	private const int FieldInfoCsumDigestLength = 31; // 248-bit hash
