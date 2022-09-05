@@ -58,7 +58,9 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	NumX     = 0x18,
 	 */
 
+	/// <summary>A UTF-8 string.</summary>
 	Text     = 0x57,
+
 	Blob     = 0x58,
 
 	/// <remarks>
