@@ -60,6 +60,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	 */
 
 	/// <summary>A UTF-8 string.</summary>
+	// TODO A zipped UTF-8 counterpart. See, https://utf8everywhere.org/#asian
 	Text     = 0x54,
 
 	Blob     = 0x58,
