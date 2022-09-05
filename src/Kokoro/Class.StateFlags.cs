@@ -27,8 +27,6 @@ partial class Class {
 
 	public bool Exists {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		// Ternary operator returning true/false prevents redundant asm generation:
-		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 		get {
 			if (_State >= 0) {
 				Debug.Assert((StateFlags)(-1) < 0, $"Underlying type of `{nameof(StateFlags)}` must be signed");
