@@ -18,7 +18,7 @@ public sealed partial class Class : DataEntity {
 	private long _ModStamp;
 
 	private int _Ordinal;
-	private long _GroupId;
+	private long _ManagerId;
 	private StringKey? _Name;
 
 
@@ -68,15 +68,15 @@ public sealed partial class Class : DataEntity {
 
 	public void SetCachedOrdinal(int ordinal) => _Ordinal = ordinal;
 
-	public long GroupId {
-		get => _GroupId;
+	public long ManagerId {
+		get => _ManagerId;
 		set {
-			_GroupId = value;
-			_State |= StateFlags.Change_GroupId;
+			_ManagerId = value;
+			_State |= StateFlags.Change_ManagerId;
 		}
 	}
 
-	public void SetCachedGroupId(long groupId) => _GroupId = groupId;
+	public void SetCachedManagerId(long managerId) => _ManagerId = managerId;
 
 	public StringKey? Name {
 		get => _Name;
@@ -122,7 +122,7 @@ public sealed partial class Class : DataEntity {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			$"SELECT uid,csum,modst,ord," +
-				$"ifnull(grp,0)grp," +
+				$"ifnull(man,0)man," +
 				$"ifnull(name,0)name\n" +
 			$"FROM {Prot.Class}\n" +
 			$"WHERE rowid=$rowid"
@@ -145,8 +145,8 @@ public sealed partial class Class : DataEntity {
 			r.DAssert_Name(3, "ord");
 			_Ordinal = r.GetInt32(3);
 
-			r.DAssert_Name(4, "grp");
-			_GroupId = r.GetInt64(4);
+			r.DAssert_Name(4, "man");
+			_ManagerId = r.GetInt64(4);
 
 			r.DAssert_Name(5, "name");
 			long nameId = r.GetInt64(5);
@@ -193,7 +193,7 @@ public sealed partial class Class : DataEntity {
 		_Uid = default;
 		_CachedCsum = default;
 		_Ordinal = default;
-		_GroupId = default;
+		_ManagerId = default;
 		_Name = default;
 	}
 
@@ -241,9 +241,9 @@ public sealed partial class Class : DataEntity {
 			using var cmd = db.CreateCommand();
 			cmd.Set(
 				$"INSERT INTO {Prot.Class}" +
-				$"(rowid,uid,csum,modst,ord,grp,name)" +
+				$"(rowid,uid,csum,modst,ord,man,name)" +
 				$"\nVALUES" +
-				$"($rowid,$uid,$csum,$modst,$ord,$grp,$name)"
+				$"($rowid,$uid,$csum,$modst,$ord,$man,$name)"
 			);
 
 			var cmdParams = cmd.Parameters;
@@ -272,7 +272,7 @@ public sealed partial class Class : DataEntity {
 			hasher.UpdateLE(_Ordinal);
 			Debug.Assert(1 == hasher_debug_i++);
 
-			cmdParams.Add(new("$grp", RowIds.DBBox(_GroupId)));
+			cmdParams.Add(new("$man", RowIds.DBBox(_ManagerId)));
 
 			StringKey? name = _Name;
 			cmdParams.Add(new("$name", name is null
@@ -455,9 +455,9 @@ public sealed partial class Class : DataEntity {
 			{
 				if (state == StateFlags.NoChanges) goto ModStampIsNow;
 
-				if ((state & StateFlags.Change_GroupId) != 0) {
-					cmdSb.Append("grp=$grp,");
-					cmdParams.Add(new("$grp", RowIds.DBBox(_GroupId)));
+				if ((state & StateFlags.Change_ManagerId) != 0) {
+					cmdSb.Append("man=$man,");
+					cmdParams.Add(new("$man", RowIds.DBBox(_ManagerId)));
 				}
 				if ((state & StateFlags.Change_Name) != 0) {
 					cmdSb.Append("name=$name,");

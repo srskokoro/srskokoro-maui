@@ -362,7 +362,7 @@ internal static class Setup_v0w1 {
 
 			// The cryptographic checksum of the entity class's primary data,
 			// which includes other tables that comprises the entity class, but
-			// excludes the `rowid`, `modst`, `grp`, `name`, and the contents of
+			// excludes the `rowid`, `modst`, `man`, `name`, and the contents of
 			// included entity classes (only the included entity class's `uid`
 			// is used).
 			//
@@ -387,20 +387,21 @@ internal static class Setup_v0w1 {
 			// The entity class ordinal.
 			$"{Ord_Int32Nn}," +
 
-			// The class group where the entity class belongs to.
+			// The class manager, an item that manages the entity class.
 			//
-			// The class group is an item that hosts zero or more other classes.
-			// It allows the class to be reachable and prevents the class from
-			// being deleted should there be no schema referencing the class.
+			// The class manager acts as a grouping for the class and may host
+			// zero or more other classes. It allows the class to be reachable
+			// and prevents the class from being deleted should there be no
+			// schema referencing the class.
 			//
 			// TODO A trigger for when this column is nulled out: consider deleting the entity class as well
-			$"grp INTEGER REFERENCES {P.Item} {OnRowIdFkNullDel}," +
+			$"man INTEGER REFERENCES {P.Item} {OnRowIdFkNullDel}," +
 
 			// Quirks:
 			// - Null when unnamed.
 			$"name INTEGER REFERENCES {P.NameId} {OnRowIdFk}," +
 
-			$"UNIQUE(grp, name)" +
+			$"UNIQUE(man, name)" +
 
 		$")";
 
