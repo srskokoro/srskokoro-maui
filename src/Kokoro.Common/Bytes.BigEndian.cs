@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Common;
 using System.Buffers.Binary;
 
+// Utilities to toggle primitive types to and from big-endian.
 internal static partial class Bytes {
 
 	// Exists only for completeness
