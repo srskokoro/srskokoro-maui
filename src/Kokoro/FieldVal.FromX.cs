@@ -32,6 +32,12 @@ public sealed partial class FieldVal {
 
 	// --
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static FieldVal From(bool value)
+		=> ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)(value.ToByte() & 1));
+
+	// --
+
 	public static FieldVal From(sbyte value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
 		if ((byte)value > 1u) return new(Type, MakeData(value.ToBigEndian()));
