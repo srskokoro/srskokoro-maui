@@ -75,4 +75,13 @@ public static class FieldTypeHintExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsIntOrUInt(this FieldTypeHint @enum) {
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Int == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.UInt == 0x5);
+		return ((FieldTypeHintInt)@enum | 1) != 0x5 ? false : true;
+		// Ternary operator returning true/false prevents redundant asm generation.
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+	}
 }
