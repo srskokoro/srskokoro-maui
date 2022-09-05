@@ -558,7 +558,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	Fail_OverflowCarry:
 		{
 			ref var fail = ref ParseFail.Current;
-			fail.Code = ParseFailCode.OverflowCarry;
+			fail.Code = ParseFailCode.Base58OverflowCarry;
 			fail.Index = i;
 			goto Fail;
 		}
@@ -799,7 +799,7 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		Debug.Assert(i == _CwBase32Size);
 		Debug.Assert(shift == 2);
 		if ((x & 0b11) != 0) {
-			goto Fail_OverflowCarry;
+			goto Fail_ExcessBits;
 		}
 
 		// Success!
@@ -818,10 +818,10 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 		result = default;
 		return false;
 
-	Fail_OverflowCarry:
+	Fail_ExcessBits:
 		{
 			ref var fail = ref ParseFail.Current;
-			fail.Code = ParseFailCode.OverflowCarry;
+			fail.Code = ParseFailCode.CwBase32ExcessBits;
 			Debug.Assert(i == _CwBase32Size);
 			fail.Index = _CwBase32Size-1;
 			goto Fail;
@@ -1077,7 +1077,8 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 	private enum ParseFailCode : byte {
 		NA = 0,
 		InvalidSymbol = 1,
-		OverflowCarry = 2,
+		Base58OverflowCarry = 2,
+		CwBase32ExcessBits = 3,
 	}
 
 	[StructLayout(LayoutKind.Auto)]
@@ -1096,10 +1097,16 @@ public readonly struct UniqueId : IEquatable<UniqueId>, IComparable, IComparable
 				case ParseFailCode.InvalidSymbol: {
 					return new FormatException($"Invalid symbol at index {current.Index}");
 				}
-				case ParseFailCode.OverflowCarry: {
+				case ParseFailCode.Base58OverflowCarry: {
 					return new OverflowException(
-						$"Accumulated value of encoded input is too high.{Environment.NewLine}" +
+						$"Accumulated value of Base58 input is too high.{Environment.NewLine}" +
 						$"Decoding halted at index {current.Index}, with overflow/carry."
+					);
+				}
+				case ParseFailCode.CwBase32ExcessBits: {
+					return new OverflowException(
+						$"Last 2 bits of Clockwork Base32 input bytes should be unset (zero).{Environment.NewLine}" +
+						$"Decoding halted at index {current.Index}, with 1 or 2 excess bits set."
 					);
 				}
 				default: {
