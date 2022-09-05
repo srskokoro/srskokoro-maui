@@ -1,6 +1,5 @@
 ﻿namespace Kokoro.Internal.IO.Extensions;
 using Kokoro.Common.IO;
-using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
 internal static partial class StreamExtensions {
@@ -22,10 +21,7 @@ internal static partial class StreamExtensions {
 			StreamUtils.E_EndOfStreamRead_InvOp();
 
 		// Needed since the `UIntX` in the stream is assumed big-endian
-		if (BitConverter.IsLittleEndian) {
-			return BinaryPrimitives.ReverseEndianness(result);
-		}
-		return result;
+		return result.BigEndian(); // Toggle from big-endian
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -45,9 +41,6 @@ internal static partial class StreamExtensions {
 			StreamUtils.E_EndOfStreamRead_InvOp();
 
 		// Needed since the `UIntX` in the stream is assumed big-endian
-		if (BitConverter.IsLittleEndian) {
-			return BinaryPrimitives.ReverseEndianness(result);
-		}
-		return result;
+		return result.BigEndian(); // Toggle from big-endian
 	}
 }

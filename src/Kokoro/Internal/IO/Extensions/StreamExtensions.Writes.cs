@@ -1,6 +1,4 @@
 ﻿namespace Kokoro.Internal.IO.Extensions;
-using System;
-using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
 internal static partial class StreamExtensions {
@@ -14,8 +12,7 @@ internal static partial class StreamExtensions {
 		}
 
 		// Needed since the `UIntX` in the stream is assumed big-endian
-		var tmp = BitConverter.IsLittleEndian
-			? BinaryPrimitives.ReverseEndianness(value) : value;
+		var tmp = value.BigEndian(); // Toggle into big-endian
 
 		var buffer = MemoryMarshal.CreateReadOnlySpan(ref U.Add(
 			ref U.As<ulong, byte>(ref tmp), MaxSize - sizeOfUIntX), sizeOfUIntX);
@@ -32,8 +29,7 @@ internal static partial class StreamExtensions {
 		}
 
 		// Needed since the `UIntX` in the stream is assumed big-endian
-		var tmp = BitConverter.IsLittleEndian
-			? BinaryPrimitives.ReverseEndianness(value) : value;
+		var tmp = value.BigEndian(); // Toggle into big-endian
 
 		var buffer = MemoryMarshal.CreateReadOnlySpan(ref U.Add(
 			ref U.As<uint, byte>(ref tmp), MaxSize - sizeOfUIntX), sizeOfUIntX);
