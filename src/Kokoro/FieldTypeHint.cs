@@ -30,16 +30,15 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// </remarks>
 	UInt     = 0x5,
 
-	//Fp8    = 0x6,
-	Fp16     = 0x7,
-	Fp32     = 0x8,
-	Fp64     = 0x9,
-	//Fp80   = 0xA,
-	//Fp128  = 0xB,
-	//Fp256  = 0xC,
-	//Dec32  = 0xD,
-	//Dec64  = 0xE,
-	//Dec128 = 0xF,
+	/// <summary>
+	/// An IEEE 754 binary floating-point, which can either be a <see cref="double"/>,
+	/// a <see cref="float"/>, or a <see cref="Half"/>, depending on how many
+	/// bytes of data are available. The bytes are stored in big-endian.
+	/// </summary>
+	/// <remarks>
+	/// Excess data bytes will be discarded. An empty data represents zero.
+	/// </remarks>
+	Fp       = 0x8,
 
 	// NOTE: Reserved for integer-with-floating-point hybrid as a custom format.
 	// - The idea is to have an arbitrary-precision twos-complement integer (in
