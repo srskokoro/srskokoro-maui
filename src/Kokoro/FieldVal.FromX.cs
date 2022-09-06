@@ -174,7 +174,13 @@ public sealed partial class FieldVal {
 		if ((uint)i < IntInstCache.Size) {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
 		}
-		return new(FieldTypeHint.Int, MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned()));
+		return new(
+			FieldTypeHint.Int,
+			MakeData(
+				(uint)value.LittleEndian(),
+				value.CountBytesNeededSigned()
+			)
+		);
 	}
 
 	public static FieldVal From(long value) {
@@ -182,7 +188,13 @@ public sealed partial class FieldVal {
 		if ((ulong)i < IntInstCache.Size) {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
 		}
-		return new(FieldTypeHint.Int, MakeData((ulong)value.LittleEndian(), value.CountBytesNeededSigned()));
+		return new(
+			FieldTypeHint.Int,
+			MakeData(
+				(ulong)value.LittleEndian(),
+				value.CountBytesNeededSigned()
+			)
+		);
 	}
 
 	// --
@@ -200,14 +212,26 @@ public sealed partial class FieldVal {
 		if (value < (uint)UIntInstCache.Size) {
 			return UIntInstCache.Cache.DangerousGetReferenceAt((int)value);
 		}
-		return new(FieldTypeHint.UInt, MakeData(value.LittleEndian(), value.CountBytesNeeded()));
+		return new(
+			FieldTypeHint.UInt,
+			MakeData(
+				value.LittleEndian(),
+				value.CountBytesNeeded()
+			)
+		);
 	}
 
 	public static FieldVal From(ulong value) {
 		if (value < (ulong)UIntInstCache.Size) {
 			return UIntInstCache.Cache.DangerousGetReferenceAt((int)value);
 		}
-		return new(FieldTypeHint.UInt, MakeData(value.LittleEndian(), value.CountBytesNeeded()));
+		return new(
+			FieldTypeHint.UInt,
+			MakeData(
+				value.LittleEndian(),
+				value.CountBytesNeeded()
+			)
+		);
 	}
 
 	// --
