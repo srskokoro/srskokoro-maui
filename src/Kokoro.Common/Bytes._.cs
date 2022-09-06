@@ -91,10 +91,26 @@ internal static partial class Bytes {
 
 	// --
 
+	/// <summary>
+	/// Counts the minimum number of bytes needed to store the given integer,
+	/// for the purposes of optimizing storage. This is always less than or
+	/// equal to <see langword="sizeof"/>(<see cref="int"/>).
+	/// <para>
+	/// If the integer is positive and the most significant bit of its most
+	/// significant byte is set, then an extra zero byte is included in the
+	/// count, which is necessary to be stored along with the other bytes of the
+	/// integer, so as to not interpret the integer as negative (i.e., sign-bit
+	/// set) when stored with the least amount of bytes needed.
+	/// </para>
+	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededSigned(this int value)
 		=> ((uint)(value ^ (value << 1))).CountBytesNeeded();
 
+	/// <summary>
+	/// Similar to <see cref="CountBytesNeededSigned(int)"/> but for <see cref="long"/>
+	/// integers.
+	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededSigned(this long value)
 		=> ((ulong)(value ^ (value << 1))).CountBytesNeeded();
