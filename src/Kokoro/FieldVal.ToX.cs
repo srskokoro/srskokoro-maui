@@ -8,8 +8,9 @@ public sealed partial class FieldVal {
 		int n = data.Length;
 
 		const int S = sizeof(long);
+		n -= S;
+		n = ((n >> 31) & n) + S;
 		long mask = (1L << (n << 3)) - 1;
-		mask |= (long)((S - n) >> 31);
 
 		long r;
 		if (S > U.SizeOf<nint>()) {
@@ -17,7 +18,7 @@ public sealed partial class FieldVal {
 			U.CopyBlock(
 				destination: ref U.As<long, byte>(ref r),
 				source: ref r0,
-				byteCount: (uint)Math.Min(data.Length, S)
+				byteCount: (uint)n
 			);
 		} else {
 			r = U.As<byte, long>(ref r0);
@@ -34,8 +35,9 @@ public sealed partial class FieldVal {
 		int n = data.Length;
 
 		const int S = sizeof(int);
+		n -= S;
+		n = ((n >> 31) & n) + S;
 		int mask = (1 << (n << 3)) - 1;
-		mask |= (S - n) >> 31;
 
 		int r;
 		if (S > U.SizeOf<nint>()) {
@@ -43,7 +45,7 @@ public sealed partial class FieldVal {
 			U.CopyBlock(
 				destination: ref U.As<int, byte>(ref r),
 				source: ref r0,
-				byteCount: (uint)Math.Min(data.Length, S)
+				byteCount: (uint)n
 			);
 		} else {
 			r = U.As<byte, int>(ref r0);
