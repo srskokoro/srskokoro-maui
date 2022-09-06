@@ -140,7 +140,6 @@ public sealed partial class FieldVal {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	[SkipLocalsInit]
 	private static byte[] MakeData<T>(T value, int count) where T : unmanaged {
 		Debug.Assert(count <= U.SizeOf<T>());
 		var data = new byte[count];
