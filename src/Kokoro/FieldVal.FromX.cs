@@ -152,20 +152,6 @@ public sealed partial class FieldVal {
 		return data;
 	}
 
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeDataForSigned(int value) => MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned());
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeDataForSigned(long value) => MakeData((ulong)value.LittleEndian(), value.CountBytesNeededSigned());
-
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeDataForUnsigned(uint value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeDataForUnsigned(ulong value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
-
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -188,7 +174,7 @@ public sealed partial class FieldVal {
 		if ((uint)i < IntInstCache.Size) {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
 		}
-		return new(FieldTypeHint.Int, MakeDataForSigned(value));
+		return new(FieldTypeHint.Int, MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned()));
 	}
 
 	public static FieldVal From(long value) {
@@ -196,7 +182,7 @@ public sealed partial class FieldVal {
 		if ((ulong)i < IntInstCache.Size) {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
 		}
-		return new(FieldTypeHint.Int, MakeDataForSigned(value));
+		return new(FieldTypeHint.Int, MakeData((ulong)value.LittleEndian(), value.CountBytesNeededSigned()));
 	}
 
 	// --
@@ -214,14 +200,14 @@ public sealed partial class FieldVal {
 		if (value < (uint)UIntInstCache.Size) {
 			return UIntInstCache.Cache.DangerousGetReferenceAt((int)value);
 		}
-		return new(FieldTypeHint.UInt, MakeDataForUnsigned(value));
+		return new(FieldTypeHint.UInt, MakeData(value.LittleEndian(), value.CountBytesNeeded()));
 	}
 
 	public static FieldVal From(ulong value) {
 		if (value < (ulong)UIntInstCache.Size) {
 			return UIntInstCache.Cache.DangerousGetReferenceAt((int)value);
 		}
-		return new(FieldTypeHint.UInt, MakeDataForUnsigned(value));
+		return new(FieldTypeHint.UInt, MakeData(value.LittleEndian(), value.CountBytesNeeded()));
 	}
 
 	// --
