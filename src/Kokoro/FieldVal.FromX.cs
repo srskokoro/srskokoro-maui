@@ -5,6 +5,36 @@ public sealed partial class FieldVal {
 	public static FieldVal Zero => ZeroOrOneInstHolder.Zero;
 	public static FieldVal One => ZeroOrOneInstHolder.One;
 
+	private static class IntDataCache {
+
+		// NOTE: Shouldn't use static constructor for this. See,
+		// - https://stackoverflow.com/a/71063929
+		// - https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1810
+		//
+		internal static readonly byte[][] Cache = Init();
+
+		internal const int MinValue = -128;
+		internal const int MaxValue = 255;
+
+		internal const int Offset = -MinValue;
+		internal const int Size = -MinValue + MaxValue + 1;
+
+		private static byte[][] Init() {
+			Debug.Assert(Size == 256 + 128);
+
+			byte[][] r = new byte[Size][];
+			ref byte[] r0 = ref r.DangerousGetReference();
+
+			for (int v = MinValue, i = 0; i < 256; i++)
+				U.Add(ref r0, i) = new byte[] { (byte)v++ };
+
+			for (int i = 256; i < Size; i++)
+				U.Add(ref r0, i) = U.Add(ref r0, (byte)i);
+
+			return r;
+		}
+	}
+
 	private static class ZeroOrOneInstHolder {
 		internal static readonly FieldVal Zero = new(FieldTypeHint.Zero);
 		internal static readonly FieldVal One = new(FieldTypeHint.One);
