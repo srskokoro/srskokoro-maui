@@ -14,15 +14,15 @@ public sealed partial class FieldVal {
 		long mask = (1L << (n << 3)) - 1;
 
 		long v;
-		if (S > U.SizeOf<nint>()) {
+		if (S <= U.SizeOf<nint>()) {
+			v = U.As<byte, long>(ref r0);
+		} else {
 			v = default;
 			U.CopyBlock(
 				destination: ref U.As<long, byte>(ref v),
 				source: ref r0,
 				byteCount: (uint)n
 			);
-		} else {
-			v = U.As<byte, long>(ref r0);
 		}
 
 		long r = v.LittleEndian() & mask;
@@ -41,15 +41,15 @@ public sealed partial class FieldVal {
 		int mask = (1 << (n << 3)) - 1;
 
 		int v;
-		if (S > U.SizeOf<nint>()) {
+		if (S <= U.SizeOf<nint>()) {
+			v = U.As<byte, int>(ref r0);
+		} else {
 			v = default;
 			U.CopyBlock(
 				destination: ref U.As<int, byte>(ref v),
 				source: ref r0,
 				byteCount: (uint)n
 			);
-		} else {
-			v = U.As<byte, int>(ref r0);
 		}
 
 		int r = v.LittleEndian() & mask;
