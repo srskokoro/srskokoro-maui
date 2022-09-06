@@ -41,10 +41,10 @@ public sealed partial class FieldVal {
 	private static byte[] MakeData(sbyte value) => MakeData((byte)value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(int value) => MakeData((uint)value);
+	private static byte[] MakeData(int value) => MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(long value) => MakeData((ulong)value);
+	private static byte[] MakeData(long value) => MakeData((ulong)value.LittleEndian(), value.CountBytesNeededSigned());
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
