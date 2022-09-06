@@ -112,6 +112,9 @@ internal static partial class Bytes {
 	/// set) when stored with the least amount of bytes needed.
 	/// </para>
 	/// </summary>
+	/// <remarks>
+	/// See also, <see cref="CountBytesNeeded(uint)"/>
+	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededSigned(this int value)
 		=> ((uint)(value ^ (value << 1))).CountBytesNeeded();
@@ -120,6 +123,9 @@ internal static partial class Bytes {
 	/// Similar to <see cref="CountBytesNeededSigned(int)"/> but for <see cref="long"/>
 	/// integers.
 	/// </summary>
+	/// <remarks>
+	/// See also, <see cref="CountBytesNeeded(ulong)"/>
+	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeededSigned(this long value)
 		=> ((ulong)(value ^ (value << 1))).CountBytesNeeded();
