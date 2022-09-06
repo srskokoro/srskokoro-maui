@@ -98,7 +98,7 @@ public sealed partial class FieldVal {
 
 	public static FieldVal From(ushort value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((ushort)value > 1u) return new(Type, MakeDataForUnsigned((uint)value));
+		if ((ushort)value > 1u) return new(Type, MakeDataForUnsigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
