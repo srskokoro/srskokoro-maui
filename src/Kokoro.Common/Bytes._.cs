@@ -88,4 +88,14 @@ internal static partial class Bytes {
 		int x = value.CountBytesNeededM1();
 		return x ^ (x >> 63);
 	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CountBytesNeededSigned(this int value)
+		=> ((uint)(value ^ (value << 1))).CountBytesNeeded();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static int CountBytesNeededSigned(this long value)
+		=> ((ulong)(value ^ (value << 1))).CountBytesNeeded();
 }
