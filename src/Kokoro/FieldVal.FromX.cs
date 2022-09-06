@@ -38,13 +38,13 @@ public sealed partial class FieldVal {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(sbyte value) => MakeDataForUnsigned((byte)value);
+	private static byte[] MakeDataForSigned(sbyte value) => MakeDataForUnsigned((byte)value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(int value) => MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned());
+	private static byte[] MakeDataForSigned(int value) => MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(long value) => MakeData((ulong)value.LittleEndian(), value.CountBytesNeededSigned());
+	private static byte[] MakeDataForSigned(long value) => MakeData((ulong)value.LittleEndian(), value.CountBytesNeededSigned());
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,25 +66,25 @@ public sealed partial class FieldVal {
 
 	public static FieldVal From(sbyte value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((byte)value > 1u) return new(Type, MakeData(value));
+		if ((byte)value > 1u) return new(Type, MakeDataForSigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(short value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((ushort)value > 1u) return new(Type, MakeData(value));
+		if ((ushort)value > 1u) return new(Type, MakeDataForSigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(int value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((uint)value > 1u) return new(Type, MakeData(value));
+		if ((uint)value > 1u) return new(Type, MakeDataForSigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(long value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((ulong)value > 1u) return new(Type, MakeData(value));
+		if ((ulong)value > 1u) return new(Type, MakeDataForSigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
