@@ -3,7 +3,9 @@ namespace Kokoro;
 public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static long ReadInt64(byte[] data) {
+	private static long ReadInt64(FieldTypeHint type, byte[] data) {
+		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+
 		ref byte r0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
@@ -24,12 +26,14 @@ public sealed partial class FieldVal {
 		}
 
 		r = r.LittleEndian() & mask;
-		r = -((~mask >> 1) & r) | r;
+		r = (-((~mask >> 1) & r) & m1WhenSigned) | r;
 		return r;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static int ReadInt32(byte[] data) {
+	private static int ReadInt32(FieldTypeHint type, byte[] data) {
+		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+
 		ref byte r0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
@@ -50,7 +54,7 @@ public sealed partial class FieldVal {
 		}
 
 		r = r.LittleEndian() & mask;
-		r = -((~mask >> 1) & r) | r;
+		r = (-((~mask >> 1) & r) & m1WhenSigned) | r;
 		return r;
 	}
 
