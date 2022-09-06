@@ -35,6 +35,51 @@ public sealed partial class FieldVal {
 		}
 	}
 
+	private static class IntInstCache {
+
+		// NOTE: Shouldn't use static constructor for this. See,
+		// - https://stackoverflow.com/a/71063929
+		// - https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1810
+		//
+		internal static readonly FieldVal[] Cache = Init();
+
+		internal const int MinValue = -128;
+		internal const int MaxValue = 127;
+
+		internal const int Offset = -MinValue;
+		internal const int Size = -MinValue + MaxValue + 1;
+
+		private static FieldVal[] Init() {
+			Debug.Assert(MinValue <= MaxValue);
+
+			ref byte[] d0 = ref IntDataCache.Cache.DangerousGetReference();
+
+			FieldVal[] r = new FieldVal[Size];
+			ref FieldVal r0 = ref r.DangerousGetReference();
+
+			int i = 0;
+			const int BeforeZero = Offset;
+			const FieldTypeHint Type = FieldTypeHint.Int;
+
+			Debug.Assert(Size <= IntDataCache.Size);
+			Debug.Assert(Size > BeforeZero);
+			Debug.Assert(Size >= 4);
+
+			do {
+				U.Add(ref r0, i) = new FieldVal(Type, U.Add(ref d0, i));
+			} while (++i < BeforeZero);
+
+			U.Add(ref r0, i++) = ZeroOrOneInstHolder.Zero;
+			U.Add(ref r0, i++) = ZeroOrOneInstHolder.One;
+
+			do {
+				U.Add(ref r0, i) = new FieldVal(Type, U.Add(ref d0, i));
+			} while (++i < Size);
+
+			return r;
+		}
+	}
+
 	private static class ZeroOrOneInstHolder {
 		internal static readonly FieldVal Zero = new(FieldTypeHint.Zero);
 		internal static readonly FieldVal One = new(FieldTypeHint.One);
@@ -68,9 +113,6 @@ public sealed partial class FieldVal {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeDataForSigned(sbyte value) => MakeDataForUnsigned((byte)value);
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static byte[] MakeDataForSigned(int value) => MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,24 +137,28 @@ public sealed partial class FieldVal {
 	// --
 
 	public static FieldVal From(sbyte value) {
-		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((byte)value > 1u) return new(Type, MakeDataForSigned(value));
-		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
+		Debug.Assert(sbyte.MinValue >= IntInstCache.MinValue);
+		Debug.Assert(sbyte.MaxValue <= IntInstCache.MaxValue);
+		return IntInstCache.Cache.DangerousGetReferenceAt(value + IntInstCache.Offset);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(short value) => From((int)value);
 
 	public static FieldVal From(int value) {
-		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((uint)value > 1u) return new(Type, MakeDataForSigned(value));
-		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
+		int i = value + IntInstCache.Offset;
+		if ((uint)i < IntInstCache.Size) {
+			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
+		}
+		return new(FieldTypeHint.Int, MakeDataForSigned(value));
 	}
 
 	public static FieldVal From(long value) {
-		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((ulong)value > 1u) return new(Type, MakeDataForSigned(value));
-		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
+		long i = value + IntInstCache.Offset;
+		if ((ulong)i < IntInstCache.Size) {
+			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
+		}
+		return new(FieldTypeHint.Int, MakeDataForSigned(value));
 	}
 
 	// --
