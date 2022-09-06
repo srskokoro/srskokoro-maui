@@ -70,11 +70,8 @@ public sealed partial class FieldVal {
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
-	public static FieldVal From(short value) {
-		const FieldTypeHint Type = FieldTypeHint.Int;
-		if ((ushort)value > 1u) return new(Type, MakeDataForSigned(value));
-		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static FieldVal From(short value) => From((int)value);
 
 	public static FieldVal From(int value) {
 		const FieldTypeHint Type = FieldTypeHint.Int;
@@ -96,11 +93,8 @@ public sealed partial class FieldVal {
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
-	public static FieldVal From(ushort value) {
-		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((ushort)value > 1u) return new(Type, MakeDataForUnsigned(value));
-		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
-	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static FieldVal From(ushort value) => From((uint)value);
 
 	public static FieldVal From(uint value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
