@@ -8,8 +8,7 @@ public sealed partial class FieldVal {
 		int n = data.Length;
 
 		const int S = sizeof(long);
-		n -= S;
-		n = ((n >> 31) & n) + S;
+		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
 		long mask = (1L << (n << 3)) - 1;
 
 		long r;
@@ -35,8 +34,7 @@ public sealed partial class FieldVal {
 		int n = data.Length;
 
 		const int S = sizeof(int);
-		n -= S;
-		n = ((n >> 31) & n) + S;
+		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
 		int mask = (1 << (n << 3)) - 1;
 
 		int r;
