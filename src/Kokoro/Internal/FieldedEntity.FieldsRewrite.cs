@@ -56,7 +56,7 @@ partial class FieldedEntity {
 				if (i < fCount) {
 					int fOffsetSize = fDesc.FOffsetSize;
 					do {
-						destination.WriteUInt32AsUIntX(
+						destination.WriteUInt32AsUIntXLE(
 							(uint)U.Add(ref offsets_r0, i),
 							fOffsetSize);
 					} while (++i < fCount);
@@ -105,7 +105,7 @@ partial class FieldedEntity {
 					int offsetAdjustment = offsets_r0;
 					int fOffsetSize = fDesc.FOffsetSize;
 					do {
-						destination.WriteUInt32AsUIntX(
+						destination.WriteUInt32AsUIntXLE(
 							(uint)(U.Add(ref offsets_r0, i) - offsetAdjustment),
 							fOffsetSize);
 					} while (++i < fCount);

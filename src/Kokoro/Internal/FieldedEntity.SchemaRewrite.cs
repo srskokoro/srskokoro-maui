@@ -1363,7 +1363,7 @@ partial class FieldedEntity {
 
 				// Skips to the second offset value (at index 1)
 				for (int i = 1; i < nsc; i++) {
-					destination.WriteUInt32AsUIntX(
+					destination.WriteUInt32AsUIntXLE(
 						(uint)U.Add(ref offsets_r0, i),
 						sharedFOffsetSize);
 				}

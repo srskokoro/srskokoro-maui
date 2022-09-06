@@ -352,7 +352,7 @@ internal struct FieldsReader : IDisposable {
 			// loading for the offset, and make the offset `0` instead.
 			if (index != 0) {
 				stream.Position = st.FOffsetListPos + (index - 1) * fOffsetSize;
-				fOffset = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
+				fOffset = (int)stream.ReadUIntXLEAsUInt32(fOffsetSize);
 				Debug.Assert(fOffset >= 0, $"{nameof(fOffset)} > `int.MaxValue`: 0x{(uint)fOffset:X}");
 				fPos = fOffset + st.FieldValListPos;
 			} else {
@@ -363,7 +363,7 @@ internal struct FieldsReader : IDisposable {
 
 			int fValLen;
 			if ((uint)index + 1u < (uint)st.FieldCount) {
-				int fOffsetNext = (int)stream.ReadUIntXAsUInt32(fOffsetSize);
+				int fOffsetNext = (int)stream.ReadUIntXLEAsUInt32(fOffsetSize);
 				Debug.Assert(fOffsetNext >= 0, $"{nameof(fOffsetNext)} > `int.MaxValue`: 0x{(uint)fOffsetNext:X}");
 
 				fValLen = fOffsetNext - fOffset;

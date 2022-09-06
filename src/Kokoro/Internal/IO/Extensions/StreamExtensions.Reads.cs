@@ -6,7 +6,7 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
-	public static ulong ReadUIntX(this Stream stream, int sizeOfUIntX) {
+	public static ulong ReadUIntXLE(this Stream stream, int sizeOfUIntX) {
 		const int MaxSize = sizeof(ulong);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
 			ThrowHelper.ThrowArgumentOutOfRangeException();
@@ -26,7 +26,7 @@ internal static partial class StreamExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[SkipLocalsInit]
-	public static uint ReadUIntXAsUInt32(this Stream stream, int sizeOfUIntX) {
+	public static uint ReadUIntXLEAsUInt32(this Stream stream, int sizeOfUIntX) {
 		const int MaxSize = sizeof(uint);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
 			ThrowHelper.ThrowArgumentOutOfRangeException();
