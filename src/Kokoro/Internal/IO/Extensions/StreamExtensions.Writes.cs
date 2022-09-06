@@ -11,8 +11,9 @@ internal static partial class StreamExtensions {
 			ThrowHelper.ThrowArgumentOutOfRangeException();
 		}
 
-		// Needed since the `UIntX` in the stream is assumed little-endian
-		var tmp = value.LittleEndian(); // Toggle into little-endian
+		// Needed since the `UIntX` in the stream is little-endian.
+		// Toggle into little-endian (NOP if already little-endian).
+		var tmp = value.LittleEndian();
 
 		var buffer = MemoryMarshal.CreateReadOnlySpan(ref U.Add(
 			ref U.As<ulong, byte>(ref tmp), MaxSize - sizeOfUIntX), sizeOfUIntX);
@@ -28,8 +29,9 @@ internal static partial class StreamExtensions {
 			ThrowHelper.ThrowArgumentOutOfRangeException();
 		}
 
-		// Needed since the `UIntX` in the stream is assumed little-endian
-		var tmp = value.LittleEndian(); // Toggle into little-endian
+		// Needed since the `UIntX` in the stream is little-endian.
+		// Toggle into little-endian (NOP if already little-endian).
+		var tmp = value.LittleEndian();
 
 		var buffer = MemoryMarshal.CreateReadOnlySpan(ref U.Add(
 			ref U.As<uint, byte>(ref tmp), MaxSize - sizeOfUIntX), sizeOfUIntX);
