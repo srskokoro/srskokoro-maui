@@ -20,8 +20,8 @@ internal static partial class StreamExtensions {
 		if (sread != sizeOfUIntX)
 			StreamUtils.E_EndOfStreamRead_InvOp();
 
-		// Needed since the `UIntX` in the stream is assumed big-endian
-		return result.BigEndian(); // Toggle from big-endian
+		// Needed since the `UIntX` in the stream is assumed little-endian
+		return result.LittleEndian(); // Toggle from little-endian
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,7 +40,7 @@ internal static partial class StreamExtensions {
 		if (sread != sizeOfUIntX)
 			StreamUtils.E_EndOfStreamRead_InvOp();
 
-		// Needed since the `UIntX` in the stream is assumed big-endian
-		return result.BigEndian(); // Toggle from big-endian
+		// Needed since the `UIntX` in the stream is assumed little-endian
+		return result.LittleEndian(); // Toggle from little-endian
 	}
 }

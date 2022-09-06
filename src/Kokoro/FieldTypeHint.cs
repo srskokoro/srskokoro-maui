@@ -14,7 +14,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	One      = 0x3,
 
 	/// <summary>
-	/// A big-endian arbitrary-length signed integer.
+	/// A little-endian arbitrary-length signed integer.
 	/// </summary>
 	/// <remarks>
 	/// Conversion to C#'s primitive integer types may cause the value to be
@@ -22,7 +22,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// </remarks>
 	Int      = 0x4,
 	/// <summary>
-	/// A big-endian arbitrary-length unsigned integer.
+	/// A little-endian arbitrary-length unsigned integer.
 	/// </summary>
 	/// <remarks>
 	/// Conversion to C#'s primitive integer types may cause the value to be
@@ -33,7 +33,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// <summary>
 	/// An IEEE 754 binary floating-point, which can either be a <see cref="double"/>,
 	/// a <see cref="float"/>, or a <see cref="Half"/>, depending on how many
-	/// bytes of data are available. The bytes are stored in big-endian.
+	/// bytes of data are available. The bytes are stored in little-endian.
 	/// </summary>
 	/// <remarks>
 	/// Excess data bytes will be discarded. An empty data represents zero.

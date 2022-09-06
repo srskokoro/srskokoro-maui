@@ -51,10 +51,10 @@ public sealed partial class FieldVal {
 	private static byte[] MakeData(byte value) => new byte[1] { value };
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(uint value) => MakeData(value.BigEndian(), value.CountBytesNeeded());
+	private static byte[] MakeData(uint value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(ulong value) => MakeData(value.BigEndian(), value.CountBytesNeeded());
+	private static byte[] MakeData(ulong value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
 
 	// --
 
