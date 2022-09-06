@@ -13,6 +13,11 @@ internal static partial class Bytes {
 
 	// --
 
+	/// <summary>
+	/// Counts the minimum number of bytes needed to store the given unsigned
+	/// integer, for the purposes of optimizing storage. This is always less
+	/// than or equal to <see langword="sizeof"/>(<see cref="uint"/>).
+	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeeded(this uint value) {
 		// Reference: https://stackoverflow.com/a/2274675
@@ -20,6 +25,10 @@ internal static partial class Bytes {
 		return (32 + 7 - BitOperations.LeadingZeroCount(value)) >> 3;
 	}
 
+	/// <summary>
+	/// Similar to <see cref="CountBytesNeeded(uint)"/> but for <see cref="ulong"/>
+	/// integers.
+	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CountBytesNeeded(this ulong value) {
 		// Reference: https://stackoverflow.com/a/2274675
