@@ -13,8 +13,8 @@ public sealed partial class FieldVal {
 		//
 		internal static readonly byte[][] Cache = Init();
 
-		internal const int MinValue = -128;
-		internal const int MaxValue = 255;
+		internal const int MinValue = -128; // Same as, `sbyte.MinValue`
+		internal const int MaxValue = 255; // Same as, `byte.MaxValue` (not `sbyte.MaxValue`)
 
 		internal const int Offset = -MinValue;
 		internal const int Size = -MinValue + MaxValue + 1;
@@ -43,8 +43,8 @@ public sealed partial class FieldVal {
 		//
 		internal static readonly FieldVal[] Cache = Init();
 
-		internal const int MinValue = -128;
-		internal const int MaxValue = 127;
+		internal const int MinValue = -128; // Same as, `sbyte.MinValue`
+		internal const int MaxValue = 127; // Same as, `sbyte.MaxValue`
 
 		internal const int Offset = -MinValue;
 		internal const int Size = -MinValue + MaxValue + 1;
@@ -88,8 +88,8 @@ public sealed partial class FieldVal {
 		//
 		internal static readonly FieldVal[] Cache = Init();
 
-		internal const uint MinValue = 0;
-		internal const uint MaxValue = 255;
+		internal const uint MinValue = 0; // Same as, `byte.MinValue`
+		internal const uint MaxValue = 255; // Same as, `byte.MaxValue`
 		internal const int Size = (int)(MaxValue + 1);
 
 		private static FieldVal[] Init() {
