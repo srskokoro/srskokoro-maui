@@ -3,7 +3,7 @@ namespace Kokoro;
 public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static long ReadInt64(FieldTypeHint type, byte[] data) {
+	internal static long ReadInt64(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte r0 = ref data.DangerousGetReference();
@@ -30,7 +30,7 @@ public sealed partial class FieldVal {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static int ReadInt32(FieldTypeHint type, byte[] data) {
+	internal static int ReadInt32(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte r0 = ref data.DangerousGetReference();
