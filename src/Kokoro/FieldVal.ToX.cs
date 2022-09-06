@@ -26,8 +26,7 @@ public sealed partial class FieldVal {
 		}
 
 		r = r.LittleEndian() & mask;
-		r = (-((~mask >> 1) & r) & m1WhenSigned) | r;
-		return r;
+		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -54,8 +53,7 @@ public sealed partial class FieldVal {
 		}
 
 		r = r.LittleEndian() & mask;
-		r = (-((~mask >> 1) & r) & m1WhenSigned) | r;
-		return r;
+		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
 	// --
