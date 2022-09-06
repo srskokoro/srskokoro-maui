@@ -11,22 +11,23 @@ public sealed partial class FieldVal {
 
 		const int S = sizeof(long);
 		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
-		long mask = (1L << (n << 3)) - 1;
 
-		long v;
 		if (S <= U.SizeOf<nint>()) {
-			v = U.As<byte, long>(ref r0);
+			long mask = (1L << (n << 3)) - 1;
+			long v = U.As<byte, long>(ref r0);
+			long r = v.LittleEndian() & mask;
+			return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 		} else {
-			v = default;
+			long mask = (long)m1WhenSigned << ((n << 3) - 1);
+			long v = default;
 			U.CopyBlock(
 				destination: ref U.As<long, byte>(ref v),
 				source: ref r0,
 				byteCount: (uint)n
 			);
+			long r = v.LittleEndian();
+			return -(mask & r) | r;
 		}
-
-		long r = v.LittleEndian() & mask;
-		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,22 +39,23 @@ public sealed partial class FieldVal {
 
 		const int S = sizeof(int);
 		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
-		int mask = (1 << (n << 3)) - 1;
 
-		int v;
 		if (S <= U.SizeOf<nint>()) {
-			v = U.As<byte, int>(ref r0);
+			int mask = (1 << (n << 3)) - 1;
+			int v = U.As<byte, int>(ref r0);
+			int r = v.LittleEndian() & mask;
+			return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 		} else {
-			v = default;
+			int mask = m1WhenSigned << ((n << 3) - 1);
+			int v = default;
 			U.CopyBlock(
 				destination: ref U.As<int, byte>(ref v),
 				source: ref r0,
 				byteCount: (uint)n
 			);
+			int r = v.LittleEndian();
+			return -(mask & r) | r;
 		}
-
-		int r = v.LittleEndian() & mask;
-		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
 	// --
