@@ -38,7 +38,7 @@ public sealed partial class FieldVal {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(sbyte value) => MakeData((byte)value);
+	private static byte[] MakeData(sbyte value) => MakeDataForUnsigned((byte)value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static byte[] MakeData(int value) => MakeData((uint)value.LittleEndian(), value.CountBytesNeededSigned());
@@ -48,13 +48,13 @@ public sealed partial class FieldVal {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(byte value) => new byte[1] { value };
+	private static byte[] MakeDataForUnsigned(byte value) => new byte[1] { value };
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(uint value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
+	private static byte[] MakeDataForUnsigned(uint value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static byte[] MakeData(ulong value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
+	private static byte[] MakeDataForUnsigned(ulong value) => MakeData(value.LittleEndian(), value.CountBytesNeeded());
 
 	// --
 
@@ -92,25 +92,25 @@ public sealed partial class FieldVal {
 
 	public static FieldVal From(byte value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((byte)value > 1u) return new(Type, MakeData(value));
+		if ((byte)value > 1u) return new(Type, MakeDataForUnsigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(ushort value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((ushort)value > 1u) return new(Type, MakeData((uint)value));
+		if ((ushort)value > 1u) return new(Type, MakeDataForUnsigned((uint)value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(uint value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((uint)value > 1u) return new(Type, MakeData(value));
+		if ((uint)value > 1u) return new(Type, MakeDataForUnsigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
 	public static FieldVal From(ulong value) {
 		const FieldTypeHint Type = FieldTypeHint.UInt;
-		if ((ulong)value > 1u) return new(Type, MakeData(value));
+		if ((ulong)value > 1u) return new(Type, MakeDataForUnsigned(value));
 		return ZeroOrOneInstHolder.DangerousGetZeroOrOne((int)value);
 	}
 
