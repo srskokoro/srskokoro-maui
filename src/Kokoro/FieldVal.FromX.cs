@@ -175,9 +175,9 @@ public sealed partial class FieldVal {
 		}
 		return new(
 			FieldTypeHint.Int,
+			// NOTE: Avoids generation of unnecessary specialization of generic
+			// method by reusing an existing one.
 			MakeData<uint>(
-				// NOTE: Avoids generation of unnecessary specialization of
-				// generic method by reusing an existing one.
 				(uint)value.LittleEndian(),
 				value.CountBytesNeededSigned()
 			)
@@ -191,9 +191,9 @@ public sealed partial class FieldVal {
 		}
 		return new(
 			FieldTypeHint.Int,
+			// NOTE: Avoids generation of unnecessary specialization of generic
+			// method by reusing an existing one.
 			MakeData<ulong>(
-				// NOTE: Avoids generation of unnecessary specialization of
-				// generic method by reusing an existing one.
 				(ulong)value.LittleEndian(),
 				value.CountBytesNeededSigned()
 			)
@@ -249,9 +249,9 @@ public sealed partial class FieldVal {
 		}
 		return new(
 			FieldTypeHint.Real,
+			// NOTE: Avoids generation of unnecessary specialization of generic
+			// method by reusing an existing one.
 			MakeData<ulong>(
-				// NOTE: Avoids generation of unnecessary specialization of
-				// generic method by reusing an existing one.
 				BitConverter.DoubleToUInt64Bits(value).LittleEndian(),
 				sizeof(ulong)
 			)
