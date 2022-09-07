@@ -14,6 +14,7 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
+		Debug.Assert(type.IsIntOrUInt());
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte b0 = ref data.DangerousGetReference();
@@ -32,6 +33,7 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_Fallback(FieldTypeHint type, byte[] data) {
+		Debug.Assert(type.IsIntOrUInt());
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte b0 = ref data.DangerousGetReference();
@@ -62,6 +64,7 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
+		Debug.Assert(type.IsIntOrUInt());
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte b0 = ref data.DangerousGetReference();
@@ -80,6 +83,7 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32_Fallback(FieldTypeHint type, byte[] data) {
+		Debug.Assert(type.IsIntOrUInt());
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte b0 = ref data.DangerousGetReference();
