@@ -21,8 +21,8 @@ public sealed partial class FieldVal {
 		const int S = sizeof(long);
 		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
 
-		int shift = (n << 3) - 1;
-		long mask = (2L << shift) - 1;
+		int shift = n << 3;
+		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
 		long r = U.As<byte, long>(ref r0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
@@ -67,8 +67,8 @@ public sealed partial class FieldVal {
 		const int S = sizeof(int);
 		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
 
-		int shift = (n << 3) - 1;
-		int mask = (2 << shift) - 1;
+		int shift = n << 3;
+		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
 		int r = U.As<byte, int>(ref r0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
