@@ -1,6 +1,6 @@
 namespace Kokoro;
 using Kokoro.Internal;
-using static System.Buffers.Binary.BinaryPrimitives;
+using System.Buffers.Binary;
 
 public sealed partial class FieldVal {
 
@@ -110,9 +110,9 @@ public sealed partial class FieldVal {
 	internal static double ReadReal(byte[] data) {
 		if (sizeof(double) <= data.Length) {
 			ref byte b0 = ref data.DangerousGetReference();
-			return !BitConverter.IsLittleEndian
-				? BitConverter.Int64BitsToDouble(ReverseEndianness(U.As<byte, long>(ref b0)))
-				: U.As<byte, double>(ref b0);
+			return !BitConverter.IsLittleEndian ? BitConverter.Int64BitsToDouble(
+				BinaryPrimitives.ReverseEndianness(U.As<byte, long>(ref b0))
+			) : U.As<byte, double>(ref b0);
 		} else {
 			return 0;
 		}
