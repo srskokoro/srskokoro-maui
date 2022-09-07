@@ -38,7 +38,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// <remarks>
 	/// Excess data bytes will be discarded. An empty data represents zero.
 	/// </remarks>
-	Fp       = 0x8,
+	Real     = 0x8,
 
 	/// <summary>A UTF-8 string.</summary>
 	// TODO A zipped UTF-8 counterpart. See, https://utf8everywhere.org/#asian
