@@ -106,58 +106,28 @@ public sealed partial class FieldVal {
 
 	// --
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	internal static double ReadReal64_NoInline(byte[] data) {
-		ref byte b0 = ref data.DangerousGetReference();
-
-		double r;
-		goto Switch;
-
-	Return: // Ensures epilogue happens here instead
-		return r;
-
-	Switch:
-		switch (data.Length) {
-			default: {
-				r = !BitConverter.IsLittleEndian
-					? BitConverter.Int64BitsToDouble(ReverseEndianness(U.As<byte, long>(ref b0)))
-					: U.As<byte, double>(ref b0);
-				goto Return;
-			}
-			case 7:
-			case 6:
-			case 5:
-			case 4: {
-				r = !BitConverter.IsLittleEndian
-					? BitConverter.Int32BitsToSingle(ReverseEndianness(U.As<byte, int>(ref b0)))
-					: U.As<byte, float>(ref b0);
-				goto Return;
-			}
-			case 3:
-			case 2: {
-				r = (double)(!BitConverter.IsLittleEndian
-					? BitConverter.Int16BitsToHalf(ReverseEndianness(U.As<byte, short>(ref b0)))
-					: U.As<byte, Half>(ref b0));
-				goto Return;
-			}
-			case 1:
-			case 0: {
-				r = 0;
-				goto Return;
-			}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static double ReadReal(byte[] data) {
+		if (sizeof(double) <= data.Length) {
+			ref byte b0 = ref data.DangerousGetReference();
+			return !BitConverter.IsLittleEndian
+				? BitConverter.Int64BitsToDouble(ReverseEndianness(U.As<byte, long>(ref b0)))
+				: U.As<byte, double>(ref b0);
+		} else {
+			return 0;
 		}
 	}
 
 	// --
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private int FallbackReadInt32_FromReal64() => (int)ReadReal64_NoInline(_Data);
+	private int FallbackReadInt32_FromReal() => (int)ReadReal(_Data);
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private long FallbackReadInt64_FromReal64() => (long)ReadReal64_NoInline(_Data);
+	private long FallbackReadInt64_FromReal() => (long)ReadReal(_Data);
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private double FallbackReadReal64_FromInt64(FieldTypeHint type) {
+	private double FallbackReadReal_FromInt64(FieldTypeHint type) {
 		long r = ReadInt64(type, _Data);
 		if (type == FieldTypeHint.Int) return r;
 		Debug.Assert(type == FieldTypeHint.UInt);
@@ -177,7 +147,7 @@ public sealed partial class FieldVal {
 		if (type.IsIntOrUInt()) return ReadInt32(type, _Data);
 		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
 		if (type == FieldTypeHint.Real) {
-			return FallbackReadInt32_FromReal64();
+			return FallbackReadInt32_FromReal();
 		}
 		return default;
 	}
@@ -187,7 +157,7 @@ public sealed partial class FieldVal {
 		if (type.IsIntOrUInt()) return ReadInt64(type, _Data);
 		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
 		if (type == FieldTypeHint.Real) {
-			return FallbackReadInt64_FromReal64();
+			return FallbackReadInt64_FromReal();
 		}
 		return default;
 	}
@@ -208,32 +178,12 @@ public sealed partial class FieldVal {
 
 	// --
 
-	public Half GetReal16() {
+	public double GetReal() {
 		var type = _TypeHint;
-		if (type == FieldTypeHint.Real) return (Half)ReadReal64_NoInline(_Data);
-		if (type.IsZeroOrOne()) return (Half)type.GetZeroOrOne();
-		if (type.IsIntOrUInt()) {
-			return (Half)FallbackReadReal64_FromInt64(type);
-		}
-		return default;
-	}
-
-	public float GetReal32() {
-		var type = _TypeHint;
-		if (type == FieldTypeHint.Real) return (float)ReadReal64_NoInline(_Data);
+		if (type == FieldTypeHint.Real) return ReadReal(_Data);
 		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
 		if (type.IsIntOrUInt()) {
-			return (float)FallbackReadReal64_FromInt64(type);
-		}
-		return default;
-	}
-
-	public double GetReal64() {
-		var type = _TypeHint;
-		if (type == FieldTypeHint.Real) return ReadReal64_NoInline(_Data);
-		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
-		if (type.IsIntOrUInt()) {
-			return FallbackReadReal64_FromInt64(type);
+			return FallbackReadReal_FromInt64(type);
 		}
 		return default;
 	}
