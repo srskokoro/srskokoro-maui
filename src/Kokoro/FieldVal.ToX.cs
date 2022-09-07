@@ -149,7 +149,7 @@ public sealed partial class FieldVal {
 		if (type == FieldTypeHint.Real) {
 			return FallbackReadInt32_FromReal();
 		}
-		return default;
+		return 0;
 	}
 
 	public long GetInt64() {
@@ -159,7 +159,7 @@ public sealed partial class FieldVal {
 		if (type == FieldTypeHint.Real) {
 			return FallbackReadInt64_FromReal();
 		}
-		return default;
+		return 0;
 	}
 
 	// --
@@ -185,7 +185,7 @@ public sealed partial class FieldVal {
 		if (type.IsIntOrUInt()) {
 			return FallbackReadReal_FromInt64(type);
 		}
-		return default;
+		return 0;
 	}
 
 	// --
