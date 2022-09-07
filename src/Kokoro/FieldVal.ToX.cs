@@ -102,6 +102,42 @@ public sealed partial class FieldVal {
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public sbyte GetInt8() => (sbyte)GetInt32();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public short GetInt16() => (short)GetInt32();
+
+	public int GetInt32() {
+		var type = _TypeHint;
+		if (type.IsIntOrUInt()) return ReadInt32(type, _Data);
+		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
+		return default;
+	}
+
+	public long GetInt64() {
+		var type = _TypeHint;
+		if (type.IsIntOrUInt()) return ReadInt64(type, _Data);
+		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
+		return default;
+	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public byte GetUInt8() => (byte)GetInt8();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public ushort GetUInt16() => (ushort)GetInt16();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public uint GetUInt32() => (uint)GetInt32();
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public ulong GetUInt64() => (ulong)GetInt64();
+
+	// --
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public string? GetText() {
 		if (_TypeHint == FieldTypeHint.Text) {
 			return TextUtils.UTF8ToString(_Data);
