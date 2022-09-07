@@ -239,6 +239,27 @@ public sealed partial class FieldVal {
 
 	// --
 
+	public static FieldVal From(double value) {
+		if (sizeof(long) <= U.SizeOf<nint>()) {
+			long i = (long)value;
+			if (i == value) return From(i);
+		} else {
+			int i = (int)value;
+			if (i == value) return From(i);
+		}
+		return new(
+			FieldTypeHint.Real,
+			MakeData<ulong>(
+				// NOTE: Avoids generation of unnecessary specialization of
+				// generic method by reusing an existing one.
+				BitConverter.DoubleToUInt64Bits(value).LittleEndian(),
+				sizeof(ulong)
+			)
+		);
+	}
+
+	// --
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(string text) => new(FieldTypeHint.Text, text.ToUTF8Bytes());
 
