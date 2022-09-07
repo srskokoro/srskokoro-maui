@@ -121,10 +121,10 @@ public sealed partial class FieldVal {
 	// --
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private int FallbackReadInt32_FromReal() => (int)ReadReal(_Data);
+	private static int FallbackReadInt32_FromReal(byte[] data) => (int)ReadReal(data);
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private long FallbackReadInt64_FromReal() => (long)ReadReal(_Data);
+	private static long FallbackReadInt64_FromReal(byte[] data) => (long)ReadReal(data);
 
 	// --
 
@@ -139,7 +139,7 @@ public sealed partial class FieldVal {
 		if (type.IsIntOrUInt()) return ReadInt32(type, _Data);
 		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
 		if (type == FieldTypeHint.Real) {
-			return FallbackReadInt32_FromReal();
+			return FallbackReadInt32_FromReal(_Data);
 		}
 		return 0;
 	}
@@ -149,7 +149,7 @@ public sealed partial class FieldVal {
 		if (type.IsIntOrUInt()) return ReadInt64(type, _Data);
 		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
 		if (type == FieldTypeHint.Real) {
-			return FallbackReadInt64_FromReal();
+			return FallbackReadInt64_FromReal(_Data);
 		}
 		return 0;
 	}
