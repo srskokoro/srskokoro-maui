@@ -186,6 +186,29 @@ public sealed partial class FieldVal {
 
 	// --
 
+	public Half GetReal16() {
+		var type = _TypeHint;
+		if (type == FieldTypeHint.Real) return (Half)ReadReal64_NoInline(_Data);
+		if (type.IsZeroOrOne()) return (Half)type.GetZeroOrOne();
+		return default;
+	}
+
+	public float GetReal32() {
+		var type = _TypeHint;
+		if (type == FieldTypeHint.Real) return (float)ReadReal64_NoInline(_Data);
+		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
+		return default;
+	}
+
+	public double GetReal64() {
+		var type = _TypeHint;
+		if (type == FieldTypeHint.Real) return ReadReal64_NoInline(_Data);
+		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
+		return default;
+	}
+
+	// --
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public string? GetText() {
 		if (_TypeHint == FieldTypeHint.Text) {
