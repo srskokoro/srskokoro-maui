@@ -241,9 +241,13 @@ public sealed partial class FieldVal {
 
 	public static FieldVal From(double value) {
 		if (sizeof(long) <= U.SizeOf<nint>()) {
+			// NOTE: If it can be stored using the same data representation as
+			// that for a `long`, then go ahead, but only when there's no cost.
 			long i = (long)value;
 			if (i == value) return From(i);
 		} else {
+			// NOTE: If checking for the `long` equivalent is more costly, just
+			// check for the `int` equivalent instead.
 			int i = (int)value;
 			if (i == value) return From(i);
 		}
