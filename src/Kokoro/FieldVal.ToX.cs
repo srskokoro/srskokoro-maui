@@ -4,6 +4,15 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64(FieldTypeHint type, byte[] data) {
+		if (sizeof(long) <= U.SizeOf<nint>()) {
+			return ReadInt64_NativeSupport(type, data);
+		} else {
+			return ReadInt64_Fallback(type, data);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte r0 = ref data.DangerousGetReference();
@@ -12,11 +21,21 @@ public sealed partial class FieldVal {
 		const int S = sizeof(long);
 		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
 
-		if (S <= U.SizeOf<nint>()) {
 			long mask = (1L << (n << 3)) - 1;
 			long r = U.As<byte, long>(ref r0).LittleEndian() & mask;
 			return (-((~mask >> 1) & r) & m1WhenSigned) | r;
-		} else {
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static long ReadInt64_Fallback(FieldTypeHint type, byte[] data) {
+		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+
+		ref byte r0 = ref data.DangerousGetReference();
+		int n = data.Length;
+
+		const int S = sizeof(long);
+		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
+
 			long mask = (long)m1WhenSigned << ((n << 3) - 1);
 			long v = default;
 			U.CopyBlock(
@@ -26,11 +45,19 @@ public sealed partial class FieldVal {
 			);
 			long r = v.LittleEndian();
 			return -(mask & r) | r;
-		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32(FieldTypeHint type, byte[] data) {
+		if (sizeof(int) <= U.SizeOf<nint>()) {
+			return ReadInt32_NativeSupport(type, data);
+		} else {
+			return ReadInt32_Fallback(type, data);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
 		ref byte r0 = ref data.DangerousGetReference();
@@ -39,11 +66,21 @@ public sealed partial class FieldVal {
 		const int S = sizeof(int);
 		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
 
-		if (S <= U.SizeOf<nint>()) {
 			int mask = (1 << (n << 3)) - 1;
 			int r = U.As<byte, int>(ref r0).LittleEndian() & mask;
 			return (-((~mask >> 1) & r) & m1WhenSigned) | r;
-		} else {
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static int ReadInt32_Fallback(FieldTypeHint type, byte[] data) {
+		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+
+		ref byte r0 = ref data.DangerousGetReference();
+		int n = data.Length;
+
+		const int S = sizeof(int);
+		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
+
 			int mask = m1WhenSigned << ((n << 3) - 1);
 			int v = default;
 			U.CopyBlock(
@@ -53,7 +90,6 @@ public sealed partial class FieldVal {
 			);
 			int r = v.LittleEndian();
 			return -(mask & r) | r;
-		}
 	}
 
 	// --
