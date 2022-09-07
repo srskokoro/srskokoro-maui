@@ -18,7 +18,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// </summary>
 	/// <remarks>
 	/// Conversion to C#'s primitive integer types may cause the value to be
-	/// either truncated or sign-extended. An empty data represents zero.
+	/// either truncated or sign-extended. Empty data is interpreted as zero.
 	/// </remarks>
 	Int      = 0x4,
 	/// <summary>
@@ -26,7 +26,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// </summary>
 	/// <remarks>
 	/// Conversion to C#'s primitive integer types may cause the value to be
-	/// either truncated or zero-extended. An empty data represents zero.
+	/// either truncated or zero-extended. Empty data is interpreted as zero.
 	/// </remarks>
 	UInt     = 0x5,
 
@@ -36,7 +36,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// bytes of data are available. The bytes are stored in little-endian.
 	/// </summary>
 	/// <remarks>
-	/// Excess data bytes will be discarded. An empty data represents zero.
+	/// Excess data bytes will be discarded. Empty data is interpreted as zero.
 	/// </remarks>
 	Real     = 0x8,
 
