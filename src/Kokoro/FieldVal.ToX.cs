@@ -1,4 +1,5 @@
 namespace Kokoro;
+using Kokoro.Internal;
 
 public sealed partial class FieldVal {
 
@@ -18,11 +19,13 @@ public sealed partial class FieldVal {
 		ref byte r0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
-		const int S = sizeof(long);
-		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
-
+		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
+		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
+		// ^- The above asserts that, the shift below is tolerable to be
+		// undefined, should the data length exceed the expected maximum.
 		int shift = n << 3;
 		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
+
 		long r = U.As<byte, long>(ref r0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
@@ -64,11 +67,13 @@ public sealed partial class FieldVal {
 		ref byte r0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
-		const int S = sizeof(int);
-		n -= S; n = ((n >> 31) & n) + S; // `min(n,S)` without branching
-
+		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
+		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
+		// ^- The above asserts that, the shift below is tolerable to be
+		// undefined, should the data length exceed the expected maximum.
 		int shift = n << 3;
 		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
+
 		int r = U.As<byte, int>(ref r0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
