@@ -1,5 +1,6 @@
 namespace Kokoro;
 using Kokoro.Internal;
+using static System.Buffers.Binary.BinaryPrimitives;
 
 public sealed partial class FieldVal {
 
@@ -101,6 +102,50 @@ public sealed partial class FieldVal {
 		);
 		int r = v.LittleEndian();
 		return -(mask & r) | r;
+	}
+
+	// --
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	internal static double ReadReal64_NoInline(byte[] data) {
+		ref byte b0 = ref data.DangerousGetReference();
+
+		double r;
+		goto Switch;
+
+	Return: // Ensures epilogue happens here instead
+		return r;
+
+	Switch:
+		switch (data.Length) {
+			default: {
+				r = !BitConverter.IsLittleEndian
+					? BitConverter.Int64BitsToDouble(ReverseEndianness(U.As<byte, long>(ref b0)))
+					: U.As<byte, double>(ref b0);
+				goto Return;
+			}
+			case 7:
+			case 6:
+			case 5:
+			case 4: {
+				r = !BitConverter.IsLittleEndian
+					? BitConverter.Int32BitsToSingle(ReverseEndianness(U.As<byte, int>(ref b0)))
+					: U.As<byte, float>(ref b0);
+				goto Return;
+			}
+			case 3:
+			case 2: {
+				r = (double)(!BitConverter.IsLittleEndian
+					? BitConverter.Int16BitsToHalf(ReverseEndianness(U.As<byte, short>(ref b0)))
+					: U.As<byte, Half>(ref b0));
+				goto Return;
+			}
+			case 1:
+			case 0: {
+				r = 0;
+				goto Return;
+			}
+		}
 	}
 
 	// --
