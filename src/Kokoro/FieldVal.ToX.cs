@@ -16,7 +16,7 @@ public sealed partial class FieldVal {
 	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
-		ref byte r0 = ref data.DangerousGetReference();
+		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
 		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
@@ -26,7 +26,7 @@ public sealed partial class FieldVal {
 		int shift = n << 3;
 		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
 
-		long r = U.As<byte, long>(ref r0).LittleEndian() & mask;
+		long r = U.As<byte, long>(ref b0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
@@ -34,7 +34,7 @@ public sealed partial class FieldVal {
 	internal static long ReadInt64_Fallback(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
-		ref byte r0 = ref data.DangerousGetReference();
+		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
 		const int S = sizeof(long);
@@ -44,7 +44,7 @@ public sealed partial class FieldVal {
 		long v = default;
 		U.CopyBlock(
 			destination: ref U.As<long, byte>(ref v),
-			source: ref r0,
+			source: ref b0,
 			byteCount: (uint)n
 		);
 		long r = v.LittleEndian();
@@ -64,7 +64,7 @@ public sealed partial class FieldVal {
 	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
-		ref byte r0 = ref data.DangerousGetReference();
+		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
 		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
@@ -74,7 +74,7 @@ public sealed partial class FieldVal {
 		int shift = n << 3;
 		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
 
-		int r = U.As<byte, int>(ref r0).LittleEndian() & mask;
+		int r = U.As<byte, int>(ref b0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
@@ -82,7 +82,7 @@ public sealed partial class FieldVal {
 	internal static int ReadInt32_Fallback(FieldTypeHint type, byte[] data) {
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
 
-		ref byte r0 = ref data.DangerousGetReference();
+		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
 		const int S = sizeof(int);
@@ -92,7 +92,7 @@ public sealed partial class FieldVal {
 		int v = default;
 		U.CopyBlock(
 			destination: ref U.As<int, byte>(ref v),
-			source: ref r0,
+			source: ref b0,
 			byteCount: (uint)n
 		);
 		int r = v.LittleEndian();
