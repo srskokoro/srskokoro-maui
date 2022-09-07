@@ -12,11 +12,11 @@ internal static partial class Bytes {
 
 	// --
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static short LittleEndian(this short value) => BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static int LittleEndian(this int value) => BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static long LittleEndian(this long value) => BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static short LittleEndian(this short value) => !BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(value) : value;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static int LittleEndian(this int value) => !BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(value) : value;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static long LittleEndian(this long value) => !BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(value) : value;
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static ushort LittleEndian(this ushort value) => BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static uint LittleEndian(this uint value) => BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static ulong LittleEndian(this ulong value) => BitConverter.IsLittleEndian ? value : BinaryPrimitives.ReverseEndianness(value);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static ushort LittleEndian(this ushort value) => !BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(value) : value;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static uint LittleEndian(this uint value) => !BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(value) : value;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)] public static ulong LittleEndian(this ulong value) => !BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(value) : value;
 }
