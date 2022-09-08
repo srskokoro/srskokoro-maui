@@ -35,7 +35,7 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// </summary>
 	/// <remarks>
 	/// Excess data bytes will be discarded. Less than 8 bytes (or 64 bits) of
-	/// data will be interpreted as zero.
+	/// data will be interpreted as NaN.
 	/// </remarks>
 	Real     = 0x8,
 

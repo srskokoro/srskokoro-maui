@@ -116,7 +116,7 @@ public sealed partial class FieldVal {
 				? BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(U.As<byte, long>(ref b0)))
 				: U.As<byte, double>(ref b0);
 		} else {
-			return 0;
+			return double.NaN;
 		}
 	}
 
