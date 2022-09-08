@@ -32,8 +32,8 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// A little-endian IEEE 754 64-bit floating-point number.
 	/// </summary>
 	/// <remarks>
-	/// Excess data bytes will be discarded. Less than 8 bytes (or 64 bits) of
-	/// data will be interpreted as NaN.
+	/// Excess data bytes are discarded. Data with less than 8 bytes is
+	/// interpreted as NaN.
 	/// </remarks>
 	Real = 0x6,
 
