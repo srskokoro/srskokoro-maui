@@ -1,6 +1,7 @@
 namespace Kokoro;
 using Kokoro.Internal;
 using System.Buffers.Binary;
+using System.Numerics;
 
 public sealed partial class FieldVal {
 
@@ -172,16 +173,30 @@ public sealed partial class FieldVal {
 
 	public double GetReal() {
 		var type = _TypeHint;
+		byte[] data;
+		int n;
+
 		if (type.IsIntOrUInt()) {
-			long r = ReadInt64(type, _Data);
-			if (type == FieldTypeHint.Int) return r;
-			return (ulong)r;
+			data = _Data;
+			n = data.Length;
+			if (n <= sizeof(long)) {
+				long r = ReadInt64(type, data);
+				if (type == FieldTypeHint.Int) return r;
+				return (ulong)r;
+			} else {
+				goto FromBigInt;
+			}
 		} else if (type.IsZeroOrOne()) {
 			return type.GetZeroOrOne();
 		} else if (type == FieldTypeHint.Real) {
 			return ReadReal(_Data);
 		}
 		return 0;
+
+	FromBigInt:
+		return (double)new BigInteger(data,
+			isUnsigned: type == FieldTypeHint.UInt,
+			isBigEndian: false);
 	}
 
 	// --
