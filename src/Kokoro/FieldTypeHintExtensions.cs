@@ -1,6 +1,6 @@
 ﻿namespace Kokoro;
 
-public static class FieldTypeHintExtensions {
+public static class FieldTypeHints {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
