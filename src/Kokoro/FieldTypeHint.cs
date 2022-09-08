@@ -3,7 +3,6 @@ global using FieldTypeHintUInt = System.UInt32;
 global using FieldTypeHintSInt = System.Int32;
 
 namespace Kokoro;
-using Kokoro.Common.Util;
 
 public enum FieldTypeHint : FieldTypeHintInt {
 	Null = 0x0,
@@ -37,20 +36,9 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// </remarks>
 	Real = 0x6,
 
-	StartOfReservedForNumeric = IntNZ,
-	StartOfNumeric = IntNZ,
-	EndOfNumeric = Real,
-	EndOfReservedForNumeric = 0x1F,
-
 	/// <summary>A UTF-8 string.</summary>
 	// TODO A zipped UTF-8 counterpart. See, https://utf8everywhere.org/#asian
 	Text = 0x54,
 
 	Blob = 0x58,
-
-	/// <remarks>
-	/// Note: <c>(0x68 + 16) * 2 == 240</c>, which occupies a single byte when
-	/// encoded as a <see cref="VarInts">varint</see>.
-	/// </remarks>
-	StartOfUnreserved = 0x68
 }

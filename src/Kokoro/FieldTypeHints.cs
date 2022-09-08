@@ -1,6 +1,18 @@
 ﻿namespace Kokoro;
+using Kokoro.Common.Util;
 
 public static class FieldTypeHints {
+
+	/// <remarks>
+	/// Note: <c>(0x68 + 16) * 2 == 240</c>, which occupies a single byte when
+	/// encoded as a <see cref="VarInts">varint</see>.
+	/// </remarks>
+	public const FieldTypeHint StartOfUnreserved = (FieldTypeHint)0x68;
+
+	public const FieldTypeHint StartOfReservedForNumeric = FieldTypeHint.IntNZ;
+	internal const FieldTypeHint StartOfNumeric = FieldTypeHint.IntNZ;
+	internal const FieldTypeHint EndOfNumeric = FieldTypeHint.Real;
+	public const FieldTypeHint EndOfReservedForNumeric = (FieldTypeHint)0x1F;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
@@ -59,8 +71,8 @@ public static class FieldTypeHints {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static bool IsNumeric(this FieldTypeHint @enum) {
-		const FieldTypeHintUInt End = FieldTypeHint.EndOfNumeric - FieldTypeHint.StartOfNumeric;
-		return (FieldTypeHintUInt)(@enum - FieldTypeHint.StartOfNumeric) > End ? false : true;
+		const FieldTypeHintUInt End = EndOfNumeric - StartOfNumeric;
+		return (FieldTypeHintUInt)(@enum - StartOfNumeric) > End ? false : true;
 		// Ternary operator returning true/false prevents redundant asm generation.
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 	}
