@@ -15,6 +15,15 @@ public sealed partial class FieldVal {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static int ReadInt32(FieldTypeHint type, byte[] data) {
+		if (sizeof(int) <= U.SizeOf<nint>()) {
+			return ReadInt32_NativeSupport(type, data);
+		} else {
+			return ReadInt32_Fallback(type, data);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
 		Debug.Assert(type.IsIntOrUInt());
 		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
@@ -30,6 +39,25 @@ public sealed partial class FieldVal {
 		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
 
 		long r = U.As<byte, long>(ref b0).LittleEndian() & mask;
+		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
+		Debug.Assert(type.IsIntOrUInt());
+		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+
+		ref byte b0 = ref data.DangerousGetReference();
+		int n = data.Length;
+
+		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
+		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
+		// ^- The above asserts that, the shift below is tolerable to be
+		// undefined, should the data length exceed the expected maximum.
+		int shift = n << 3;
+		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
+
+		int r = U.As<byte, int>(ref b0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
@@ -53,34 +81,6 @@ public sealed partial class FieldVal {
 		);
 		long r = v.LittleEndian();
 		return -(mask & r) | r;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static int ReadInt32(FieldTypeHint type, byte[] data) {
-		if (sizeof(int) <= U.SizeOf<nint>()) {
-			return ReadInt32_NativeSupport(type, data);
-		} else {
-			return ReadInt32_Fallback(type, data);
-		}
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsIntOrUInt());
-		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
-
-		ref byte b0 = ref data.DangerousGetReference();
-		int n = data.Length;
-
-		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
-		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
-		// ^- The above asserts that, the shift below is tolerable to be
-		// undefined, should the data length exceed the expected maximum.
-		int shift = n << 3;
-		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
-
-		int r = U.As<byte, int>(ref b0).LittleEndian() & mask;
-		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
