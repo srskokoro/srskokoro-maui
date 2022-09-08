@@ -1,4 +1,5 @@
 namespace Kokoro;
+using Kokoro.Common.Util;
 
 public sealed partial class FieldVal {
 
@@ -44,12 +45,15 @@ public sealed partial class FieldVal {
 		internal static readonly FieldVal[] Cache = Init();
 
 		internal const int MinValue = -128; // Same as, `sbyte.MinValue`
-		internal const int MaxValue = 127; // Same as, `sbyte.MaxValue`
+		internal const int MaxValue = 255; // Same as, `byte.MaxValue` (not `sbyte.MaxValue`)
 
 		internal const int Offset = -MinValue;
 		internal const int Size = -MinValue + MaxValue + 1;
 
+		internal const uint SizeForUnsigned = Size - Offset;
+
 		private static FieldVal[] Init() {
+			Debug.Assert((int)SizeForUnsigned >= 0);
 			Debug.Assert(MinValue <= MaxValue);
 
 			ref byte[] d0 = ref IntDataCache.Cache.DangerousGetReference();
@@ -59,19 +63,20 @@ public sealed partial class FieldVal {
 
 			int i = 0;
 			const int BeforeZero = Offset;
-			const FieldTypeHint Type = FieldTypeHint.Int;
 
 			Debug.Assert(Size <= IntDataCache.Size);
 			Debug.Assert(Size > BeforeZero);
 			Debug.Assert(Size >= 4);
 
+			const FieldTypeHint TypeBeforeZero = FieldTypeHint.IntNZ;
 			do {
-				U.Add(ref r0, i) = new FieldVal(Type, U.Add(ref d0, i));
+				U.Add(ref r0, i) = new FieldVal(TypeBeforeZero, U.Add(ref d0, i));
 			} while (++i < BeforeZero);
 
 			U.Add(ref r0, i++) = ZeroOrOneInstHolder.Zero;
 			U.Add(ref r0, i++) = ZeroOrOneInstHolder.One;
 
+			const FieldTypeHint Type = FieldTypeHint.IntP1;
 			do {
 				U.Add(ref r0, i) = new FieldVal(Type, U.Add(ref d0, i));
 			} while (++i < Size);
@@ -80,50 +85,13 @@ public sealed partial class FieldVal {
 		}
 	}
 
+	// TODO Remove -- kept only to maintain VCS history
 	private static class UIntInstCache {
-
-		// NOTE: Shouldn't use static constructor for this. See,
-		// - https://stackoverflow.com/a/71063929
-		// - https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1810
-		//
-		internal static readonly FieldVal[] Cache = Init();
-
-		internal const uint MinValue = 0; // Same as, `byte.MinValue`
-		internal const uint MaxValue = 255; // Same as, `byte.MaxValue`
-		internal const int Size = (int)(MaxValue + 1);
-
-		private static FieldVal[] Init() {
-			Debug.Assert(MinValue <= MaxValue);
-
-			const int DataCacheOffset = IntDataCache.Offset;
-			const int DataCacheSubsetSize = IntDataCache.Size - DataCacheOffset;
-			Debug.Assert(DataCacheSubsetSize >= 0);
-
-			ref byte[] d0 = ref IntDataCache.Cache.DangerousGetReferenceAt(DataCacheOffset);
-
-			FieldVal[] r = new FieldVal[Size];
-			ref FieldVal r0 = ref r.DangerousGetReference();
-
-			int i = 0;
-			const FieldTypeHint Type = FieldTypeHint.UInt;
-
-			Debug.Assert(Size <= DataCacheSubsetSize);
-			Debug.Assert(Size >= 3);
-
-			U.Add(ref r0, i++) = ZeroOrOneInstHolder.Zero;
-			U.Add(ref r0, i++) = ZeroOrOneInstHolder.One;
-
-			do {
-				U.Add(ref r0, i) = new FieldVal(Type, U.Add(ref d0, i));
-			} while (++i < Size);
-
-			return r;
-		}
 	}
 
 	private static class ZeroOrOneInstHolder {
-		internal static readonly FieldVal Zero = new(FieldTypeHint.Zero);
-		internal static readonly FieldVal One = new(FieldTypeHint.One);
+		internal static readonly FieldVal Zero = new(FieldTypeHint.IntNZ);
+		internal static readonly FieldVal One = new(FieldTypeHint.IntP1);
 		internal static readonly FieldVal[] ZeroOrOne = new FieldVal[2] { Zero, One };
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -174,12 +142,12 @@ public sealed partial class FieldVal {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
 		}
 		return new(
-			FieldTypeHint.Int,
+			FieldTypeHints.IntNZOrP1(value),
 			// NOTE: Avoids generation of unnecessary specialization of generic
 			// method by reusing an existing one instead.
 			MakeData<uint>(
 				(uint)value.LittleEndian(),
-				value.CountBytesNeededSigned()
+				((uint)value.NonNegOrBitCompl()).CountBytesNeeded()
 			)
 		);
 	}
@@ -190,12 +158,12 @@ public sealed partial class FieldVal {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)i);
 		}
 		return new(
-			FieldTypeHint.Int,
+			FieldTypeHints.IntNZOrP1(value),
 			// NOTE: Avoids generation of unnecessary specialization of generic
 			// method by reusing an existing one instead.
 			MakeData<ulong>(
 				(ulong)value.LittleEndian(),
-				value.CountBytesNeededSigned()
+				((ulong)value.NonNegOrBitCompl()).CountBytesNeeded()
 			)
 		);
 	}
@@ -203,20 +171,20 @@ public sealed partial class FieldVal {
 	// --
 
 	public static FieldVal From(byte value) {
-		Debug.Assert(byte.MinValue >= UIntInstCache.MinValue);
-		Debug.Assert(byte.MaxValue <= UIntInstCache.MaxValue);
-		return UIntInstCache.Cache.DangerousGetReferenceAt(value);
+		Debug.Assert(byte.MinValue >= IntInstCache.MinValue);
+		Debug.Assert(byte.MaxValue <= IntInstCache.MaxValue);
+		return IntInstCache.Cache.DangerousGetReferenceAt(value + IntInstCache.Offset);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(ushort value) => From((uint)value);
 
 	public static FieldVal From(uint value) {
-		if (value < (uint)UIntInstCache.Size) {
-			return UIntInstCache.Cache.DangerousGetReferenceAt((int)value);
+		if (value < (uint)IntInstCache.SizeForUnsigned) {
+			return IntInstCache.Cache.DangerousGetReferenceAt((int)value + IntInstCache.Offset);
 		}
 		return new(
-			FieldTypeHint.UInt,
+			FieldTypeHints.IntNZOrP1(value),
 			MakeData<uint>(
 				value.LittleEndian(),
 				value.CountBytesNeeded()
@@ -225,11 +193,11 @@ public sealed partial class FieldVal {
 	}
 
 	public static FieldVal From(ulong value) {
-		if (value < (ulong)UIntInstCache.Size) {
-			return UIntInstCache.Cache.DangerousGetReferenceAt((int)value);
+		if (value < (ulong)IntInstCache.SizeForUnsigned) {
+			return IntInstCache.Cache.DangerousGetReferenceAt((int)value + IntInstCache.Offset);
 		}
 		return new(
-			FieldTypeHint.UInt,
+			FieldTypeHints.IntNZOrP1(value),
 			MakeData<ulong>(
 				value.LittleEndian(),
 				value.CountBytesNeeded()

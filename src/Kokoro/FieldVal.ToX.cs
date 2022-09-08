@@ -1,7 +1,6 @@
 namespace Kokoro;
 using Kokoro.Internal;
 using System.Buffers.Binary;
-using System.Numerics;
 
 public sealed partial class FieldVal {
 
@@ -26,11 +25,16 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsIntOrUInt());
-		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+		Debug.Assert(type.IsInt());
+		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
 
 		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
+
+		// -1 : type is IntNZ and has data
+		//  0 : type is IntNZ and has no data
+		//  1 : type is IntP1
+		int m1Or0Or1 = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
 
 		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
 		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
@@ -39,17 +43,22 @@ public sealed partial class FieldVal {
 		int shift = n << 3;
 		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
 
-		long r = U.As<byte, long>(ref b0).LittleEndian() & mask;
-		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
+		long r = U.As<byte, long>(ref b0).LittleEndian();
+		return ((r ^ m1Or0Or1) & mask) ^ m1Or0Or1;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsIntOrUInt());
-		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+		Debug.Assert(type.IsInt());
+		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
 
 		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
+
+		// -1 : type is IntNZ and has data
+		//  0 : type is IntNZ and has no data
+		//  1 : type is IntP1
+		int m1Or0Or1 = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
 
 		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
 		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
@@ -58,15 +67,15 @@ public sealed partial class FieldVal {
 		int shift = n << 3;
 		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
 
-		int r = U.As<byte, int>(ref b0).LittleEndian() & mask;
-		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
+		int r = U.As<byte, int>(ref b0).LittleEndian();
+		return ((r ^ m1Or0Or1) & mask) ^ m1Or0Or1;
 	}
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_Fallback(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsIntOrUInt());
-		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+		Debug.Assert(type.IsInt());
+		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
 
 		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
@@ -75,21 +84,24 @@ public sealed partial class FieldVal {
 		// Min of `n` and `S` without branch -- See, https://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax
 		n -= S; n = ((n >> 31) & n) + S; // Correct only if `n >= S + int.MinValue`
 
-		long mask = (long)m1WhenSigned << ((n << 3) - 1);
-		long v = default;
+		// -1 : type is IntNZ and has data
+		//  0 : type is IntNZ and has no data
+		//  1 : type is IntP1
+		long v = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
+
 		U.CopyBlock(
 			destination: ref U.As<long, byte>(ref v),
 			source: ref b0,
 			byteCount: (uint)n
 		);
-		long r = v.LittleEndian();
-		return -(mask & r) | r;
+
+		return v.LittleEndian();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32_Fallback(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsIntOrUInt());
-		int m1WhenSigned = type.WhenIntOrUIntRetM1IfInt();
+		Debug.Assert(type.IsInt());
+		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
 
 		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
@@ -98,15 +110,18 @@ public sealed partial class FieldVal {
 		// Min of `n` and `S` without branch -- See, https://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax
 		n -= S; n = ((n >> 31) & n) + S; // Correct only if `n >= S + int.MinValue`
 
-		int mask = m1WhenSigned << ((n << 3) - 1);
-		int v = default;
+		// -1 : type is IntNZ and has data
+		//  0 : type is IntNZ and has no data
+		//  1 : type is IntP1
+		int v = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
+
 		U.CopyBlock(
 			destination: ref U.As<int, byte>(ref v),
 			source: ref b0,
 			byteCount: (uint)n
 		);
-		int r = v.LittleEndian();
-		return -(mask & r) | r;
+
+		return v.LittleEndian();
 	}
 
 
@@ -140,8 +155,7 @@ public sealed partial class FieldVal {
 
 	public int GetInt32() {
 		var type = _TypeHint;
-		if (type.IsIntOrUInt()) return ReadInt32(type, _Data);
-		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
+		if (type.IsInt()) return ReadInt32(type, _Data);
 		if (type == FieldTypeHint.Real) {
 			return FallbackReadInt32_FromReal(_Data);
 		}
@@ -150,8 +164,7 @@ public sealed partial class FieldVal {
 
 	public long GetInt64() {
 		var type = _TypeHint;
-		if (type.IsIntOrUInt()) return ReadInt64(type, _Data);
-		if (type.IsZeroOrOne()) return type.GetZeroOrOne();
+		if (type.IsInt()) return ReadInt64(type, _Data);
 		if (type == FieldTypeHint.Real) {
 			return FallbackReadInt64_FromReal(_Data);
 		}
@@ -179,27 +192,26 @@ public sealed partial class FieldVal {
 		byte[] data;
 		int n;
 
-		if (type.IsIntOrUInt()) {
+		if (type.IsInt()) {
 			data = _Data;
 			n = data.Length;
 			if (n <= sizeof(long)) {
 				long r = ReadInt64(type, data);
-				if (type == FieldTypeHint.Int) return r;
-				return (ulong)r;
+				if (type == FieldTypeHint.IntP1) {
+					return (ulong)r;
+				} else {
+					return (long)r;
+				}
 			} else {
 				goto FromBigInt;
 			}
-		} else if (type.IsZeroOrOne()) {
-			return type.GetZeroOrOne();
 		} else if (type == FieldTypeHint.Real) {
 			return ReadReal(_Data);
 		}
 		return 0;
 
 	FromBigInt:
-		return (double)new BigInteger(data,
-			isUnsigned: type == FieldTypeHint.UInt,
-			isBigEndian: false);
+		throw new NotImplementedException("TODO"); // TODO Implement
 	}
 
 	// --

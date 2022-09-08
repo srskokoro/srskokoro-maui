@@ -6,37 +6,62 @@ public static class FieldTypeHints {
 	internal static FieldTypeHintInt Value(this FieldTypeHint @enum) => (FieldTypeHintInt)@enum;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static bool IsZeroOrOne(this FieldTypeHint @enum) {
-		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Zero == 0x2);
-		Debug.Assert((FieldTypeHintInt)FieldTypeHint.One == 0x3);
-		return ((FieldTypeHintInt)@enum | 1) != 0x3 ? false : true;
-		// Ternary operator returning true/false prevents redundant asm generation.
-		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static int GetZeroOrOne(this FieldTypeHint @enum) {
-		int r = (FieldTypeHintSInt)@enum & 1;
-		Debug.Assert(r == 0
-			? @enum == FieldTypeHint.Zero
-			: @enum == FieldTypeHint.One);
-		return r;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static bool IsIntOrUInt(this FieldTypeHint @enum) {
-		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Int == 0x4);
-		Debug.Assert((FieldTypeHintInt)FieldTypeHint.UInt == 0x5);
+	internal static bool IsInt(this FieldTypeHint @enum) {
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
 		return ((FieldTypeHintInt)@enum | 1) != 0x5 ? false : true;
 		// Ternary operator returning true/false prevents redundant asm generation.
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static int WhenIntOrUIntRetM1IfInt(this FieldTypeHint @enum) {
-		Debug.Assert(@enum.IsIntOrUInt());
-		Debug.Assert((FieldTypeHintInt)FieldTypeHint.Int == 0x4);
-		Debug.Assert((FieldTypeHintInt)FieldTypeHint.UInt == 0x5);
-		return (FieldTypeHintSInt)(@enum - FieldTypeHint.UInt);
+	internal static int WhenIntRetM1IfIntNZ(this FieldTypeHint @enum) {
+		Debug.Assert(@enum.IsInt());
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
+		return (FieldTypeHintSInt)(@enum - FieldTypeHint.IntP1);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static FieldTypeHint IntNZOrP1(int value) {
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
+		if (U.SizeOf<nint>() < sizeof(long)) {
+			// NOTE: The bitwise OR is for when the value is `int.MinValue`
+			return (FieldTypeHint)((uint)((value - 1) | value) >> 31) ^ FieldTypeHint.IntP1;
+		} else {
+			// Optimize if 64-bit arithmetic would cost less
+			return (FieldTypeHint)((ulong)(value - 1L) >> 63) ^ FieldTypeHint.IntP1;
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static FieldTypeHint IntNZOrP1(long value) {
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
+		// NOTE: The bitwise OR is for when the value is `long.MinValue`
+		return (FieldTypeHint)((ulong)((value - 1L) | value) >> 63) ^ FieldTypeHint.IntP1;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static FieldTypeHint IntNZOrP1(uint value) {
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
+		return (FieldTypeHint)((value != 0).ToByte() | 0x4);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static FieldTypeHint IntNZOrP1(ulong value) {
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
+		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
+		return (FieldTypeHint)((value != 0).ToByte() | 0x4);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static bool IsNumeric(this FieldTypeHint @enum) {
+		const FieldTypeHintUInt End = FieldTypeHint.EndOfNumeric - FieldTypeHint.StartOfNumeric;
+		return (FieldTypeHintUInt)(@enum - FieldTypeHint.StartOfNumeric) > End ? false : true;
+		// Ternary operator returning true/false prevents redundant asm generation.
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 	}
 }

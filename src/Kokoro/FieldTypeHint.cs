@@ -8,27 +8,25 @@ using Kokoro.Common.Util;
 public enum FieldTypeHint : FieldTypeHintInt {
 	Null = 0x0,
 
-	/// <summary>The integer zero.</summary>
-	Zero = 0x2,
-	/// <summary>The integer one.</summary>
-	One = 0x3,
+	/// <summary>
+	/// A little-endian arbitrary-length negative integer or zero. Empty data is
+	/// interpreted as zero.
+	/// </summary>
+	/// <remarks>
+	/// Conversion to C#'s primitive integer types may cause the value to be
+	/// either truncated or sign-extended.
+	/// </remarks>
+	IntNZ = 0x4,
 
 	/// <summary>
-	/// A little-endian arbitrary-length signed integer.
+	/// A little-endian arbitrary-length positive integer or one. Empty data is
+	/// interpreted as one.
 	/// </summary>
 	/// <remarks>
 	/// Conversion to C#'s primitive integer types may cause the value to be
-	/// either truncated or sign-extended. Empty data is interpreted as zero.
+	/// either truncated or zero-extended.
 	/// </remarks>
-	Int = 0x4,
-	/// <summary>
-	/// A little-endian arbitrary-length unsigned integer.
-	/// </summary>
-	/// <remarks>
-	/// Conversion to C#'s primitive integer types may cause the value to be
-	/// either truncated or zero-extended. Empty data is interpreted as zero.
-	/// </remarks>
-	UInt = 0x5,
+	IntP1 = 0x5,
 
 	/// <summary>
 	/// A little-endian IEEE 754 64-bit floating-point number.
@@ -37,7 +35,12 @@ public enum FieldTypeHint : FieldTypeHintInt {
 	/// Excess data bytes will be discarded. Less than 8 bytes (or 64 bits) of
 	/// data will be interpreted as NaN.
 	/// </remarks>
-	Real = 0x8,
+	Real = 0x6,
+
+	StartOfReservedForNumeric = IntNZ,
+	StartOfNumeric = IntNZ,
+	EndOfNumeric = Real,
+	EndOfReservedForNumeric = 0x1F,
 
 	/// <summary>A UTF-8 string.</summary>
 	// TODO A zipped UTF-8 counterpart. See, https://utf8everywhere.org/#asian
