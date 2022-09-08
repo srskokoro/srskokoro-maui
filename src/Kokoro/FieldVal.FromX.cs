@@ -111,6 +111,7 @@ public sealed partial class FieldVal {
 	private static byte[] MakeData<T>(T value, int count) where T : unmanaged {
 		Debug.Assert(count <= U.SizeOf<T>());
 		var data = new byte[count];
+		// TODO Can be optimized by using `Unsafe.Write()` instead
 		U.CopyBlock(
 			destination: ref data.DangerousGetReference(),
 			source: ref U.As<T, byte>(ref value),
