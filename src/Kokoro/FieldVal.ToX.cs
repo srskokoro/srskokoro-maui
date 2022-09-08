@@ -23,6 +23,7 @@ public sealed partial class FieldVal {
 		}
 	}
 
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
 		Debug.Assert(type.IsIntOrUInt());
@@ -60,6 +61,7 @@ public sealed partial class FieldVal {
 		int r = U.As<byte, int>(ref b0).LittleEndian() & mask;
 		return (-((~mask >> 1) & r) & m1WhenSigned) | r;
 	}
+
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_Fallback(FieldTypeHint type, byte[] data) {
@@ -105,7 +107,6 @@ public sealed partial class FieldVal {
 		return -(mask & r) | r;
 	}
 
-	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static double ReadReal(byte[] data) {
