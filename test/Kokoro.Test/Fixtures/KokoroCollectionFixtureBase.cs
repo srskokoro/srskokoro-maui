@@ -6,10 +6,20 @@ public abstract class KokoroCollectionFixtureBase : IDisposable {
 
 	public readonly KokoroCollection Collection;
 
-	public KokoroCollectionFixtureBase(ulong uidHighBits, ulong uidLowBits) : this(new(highBits: uidHighBits, uidLowBits)) { }
+	public KokoroCollectionFixtureBase(
+		ulong uidHighBits, ulong uidLowBits,
+		bool ensureOperable = true
+	) : this(
+		new(highBits: uidHighBits, uidLowBits),
+		ensureOperable: ensureOperable
+	) { }
 
-	public KokoroCollectionFixtureBase(UniqueId uid) {
+	public KokoroCollectionFixtureBase(UniqueId uid, bool ensureOperable = true) {
 		var context = new KokoroContext(Path.Join(CommonParentDir, uid.ToFsString()), KokoroContextOpenMode.ReadWriteCreate);
+		if (ensureOperable) {
+			bool operable = context.TryUpgradeToVersion(KokoroDataVersion.LibVersion).Current.Operable;
+			Debug.Assert(operable);
+		}
 		Collection = new KokoroCollection(context);
 	}
 
