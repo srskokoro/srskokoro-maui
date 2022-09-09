@@ -85,10 +85,6 @@ public sealed partial class FieldVal {
 		}
 	}
 
-	// TODO Remove -- kept only to maintain VCS history
-	private static class UIntInstCache {
-	}
-
 	private static class ZeroOrOneInstHolder {
 		internal static readonly FieldVal Zero = new(FieldTypeHint.IntNZ);
 		internal static readonly FieldVal One = new(FieldTypeHint.IntP1);
