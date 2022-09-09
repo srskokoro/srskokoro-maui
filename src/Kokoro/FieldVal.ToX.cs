@@ -25,16 +25,17 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_NativeSupport(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsInt());
-		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
-
-		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
+		// When the data has no bytes, prevents `AccessViolationException` by
+		// repointing the reference to somewhere else we can access.
+		int m1WhenNoData = (n - 1) >> 31;
+		ref long r0 = ref U.Add(ref U.As<byte, long>(ref data.DangerousGetReference()), m1WhenNoData);
 
+		Debug.Assert(type.IsInt());
 		// -1 : type is IntNZ and has data
 		//  0 : type is IntNZ and has no data
 		//  1 : type is IntP1
-		int m1Or0Or1 = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
+		int m1Or0Or1 = ((m1WhenNoData ^ ~1) & type.WhenIntRetM1IfIntNZ()) ^ 1;
 
 		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
 		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
@@ -43,22 +44,22 @@ public sealed partial class FieldVal {
 		int shift = n << 3;
 		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
 
-		long r = U.As<byte, long>(ref b0).LittleEndian();
-		return ((r ^ m1Or0Or1) & mask) ^ m1Or0Or1;
+		return ((r0.LittleEndian() ^ m1Or0Or1) & mask) ^ m1Or0Or1;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32_NativeSupport(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsInt());
-		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
-
-		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
+		// When the data has no bytes, prevents `AccessViolationException` by
+		// repointing the reference to somewhere else we can access.
+		int m1WhenNoData = (n - 1) >> 31;
+		ref int r0 = ref U.Add(ref U.As<byte, int>(ref data.DangerousGetReference()), m1WhenNoData);
 
+		Debug.Assert(type.IsInt());
 		// -1 : type is IntNZ and has data
 		//  0 : type is IntNZ and has no data
 		//  1 : type is IntP1
-		int m1Or0Or1 = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
+		int m1Or0Or1 = ((m1WhenNoData ^ ~1) & type.WhenIntRetM1IfIntNZ()) ^ 1;
 
 		const int MaxDataLength = FieldedEntity.MaxFieldValsLength;
 		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
@@ -67,8 +68,7 @@ public sealed partial class FieldVal {
 		int shift = n << 3;
 		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
 
-		int r = U.As<byte, int>(ref b0).LittleEndian();
-		return ((r ^ m1Or0Or1) & mask) ^ m1Or0Or1;
+		return ((r0.LittleEndian() ^ m1Or0Or1) & mask) ^ m1Or0Or1;
 	}
 
 
