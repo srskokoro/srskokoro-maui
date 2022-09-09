@@ -195,11 +195,10 @@ public sealed partial class FieldVal {
 			n = data.Length;
 			if (n <= sizeof(long)) {
 				long r = ReadInt64(type, data);
-				if (type == FieldTypeHint.IntP1) {
-					return (ulong)r;
-				} else {
+				if (r >= 0 || type == FieldTypeHint.IntNZ) {
 					return (long)r;
 				}
+				return (ulong)r;
 			} else {
 				goto FromBigInt;
 			}
