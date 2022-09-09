@@ -87,13 +87,14 @@ public sealed partial class FieldVal {
 		//  1 : type is IntP1
 		long v = (((-n >> 31) ^ 1) & type.WhenIntRetM1IfIntNZ()) ^ 1;
 
+		long r = v.LittleEndian();
 		U.CopyBlock(
-			destination: ref U.As<long, byte>(ref v),
+			destination: ref U.As<long, byte>(ref r),
 			source: ref b0,
 			byteCount: (uint)n
 		);
 
-		return v.LittleEndian();
+		return r.LittleEndian();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,13 +112,14 @@ public sealed partial class FieldVal {
 		//  1 : type is IntP1
 		int v = (((-n >> 31) ^ 1) & type.WhenIntRetM1IfIntNZ()) ^ 1;
 
+		int r = v.LittleEndian();
 		U.CopyBlock(
-			destination: ref U.As<int, byte>(ref v),
+			destination: ref U.As<int, byte>(ref r),
 			source: ref b0,
 			byteCount: (uint)n
 		);
 
-		return v.LittleEndian();
+		return r.LittleEndian();
 	}
 
 
