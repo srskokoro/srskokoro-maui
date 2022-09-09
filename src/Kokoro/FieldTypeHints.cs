@@ -38,21 +38,14 @@ public static class FieldTypeHints {
 	internal static FieldTypeHint IntNZOrP1(int value) {
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
-		if (U.SizeOf<nint>() < sizeof(long)) {
-			// NOTE: The bitwise OR is for when the value is `int.MinValue`
-			return (FieldTypeHint)((uint)((value - 1) | value) >> 31) ^ FieldTypeHint.IntP1;
-		} else {
-			// Optimize if 64-bit arithmetic would cost less
-			return (FieldTypeHint)((ulong)(value - 1L) >> 63) ^ FieldTypeHint.IntP1;
-		}
+		return (FieldTypeHint)((value > 0).ToByte() | 0x4);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static FieldTypeHint IntNZOrP1(long value) {
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntNZ == 0x4);
 		Debug.Assert((FieldTypeHintInt)FieldTypeHint.IntP1 == 0x5);
-		// NOTE: The bitwise OR is for when the value is `long.MinValue`
-		return (FieldTypeHint)((ulong)((value - 1L) | value) >> 63) ^ FieldTypeHint.IntP1;
+		return (FieldTypeHint)((value > 0).ToByte() | 0x4);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
