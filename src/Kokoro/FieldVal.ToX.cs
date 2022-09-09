@@ -41,7 +41,7 @@ public sealed partial class FieldVal {
 		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
 		// ^- The above asserts that, the shift below is tolerable to be
 		// undefined, should the data length exceed the expected maximum.
-		int shift = n << 3;
+		int shift = n << 3; // n * 8
 		long mask = ((long)((uint)(shift - 32) >> 31) << shift) - 1;
 
 		return ((r0.LittleEndian() ^ m1Or0Or1) & mask) ^ m1Or0Or1;
@@ -65,7 +65,7 @@ public sealed partial class FieldVal {
 		Debug.Assert((uint)MaxDataLength << 3 >> 3 == MaxDataLength);
 		// ^- The above asserts that, the shift below is tolerable to be
 		// undefined, should the data length exceed the expected maximum.
-		int shift = n << 3;
+		int shift = n << 3; // n * 8
 		int mask = ((int)((uint)(shift - 32) >> 31) << shift) - 1;
 
 		return ((r0.LittleEndian() ^ m1Or0Or1) & mask) ^ m1Or0Or1;
