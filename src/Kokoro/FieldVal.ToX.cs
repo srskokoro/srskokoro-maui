@@ -74,9 +74,6 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static long ReadInt64_Fallback(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsInt());
-		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
-
 		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
@@ -84,10 +81,11 @@ public sealed partial class FieldVal {
 		// Min of `n` and `S` without branch -- See, https://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax
 		n -= S; n = ((n >> 31) & n) + S; // Correct only if `n >= S + int.MinValue`
 
+		Debug.Assert(type.IsInt());
 		// -1 : type is IntNZ and has data
 		//  0 : type is IntNZ and has no data
 		//  1 : type is IntP1
-		long v = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
+		long v = (((-n >> 31) ^ 1) & type.WhenIntRetM1IfIntNZ()) ^ 1;
 
 		U.CopyBlock(
 			destination: ref U.As<long, byte>(ref v),
@@ -100,9 +98,6 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static int ReadInt32_Fallback(FieldTypeHint type, byte[] data) {
-		Debug.Assert(type.IsInt());
-		int m1WhenIntNZ = type.WhenIntRetM1IfIntNZ();
-
 		ref byte b0 = ref data.DangerousGetReference();
 		int n = data.Length;
 
@@ -110,10 +105,11 @@ public sealed partial class FieldVal {
 		// Min of `n` and `S` without branch -- See, https://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax
 		n -= S; n = ((n >> 31) & n) + S; // Correct only if `n >= S + int.MinValue`
 
+		Debug.Assert(type.IsInt());
 		// -1 : type is IntNZ and has data
 		//  0 : type is IntNZ and has no data
 		//  1 : type is IntP1
-		int v = (((-n >> 31) ^ 1) & m1WhenIntNZ) ^ 1;
+		int v = (((-n >> 31) ^ 1) & type.WhenIntRetM1IfIntNZ()) ^ 1;
 
 		U.CopyBlock(
 			destination: ref U.As<int, byte>(ref v),
