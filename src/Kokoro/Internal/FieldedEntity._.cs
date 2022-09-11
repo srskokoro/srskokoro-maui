@@ -35,6 +35,15 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		return false;
 	}
 
+	public FieldVal? Get(StringKey name) {
+		var fields = _Fields;
+		if (fields != null) {
+			fields.TryGetValue(name, out var value);
+			return value;
+		}
+		return null;
+	}
+
 	public void Set(StringKey name, FieldVal value) {
 		var fields = _Fields;
 		if (fields == null) {
