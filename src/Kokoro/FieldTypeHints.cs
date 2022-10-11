@@ -67,4 +67,11 @@ public static class FieldTypeHints {
 		// Ternary operator returning true/false prevents redundant asm generation.
 		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static bool IsUnreserved(this FieldTypeHint @enum) {
+		return (FieldTypeHintUInt)@enum < (FieldTypeHintUInt)StartOfUnreserved ? false : true;
+		// Ternary operator returning true/false prevents redundant asm generation.
+		// See, https://github.com/dotnet/runtime/issues/4207#issuecomment-147184273
+	}
 }
