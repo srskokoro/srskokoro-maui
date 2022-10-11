@@ -234,4 +234,16 @@ public sealed partial class FieldVal {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(byte[] blob) => new(FieldTypeHint.Blob, blob);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static FieldVal From(FieldTypeHint customType, byte[] blob) {
+		if (customType.IsUnreserved()) {
+			return new(customType, blob);
+		}
+		return E_TypeMustBeUnreserved_Arg();
+
+		[DoesNotReturn]
+		static FieldVal E_TypeMustBeUnreserved_Arg()
+			=> throw new ArgumentException($"`{nameof(FieldTypeHint)}` used must be unreserved.", nameof(customType));
+	}
 }
