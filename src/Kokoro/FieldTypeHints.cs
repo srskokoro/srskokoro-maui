@@ -1,13 +1,11 @@
 ﻿namespace Kokoro;
-using Kokoro.Common.Util;
 
 public static class FieldTypeHints {
 
-	/// <remarks>
-	/// Note: <c>(0x68 + 16) * 2 == 240</c>, which occupies a single byte when
-	/// encoded as a <see cref="VarInts">varint</see>.
-	/// </remarks>
-	public const FieldTypeHint StartOfUnreserved = (FieldTypeHint)0x68;
+	/// <summary>
+	/// Alias of <see cref="FieldTypeHint.StartOfUnreserved"/>
+	/// </summary>
+	public const FieldTypeHint StartOfUnreserved = FieldTypeHint.StartOfUnreserved;
 
 	public const FieldTypeHint StartOfReservedForNumeric = FieldTypeHint.IntNZ;
 	internal const FieldTypeHint StartOfNumeric = FieldTypeHint.IntNZ;
