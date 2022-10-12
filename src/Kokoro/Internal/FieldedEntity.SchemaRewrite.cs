@@ -461,7 +461,7 @@ partial class FieldedEntity {
 
 					using (var r = resCmd.ExecuteReader()) {
 						if (r.Read()) {
-							r.DAssert_Name(0, "idx_sto");
+							r.DAssert_Name(0, "idx_e_sto");
 							FieldSpec fspec2 = r.GetInt32(0);
 							fspec2.DAssert_Valid();
 
@@ -486,7 +486,7 @@ partial class FieldedEntity {
 				{
 					resCmd = db.CreateCommand();
 					resCmd.Set(
-						$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
+						$"SELECT idx_e_sto FROM {Prot.SchemaToField}\n" +
 						$"WHERE (schema,fld)=($schema,$fld)"
 					).AddParams(
 						new("$schema", oldSchemaId),
@@ -508,7 +508,7 @@ partial class FieldedEntity {
 
 		// Get the old field values via the old schema
 		using (var cmd = db.CreateCommand()) {
-			cmd.Set($"SELECT fld,idx_sto FROM {Prot.SchemaToField} WHERE schema=$schema")
+			cmd.Set($"SELECT fld,idx_e_sto FROM {Prot.SchemaToField} WHERE schema=$schema")
 				.AddParams(new("$schema", oldSchemaId));
 
 			using var r = cmd.ExecuteReader();
@@ -520,7 +520,7 @@ partial class FieldedEntity {
 					fldMapOld, key: fld, out _
 				);
 				if (entry == null) {
-					r.DAssert_Name(1, "idx_sto");
+					r.DAssert_Name(1, "idx_e_sto");
 					FieldSpec fspec = r.GetInt32(1);
 					fspec.DAssert_Valid();
 
@@ -1149,15 +1149,15 @@ partial class FieldedEntity {
 			fldList.Sort(SchemaRewrite.Comparison_fldList.Inst);
 
 			using var cmd = db.CreateCommand();
-			SqliteParameter cmd_idx_sto;
+			SqliteParameter cmd_idx_e_sto;
 			cmd.Set(
 				$"INSERT INTO {Prot.SchemaToField}" +
-				$"(schema,fld,idx_sto)" +
+				$"(schema,fld,idx_e_sto)" +
 				$"\nVALUES" +
-				$"($schema,$rowid,$idx_sto)"
+				$"($schema,$rowid,$idx_e_sto)"
 			).AddParams(
 				cmd_schema, cmd_rowid,
-				cmd_idx_sto = new() { ParameterName = "$idx_sto" }
+				cmd_idx_e_sto = new() { ParameterName = "$idx_e_sto" }
 			);
 
 			ref var fld_r0 = ref fldList.AsSpan().DangerousGetReference();
@@ -1166,7 +1166,7 @@ partial class FieldedEntity {
 				SaveFieldInfos(
 					cmd,
 					cmd_fld: cmd_rowid,
-					cmd_idx_sto: cmd_idx_sto,
+					cmd_idx_e_sto: cmd_idx_e_sto,
 
 					ref fld_r0,
 					start: 0, end: fldSharedCount,
@@ -1180,7 +1180,7 @@ partial class FieldedEntity {
 				SaveFieldInfos(
 					cmd,
 					cmd_fld: cmd_rowid,
-					cmd_idx_sto: cmd_idx_sto,
+					cmd_idx_e_sto: cmd_idx_e_sto,
 
 					ref fld_r0,
 					start: 0, end: fldHotCount,
@@ -1192,7 +1192,7 @@ partial class FieldedEntity {
 				SaveFieldInfos(
 					cmd,
 					cmd_fld: cmd_rowid,
-					cmd_idx_sto: cmd_idx_sto,
+					cmd_idx_e_sto: cmd_idx_e_sto,
 
 					ref fld_r0,
 					start: fldHotCount, end: fldLocalCount,
@@ -1205,7 +1205,7 @@ partial class FieldedEntity {
 			static void SaveFieldInfos(
 				SqliteCommand cmd,
 				SqliteParameter cmd_fld,
-				SqliteParameter cmd_idx_sto,
+				SqliteParameter cmd_idx_e_sto,
 
 				ref SchemaRewrite.FieldInfo fld_r0,
 
@@ -1217,18 +1217,18 @@ partial class FieldedEntity {
 					<= (uint)MaxFieldCount && (uint)MaxFieldCount
 					<= (uint)FieldSpec.MaxIndex);
 
-				FieldSpec idx_sto_c = new(start, storeType);
-				FieldSpec idx_sto_n = new(end, storeType);
+				FieldSpec idx_e_sto_c = new(start, storeType);
+				FieldSpec idx_e_sto_n = new(end, storeType);
 
 				do {
-					cmd_fld.Value = U.Add(ref fld_r0, idx_sto_c.Index).RowId;
-					cmd_idx_sto.Value = idx_sto_c.Int;
+					cmd_fld.Value = U.Add(ref fld_r0, idx_e_sto_c.Index).RowId;
+					cmd_idx_e_sto.Value = idx_e_sto_c.Int;
 
 					int updated = cmd.ExecuteNonQuery();
 					Debug.Assert(updated == 1, $"Updated: {updated}");
 				} while ((
-					idx_sto_c += FieldSpec.IndexIncrement
-				).Value < idx_sto_n.Value);
+					idx_e_sto_c += FieldSpec.IndexIncrement
+				).Value < idx_e_sto_n.Value);
 			}
 		}
 
@@ -1304,7 +1304,7 @@ partial class FieldedEntity {
 			const string Table = Prot.SchemaToField;
 			const string Vals = "$schema";
 			const string ValCols = "schema";
-			const string Cols = "fld,idx_sto";
+			const string Cols = "fld,idx_e_sto";
 
 			cmd.Set(
 				$"INSERT INTO {Table}({Cols},{ValCols})\n" +

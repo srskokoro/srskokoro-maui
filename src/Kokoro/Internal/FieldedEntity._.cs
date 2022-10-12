@@ -335,7 +335,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
+				$"SELECT idx_e_sto FROM {Prot.SchemaToField}\n" +
 				$"WHERE schema=$schema AND fld=$fld"
 			).AddParams(
 				new("$schema", _SchemaId),
@@ -344,7 +344,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "idx_sto");
+				r.DAssert_Name(0, "idx_e_sto");
 				fspec = r.GetInt32(0);
 				fspec.DAssert_Valid();
 				goto WithFieldSpec;

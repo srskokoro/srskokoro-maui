@@ -3,14 +3,18 @@
 internal readonly struct FieldSpec {
 	/// Expected bit layout:
 	/// - The 2 LSBs represent the field store type.
+	/// - The next 6 LSBs indicate the enumeration group, with all zeroes
+	/// indicating that the field doesn't use an enumeration for its values.
 	/// - The remaining bits serve as the index of the field in a field list.
 	///
-	/// This corresponds to the `idx_sto` column of the `<see cref="Prot.SchemaToField"/>`
+	/// This corresponds to the `idx_e_sto` column of the `<see cref="Prot.SchemaToField"/>`
 	/// table in the collection's SQLite DB.
 	public readonly uint Value;
 
 	private const int StoreType_Mask = 0b11;
-	private const int Index_Shift = 2;
+	private const int EnumGroup_StoreType_Mask = 0b_1111_1111;
+	private const int EnumGroup_Shift = 2;
+	private const int Index_Shift = 8;
 
 	public readonly int Int {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,6 +30,13 @@ internal readonly struct FieldSpec {
 	public int Index {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => (int)(Value >> Index_Shift);
+	}
+
+	public const int MaxEnumGroup = EnumGroup_StoreType_Mask >> EnumGroup_Shift;
+
+	public int EnumGroup {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => (int)((Value & EnumGroup_StoreType_Mask) >> EnumGroup_Shift);
 	}
 
 	public FieldStoreType StoreType {
@@ -61,12 +72,25 @@ internal readonly struct FieldSpec {
 		Value = (uint)index << Index_Shift | (uint)sto;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public FieldSpec(int index, int enumGroup, FieldStoreType sto) {
+		DAssert_Valid(index, enumGroup, sto);
+		Value = (uint)index << Index_Shift | (uint)enumGroup << EnumGroup_Shift | (uint)sto;
+	}
+
 	[Conditional("DEBUG")]
-	public void DAssert_Valid() => DAssert_Valid(Index, StoreType);
+	public void DAssert_Valid() => DAssert_Valid(Index, EnumGroup, StoreType);
 
 	[Conditional("DEBUG")]
 	private static void DAssert_Valid(int index, FieldStoreType sto) {
 		Debug.Assert((uint)index <= (uint)MaxIndex, $"{nameof(Index)}: {index}");
+		sto.DAssert_Defined();
+	}
+
+	[Conditional("DEBUG")]
+	private static void DAssert_Valid(int index, int enumGroup, FieldStoreType sto) {
+		Debug.Assert((uint)index <= (uint)MaxIndex, $"{nameof(Index)}: {index}");
+		Debug.Assert((uint)enumGroup <= (uint)MaxEnumGroup, $"{nameof(EnumGroup)}: {enumGroup}");
 		sto.DAssert_Defined();
 	}
 

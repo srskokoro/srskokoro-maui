@@ -290,18 +290,22 @@ internal static class Setup_v0w1 {
 
 			$"fld INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
-			$"idx_sto INTEGER NOT NULL CHECK(idx_sto {BetweenInt32RangeGE0})," +
+			$"idx_e_sto INTEGER NOT NULL CHECK(idx_e_sto {BetweenInt32RangeGE0})," +
 
-			$"idx_loc INTEGER NOT NULL AS ((idx_sto >> 1) | (idx_sto & 0x1))," +
+			$"idx_loc INTEGER NOT NULL AS ((idx << 1) | loc)," +
 
 			// The field index.
-			$"idx INTEGER NOT NULL AS (idx_sto >> 2)," +
+			$"idx INTEGER NOT NULL AS (idx_e_sto >> 8)," +
+
+			// The group number of the field enum to use for this field. Zero if
+			// the field doesn't use an enumeration for its values.
+			$"enum INTEGER NOT NULL AS ((idx_e_sto & 0xFF) >> 2)," +
 
 			// The field store type:
 			// - 0b00: Shared
 			// - 0b01: Hot
 			// - 0b10: Cold
-			$"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_sto & 0x3)," +
+			$"sto INTEGER NOT NULL CHECK(sto BETWEEN 0x0 AND 0x2) AS (idx_e_sto & 0x3)," +
 
 			// The field locality type:
 			// - 0: Shared

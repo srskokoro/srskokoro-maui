@@ -614,7 +614,7 @@ partial class FieldedEntity {
 		using (var cmd = db.CreateCommand()) {
 			SqliteParameter cmd_fld;
 			cmd.Set(
-				$"SELECT idx_sto FROM {Prot.SchemaToField}\n" +
+				$"SELECT idx_e_sto FROM {Prot.SchemaToField}\n" +
 				$"WHERE (schema,fld)=($schema,$fld)"
 			).AddParams(
 				new("$schema", _SchemaId),
@@ -638,7 +638,7 @@ partial class FieldedEntity {
 
 					using var r = cmd.ExecuteReader();
 					if (r.Read()) {
-						r.DAssert_Name(0, "idx_sto");
+						r.DAssert_Name(0, "idx_e_sto");
 						FieldSpec fspec2 = r.GetInt32(0);
 						fspec2.DAssert_Valid();
 
@@ -655,7 +655,7 @@ partial class FieldedEntity {
 					if (r.Read()) {
 						// Case: Core field
 
-						r.DAssert_Name(0, "idx_sto");
+						r.DAssert_Name(0, "idx_e_sto");
 						FieldSpec fspec = r.GetInt32(0);
 						fspec.DAssert_Valid();
 
