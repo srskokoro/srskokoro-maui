@@ -355,6 +355,39 @@ internal static class Setup_v0w1 {
 			$"{P.SchemaToClass}(schema, ind, cls)" +
 		$"";
 
+	public const string CreateTable_SchemaToEnumElem =
+		$"CREATE TABLE {P.SchemaToEnumElem}(" +
+
+			$"schema INTEGER NOT NULL REFERENCES {P.Schema} {OnRowIdFkCascDel} {WithFkDfr}," +
+
+			$"idx_e INTEGER NOT NULL CHECK(idx_e {BetweenInt32RangeGE0})," +
+
+			// The field value type hint.
+			$"type INTEGER NOT NULL CHECK(type {BetweenUInt32Range})," +
+
+			// The field value data bytes (without the type hint).
+			//
+			// *** WARNING ***
+			// Do not move this column before any generated column, since it may
+			// be accessed by `sqlite3_blob_open()` API. The reason is that, it
+			// seems that there's a bug in either "SQLitePCL.raw" or "SQLite"
+			// itself that prevents such access if the BLOB column's definition
+			// appears later than that of any generated column.
+			// TODO Investigate further and report this issue (to whom?)
+			// ***
+			$"data BLOB NOT NULL," +
+
+			// The field enum element's index under the field enum.
+			$"idx INTEGER NOT NULL AS (idx_e >> 6)," +
+
+			// The group number of the owning field enum under the schema. The
+			// field enum is the enumeration that owns the field enum element.
+			$"enum INTEGER NOT NULL CHECK(enum != 0) AS (idx_e & 0x3F)," +
+
+			$"PRIMARY KEY(schema, idx_e)" +
+
+		$")";
+
 	// -=-
 
 	public const string CreateTable_Class =

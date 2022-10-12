@@ -11,6 +11,7 @@ internal static class Prot_v0w1 {
 	public const string Schema = nameof(Schema);
 	public const string SchemaToField = nameof(SchemaToField);
 	public const string SchemaToClass = nameof(SchemaToClass);
+	public const string SchemaToEnumElem = nameof(SchemaToEnumElem);
 
 	public const string Class = nameof(Class);
 	public const string ClassToField = nameof(ClassToField);
