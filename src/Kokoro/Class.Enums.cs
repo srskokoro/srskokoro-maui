@@ -63,6 +63,15 @@ partial class Class {
 		return false;
 	}
 
+	public List<EnumElem>? GetEnum(StringKey name) {
+		var enums = _Enums;
+		if (enums != null) {
+			enums.TryGetValue(name, out var elems);
+			return elems;
+		}
+		return null;
+	}
+
 	public void SetEnum(StringKey name, List<EnumElem>? elems) {
 		var enums = _Enums;
 		if (enums == null) {
