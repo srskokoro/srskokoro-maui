@@ -22,6 +22,11 @@ internal readonly struct FieldsDesc {
 	private const int HasColdComplement_Shift = 2; // 4 == 1 << 2
 	private const int FieldCount_Shift = 3; // 8 == 1 << 3
 
+	public readonly int Int {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => this;
+	}
+
 	// --
 
 	public const int MaxFOffsetSizeM1Or0 = FOffsetSizeM1Or0_Mask; // 3
