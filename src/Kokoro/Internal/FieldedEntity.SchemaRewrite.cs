@@ -1041,7 +1041,7 @@ partial class FieldedEntity {
 					int ord = r.GetInt32(2);
 
 					r.DAssert_Name(3, "sto");
-					FieldStoreType sto = (FieldStoreType)r.GetInt32(3);
+					FieldStoreType sto = (FieldStoreType)r.GetByte(3);
 					sto.DAssert_Defined();
 
 					r.DAssert_Name(4, "clsOrd");

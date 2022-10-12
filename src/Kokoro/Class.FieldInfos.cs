@@ -210,7 +210,7 @@ partial class Class {
 				int ordinal = r.GetInt32(0);
 
 				r.DAssert_Name(1, "sto");
-				var storeType = (FieldStoreType)r.GetInt32(1);
+				var storeType = (FieldStoreType)r.GetByte(1);
 				storeType.DAssert_Defined();
 
 				FieldInfo info = new(ordinal, storeType);
@@ -249,7 +249,7 @@ partial class Class {
 			int ordinal = r.GetInt32(0);
 
 			r.DAssert_Name(1, "sto");
-			var storeType = (FieldStoreType)r.GetInt32(1);
+			var storeType = (FieldStoreType)r.GetByte(1);
 			storeType.DAssert_Defined();
 
 			FieldInfo info = new(ordinal, storeType);
@@ -550,8 +550,8 @@ partial class Class {
 					Debug.Assert(1 == hasher_fld_debug_i++);
 
 					if (!info.StoreType.IsValid()) goto E_InvalidFieldStoreType;
-					updCmd_sto.Value = (FieldStoreTypeSInt)info.StoreType;
-					Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
+					updCmd_sto.Value = (FieldStoreTypeInt)info.StoreType;
+					Debug.Assert(sizeof(FieldStoreTypeInt) == 1);
 					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
 					Debug.Assert(2 == hasher_fld_debug_i++);
 

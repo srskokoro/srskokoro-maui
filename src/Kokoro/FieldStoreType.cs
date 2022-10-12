@@ -1,6 +1,6 @@
-﻿global using FieldStoreTypeInt = System.UInt32;
-global using FieldStoreTypeUInt = System.UInt32;
-global using FieldStoreTypeSInt = System.Int32;
+﻿global using FieldStoreTypeInt = System.Byte;
+global using FieldStoreTypeUInt = System.Byte;
+global using FieldStoreTypeSInt = System.SByte;
 
 namespace Kokoro;
 
