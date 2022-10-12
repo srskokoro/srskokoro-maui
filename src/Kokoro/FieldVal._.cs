@@ -79,6 +79,8 @@ public sealed partial class FieldVal : IEquatable<FieldVal> {
 		}
 	}
 
+	#region Equality and Comparability
+
 	#region Equality
 
 	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -134,6 +136,20 @@ public sealed partial class FieldVal : IEquatable<FieldVal> {
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal void DangerousResetHashCode() => _HashCode = 0;
+
+	#endregion
+
+	#region Comparability
+
+	// TODO Implement
+
+	#endregion
+
+	#region Relational Operators
+
+	// TODO Implement
+
+	#endregion
 
 	#endregion
 }
