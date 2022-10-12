@@ -487,11 +487,11 @@ internal static class Setup_v0w1 {
 			// The owning entity class.
 			$"cls INTEGER NOT NULL REFERENCES {P.Class} {OnRowIdFkCascDel} {WithFkDfr}," +
 
-			// The name of the owning enumeration under the class. This is the
-			// enumeration that owns the enum element.
+			// The name of the owning field enum under the class. The field enum
+			// is the enumeration that owns the field enum element.
 			$"enum INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
-			// The enum element's ordinal.
+			// The field enum element's ordinal.
 			$"{Ord_Int32Nn}," +
 
 			// The field value type hint.
