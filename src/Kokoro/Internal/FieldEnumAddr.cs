@@ -1,6 +1,6 @@
 ﻿namespace Kokoro.Internal;
 
-internal readonly struct FieldEnumElemKey {
+internal readonly struct FieldEnumAddr {
 	/// Expected bit layout:
 	/// - The 6 LSBs indicate the enumeration group number of the field enum.
 	/// - The remaining bits serve as the field enum element's index under the
@@ -37,29 +37,29 @@ internal readonly struct FieldEnumElemKey {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private FieldEnumElemKey(int value) => Value = (uint)value;
+	private FieldEnumAddr(int value) => Value = (uint)value;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private FieldEnumElemKey(uint value) => Value = value;
+	private FieldEnumAddr(uint value) => Value = value;
 
 	// BONUS: We can compare `FieldEnumElemKey` against an `int` (due to the
 	// implicit cast) without needing to define some comparison operators.
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static implicit operator int(FieldEnumElemKey fspec) => (int)fspec.Value;
+	public static implicit operator int(FieldEnumAddr fspec) => (int)fspec.Value;
 
 	// BONUS: We can compare `FieldEnumElemKey` against a `uint` (due to the
 	// implicit cast) without needing to define some comparison operators.
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static implicit operator uint(FieldEnumElemKey fspec) => fspec.Value;
+	public static implicit operator uint(FieldEnumAddr fspec) => fspec.Value;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static implicit operator FieldEnumElemKey(int value) => new(value);
+	public static implicit operator FieldEnumAddr(int value) => new(value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static implicit operator FieldEnumElemKey(uint value) => new(value);
+	public static implicit operator FieldEnumAddr(uint value) => new(value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldEnumElemKey(int index, int enumGroup) {
+	public FieldEnumAddr(int index, int enumGroup) {
 		DAssert_Valid(index, enumGroup);
 		Value = (uint)index << Index_Shift | (uint)enumGroup;
 	}
