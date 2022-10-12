@@ -201,7 +201,7 @@ partial class Item {
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
 				r.DAssert_Name(0, "type");
-				FieldTypeHint typeHint = (FieldTypeHint)r.GetInt32(0);
+				FieldTypeHint typeHint = (FieldTypeHint)r.GetInt64(0);
 
 				if (typeHint != FieldTypeHint.Null) {
 					r.DAssert_Name(1, "data");
@@ -231,7 +231,7 @@ partial class Item {
 				Debug.Assert(!r.Read(), $"Should've deleted only 1 floating field");
 
 				r.DAssert_Name(0, "type");
-				FieldTypeHint typeHint = (FieldTypeHint)r.GetInt32(0);
+				FieldTypeHint typeHint = (FieldTypeHint)r.GetInt64(0);
 
 				if (typeHint != FieldTypeHint.Null) {
 					r.DAssert_Name(1, "data");
@@ -288,7 +288,7 @@ partial class Item {
 
 		UpdateFloatingField:
 			{
-				updCmd_type.Value = (FieldTypeHintSInt)fval.TypeHint;
+				updCmd_type.Value = (long)(FieldTypeHintInt)fval.TypeHint;
 
 				var data = fval.DangerousGetDataBytes();
 				updCmd_data.Value = data;

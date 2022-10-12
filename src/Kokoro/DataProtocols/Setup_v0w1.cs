@@ -27,9 +27,11 @@ internal static class Setup_v0w1 {
 
 	const string Int32MinHex = "-0x80000000";
 	const string Int32MaxHex = "0x7FFFFFFF";
+	const string UInt32MaxHex = "0xFFFFFFFF";
 
 	const string BetweenInt32Range = $"BETWEEN {Int32MinHex} AND {Int32MaxHex}";
 	const string BetweenInt32RangeGE0 = $"BETWEEN 0 AND {Int32MaxHex}";
+	const string BetweenUInt32Range = $"BETWEEN 0 AND {UInt32MaxHex}";
 
 	const string IsBool = "IN (0,1)";
 
@@ -169,7 +171,7 @@ internal static class Setup_v0w1 {
 			$"fld INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
 			// The field value type hint.
-			$"type INTEGER NOT NULL," +
+			$"type INTEGER NOT NULL CHECK(type {BetweenUInt32Range})," +
 
 			// The field value data bytes (without the type hint).
 			$"data BLOB NOT NULL," +
