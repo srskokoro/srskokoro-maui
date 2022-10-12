@@ -20,8 +20,8 @@ partial class Class {
 	public readonly struct FieldInfo {
 		internal readonly bool _IsLoaded;
 
-		private readonly int _Ordinal;
 		private readonly FieldStoreType _StoreType;
+		private readonly int _Ordinal;
 
 		public readonly int Ordinal => _Ordinal;
 		public readonly FieldStoreType StoreType => _StoreType;
