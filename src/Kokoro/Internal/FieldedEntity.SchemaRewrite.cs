@@ -1222,7 +1222,7 @@ partial class FieldedEntity {
 
 				do {
 					cmd_fld.Value = U.Add(ref fld_r0, idx_sto_c.Index).RowId;
-					cmd_idx_sto.Value = idx_sto_c.Value;
+					cmd_idx_sto.Value = idx_sto_c.Int;
 
 					int updated = cmd.ExecuteNonQuery();
 					Debug.Assert(updated == 1, $"Updated: {updated}");

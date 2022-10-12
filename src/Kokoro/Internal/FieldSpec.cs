@@ -12,6 +12,11 @@ internal readonly struct FieldSpec {
 	private const int StoreType_Mask = 0b11;
 	private const int Index_Shift = 2;
 
+	public readonly int Int {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => this;
+	}
+
 	// --
 
 	public const int MaxIndex = int.MaxValue >> Index_Shift;
