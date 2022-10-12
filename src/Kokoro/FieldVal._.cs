@@ -21,7 +21,7 @@ public sealed partial class FieldVal {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public byte[] DangerousGetDataBytes() => _Data;
+	internal byte[] DangerousGetDataBytes() => _Data;
 
 	public FieldVal() {
 		_TypeHint = FieldTypeHint.Null;
