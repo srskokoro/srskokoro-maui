@@ -252,6 +252,15 @@ internal static class Setup_v0w1 {
 			// for shared fields.
 			//
 			// The BLOB format is similar to the `Item.data` column.
+			//
+			// *** WARNING ***
+			// Do not move this column before any generated column, since it may
+			// be accessed by `sqlite3_blob_open()` API. The reason is that, it
+			// seems that there's a bug in either "SQLitePCL.raw" or "SQLite"
+			// itself that prevents such access if the BLOB column's definition
+			// appears later than that of any generated column.
+			// TODO Investigate further and report this issue (to whom?)
+			// ***
 			$"data BLOB NOT NULL," +
 
 			// The maximum number of field data expected to be in the fielded
