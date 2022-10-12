@@ -471,4 +471,27 @@ internal static class Setup_v0w1 {
 		$"] ON " +
 			$"{P.ClassToInclude}(cls, uid)" +
 		$"";
+
+	public const string CreateTable_ClassToEnumElem =
+		$"CREATE TABLE {P.ClassToEnumElem}(" +
+
+			// The owning entity class.
+			$"cls INTEGER NOT NULL REFERENCES {P.Class} {OnRowIdFkCascDel} {WithFkDfr}," +
+
+			// The name of the owning enumeration under the class. This is the
+			// enumeration that owns the enum element.
+			$"enum INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
+
+			// The enum element's ordinal.
+			$"{Ord_Int32Nn}," +
+
+			// The field value type hint.
+			$"type INTEGER NOT NULL CHECK(type {BetweenUInt32Range})," +
+
+			// The field value data bytes (without the type hint).
+			$"data BLOB NOT NULL," +
+
+			$"PRIMARY KEY(cls, enum, type, data)" +
+
+		$")"; // TODO Consider `WITHOUT ROWID` optimization?"
 }

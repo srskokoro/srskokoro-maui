@@ -15,6 +15,7 @@ internal static class Prot_v0w1 {
 	public const string Class = nameof(Class);
 	public const string ClassToField = nameof(ClassToField);
 	public const string ClassToInclude = nameof(ClassToInclude);
+	public const string ClassToEnumElem = nameof(ClassToEnumElem);
 
 	// --
 
