@@ -288,7 +288,7 @@ partial class Item {
 
 		UpdateFloatingField:
 			{
-				updCmd_type.Value = fval.TypeHint;
+				updCmd_type.Value = (FieldTypeHintSInt)fval.TypeHint;
 
 				var data = fval.DangerousGetDataBytes();
 				updCmd_data.Value = data;

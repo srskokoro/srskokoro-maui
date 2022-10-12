@@ -550,7 +550,7 @@ partial class Class {
 					Debug.Assert(1 == hasher_fld_debug_i++);
 
 					if (!info.StoreType.IsValid()) goto E_InvalidFieldStoreType;
-					updCmd_sto.Value = info.StoreType;
+					updCmd_sto.Value = (FieldStoreTypeSInt)info.StoreType;
 					Debug.Assert(sizeof(FieldStoreTypeInt) == 4);
 					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
 					Debug.Assert(2 == hasher_fld_debug_i++);
