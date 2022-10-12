@@ -263,6 +263,8 @@ internal static class Setup_v0w1 {
 			// ***
 			$"data BLOB NOT NULL," +
 
+			// --
+
 			// The maximum number of field data expected to be in the fielded
 			// entity where the schema is applied.
 			//
@@ -376,6 +378,8 @@ internal static class Setup_v0w1 {
 			// TODO Investigate further and report this issue (to whom?)
 			// ***
 			$"data BLOB NOT NULL," +
+
+			// --
 
 			// The field enum element's index under the field enum.
 			$"idx INTEGER NOT NULL AS (idx_e >> 6)," +
