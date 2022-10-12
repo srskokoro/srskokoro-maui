@@ -93,10 +93,10 @@ internal readonly struct FieldsDesc {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldsDesc(int value) => Value = (uint)value;
+	private FieldsDesc(int value) => Value = (uint)value;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldsDesc(uint value) => Value = value;
+	private FieldsDesc(uint value) => Value = value;
 
 	// BONUS: We can compare `FieldsDesc` against an `int` (due to the implicit
 	// cast) without needing to define some comparison operators.

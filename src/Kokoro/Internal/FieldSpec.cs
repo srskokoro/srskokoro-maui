@@ -45,10 +45,10 @@ internal readonly struct FieldSpec {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldSpec(int value) => Value = (uint)value;
+	private FieldSpec(int value) => Value = (uint)value;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldSpec(uint value) => Value = value;
+	private FieldSpec(uint value) => Value = value;
 
 	// BONUS: We can compare `FieldSpec` against an `int` (due to the implicit
 	// cast) without needing to define some comparison operators.
