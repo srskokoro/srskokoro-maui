@@ -20,6 +20,9 @@ public sealed partial class FieldVal {
 		get => _Data;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public byte[] DangerousGetDataBytes() => _Data;
+
 	public FieldVal() {
 		_TypeHint = FieldTypeHint.Null;
 		_Data = Array.Empty<byte>();

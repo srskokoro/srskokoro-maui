@@ -188,11 +188,9 @@ partial class Item {
 	// --
 
 	private protected sealed override FieldVal? OnLoadFloatingField(KokoroSqliteDb db, long fieldId) {
-		ReadOnlySpan<byte> encoded;
-
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"SELECT data\n" +
+				$"SELECT type,data\n" +
 				$"FROM {Prot.ItemToFloatingField}\n" +
 				$"WHERE (item,fld)=($item,$fld)"
 			).AddParams(
@@ -202,29 +200,27 @@ partial class Item {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "data");
-				encoded = r.GetBytesOrEmpty(0);
-				goto Found;
-			} else {
-				goto NotFound;
+				r.DAssert_Name(0, "type");
+				FieldTypeHint typeHint = (FieldTypeHint)r.GetInt32(0);
+
+				if (typeHint != FieldTypeHint.Null) {
+					r.DAssert_Name(1, "data");
+					var data = r.GetBytes(1);
+
+					return new(typeHint, data);
+				}
+				return FieldVal.Null;
 			}
 		}
-
-	Found:
-		return DecodeFloatingFieldVal(encoded);
-
-	NotFound:
 		return null;
 	}
 
 	private protected sealed override FieldVal? OnSupplantFloatingField(KokoroSqliteDb db, long fieldId) {
-		ReadOnlySpan<byte> encoded;
-
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
 				$"DELETE FROM {Prot.ItemToFloatingField}\n" +
 				$"WHERE (item,fld)=($item,$fld)\n" +
-				$"RETURNING data"
+				$"RETURNING type,data"
 			).AddParams(
 				new("$item", _RowId),
 				new("$fld", fieldId)
@@ -232,33 +228,21 @@ partial class Item {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				r.DAssert_Name(0, "data");
-				encoded = r.GetBytesOrEmpty(0);
 				Debug.Assert(!r.Read(), $"Should've deleted only 1 floating field");
-				goto Found;
-			} else {
-				goto NotFound;
+
+				r.DAssert_Name(0, "type");
+				FieldTypeHint typeHint = (FieldTypeHint)r.GetInt32(0);
+
+				if (typeHint != FieldTypeHint.Null) {
+					r.DAssert_Name(1, "data");
+					var data = r.GetBytes(1);
+
+					return new(typeHint, data);
+				}
+				return FieldVal.Null;
 			}
 		}
-
-	Found:
-		return DecodeFloatingFieldVal(encoded);
-
-	NotFound:
 		return null;
-	}
-
-	private static FieldVal DecodeFloatingFieldVal(ReadOnlySpan<byte> encoded) {
-		int fValSpecLen = VarInts.Read(encoded, out ulong fValSpec);
-
-		Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
-		FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
-
-		if (typeHint != FieldTypeHint.Null) {
-			byte[] data = encoded.Slice(fValSpecLen).ToArray();
-			return new(typeHint, data);
-		}
-		return FieldVal.Null;
 	}
 
 	// --
@@ -284,6 +268,7 @@ partial class Item {
 			cmd_fld = new() { ParameterName = "$fld" };
 
 		SqliteParameter
+			updCmd_type = null!,
 			updCmd_data = null!;
 
 		try {
@@ -303,12 +288,9 @@ partial class Item {
 
 		UpdateFloatingField:
 			{
-				uint dataLength = fval.CountEncodeLength();
-				Debug.Assert(dataLength > 0);
+				updCmd_type.Value = fval.TypeHint;
 
-				byte[] data = new byte[dataLength];
-				fval.WriteTo(new MemoryStream(data));
-
+				var data = fval.DangerousGetDataBytes();
 				updCmd_data.Value = data;
 
 				try {
@@ -317,7 +299,7 @@ partial class Item {
 				} catch (SqliteException ex) when (
 					ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
 				) {
-					E_FloatingFieldDataTooLarge(db, dataLength);
+					E_FloatingFieldDataTooLarge(db, (uint)data.Length);
 					return;
 				}
 
@@ -357,12 +339,13 @@ partial class Item {
 			{
 				updCmd = db.CreateCommand();
 				updCmd.Set(
-					$"INSERT INTO {Prot.ItemToFloatingField}(item,fld,data)\n" +
-					$"VALUES($item,$fld,$data)\n" +
+					$"INSERT INTO {Prot.ItemToFloatingField}(item,fld,type,data)\n" +
+					$"VALUES($item,$fld,$type,$data)\n" +
 					$"ON CONFLICT DO UPDATE\n" +
-					$"SET data=$data"
+					$"SET (type,data)=($type,$data)"
 				).AddParams(
 					cmd_item, cmd_fld,
+					updCmd_type = new() { ParameterName = "$type" },
 					updCmd_data = new() { ParameterName = "$data" }
 				);
 				Debug.Assert(

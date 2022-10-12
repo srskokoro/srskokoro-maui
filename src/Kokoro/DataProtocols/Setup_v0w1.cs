@@ -168,7 +168,10 @@ internal static class Setup_v0w1 {
 
 			$"fld INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
-			// The field value bytes.
+			// The field value type hint.
+			$"type INTEGER NOT NULL," +
+
+			// The field value data bytes (without the type hint).
 			$"data BLOB NOT NULL," +
 
 			$"PRIMARY KEY(item, fld)" +
