@@ -1,6 +1,7 @@
 ﻿namespace Kokoro.Internal.Sqlite;
 using Kokoro.Internal;
 using Microsoft.Data.Sqlite;
+using System.ComponentModel;
 using static SQLitePCL.raw;
 
 /// <remarks>Not thread-safe.</remarks>
@@ -28,10 +29,10 @@ internal sealed partial class KokoroSqliteDb : SqliteConnectionBase {
 	// Here, we hid various `BeginTransaction(…)` overloads (via `new` modifier)
 	// so that we can annotate them with `[Obsolete(…, error: true)]` attribute.
 
-	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction() => E_BeginTransaction_NS();
-	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction(bool deferred) => E_BeginTransaction_NS();
-	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel) => E_BeginTransaction_NS();
-	[Obsolete("Not supported", error: true)] public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel, bool deferred) => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)][EditorBrowsable(EditorBrowsableState.Never)] public new SqliteTransaction BeginTransaction() => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)][EditorBrowsable(EditorBrowsableState.Never)] public new SqliteTransaction BeginTransaction(bool deferred) => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)][EditorBrowsable(EditorBrowsableState.Never)] public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel) => E_BeginTransaction_NS();
+	[Obsolete("Not supported", error: true)][EditorBrowsable(EditorBrowsableState.Never)] public new SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel, bool deferred) => E_BeginTransaction_NS();
 
 	#endregion
 

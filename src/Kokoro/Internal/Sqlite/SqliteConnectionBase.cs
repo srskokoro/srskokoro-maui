@@ -17,6 +17,7 @@ internal abstract class SqliteConnectionBase : SqliteConnection {
 	[Obsolete("Not supported", error: true)][EditorBrowsable(EditorBrowsableState.Never)] public sealed override SqliteTransaction BeginTransaction(System.Data.IsolationLevel isolationLevel, bool deferred) => E_BeginTransaction_NS();
 #pragma warning restore CS0809
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	[DoesNotReturn]
 	private protected static SqliteTransaction E_BeginTransaction_NS() => throw new NotSupportedException();
 
