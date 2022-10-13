@@ -8,6 +8,8 @@ using Kokoro.Common.Util;
 public enum FieldTypeHint : FieldTypeHintInt {
 	Null = 0x0,
 
+	Enum = 0x1,
+
 	/// <summary>
 	/// A little-endian arbitrary-length negative integer or zero. Empty data is
 	/// interpreted as zero.

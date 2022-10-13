@@ -465,6 +465,7 @@ partial class FieldedEntity {
 							FieldSpec fspec2 = r.GetInt32(0);
 							fspec2.DAssert_Valid();
 
+							// NOTE: Should resolve field enum value, if any.
 							fval = fr.Read(fspec2);
 						} else {
 							fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
@@ -524,6 +525,7 @@ partial class FieldedEntity {
 					FieldSpec fspec = r.GetInt32(1);
 					fspec.DAssert_Valid();
 
+					// NOTE: Should resolve field enum value, if any.
 					entry = fr.Read(fspec);
 				}
 			}
@@ -601,6 +603,9 @@ partial class FieldedEntity {
 			///   - The shared fields must be fed to the hasher in the order of
 			///   their indices.
 			///
+			///   - Any field enum value should be resolved, so that the actual
+			///   field value is the one that is hashed.
+			///
 			/// Unless stated otherwise, all integer inputs should be consumed
 			/// in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
 			///
@@ -656,6 +661,12 @@ partial class FieldedEntity {
 						{
 							Debug.Assert((uint)i < (uint)fw._Entries.Length);
 							fw._Entries.DangerousGetReferenceAt(i) = fval;
+
+							// NOTE: All field enum values should've been
+							// resolved by now, unless the old schema doesn't
+							// have the needed field enum element or the `FieldVal`
+							// came from either a mischievous floating field or
+							// a noncompliant field change input.
 
 							fval.FeedTo(ref hasher);
 							continue;
@@ -762,6 +773,7 @@ partial class FieldedEntity {
 						/// <seealso cref="FieldsWriter.LoadOffsets"/>
 
 						Debug.Assert((uint)i < (uint)fw._Entries.Length);
+						// TODO If `fspec` indicates an enum group, properly set `fval` to an enum elem `fval`
 						fw._Entries.DangerousGetReferenceAt(i) = fval;
 
 						Debug.Assert((uint)i < (uint)fw._Offsets.Length);
@@ -1315,6 +1327,8 @@ partial class FieldedEntity {
 				cmd_bareSchema
 			);
 
+			// TODO Use a `RETURNING` clause, then for each `fspec` that indicates an enum group, properly replace the
+			// corresponding entry's `fval` to an enum elem `fval`.
 			cmd.ExecuteNonQuery();
 		}
 

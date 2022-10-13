@@ -354,6 +354,7 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 		}
 
 	WithFieldSpec:
+		// NOTE: Should resolve field enum value, if any.
 		fval = fr.Read(fspec);
 
 	Found:

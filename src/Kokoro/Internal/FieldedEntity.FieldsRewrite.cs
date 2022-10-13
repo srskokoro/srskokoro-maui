@@ -202,6 +202,7 @@ partial class FieldedEntity {
 
 					FieldVal? fval = entry;
 					if (fval == null) {
+						// NOTE: Shouldn't resolve field enum value.
 						FieldSpec fspec = new(i, FieldStoreType.Cold);
 						fval = fr.Read(fspec);
 						entry = fval;
@@ -642,6 +643,7 @@ partial class FieldedEntity {
 						FieldSpec fspec2 = r.GetInt32(0);
 						fspec2.DAssert_Valid();
 
+						// NOTE: Should resolve field enum value, if any.
 						fval = fr.Read(fspec2);
 					} else {
 						fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
@@ -667,6 +669,7 @@ partial class FieldedEntity {
 
 							if ((uint)i < (uint)xlc) {
 								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
+								// TODO If `fspec` indicates an enum group, properly set `fval` to an enum elem `fval`
 								fw._Entries.DangerousGetReferenceAt(i) = fval;
 							} else {
 								E_IndexBeyondLocalFieldCount_InvDat(_SchemaId, i, xlc: xlc);
