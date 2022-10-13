@@ -10,7 +10,7 @@ internal readonly struct FieldEnumAddr {
 	/// table in the collection's SQLite DB.
 	public readonly uint Value;
 
-	private const int EnumGroup_Mask = 0b_11_1111;
+	private const int Group_Mask = 0b_11_1111;
 	private const int Index_Shift = 6;
 
 	public readonly int Int {
@@ -29,11 +29,11 @@ internal readonly struct FieldEnumAddr {
 		get => (int)(Value >> Index_Shift);
 	}
 
-	public const int MaxEnumGroup = EnumGroup_Mask;
+	public const int MaxGroup = Group_Mask;
 
-	public int EnumGroup {
+	public int Group {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => (int)(Value & EnumGroup_Mask);
+		get => (int)(Value & Group_Mask);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -59,18 +59,18 @@ internal readonly struct FieldEnumAddr {
 	public static implicit operator FieldEnumAddr(uint value) => new(value);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public FieldEnumAddr(int index, int enumGroup) {
-		DAssert_Valid(index, enumGroup);
-		Value = (uint)index << Index_Shift | (uint)enumGroup;
+	public FieldEnumAddr(int index, int group) {
+		DAssert_Valid(index, group);
+		Value = (uint)index << Index_Shift | (uint)group;
 	}
 
 	[Conditional("DEBUG")]
-	public void DAssert_Valid() => DAssert_Valid(Index, EnumGroup);
+	public void DAssert_Valid() => DAssert_Valid(Index, Group);
 
 	[Conditional("DEBUG")]
-	private static void DAssert_Valid(int index, int enumGroup) {
+	private static void DAssert_Valid(int index, int group) {
 		Debug.Assert((uint)index <= (uint)MaxIndex, $"{nameof(Index)}: {index}");
-		Debug.Assert((uint)enumGroup <= (uint)MaxEnumGroup, $"{nameof(EnumGroup)}: {enumGroup}");
+		Debug.Assert((uint)group <= (uint)MaxGroup, $"{nameof(Group)}: {group}");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
