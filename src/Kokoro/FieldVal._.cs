@@ -14,7 +14,10 @@ public sealed partial class FieldVal : IEquatable<FieldVal> {
 	private readonly byte[] _Data;
 	private int _HashCode;
 
-	public FieldTypeHint TypeHint => _TypeHint;
+	public FieldTypeHint TypeHint {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _TypeHint;
+	}
 
 	public ReadOnlySpan<byte> Data {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
