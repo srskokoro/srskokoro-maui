@@ -154,7 +154,7 @@ public class FieldVal_Facts : IRandomizedTest {
 	}
 
 	[TestFact]
-	[TLabel($"When `{nameof(FieldTypeHint.IntNZ)}`, empty data bytes will give `0`")]
+	[TLabel($"When `{nameof(FieldTypeHint.IntNZ)}`, empty data gives `0`")]
 	public void T003() {
 		var fval = new FieldVal(FieldTypeHint.IntNZ, Array.Empty<byte>());
 		const int Expected = 0;
@@ -175,7 +175,7 @@ public class FieldVal_Facts : IRandomizedTest {
 	}
 
 	[TestFact]
-	[TLabel($"When `{nameof(FieldTypeHint.IntP1)}`, empty data bytes will give `1`")]
+	[TLabel($"When `{nameof(FieldTypeHint.IntP1)}`, empty data gives `1`")]
 	public void T004() {
 		var fval = new FieldVal(FieldTypeHint.IntP1, Array.Empty<byte>());
 		const int Expected = 1;
@@ -196,7 +196,7 @@ public class FieldVal_Facts : IRandomizedTest {
 	}
 
 	[TestTheory, CombinatorialData]
-	[TLabel($"Given random data bytes, return the expected value")]
+	[TLabel($"Given random data bytes, return the expected integer")]
 	public void T005([CombinatorialValues(FieldTypeHint.IntNZ, FieldTypeHint.IntP1)] FieldTypeHint typeHint) {
 		long m1 = typeHint.WhenIntRetM1IfIntNZ();
 		long x = (long)Random.NextUniform64();
