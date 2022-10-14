@@ -62,16 +62,16 @@ public sealed partial class FieldVal {
 			ref FieldVal r0 = ref r.DangerousGetReference();
 
 			int i = 0;
-			const int BeforeZero = Offset;
+			const int IndexForZero = Offset;
 
 			Debug.Assert(Size <= IntDataCache.Size);
-			Debug.Assert(Size > BeforeZero);
+			Debug.Assert(Size > IndexForZero);
 			Debug.Assert(Size >= 4);
 
 			const FieldTypeHint TypeBeforeZero = FieldTypeHint.IntNZ;
 			do {
 				U.Add(ref r0, i) = new FieldVal(TypeBeforeZero, U.Add(ref d0, i));
-			} while (++i < BeforeZero);
+			} while (++i < IndexForZero);
 
 			U.Add(ref r0, i++) = ZeroOrOneInstHolder.Zero;
 			U.Add(ref r0, i++) = ZeroOrOneInstHolder.One;
