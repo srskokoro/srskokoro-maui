@@ -1315,6 +1315,24 @@ partial class FieldedEntity {
 		}
 
 		using (var cmd = db.CreateCommand()) {
+			const string Table = Prot.SchemaToEnum;
+			const string Vals = "$schema";
+			const string ValCols = "schema";
+			const string Cols = "idx_e,type,data";
+
+			cmd.Set(
+				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
+				$"SELECT {Cols},{Vals} FROM {Table}\n" +
+				$"WHERE schema=$bareSchema"
+			).AddParams(
+				cmd_schema,
+				cmd_bareSchema
+			);
+
+			cmd.ExecuteNonQuery();
+		}
+
+		using (var cmd = db.CreateCommand()) {
 			const string Table = Prot.SchemaToField;
 			const string Vals = "$schema";
 			const string ValCols = "schema";
