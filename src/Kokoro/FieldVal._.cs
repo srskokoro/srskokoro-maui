@@ -135,7 +135,7 @@ public sealed partial class FieldVal : IEquatable<FieldVal> {
 
 	/// <remarks>
 	/// For when the underlying data (returned by <see cref="DangerousGetDataBytes()"/>)
-	/// were modified.
+	/// was modified.
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal void DangerousResetHashCode() => _HashCode = 0;
