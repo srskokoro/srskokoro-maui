@@ -467,6 +467,7 @@ partial class FieldedEntity {
 
 							// NOTE: Should resolve field enum value, if any.
 							fval = fr.Read(fspec2);
+							Debug.Assert(fval.TypeHint != FieldTypeHint.Enum);
 						} else {
 							fval = OnLoadFloatingField(db, fld2) ?? FieldVal.Null;
 						}
@@ -527,6 +528,7 @@ partial class FieldedEntity {
 
 					// NOTE: Should resolve field enum value, if any.
 					entry = fr.Read(fspec);
+					Debug.Assert(entry.TypeHint != FieldTypeHint.Enum);
 				}
 			}
 		}
