@@ -14,8 +14,8 @@ internal static partial class StreamExtensions {
 
 	DoRead:
 		ulong result = 0;
-		var buffer = MemoryMarshal.CreateSpan(ref U.Add(
-			ref U.As<ulong, byte>(ref result), MaxSize - sizeOfUIntX), sizeOfUIntX);
+		var buffer = MemoryMarshal.CreateSpan(
+			ref U.As<ulong, byte>(ref result), sizeOfUIntX);
 
 		int sread = stream.Read(buffer);
 		if (sread != sizeOfUIntX)
@@ -40,8 +40,8 @@ internal static partial class StreamExtensions {
 
 	DoRead:
 		uint result = 0;
-		var buffer = MemoryMarshal.CreateSpan(ref U.Add(
-			ref U.As<uint, byte>(ref result), MaxSize - sizeOfUIntX), sizeOfUIntX);
+		var buffer = MemoryMarshal.CreateSpan(
+			ref U.As<uint, byte>(ref result), sizeOfUIntX);
 
 		int sread = stream.Read(buffer);
 		if (sread != sizeOfUIntX)

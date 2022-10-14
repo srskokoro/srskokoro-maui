@@ -15,8 +15,8 @@ internal static partial class StreamExtensions {
 		// Toggle into little-endian (NOP if already little-endian).
 		var tmp = value.LittleEndian();
 
-		var buffer = MemoryMarshal.CreateReadOnlySpan(ref U.Add(
-			ref U.As<ulong, byte>(ref tmp), MaxSize - sizeOfUIntX), sizeOfUIntX);
+		var buffer = MemoryMarshal.CreateReadOnlySpan(
+			ref U.As<ulong, byte>(ref tmp), sizeOfUIntX);
 
 		stream.Write(buffer);
 	}
@@ -33,8 +33,8 @@ internal static partial class StreamExtensions {
 		// Toggle into little-endian (NOP if already little-endian).
 		var tmp = value.LittleEndian();
 
-		var buffer = MemoryMarshal.CreateReadOnlySpan(ref U.Add(
-			ref U.As<uint, byte>(ref tmp), MaxSize - sizeOfUIntX), sizeOfUIntX);
+		var buffer = MemoryMarshal.CreateReadOnlySpan(
+			ref U.As<uint, byte>(ref tmp), sizeOfUIntX);
 
 		stream.Write(buffer);
 	}
