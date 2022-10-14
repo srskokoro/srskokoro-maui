@@ -21,7 +21,10 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	internal FieldedEntity(KokoroCollection host) : base(host) { }
 
 
-	public long SchemaId => _SchemaId;
+	public long SchemaId {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _SchemaId;
+	}
 
 	public void SetCachedSchemaId(long schemaId) => _SchemaId = schemaId;
 
