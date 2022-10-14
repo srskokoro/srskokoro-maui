@@ -1,5 +1,6 @@
 ﻿namespace Kokoro;
 using Kokoro.Test.Util;
+using System.Runtime.InteropServices;
 
 public class FieldVal_Facts : IRandomizedTest {
 	static Random Random => TestUtil.GetRandom<FieldVal_Facts>();
@@ -150,5 +151,70 @@ public class FieldVal_Facts : IRandomizedTest {
 			ulong x = (ulong)source;
 			FieldVal.From((ulong)(x+o)).GetUInt64().Should().Be(x);
 		}
+	}
+
+	[TestFact]
+	[TLabel($"When `{nameof(FieldTypeHint.IntNZ)}`, empty data bytes will give `0`")]
+	public void T003() {
+		var fval = new FieldVal(FieldTypeHint.IntNZ, Array.Empty<byte>());
+		const int Expected = 0;
+
+		using var scope = new AssertionCapture();
+
+		fval.GetInt8().Should().Be((sbyte)Expected);
+		fval.GetInt16().Should().Be((short)Expected);
+		fval.GetInt32().Should().Be((int)Expected);
+		fval.GetInt64().Should().Be((long)Expected);
+
+		fval.GetUInt8().Should().Be((byte)Expected);
+		fval.GetUInt16().Should().Be((ushort)Expected);
+		fval.GetUInt32().Should().Be((uint)Expected);
+		fval.GetUInt64().Should().Be((ulong)Expected);
+
+		fval.GetReal().Should().Be((double)Expected);
+	}
+
+	[TestFact]
+	[TLabel($"When `{nameof(FieldTypeHint.IntP1)}`, empty data bytes will give `1`")]
+	public void T004() {
+		var fval = new FieldVal(FieldTypeHint.IntP1, Array.Empty<byte>());
+		const int Expected = 1;
+
+		using var scope = new AssertionCapture();
+
+		fval.GetInt8().Should().Be((sbyte)Expected);
+		fval.GetInt16().Should().Be((short)Expected);
+		fval.GetInt32().Should().Be((int)Expected);
+		fval.GetInt64().Should().Be((long)Expected);
+
+		fval.GetUInt8().Should().Be((byte)Expected);
+		fval.GetUInt16().Should().Be((ushort)Expected);
+		fval.GetUInt32().Should().Be((uint)Expected);
+		fval.GetUInt64().Should().Be((ulong)Expected);
+
+		fval.GetReal().Should().Be((double)Expected);
+	}
+
+	[TestTheory, CombinatorialData]
+	[TLabel($"Given random data bytes, return the expected value")]
+	public void T005([CombinatorialValues(FieldTypeHint.IntNZ, FieldTypeHint.IntP1)] FieldTypeHint typeHint) {
+		long m1 = typeHint.WhenIntRetM1IfIntNZ();
+		long x = (long)Random.NextUniform64();
+
+		long xLE = x.LittleEndian();
+		Span<byte> span = MemoryMarshal.CreateSpan(ref U.As<long, byte>(ref xLE), sizeof(long));
+		static byte[] MakeData(Span<byte> span, int length) => span.Slice(0, length).ToArray();
+
+		using var scope = new AssertionCapture();
+
+		new FieldVal(typeHint, MakeData(span, 1)).GetInt8().Should().Be((sbyte)((m1   << 8)  | (x & 0x_FF)));
+		new FieldVal(typeHint, MakeData(span, 2)).GetInt16().Should().Be((short)((m1  << 16) | (x & 0x_FFFF)));
+		new FieldVal(typeHint, MakeData(span, 4)).GetInt32().Should().Be((int)((m1    << 32) | (x & 0x_FFFF_FFFF)));
+		new FieldVal(typeHint, MakeData(span, 8)).GetInt64().Should().Be((long)x);
+
+		new FieldVal(typeHint, MakeData(span, 1)).GetUInt8().Should().Be((byte)((m1   << 8)  | (x & 0x_FF)));
+		new FieldVal(typeHint, MakeData(span, 2)).GetUInt16().Should().Be((ushort)((m1<< 16) | (x & 0x_FFFF)));
+		new FieldVal(typeHint, MakeData(span, 4)).GetUInt32().Should().Be((uint)((m1  << 32) | (x & 0x_FFFF_FFFF)));
+		new FieldVal(typeHint, MakeData(span, 8)).GetUInt64().Should().Be((ulong)x);
 	}
 }
