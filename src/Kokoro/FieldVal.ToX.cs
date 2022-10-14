@@ -137,8 +137,8 @@ public sealed partial class FieldVal {
 
 	// --
 
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static int FallbackReadInt32_FromReal(byte[] data) => (int)ReadReal(data);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static int FallbackReadInt32_FromReal(byte[] data) => (int)FallbackReadInt64_FromReal(data);
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static long FallbackReadInt64_FromReal(byte[] data) => (long)ReadReal(data);
