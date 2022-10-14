@@ -380,14 +380,14 @@ internal struct FieldsReader : IDisposable {
 				stream.Position = fPos;
 
 				int fValSpecLen = stream.TryReadVarInt(out ulong fValSpec);
+				int fValDataLen = fValLen - fValSpecLen;
 
 				Debug.Assert(fValSpec <= FieldTypeHintInt.MaxValue);
 				FieldTypeHint typeHint = (FieldTypeHint)fValSpec;
 
-				if (typeHint == FieldTypeHint.Null)
-					goto E_NullFValWithNonZeroLength;
+				if (typeHint <= FieldTypeHint.Enum) { goto HandleSpecial; }
 
-				var data = new byte[fValLen - fValSpecLen];
+				var data = new byte[fValDataLen];
 				var span = data.AsDangerousSpan();
 
 				int sread = stream.Read(span);
@@ -398,6 +398,44 @@ internal struct FieldsReader : IDisposable {
 
 			Done:
 				return new(typeHint, data);
+
+			HandleSpecial:
+				if (typeHint != FieldTypeHint.Null) {
+					Debug.Assert(typeHint == FieldTypeHint.Enum);
+					return ResolveFieldEnumVal(Db, _Owner.SchemaId, new(
+						index: (int)stream.ReadUIntXLEAsUInt32(fValDataLen),
+						group: fspec.EnumGroup
+					));
+				} else {
+					goto E_NullFValWithNonZeroLength;
+				}
+
+				[SkipLocalsInit]
+				static FieldVal ResolveFieldEnumVal(KokoroSqliteDb db, long schemaId, FieldEnumAddr enumAddr) {
+					using var cmd = db.CreateCommand();
+					cmd.Set(
+						$"SELECT type,data\n" +
+						$"FROM {Prot.SchemaToEnumElem}\n" +
+						$"WHERE (schema,idx_e)=($schema,$idx_e)"
+					).AddParams(
+						new("$schema", schemaId),
+						new("$idx_e", enumAddr.Int)
+					);
+
+					using var r = cmd.ExecuteReader();
+					if (r.Read()) {
+						r.DAssert_Name(0, "type");
+						FieldTypeHint typeHint = (FieldTypeHint)r.GetInt64(0);
+
+						if (typeHint != FieldTypeHint.Null) {
+							r.DAssert_Name(1, "data");
+							var data = r.GetBytes(1);
+
+							return new(typeHint, data);
+						}
+					}
+					return FieldVal.Null;
+				}
 
 			ReadIntoBufferFully:
 				ReadIntoBufferFully(stream, data, sread, remaining);
