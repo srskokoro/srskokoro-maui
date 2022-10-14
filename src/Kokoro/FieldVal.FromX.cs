@@ -180,8 +180,9 @@ public sealed partial class FieldVal {
 		if (value < (uint)IntInstCache.SizeForUnsigned) {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)value + IntInstCache.Offset);
 		}
+		Debug.Assert(value != 0, $"A cached instance should've been returned instead.");
 		return new(
-			FieldTypeHints.IntNZOrP1(value),
+			FieldTypeHint.IntP1,
 			MakeData<uint>(
 				value.LittleEndian(),
 				value.CountBytesNeeded()
@@ -193,8 +194,9 @@ public sealed partial class FieldVal {
 		if (value < (ulong)IntInstCache.SizeForUnsigned) {
 			return IntInstCache.Cache.DangerousGetReferenceAt((int)value + IntInstCache.Offset);
 		}
+		Debug.Assert(value != 0, $"A cached instance should've been returned instead.");
 		return new(
-			FieldTypeHints.IntNZOrP1(value),
+			FieldTypeHint.IntP1,
 			MakeData<ulong>(
 				value.LittleEndian(),
 				value.CountBytesNeeded()
