@@ -397,7 +397,7 @@ internal static class Setup_v0w1 {
 
 			$"UNIQUE(schema, enum, type, data)" +
 
-		$")";
+		$")"; // TODO Consider `WITHOUT ROWID` optimization?"
 
 	// -=-
 
