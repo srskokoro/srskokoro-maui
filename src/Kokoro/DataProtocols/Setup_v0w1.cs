@@ -393,7 +393,9 @@ internal static class Setup_v0w1 {
 			// element (with the latter also referred simply as "field enum").
 			$"enum INTEGER NOT NULL CHECK(enum != 0) AS (idx_e & 0x3F)," +
 
-			$"PRIMARY KEY(schema, idx_e)" +
+			$"PRIMARY KEY(schema, idx_e)," +
+
+			$"UNIQUE(schema, enum, type, data)" +
 
 		$")";
 
