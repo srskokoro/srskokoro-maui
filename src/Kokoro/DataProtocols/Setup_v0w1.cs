@@ -20,7 +20,7 @@ internal static class Setup_v0w1 {
 	const string UidUkCk = $"uid BLOB NOT NULL UNIQUE CHECK(length(uid) = 16)";
 	const string OnUidFk = "ON UPDATE CASCADE";
 
-	const string Ord_Int32Nn = $"ord INTEGER NOT NULL CHECK(ord {BetweenInt32Range})";
+	const string Ord_Int32Nn = $"ord INTEGER NOT NULL CHECK(ord {Between_Int32Range})";
 	const string Ord_Int64Nn = $"ord INTEGER NOT NULL";
 
 	// --
@@ -29,9 +29,9 @@ internal static class Setup_v0w1 {
 	const string Int32MaxHex = "0x7FFFFFFF";
 	const string UInt32MaxHex = "0xFFFFFFFF";
 
-	const string BetweenInt32Range = $"BETWEEN {Int32MinHex} AND {Int32MaxHex}";
-	const string BetweenInt32RangeGE0 = $"BETWEEN 0 AND {Int32MaxHex}";
-	const string BetweenUInt32Range = $"BETWEEN 0 AND {UInt32MaxHex}";
+	const string Between_Int32Range = $"BETWEEN {Int32MinHex} AND {Int32MaxHex}";
+	const string Between_Int32RangeGE0 = $"BETWEEN 0 AND {Int32MaxHex}";
+	const string Between_UInt32Range = $"BETWEEN 0 AND {UInt32MaxHex}";
 
 	const string IsBool = "IN (0,1)";
 
@@ -171,7 +171,7 @@ internal static class Setup_v0w1 {
 			$"fld INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
 			// The field value type hint.
-			$"type INTEGER NOT NULL CHECK(type {BetweenUInt32Range})," +
+			$"type INTEGER NOT NULL CHECK(type {Between_UInt32Range})," +
 
 			// The field value data bytes (without the type hint).
 			$"data BLOB NOT NULL," +
@@ -220,21 +220,21 @@ internal static class Setup_v0w1 {
 			//
 			// This should always be equal to the number of hot fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"hotCount INTEGER NOT NULL CHECK(hotCount {BetweenInt32RangeGE0})," +
+			$"hotCount INTEGER NOT NULL CHECK(hotCount {Between_Int32RangeGE0})," +
 
 			// The maximum number of cold field data expected to be in the
 			// fielded entity where the schema is applied.
 			//
 			// This should always be equal to the number of cold fields defined
 			// by the schema -- see `SchemaToField` table.
-			$"coldCount INTEGER NOT NULL CHECK(coldCount {BetweenInt32RangeGE0})," +
+			$"coldCount INTEGER NOT NULL CHECK(coldCount {Between_Int32RangeGE0})," +
 
 			// The maximum number of shared field data expected to be in this
 			// schema's `data` column.
 			//
 			// This should always be equal to the number of shared fields
 			// defined by the schema -- see `SchemaToField` table.
-			$"sharedCount INTEGER NOT NULL CHECK(sharedCount {BetweenInt32RangeGE0})," +
+			$"sharedCount INTEGER NOT NULL CHECK(sharedCount {Between_Int32RangeGE0})," +
 
 			// The bare schema that this schema is based off.
 			//
@@ -279,7 +279,7 @@ internal static class Setup_v0w1 {
 			// appears later than that of any generated column.
 			// TODO Investigate further and report this issue (to whom?)
 			// ***
-			$"localCount INTEGER NOT NULL CHECK(localCount {BetweenInt32RangeGE0}) AS (hotCount + coldCount)" +
+			$"localCount INTEGER NOT NULL CHECK(localCount {Between_Int32RangeGE0}) AS (hotCount + coldCount)" +
 
 		$")";
 
@@ -290,7 +290,7 @@ internal static class Setup_v0w1 {
 
 			$"fld INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
-			$"idx_e_sto INTEGER NOT NULL CHECK(idx_e_sto {BetweenInt32RangeGE0})," +
+			$"idx_e_sto INTEGER NOT NULL CHECK(idx_e_sto {Between_Int32RangeGE0})," +
 
 			$"idx_loc INTEGER NOT NULL AS ((idx << 1) | loc)," +
 
@@ -366,10 +366,10 @@ internal static class Setup_v0w1 {
 
 			$"schema INTEGER NOT NULL REFERENCES {P.Schema} {OnRowIdFkCascDel} {WithFkDfr}," +
 
-			$"idx_e INTEGER NOT NULL CHECK(idx_e {BetweenInt32RangeGE0})," +
+			$"idx_e INTEGER NOT NULL CHECK(idx_e {Between_Int32RangeGE0})," +
 
 			// The field value type hint.
-			$"type INTEGER NOT NULL CHECK(type {BetweenUInt32Range})," +
+			$"type INTEGER NOT NULL CHECK(type {Between_UInt32Range})," +
 
 			// The field value data bytes (without the type hint).
 			//
@@ -536,7 +536,7 @@ internal static class Setup_v0w1 {
 			$"{Ord_Int32Nn}," +
 
 			// The field value type hint.
-			$"type INTEGER NOT NULL CHECK(type {BetweenUInt32Range})," +
+			$"type INTEGER NOT NULL CHECK(type {Between_UInt32Range})," +
 
 			// The field value data bytes (without the type hint).
 			$"data BLOB NOT NULL," +
