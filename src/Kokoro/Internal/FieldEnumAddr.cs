@@ -42,12 +42,12 @@ internal readonly struct FieldEnumAddr {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private FieldEnumAddr(uint value) => Value = value;
 
-	// BONUS: We can compare `FieldEnumElemKey` against an `int` (due to the
+	// BONUS: We can compare `FieldEnumAddr` against an `int` (due to the
 	// implicit cast) without needing to define some comparison operators.
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static implicit operator int(FieldEnumAddr fspec) => (int)fspec.Value;
 
-	// BONUS: We can compare `FieldEnumElemKey` against a `uint` (due to the
+	// BONUS: We can compare `FieldEnumAddr` against a `uint` (due to the
 	// implicit cast) without needing to define some comparison operators.
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static implicit operator uint(FieldEnumAddr fspec) => fspec.Value;
