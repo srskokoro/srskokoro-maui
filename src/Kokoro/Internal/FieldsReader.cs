@@ -415,7 +415,7 @@ internal struct FieldsReader : IDisposable {
 					using var cmd = db.CreateCommand();
 					cmd.Set(
 						$"SELECT type,data\n" +
-						$"FROM {Prot.SchemaToEnumElem}\n" +
+						$"FROM {Prot.SchemaToEnum}\n" +
 						$"WHERE (schema,idx_e)=($schema,$idx_e)"
 					).AddParams(
 						new("$schema", schemaId),

@@ -2,11 +2,11 @@
 
 internal readonly struct FieldEnumAddr {
 	/// Expected bit layout:
-	/// - The 6 LSBs indicate the enumeration group number of the field enum.
-	/// - The remaining bits serve as the field enum element's index under the
-	/// field enum.
+	/// - The 6 LSBs indicate the group number of the field enum group.
+	/// - The remaining bits serve as the field enum's index under the field
+	/// enum group.
 	///
-	/// This corresponds to the `idx_e` column of the `<see cref="Prot.SchemaToEnumElem"/>`
+	/// This corresponds to the `idx_e` column of the `<see cref="Prot.SchemaToEnum"/>`
 	/// table in the collection's SQLite DB.
 	public readonly uint Value;
 

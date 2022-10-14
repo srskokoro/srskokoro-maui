@@ -664,9 +664,9 @@ partial class FieldedEntity {
 
 							// NOTE: All field enum values should've been
 							// resolved by now, unless the old schema doesn't
-							// have the needed field enum element or the `FieldVal`
-							// came from either a mischievous floating field or
-							// a noncompliant field change input.
+							// have the needed field enum or the `FieldVal` came
+							// from either a mischievous floating field or a
+							// noncompliant field change input.
 
 							fval.FeedTo(ref hasher);
 							continue;

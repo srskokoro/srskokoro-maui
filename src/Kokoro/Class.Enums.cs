@@ -3,16 +3,16 @@ using System.Runtime.InteropServices;
 
 partial class Class {
 
-	private Enums? _Enums;
+	private EnumGroups? _EnumGroups;
 
-	private sealed class Enums : Dictionary<StringKey, List<EnumElem>?> {
-		public EnumChanges? Changes;
+	private sealed class EnumGroups : Dictionary<StringKey, List<EnumInfo>?> {
+		public EnumGroupChanges? Changes;
 	}
 
-	private sealed class EnumChanges : Dictionary<StringKey, List<EnumElem>?> { }
+	private sealed class EnumGroupChanges : Dictionary<StringKey, List<EnumInfo>?> { }
 
 
-	public readonly struct EnumElem {
+	public readonly struct EnumInfo {
 		private readonly FieldVal _Value;
 		private readonly int _Ordinal;
 
@@ -20,51 +20,51 @@ partial class Class {
 		public readonly int Ordinal => _Ordinal;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public EnumElem(FieldVal value, int ordinal) {
+		public EnumInfo(FieldVal value, int ordinal) {
 			_Value = value;
 			_Ordinal = ordinal;
 		}
 	}
 
 
-	public ICollection<StringKey> EnumNames {
+	public ICollection<StringKey> EnumGroupNames {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _Enums?.Keys ?? EmptyEnumNames.Instance;
+		get => _EnumGroups?.Keys ?? EmptyEnumGroupNames.Instance;
 	}
 
-	private static class EmptyEnumNames {
-		internal static readonly Dictionary<StringKey, List<EnumElem>?>.KeyCollection Instance = new(new());
+	private static class EmptyEnumGroupNames {
+		internal static readonly Dictionary<StringKey, List<EnumInfo>?>.KeyCollection Instance = new(new());
 	}
 
-	public void EnsureCachedEnumName(StringKey name) {
-		var enums = _Enums;
-		if (enums == null) {
+	public void EnsureCachedEnumGroupName(StringKey name) {
+		var enumGroups = _EnumGroups;
+		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
 		}
 
 	Set:
-		enums.TryAdd(name, null);
+		enumGroups.TryAdd(name, null);
 		return;
 
 	Init:
-		_Enums = enums = new();
+		_EnumGroups = enumGroups = new();
 		goto Set;
 	}
 
 
-	public bool TryGetEnum(StringKey name, [MaybeNullWhen(false)] out List<EnumElem> elems) {
-		var enums = _Enums;
-		if (enums != null) {
-			enums.TryGetValue(name, out elems);
+	public bool TryGetEnumGroup(StringKey name, [MaybeNullWhen(false)] out List<EnumInfo> elems) {
+		var enumGroups = _EnumGroups;
+		if (enumGroups != null) {
+			enumGroups.TryGetValue(name, out elems);
 			return elems != null;
 		}
 		elems = null;
 		return false;
 	}
 
-	public List<EnumElem>? GetEnum(StringKey name) {
-		var enums = _Enums;
+	public List<EnumInfo>? GetEnumGroup(StringKey name) {
+		var enums = _EnumGroups;
 		if (enums != null) {
 			enums.TryGetValue(name, out var elems);
 			return elems;
@@ -72,38 +72,38 @@ partial class Class {
 		return null;
 	}
 
-	public void SetEnum(StringKey name, List<EnumElem>? elems) {
-		var enums = _Enums;
-		if (enums == null) {
+	public void SetEnumGroup(StringKey name, List<EnumInfo>? elems) {
+		var enumGroups = _EnumGroups;
+		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
 		}
 
-		var changes = enums.Changes;
+		var changes = enumGroups.Changes;
 		if (changes == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto InitChanges;
 		}
 
 	Set:
-		enums[name] = elems;
+		enumGroups[name] = elems;
 		changes[name] = elems;
 		return;
 
 	Init:
-		_Enums = enums = new();
+		_EnumGroups = enumGroups = new();
 	InitChanges:
-		enums.Changes = changes = new();
+		enumGroups.Changes = changes = new();
 		goto Set;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void DeleteEnum(StringKey name) => SetEnum(name, null);
+	public void DeleteEnumGroup(StringKey name) => SetEnumGroup(name, null);
 
-	/// <seealso cref="SetEnumAsLoaded(StringKey, List{EnumElem}?)"/>
+	/// <seealso cref="SetEnumGroupAsLoaded(StringKey, List{EnumInfo}?)"/>
 	[SkipLocalsInit]
-	public void SetCachedEnum(StringKey name, List<EnumElem>? elems) {
-		var enums = _Enums;
+	public void SetCachedEnumGroup(StringKey name, List<EnumInfo>? elems) {
+		var enums = _EnumGroups;
 		if (enums == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
@@ -127,16 +127,16 @@ partial class Class {
 		}
 
 	Init:
-		_Enums = enums = new();
+		_EnumGroups = enums = new();
 		goto Set;
 	}
 
 	/// <summary>
-	/// Same as <see cref="UnmarkEnumAsChanged(StringKey)"/> followed by
-	/// <see cref="SetCachedEnum(StringKey, List{EnumElem}?)"/>.
+	/// Same as <see cref="UnmarkEnumGroupAsChanged(StringKey)"/> followed by
+	/// <see cref="SetCachedEnumGroup(StringKey, List{EnumInfo}?)"/>.
 	/// </summary>
-	public void SetEnumAsLoaded(StringKey name, List<EnumElem>? elems) {
-		var enums = _Enums;
+	public void SetEnumGroupAsLoaded(StringKey name, List<EnumInfo>? elems) {
+		var enums = _EnumGroups;
 		if (enums == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
@@ -149,28 +149,28 @@ partial class Class {
 		return;
 
 	Init:
-		_Enums = enums = new();
+		_EnumGroups = enums = new();
 		goto Set;
 	}
 
 
-	public void UnmarkEnumAsChanged(StringKey name)
-		=> _Enums?.Changes?.Remove(name);
+	public void UnmarkEnumGroupAsChanged(StringKey name)
+		=> _EnumGroups?.Changes?.Remove(name);
 
-	public void UnmarkEnumsAsChanged()
-		=> _Enums?.Changes?.Clear();
+	public void UnmarkEnumGroupsAsChanged()
+		=> _EnumGroups?.Changes?.Clear();
 
 
-	public void UnloadEnum(StringKey name) {
-		var enums = _Enums;
+	public void UnloadEnumGroup(StringKey name) {
+		var enums = _EnumGroups;
 		if (enums != null) {
 			enums.Changes?.Remove(name);
 			enums.Remove(name);
 		}
 	}
 
-	public void UnloadEnums() {
-		var enums = _Enums;
+	public void UnloadEnumGroups() {
+		var enums = _EnumGroups;
 		if (enums != null) {
 			enums.Changes = null;
 			enums.Clear();

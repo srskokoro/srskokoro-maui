@@ -361,8 +361,8 @@ internal static class Setup_v0w1 {
 			$"{P.SchemaToClass}(schema, ind, cls)" +
 		$"";
 
-	public const string CreateTable_SchemaToEnumElem =
-		$"CREATE TABLE {P.SchemaToEnumElem}(" +
+	public const string CreateTable_SchemaToEnum =
+		$"CREATE TABLE {P.SchemaToEnum}(" +
 
 			$"schema INTEGER NOT NULL REFERENCES {P.Schema} {OnRowIdFkCascDel} {WithFkDfr}," +
 
@@ -385,11 +385,12 @@ internal static class Setup_v0w1 {
 
 			// --
 
-			// The field enum element's index under the field enum.
+			// The field enum 's index under the field enum group.
 			$"idx INTEGER NOT NULL AS (idx_e >> 6)," +
 
-			// The group number of the owning field enum under the schema. The
-			// field enum is the enumeration that owns the field enum element.
+			// The group number of the owning field enum group under the schema.
+			// The field enum group is the enumeration that owns the field enum
+			// element (with the latter also referred simply as "field enum").
 			$"enum INTEGER NOT NULL CHECK(enum != 0) AS (idx_e & 0x3F)," +
 
 			$"PRIMARY KEY(schema, idx_e)" +
@@ -522,17 +523,18 @@ internal static class Setup_v0w1 {
 			$"{P.ClassToInclude}(cls, uid)" +
 		$"";
 
-	public const string CreateTable_ClassToEnumElem =
-		$"CREATE TABLE {P.ClassToEnumElem}(" +
+	public const string CreateTable_ClassToEnum =
+		$"CREATE TABLE {P.ClassToEnum}(" +
 
 			// The owning entity class.
 			$"cls INTEGER NOT NULL REFERENCES {P.Class} {OnRowIdFkCascDel} {WithFkDfr}," +
 
-			// The name of the owning field enum under the class. The field enum
-			// is the enumeration that owns the field enum element.
+			// The name of the owning field enum group under the class. The
+			// field enum group is the enumeration that owns the field enum
+			// element (with the latter also referred simply as "field enum").
 			$"enum INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
-			// The field enum element's ordinal.
+			// The field enum's ordinal.
 			$"{Ord_Int32Nn}," +
 
 			// The field value type hint.
