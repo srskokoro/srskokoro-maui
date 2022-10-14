@@ -8,6 +8,11 @@ using Kokoro.Common.Util;
 public enum FieldTypeHint : FieldTypeHintInt {
 	Null = 0x0,
 
+	/// <summary>
+	/// A little-endian arbitrary-length unsigned integer representing the index
+	/// of a field enum under a field enum group in a given schema. Empty data
+	/// is interpreted as zero.
+	/// </summary>
 	Enum = 0x1,
 
 	/// <summary>

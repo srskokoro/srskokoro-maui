@@ -213,6 +213,16 @@ public sealed partial class FieldVal {
 
 	// --
 
+	internal int GetEnumIndex() {
+		if (_TypeHint == FieldTypeHint.Enum) {
+			byte[] data = _Data;
+			// TODO This is an inefficient placeholder implementation only
+			return (int)new MemoryStream(data, false)
+				.ReadUIntXLEAsUInt32(data.Length);
+		}
+		return 0;
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public string? GetText() {
 		if (_TypeHint == FieldTypeHint.Text) {

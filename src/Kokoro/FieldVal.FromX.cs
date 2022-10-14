@@ -1,5 +1,6 @@
 namespace Kokoro;
 using Kokoro.Common.Util;
+using Kokoro.Internal;
 
 public sealed partial class FieldVal {
 
@@ -230,6 +231,20 @@ public sealed partial class FieldVal {
 	}
 
 	// --
+
+	internal static FieldVal FromEnumIndex(int enumIndex) {
+		Debug.Assert((uint)enumIndex <= (uint)FieldEnumAddr.MaxIndex, $"{nameof(enumIndex)}: {enumIndex}");
+		// TODO Provide cached instances too
+		return new(
+			FieldTypeHint.Enum,
+			// NOTE: Avoids generation of unnecessary specialization of generic
+			// method by reusing an existing one instead.
+			MakeData<uint>(
+				(uint)enumIndex.LittleEndian(),
+				((uint)enumIndex).CountBytesNeeded()
+			)
+		);
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(string text) => new(FieldTypeHint.Text, text.ToUTF8Bytes());
