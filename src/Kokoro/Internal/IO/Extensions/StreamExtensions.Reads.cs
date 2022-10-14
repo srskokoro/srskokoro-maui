@@ -9,9 +9,10 @@ internal static partial class StreamExtensions {
 	public static ulong ReadUIntXLE(this Stream stream, int sizeOfUIntX) {
 		const int MaxSize = sizeof(ulong);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
-			ThrowHelper.ThrowArgumentOutOfRangeException();
+			goto CapSizeToMax;
 		}
 
+	DoRead:
 		ulong result = 0;
 		var buffer = MemoryMarshal.CreateSpan(ref U.Add(
 			ref U.As<ulong, byte>(ref result), MaxSize - sizeOfUIntX), sizeOfUIntX);
@@ -23,6 +24,10 @@ internal static partial class StreamExtensions {
 		// Needed since the `UIntX` in the stream is little-endian.
 		// Toggle from little-endian (NOP if already little-endian).
 		return result.LittleEndian();
+
+	CapSizeToMax:
+		sizeOfUIntX = MaxSize;
+		goto DoRead;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,9 +35,10 @@ internal static partial class StreamExtensions {
 	public static uint ReadUIntXLEAsUInt32(this Stream stream, int sizeOfUIntX) {
 		const int MaxSize = sizeof(uint);
 		if ((uint)sizeOfUIntX > (uint)MaxSize) {
-			ThrowHelper.ThrowArgumentOutOfRangeException();
+			goto CapSizeToMax;
 		}
 
+	DoRead:
 		uint result = 0;
 		var buffer = MemoryMarshal.CreateSpan(ref U.Add(
 			ref U.As<uint, byte>(ref result), MaxSize - sizeOfUIntX), sizeOfUIntX);
@@ -44,5 +50,9 @@ internal static partial class StreamExtensions {
 		// Needed since the `UIntX` in the stream is little-endian.
 		// Toggle from little-endian (NOP if already little-endian).
 		return result.LittleEndian();
+
+	CapSizeToMax:
+		sizeOfUIntX = MaxSize;
+		goto DoRead;
 	}
 }
