@@ -41,6 +41,7 @@ internal static class Setup_v0w1_UpgradeFrom_v0w0 {
 
 		db.Exec(S.CreateTable_Schema);
 		db.Exec(S.CreateTable_SchemaToField);
+		db.Exec(S.CreateIndex_IX_SchemaToField_C_schema_C_loc_C_idx_e_sto);
 		db.Exec(S.CreateTable_SchemaToClass);
 		db.Exec(S.CreateIndex_IX_SchemaToClass_C_schema_C_ind_C_cls);
 		db.Exec(S.CreateTable_SchemaToEnum);

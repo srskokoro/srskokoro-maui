@@ -321,6 +321,16 @@ internal static class Setup_v0w1 {
 
 		$") WITHOUT ROWID";
 
+	// NOTE: To utilize this index to query "all local fields" or "all shared
+	// fields", involve all of the indexed columns in the query, i.e., in the
+	// `WHERE` clause, `ORDER BY` clause, or both.
+	public const string CreateIndex_IX_SchemaToField_C_schema_C_loc_C_idx_e_sto =
+		$"CREATE INDEX [" +
+			$"IX_{P.SchemaToField}_C_schema_C_loc_C_idx_e_sto" +
+		$"] ON " +
+			$"{P.SchemaToField}(schema, loc, idx_e_sto)" +
+		$"";
+
 	// An entity schema can also be thought of as an entity class set, in that
 	// no data can enter a schema unless defined by an entity class: a schema is
 	// composed by the various compiled states of its entity classes, as each

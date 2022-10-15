@@ -1122,4 +1122,25 @@ partial class FieldedEntity {
 			$"{xlc}, the expected maximum number of local fields defined " +
 			$"by the schema."));
 	}
+
+	[SkipLocalsInit]
+	private static FieldVal ResolveFieldEnumIndex(KokoroSqliteDb db, long schemaId, int enumGroup, FieldVal origVal) {
+		using var cmd = db.CreateCommand();
+		cmd.Set(
+			$"SELECT idx_e FROM {Prot.SchemaToEnum}\n" +
+			$"WHERE (schema,enum,type,data)=($schema,$enum,$type,$data)"
+		).AddParams(
+			new("$schema", schemaId), new("$enum", enumGroup),
+			new("$type", origVal.TypeHint),
+			new("$data", origVal.DangerousGetDataBytes())
+		);
+
+		using var r = cmd.ExecuteReader();
+		if (r.Read()) {
+			r.DAssert_Name(0, "idx_e");
+			FieldEnumAddr enumAddr = r.GetInt32(0);
+			return FieldVal.From(enumAddr);
+		}
+		return origVal;
+	}
 }

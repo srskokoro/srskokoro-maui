@@ -232,6 +232,9 @@ public sealed partial class FieldVal {
 
 	// --
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static FieldVal From(FieldEnumAddr enumAddr) => FromEnumIndex(enumAddr.Index);
+
 	internal static FieldVal FromEnumIndex(int enumIndex) {
 		Debug.Assert((uint)enumIndex <= (uint)FieldEnumAddr.MaxIndex, $"{nameof(enumIndex)}: {enumIndex}");
 		// TODO Provide cached instances too
@@ -245,6 +248,8 @@ public sealed partial class FieldVal {
 			)
 		);
 	}
+
+	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static FieldVal From(string text) => new(FieldTypeHint.Text, text.ToUTF8Bytes());

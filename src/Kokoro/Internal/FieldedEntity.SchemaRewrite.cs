@@ -1332,6 +1332,7 @@ partial class FieldedEntity {
 			cmd.ExecuteNonQuery();
 		}
 
+		// Copy local field specs
 		using (var cmd = db.CreateCommand()) {
 			const string Table = Prot.SchemaToField;
 			const string Vals = "$schema";
@@ -1341,15 +1342,48 @@ partial class FieldedEntity {
 			cmd.Set(
 				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
 				$"SELECT {Cols},{Vals} FROM {Table}\n" +
-				$"WHERE schema=$bareSchema"
+				$"WHERE schema=$bareSchema AND loc=1"
 			).AddParams(
 				cmd_schema,
 				cmd_bareSchema
 			);
 
-			// TODO Use a `RETURNING` clause, then for each `fspec` that indicates an enum group, properly replace the
-			// corresponding entry's `fval` to an enum elem `fval`.
 			cmd.ExecuteNonQuery();
+		}
+
+		// Copy shared field specs, while also resolving any field enum indices
+		using (var cmd = db.CreateCommand()) {
+			const string Table = Prot.SchemaToField;
+			const string Vals = "$schema";
+			const string ValCols = "schema";
+			const string Cols = "fld,idx_e_sto";
+
+			cmd.Set(
+				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
+				$"SELECT {Cols},{Vals} FROM {Table}\n" +
+				$"WHERE schema=$bareSchema AND loc=0\n" +
+				$"RETURNING idx_e_sto"
+			).AddParams(
+				cmd_schema,
+				cmd_bareSchema
+			);
+
+			using var r = cmd.ExecuteReader();
+			while (r.Read()) {
+				r.DAssert_Name(0, "idx_e_sto");
+				FieldSpec fspec = r.GetInt32(0);
+				Debug.Assert(fspec.StoreType == FieldStoreType.Shared, "Should only do this for shared fields");
+
+				int enumGroup = fspec.EnumGroup;
+				if (enumGroup != 0) {
+					int i = fspec.Index;
+
+					ref var entry = ref fw._Entries.DangerousGetReferenceAt(i);
+					Debug.Assert(entry != null, $"Unexpected null entry at {i}");
+
+					entry = ResolveFieldEnumIndex(db, schemaId, enumGroup, entry);
+				}
+			}
 		}
 
 		byte[] sharedData;
