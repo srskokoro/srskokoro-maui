@@ -747,17 +747,23 @@ partial class FieldedEntity {
 
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"SELECT idx,fld FROM {Prot.SchemaToField}\n" +
+				$"SELECT idx_e_sto,fld FROM {Prot.SchemaToField}\n" +
 				$"WHERE schema=$schema AND loc=1\n" +
-				$"ORDER BY idx" // Needed only to force usage of DB index
+				$"ORDER BY idx_e_sto" // Needed also to force usage of DB index
 			).AddParams(new("$schema", schemaId));
 
 			using var r = cmd.ExecuteReader();
 			try {
-				while (r.Read()) {
-					r.DAssert_Name(0, "idx");
-					int i = r.GetInt32(0);
+				for (int i = 0; r.Read(); i++) {
+					r.DAssert_Name(0, "idx_e_sto");
+					FieldSpec fspec = r.GetInt32(0);
+					fspec.DAssert_Valid();
 
+					Debug.Assert(fspec.StoreType != FieldStoreType.Shared, "Should only do this for local fields");
+
+					if (fspec.Index != i) {
+						goto E_IndexMismatch;
+					}
 					if ((uint)i >= (uint)xlc) {
 						goto E_IndexBeyondLocalFieldCount_InvDat;
 					}
@@ -797,6 +803,14 @@ partial class FieldedEntity {
 
 				E_IndexBeyondLocalFieldCount_InvDat:
 					E_IndexBeyondLocalFieldCount_InvDat(schemaId, i, xlc: xlc);
+
+				E_IndexMismatch:
+					Debug.Assert(fspec.Index != i, $"{nameof(i)}: {i}"); // Future-proofing
+					if (fspec.Index < i) {
+						Debug.Fail("A UNIQUE constraint should've been " +
+							"enforced to ensure this doesn't happen.");
+					}
+					goto E_MissingLocalField_InvDat;
 				}
 			} catch (OverflowException) {
 				goto E_FieldValsLengthTooLarge;
