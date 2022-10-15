@@ -1391,8 +1391,11 @@ partial class FieldedEntity {
 			int sharedFValsSize;
 			try {
 				sharedFValsSize = fw.LoadOffsets(nextOffset: 0, start: 0, end: nsc);
-			} catch (Exception) {
+			} catch (Exception ex) {
 				db.Context?.UndoSchemaId(schemaId);
+				if (ex is NullReferenceException && fw.HasEntryMissing(0, nsc)) {
+					goto E_MissingSharedField_InvDat;
+				}
 				throw;
 			}
 
@@ -1470,8 +1473,18 @@ partial class FieldedEntity {
 			Debug.Assert(updated == 1, $"Updated: {updated}");
 		}
 
-		// Done!
-		return schemaId;
+	// -=-
+
+	Done:
+		return schemaId; // ---
+
+	E_MissingSharedField_InvDat:
+		E_MissingSharedField_InvDat(bareSchemaId);
+
+		// -=-
+
+		Debug.Fail("This point should be unreachable.");
+		goto Done;
 	}
 
 	private const int SchemaUsumLength = SchemaUsumVerLength + SchemaUsumDigestLength;
