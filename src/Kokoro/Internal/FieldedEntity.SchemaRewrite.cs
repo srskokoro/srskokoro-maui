@@ -778,10 +778,16 @@ partial class FieldedEntity {
 
 				GotEntry:
 					{
+						int enumGroup = fspec.EnumGroup;
+						if (enumGroup != 0) {
+							// This becomes a conditional jump forward to not favor it
+							goto ResolveEnumIndex;
+						}
+
+					SetLocalField:
 						/// <seealso cref="FieldsWriter.LoadOffsets"/>
 
 						Debug.Assert((uint)i < (uint)fw._Entries.Length);
-						// TODO If `fspec` indicates an enum group, properly set `fval` to an enum elem `fval`
 						fw._Entries.DangerousGetReferenceAt(i) = fval;
 
 						Debug.Assert((uint)i < (uint)fw._Offsets.Length);
@@ -792,6 +798,10 @@ partial class FieldedEntity {
 						}
 
 						continue;
+
+					ResolveEnumIndex:
+						fval = ResolveFieldEnumIndex(db, schemaId, enumGroup, fval);
+						goto SetLocalField;
 					}
 
 				NotInOldMap:

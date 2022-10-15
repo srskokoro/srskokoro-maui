@@ -671,8 +671,22 @@ partial class FieldedEntity {
 
 							if ((uint)i < (uint)xlc) {
 								Debug.Assert((uint)xlc <= (uint)fw._Entries.Length);
-								// TODO If `fspec` indicates an enum group, properly set `fval` to an enum elem `fval`
+								int enumGroup = fspec.EnumGroup;
+								if (enumGroup != 0) {
+									// This becomes a conditional jump forward to not favor it
+									goto ResolveEnumIndex;
+								}
+
+							SetCoreField:
 								fw._Entries.DangerousGetReferenceAt(i) = fval;
+								goto DoneCoreField;
+
+							ResolveEnumIndex:
+								fval = ResolveFieldEnumIndex(db, _SchemaId, enumGroup, fval);
+								goto SetCoreField;
+
+							DoneCoreField:
+								;
 							} else {
 								E_IndexBeyondLocalFieldCount_InvDat(_SchemaId, i, xlc: xlc);
 							}
