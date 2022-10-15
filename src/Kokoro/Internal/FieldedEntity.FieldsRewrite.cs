@@ -609,7 +609,8 @@ partial class FieldedEntity {
 
 		fw.InitEntries(xlc);
 
-		int fmi = -1; Debug.Assert(uint.MaxValue == unchecked((uint)-1));
+		Debug.Assert(unchecked((uint)-1) == uint.MaxValue, "Emphasis in case this isn't obvious :P");
+		int fmi = -1; // Will be treated as unsigned later below
 		int lmi = 0;
 
 		using (var cmd = db.CreateCommand()) {
