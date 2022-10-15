@@ -39,6 +39,12 @@ internal readonly struct FieldSpec {
 		get => (int)((Value & EnumGroup_StoreType_Mask) >> EnumGroup_Shift);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public FieldSpec ClearEnumGroup() {
+		const uint Mask = ~((uint)EnumGroup_StoreType_Mask >> EnumGroup_Shift << EnumGroup_Shift);
+		return Value & Mask;
+	}
+
 	public FieldStoreType StoreType {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		get => (FieldStoreType)(Value & StoreType_Mask);
