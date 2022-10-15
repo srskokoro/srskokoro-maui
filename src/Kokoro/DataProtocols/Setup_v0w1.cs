@@ -297,8 +297,8 @@ internal static class Setup_v0w1 {
 			// The field index.
 			$"idx INTEGER NOT NULL AS (idx_e_sto >> 8)," +
 
-			// The group number of the field enum to use for this field. Zero if
-			// the field doesn't use an enumeration for its values.
+			// The group number of the field enum group to use for this field.
+			// Zero if the field doesn't use an enumeration for its values.
 			$"enum INTEGER NOT NULL AS ((idx_e_sto & 0xFF) >> 2)," +
 
 			// The field store type:
