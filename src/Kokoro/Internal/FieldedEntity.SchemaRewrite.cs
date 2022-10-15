@@ -1374,6 +1374,8 @@ partial class FieldedEntity {
 			while (r.Read()) {
 				r.DAssert_Name(0, "idx_e_sto");
 				FieldSpec fspec = r.GetInt32(0);
+				fspec.DAssert_Valid();
+
 				Debug.Assert(fspec.StoreType == FieldStoreType.Shared, "Should only do this for shared fields");
 
 				int enumGroup = fspec.EnumGroup;
