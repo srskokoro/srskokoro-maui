@@ -395,7 +395,7 @@ internal static class Setup_v0w1 {
 
 			// --
 
-			// The field enum 's index under the field enum group.
+			// The field enum's index under the field enum group.
 			$"idx INTEGER NOT NULL AS (idx_e >> 6)," +
 
 			// The group number of the owning field enum group under the schema.
