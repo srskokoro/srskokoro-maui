@@ -1342,7 +1342,8 @@ partial class FieldedEntity {
 			cmd.Set(
 				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
 				$"SELECT {Cols},{Vals} FROM {Table}\n" +
-				$"WHERE schema=$bareSchema AND loc=1"
+				$"WHERE schema=$bareSchema AND loc=1\n" +
+				$"ORDER BY idx_e_sto" // Needed only to force usage of DB index
 			).AddParams(
 				cmd_schema,
 				cmd_bareSchema
@@ -1362,6 +1363,7 @@ partial class FieldedEntity {
 				$"INSERT INTO {Table}({Cols},{ValCols})\n" +
 				$"SELECT {Cols},{Vals} FROM {Table}\n" +
 				$"WHERE schema=$bareSchema AND loc=0\n" +
+				$"ORDER BY idx_e_sto\n" + // Needed only to force usage of DB index
 				$"RETURNING idx_e_sto"
 			).AddParams(
 				cmd_schema,
