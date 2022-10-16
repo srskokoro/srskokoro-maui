@@ -299,7 +299,7 @@ internal static class Setup_v0w1 {
 
 			// The group number of the field enum group to use for this field.
 			// Zero if the field doesn't use an enumeration for its values.
-			$"enum INTEGER NOT NULL AS ((idx_e_sto & 0xFF) >> 2)," +
+			$"enmGrp INTEGER NOT NULL AS ((idx_e_sto & 0xFF) >> 2)," +
 
 			// The field store type:
 			// - 0b00: Shared
@@ -401,11 +401,11 @@ internal static class Setup_v0w1 {
 			// The group number of the owning field enum group under the schema.
 			// The field enum group is the enumeration that owns the field enum
 			// element (with the latter also referred simply as "field enum").
-			$"enum INTEGER NOT NULL CHECK(enum != 0) AS (idx_e & 0x3F)," +
+			$"enmGrp INTEGER NOT NULL CHECK(enmGrp != 0) AS (idx_e & 0x3F)," +
 
 			$"PRIMARY KEY(schema, idx_e)," +
 
-			$"UNIQUE(schema, enum, type, data)" +
+			$"UNIQUE(schema, enmGrp, type, data)" +
 
 		$")"; // TODO Consider `WITHOUT ROWID` optimization?"
 
@@ -544,7 +544,7 @@ internal static class Setup_v0w1 {
 			// The name of the owning field enum group under the class. The
 			// field enum group is the enumeration that owns the field enum
 			// element (with the latter also referred simply as "field enum").
-			$"enum INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
+			$"enmGrp INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
 			// The field enum's ordinal.
 			$"{Ord_Int32Nn}," +
@@ -555,7 +555,7 @@ internal static class Setup_v0w1 {
 			// The field value data bytes (without the type hint).
 			$"data BLOB NOT NULL," +
 
-			$"PRIMARY KEY(cls, enum, type, data)" +
+			$"PRIMARY KEY(cls, enmGrp, type, data)" +
 
 		$")"; // TODO Consider `WITHOUT ROWID` optimization?"
 }

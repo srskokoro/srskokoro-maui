@@ -1143,9 +1143,9 @@ partial class FieldedEntity {
 		using var cmd = db.CreateCommand();
 		cmd.Set(
 			$"SELECT idx_e FROM {Prot.SchemaToEnum}\n" +
-			$"WHERE (schema,enum,type,data)=($schema,$enum,$type,$data)"
+			$"WHERE (schema,enmGrp,type,data)=($schema,$enmGrp,$type,$data)"
 		).AddParams(
-			new("$schema", schemaId), new("$enum", enumGroup),
+			new("$schema", schemaId), new("$enmGrp", enumGroup),
 			new("$type", origVal.TypeHint),
 			new("$data", origVal.DangerousGetDataBytes())
 		);
