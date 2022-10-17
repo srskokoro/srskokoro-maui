@@ -141,6 +141,32 @@ internal static class Setup_v0w1 {
 
 		$")";
 
+	// Useful for displaying all child items of a given parent item.
+	//
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_Item_C_parent_C_ord_C_uid =
+		$"CREATE INDEX [" +
+			$"IX_{P.Item}_C_parent_C_ord_C_uid" +
+		$"] ON " +
+			$"{P.Item}(parent, ord, uid)" +
+		$"";
+
+	// Useful for looking up all items of a given schema.
+	//
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_Item_C_schema =
+		$"CREATE INDEX [" +
+			$"IX_{P.Item}_C_schema" +
+		$"] ON " +
+			$"{P.Item}(schema)" +
+		$"";
+
 	public const string CreateTable_ItemToColdStore =
 		$"CREATE TABLE {P.ItemToColdStore}(" +
 
@@ -179,6 +205,17 @@ internal static class Setup_v0w1 {
 			$"PRIMARY KEY(item, fld)" +
 
 		$")"; // TODO Consider `WITHOUT ROWID` optimization?"
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_ItemToFloatingField_C_fld =
+		$"CREATE INDEX [" +
+			$"IX_{P.ItemToFloatingField}_C_fld" +
+		$"] ON " +
+			$"{P.ItemToFloatingField}(fld)" +
+		$"";
 
 	// -=-
 
@@ -283,6 +320,17 @@ internal static class Setup_v0w1 {
 
 		$")";
 
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_Schema_C_bareSchema =
+		$"CREATE INDEX [" +
+			$"IX_{P.Schema}_C_bareSchema" +
+		$"] ON " +
+			$"{P.Schema}(bareSchema)" +
+		$"";
+
 	public const string CreateTable_SchemaToField =
 		$"CREATE TABLE {P.SchemaToField}(" +
 
@@ -320,6 +368,17 @@ internal static class Setup_v0w1 {
 			$"UNIQUE(schema, loc, idx)" +
 
 		$") WITHOUT ROWID";
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_SchemaToField_C_fld =
+		$"CREATE INDEX [" +
+			$"IX_{P.SchemaToField}_C_fld" +
+		$"] ON " +
+			$"{P.SchemaToField}(fld)" +
+		$"";
 
 	// NOTE: To utilize this index to query "all local fields" or "all shared
 	// fields", involve all of the indexed columns in the query, i.e., in the
@@ -363,6 +422,17 @@ internal static class Setup_v0w1 {
 			$"PRIMARY KEY(schema, cls)" +
 
 		$") WITHOUT ROWID";
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_SchemaToClass_C_cls =
+		$"CREATE INDEX [" +
+			$"IX_{P.SchemaToClass}_C_cls" +
+		$"] ON " +
+			$"{P.SchemaToClass}(cls)" +
+		$"";
 
 	public const string CreateIndex_IX_SchemaToClass_C_schema_C_ind_C_cls =
 		$"CREATE INDEX [" +
@@ -469,9 +539,24 @@ internal static class Setup_v0w1 {
 			// - Null when unnamed.
 			$"name INTEGER REFERENCES {P.NameId} {OnRowIdFk}," +
 
+			// Also used to optimize FK enforcements, to avoid the costly linear
+			// scan for any dependent row during a parent key update or
+			// deletion. See, “3. Required and Suggested Database Indexes |
+			// SQLite Foreign Key Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
 			$"UNIQUE(man, name)" +
 
 		$")";
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_Class_C_name =
+		$"CREATE INDEX [" +
+			$"IX_{P.Class}_C_name" +
+		$"] ON " +
+			$"{P.Class}(name)" +
+		$"";
 
 	public const string CreateTable_ClassToField =
 		$"CREATE TABLE {P.ClassToField}(" +
@@ -509,6 +594,28 @@ internal static class Setup_v0w1 {
 
 		$") WITHOUT ROWID";
 
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_ClassToField_C_fld =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToField}_C_fld" +
+		$"] ON " +
+			$"{P.ClassToField}(fld)" +
+		$"";
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_ClassToField_C_enmGrp =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToField}_C_enmGrp" +
+		$"] ON " +
+			$"{P.ClassToField}(enmGrp)" +
+		$"";
+
 	public const string CreateIndex_IX_ClassToField_C_cls_C_csum =
 		$"CREATE INDEX [" +
 			$"IX_{P.ClassToField}_C_cls_C_csum" +
@@ -531,6 +638,28 @@ internal static class Setup_v0w1 {
 			$"PRIMARY KEY(cls, incl)" +
 
 		$") WITHOUT ROWID";
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_ClassToInclude_C_incl =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToInclude}_C_incl" +
+		$"] ON " +
+			$"{P.ClassToInclude}(incl)" +
+		$"";
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_ClassToInclude_C_uid =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToInclude}_C_uid" +
+		$"] ON " +
+			$"{P.ClassToInclude}(uid)" +
+		$"";
 
 	public const string CreateIndex_IX_ClassToInclude_C_cls_C_uid =
 		$"CREATE INDEX [" +
@@ -562,4 +691,15 @@ internal static class Setup_v0w1 {
 			$"PRIMARY KEY(cls, enmGrp, type, data)" +
 
 		$")"; // TODO Consider `WITHOUT ROWID` optimization?"
+
+	// The index is also used to optimize FK enforcements, to avoid the costly
+	// linear scan for any dependent row during a parent key update or deletion.
+	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
+	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
+	public const string CreateIndex_IX_ClassToEnum_C_enmGrp =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToEnum}_C_enmGrp" +
+		$"] ON " +
+			$"{P.ClassToEnum}(enmGrp)" +
+		$"";
 }
