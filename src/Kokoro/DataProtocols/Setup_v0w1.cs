@@ -340,8 +340,6 @@ internal static class Setup_v0w1 {
 
 			$"idx_e_sto INTEGER NOT NULL CHECK(idx_e_sto {Between_Int32RangeGE0})," +
 
-			$"idx_loc INTEGER NOT NULL AS ((idx << 1) | loc)," +
-
 			// The field index.
 			$"idx INTEGER NOT NULL AS (idx_e_sto >> 8)," +
 
