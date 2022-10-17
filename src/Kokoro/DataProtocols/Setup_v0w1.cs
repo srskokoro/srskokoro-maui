@@ -501,6 +501,10 @@ internal static class Setup_v0w1 {
 			// - 1: Local
 			$"loc INTEGER NOT NULL AS (sto != 0)," +
 
+			// The name of the field enum group to use for this field. Null if
+			// the field doesn't use an enumeration for its values.
+			$"enmGrp INTEGER REFERENCES {P.NameId} {OnRowIdFk}," +
+
 			$"PRIMARY KEY(cls, fld)" +
 
 		$") WITHOUT ROWID";
