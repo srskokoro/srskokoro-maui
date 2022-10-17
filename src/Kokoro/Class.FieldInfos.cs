@@ -530,7 +530,7 @@ partial class Class {
 						cmd_cls, cmd_fld,
 						updCmd_ord = new() { ParameterName = "$ord" },
 						updCmd_sto = new() { ParameterName = "$sto" },
-						updCmd_enmGrp= new() { ParameterName = "$enmGrp" },
+						updCmd_enmGrp = new() { ParameterName = "$enmGrp" },
 						updCmd_csum = new() { ParameterName = "$csum" }
 					);
 					Debug.Assert(
