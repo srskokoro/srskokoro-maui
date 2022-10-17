@@ -64,9 +64,9 @@ partial class Class {
 	}
 
 	public List<EnumInfo>? GetEnumGroup(StringKey name) {
-		var enums = _EnumGroups;
-		if (enums != null) {
-			enums.TryGetValue(name, out var elems);
+		var enumGroups = _EnumGroups;
+		if (enumGroups != null) {
+			enumGroups.TryGetValue(name, out var elems);
 			return elems;
 		}
 		return null;
@@ -103,17 +103,17 @@ partial class Class {
 	/// <seealso cref="SetEnumGroupAsLoaded(StringKey, List{EnumInfo}?)"/>
 	[SkipLocalsInit]
 	public void SetCachedEnumGroup(StringKey name, List<EnumInfo>? elems) {
-		var enums = _EnumGroups;
-		if (enums == null) {
+		var enumGroups = _EnumGroups;
+		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
 		}
 
 	Set:
-		enums[name] = elems;
+		enumGroups[name] = elems;
 
 		{
-			var changes = enums.Changes;
+			var changes = enumGroups.Changes;
 			// Optimized for the common case
 			if (changes == null) {
 				return;
@@ -127,7 +127,7 @@ partial class Class {
 		}
 
 	Init:
-		_EnumGroups = enums = new();
+		_EnumGroups = enumGroups = new();
 		goto Set;
 	}
 
@@ -136,20 +136,20 @@ partial class Class {
 	/// <see cref="SetCachedEnumGroup(StringKey, List{EnumInfo}?)"/>.
 	/// </summary>
 	public void SetEnumGroupAsLoaded(StringKey name, List<EnumInfo>? elems) {
-		var enums = _EnumGroups;
-		if (enums == null) {
+		var enumGroups = _EnumGroups;
+		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
 			goto Init;
 		}
 
-		enums.Changes?.Remove(name);
+		enumGroups.Changes?.Remove(name);
 
 	Set:
-		enums[name] = elems;
+		enumGroups[name] = elems;
 		return;
 
 	Init:
-		_EnumGroups = enums = new();
+		_EnumGroups = enumGroups = new();
 		goto Set;
 	}
 
@@ -162,18 +162,18 @@ partial class Class {
 
 
 	public void UnloadEnumGroup(StringKey name) {
-		var enums = _EnumGroups;
-		if (enums != null) {
-			enums.Changes?.Remove(name);
-			enums.Remove(name);
+		var enumGroups = _EnumGroups;
+		if (enumGroups != null) {
+			enumGroups.Changes?.Remove(name);
+			enumGroups.Remove(name);
 		}
 	}
 
 	public void UnloadEnumGroups() {
-		var enums = _EnumGroups;
-		if (enums != null) {
-			enums.Changes = null;
-			enums.Clear();
+		var enumGroups = _EnumGroups;
+		if (enumGroups != null) {
+			enumGroups.Changes = null;
+			enumGroups.Clear();
 		}
 	}
 }
