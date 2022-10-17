@@ -261,6 +261,16 @@ partial class Class {
 		).AddParams(new("$cls", _RowId));
 
 		using var r = cmd.ExecuteReader();
+
+		var infos = _FieldInfos;
+		if (infos == null) {
+			_FieldInfos = infos = new();
+		} else {
+			// Pending changes will be discarded
+			infos.Changes = null;
+			infos.Clear();
+		}
+
 		while (r.Read()) {
 			r.DAssert_Name(0, "ord");
 			int ordinal = r.GetInt32(0);
@@ -281,8 +291,7 @@ partial class Class {
 			Debug.Assert(name is not null, "An FK constraint should've been " +
 				"enforced to ensure this doesn't happen.");
 
-			// Pending changes will be discarded
-			SetFieldInfoAsLoaded(name, info);
+			infos[name] = info;
 		}
 	}
 
