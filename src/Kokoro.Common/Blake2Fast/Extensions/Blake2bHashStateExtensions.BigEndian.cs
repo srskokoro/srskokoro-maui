@@ -111,8 +111,8 @@ static partial class Blake2bHashStateExtensions {
 	// --
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void UpdateWithBELength(ref this Blake2bHashState state, ReadOnlySpan<byte> input) {
-		state.UpdateBE(input.Length);
+	public static void UpdateWithBELength(ref this Blake2bHashState state, ReadOnlySpan<byte> input, int lengthOffset = 0) {
+		state.UpdateBE(input.Length + lengthOffset);
 		state.Update(input);
 	}
 }
