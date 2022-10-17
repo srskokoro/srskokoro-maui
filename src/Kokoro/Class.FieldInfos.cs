@@ -241,7 +241,7 @@ partial class Class {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set($"SELECT ord,sto,fld FROM {Prot.ClassToField} WHERE cls=$cls")
-			.AddParams(new() { ParameterName = "$cls" });
+			.AddParams(new("$cls", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
@@ -279,7 +279,7 @@ partial class Class {
 
 		using var cmd = db.CreateCommand();
 		cmd.Set($"SELECT fld FROM {Prot.ClassToField} WHERE cls=$cls")
-			.AddParams(new() { ParameterName = "$cls" });
+			.AddParams(new("$cls", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
