@@ -437,8 +437,8 @@ partial class Class {
 					// NOTE: `INSERT … ON CONFLICT DO NOTHING` ignores rows that
 					// violate uniqueness constraints only (unlike `INSERT OR IGNORE …`)
 					insCmd.Set(
-						$"INSERT INTO {Prot.ClassToInclude}(cls,incl)\n" +
-						$"VALUES($cls,$incl)\n" +
+						$"INSERT INTO {Prot.ClassToInclude}(cls,incl,uid)\n" +
+						$"SELECT $cls,rowid,uid FROM {Prot.Class} WHERE rowid=$incl\n" +
 						$"ON CONFLICT DO NOTHING"
 					).AddParams(
 						cmd_cls, cmd_incl
