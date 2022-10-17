@@ -23,14 +23,23 @@ partial class Class {
 		private readonly FieldStoreType _StoreType;
 		private readonly int _Ordinal;
 
+		private readonly StringKey? _EnumGroup;
+
 		public readonly int Ordinal => _Ordinal;
 		public readonly FieldStoreType StoreType => _StoreType;
 
+		public readonly StringKey? EnumGroup => _EnumGroup;
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public FieldInfo(int ordinal, FieldStoreType storeType) {
+		public FieldInfo(int ordinal, FieldStoreType storeType)
+			: this(ordinal, null, storeType) { }
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public FieldInfo(int ordinal, StringKey? enumGroup, FieldStoreType storeType) {
 			_IsLoaded = true;
 			_Ordinal = ordinal;
 			_StoreType = storeType;
+			_EnumGroup = enumGroup;
 		}
 	}
 
@@ -197,7 +206,8 @@ partial class Class {
 		// Load field info
 		using (var cmd = db.CreateCommand()) {
 			cmd.Set(
-				$"SELECT ord,sto FROM {Prot.ClassToField}\n" +
+				$"SELECT ord,sto,ifnull(enmGrp,0)enmGrp\n" +
+				$"FROM {Prot.ClassToField}\n" +
 				$"WHERE cls=$cls AND fld=$fld"
 			).AddParams(
 				new("$cls", _RowId),
@@ -213,7 +223,11 @@ partial class Class {
 				var storeType = (FieldStoreType)r.GetByte(1);
 				storeType.DAssert_Defined();
 
-				FieldInfo info = new(ordinal, storeType);
+				r.DAssert_Name(2, "enmGrp");
+				long enumGroupId = r.GetInt64(2);
+				StringKey? enumGroup = enumGroupId == 0 ? null : db.LoadStaleName(enumGroupId);
+
+				FieldInfo info = new(ordinal, enumGroup, storeType);
 
 				// Pending changes will be discarded
 				SetFieldInfoAsLoaded(name, info);
@@ -240,8 +254,11 @@ partial class Class {
 		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
 		using var cmd = db.CreateCommand();
-		cmd.Set($"SELECT ord,sto,fld FROM {Prot.ClassToField} WHERE cls=$cls")
-			.AddParams(new("$cls", _RowId));
+		cmd.Set(
+			$"SELECT ord,sto,ifnull(enmGrp,0)enmGrp,fld\n" +
+			$"FROM {Prot.ClassToField}\n" +
+			$"WHERE cls=$cls"
+		).AddParams(new("$cls", _RowId));
 
 		using var r = cmd.ExecuteReader();
 		while (r.Read()) {
@@ -252,10 +269,14 @@ partial class Class {
 			var storeType = (FieldStoreType)r.GetByte(1);
 			storeType.DAssert_Defined();
 
-			FieldInfo info = new(ordinal, storeType);
+			r.DAssert_Name(2, "enmGrp");
+			long enumGroupId = r.GetInt64(2);
+			StringKey? enumGroup = enumGroupId == 0 ? null : db.LoadStaleName(enumGroupId);
 
-			r.DAssert_Name(2, "fld");
-			long fld = r.GetInt64(2);
+			FieldInfo info = new(ordinal, enumGroup, storeType);
+
+			r.DAssert_Name(3, "fld");
+			long fld = r.GetInt64(3);
 			var name = db.LoadStaleName(fld);
 			Debug.Assert(name is not null, "An FK constraint should've been " +
 				"enforced to ensure this doesn't happen.");
@@ -461,6 +482,7 @@ partial class Class {
 		SqliteParameter
 			updCmd_ord = null!,
 			updCmd_sto = null!,
+			updCmd_enmGrp = null!,
 			updCmd_csum = null!;
 
 		try {
@@ -491,14 +513,15 @@ partial class Class {
 				{
 					updCmd = db.CreateCommand();
 					updCmd.Set(
-						$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto)\n" +
-						$"VALUES($cls,$fld,$csum,$ord,$sto)\n" +
+						$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto,enmGrp)\n" +
+						$"VALUES($cls,$fld,$csum,$ord,$sto,$enmGrp)\n" +
 						$"ON CONFLICT DO UPDATE\n" +
-						$"SET csum=$csum,ord=$ord,sto=$sto"
+						$"SET csum=$csum,ord=$ord,sto=$sto,enmGrp=$enmGrp"
 					).AddParams(
 						cmd_cls, cmd_fld,
 						updCmd_ord = new() { ParameterName = "$ord" },
 						updCmd_sto = new() { ParameterName = "$sto" },
+						updCmd_enmGrp= new() { ParameterName = "$enmGrp" },
 						updCmd_csum = new() { ParameterName = "$csum" }
 					);
 					Debug.Assert(
@@ -516,6 +539,8 @@ partial class Class {
 					/// 0. `fieldName` in UTF8 with a (32-bit) length prepended
 					/// 1. `info.Ordinal`
 					/// 2. `info.StoreType`
+					/// 3. `info.EnumGroup` in UTF8 with 1 plus the (32-bit)
+					/// length prepended, or `0` if `info.EnumGroup` is null.
 					///
 					/// Unless stated otherwise, all integer inputs should be
 					/// consumed in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
@@ -554,6 +579,16 @@ partial class Class {
 					Debug.Assert(sizeof(FieldStoreTypeInt) == 1);
 					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
 					Debug.Assert(2 == hasher_fld_debug_i++);
+
+					var enumGroup = info.EnumGroup;
+					if (enumGroup is null) {
+						updCmd_enmGrp.Value = DBNull.Value;
+						hasher_fld.UpdateLE(0);
+					} else {
+						updCmd_enmGrp.Value = db.LoadStaleOrEnsureNameId(enumGroup);
+						hasher_fld.UpdateWithLELength(enumGroup.Value.ToUTF8Bytes(), lengthOffset: 1);
+					}
+					Debug.Assert(3 == hasher_fld_debug_i++);
 
 					byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
 					updCmd_csum.Value = csum;

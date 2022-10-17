@@ -564,8 +564,9 @@ internal static class Setup_v0w1 {
 			$"fld INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
 			// The cryptographic checksum of the field definition's primary
-			// data, which includes the `NameId.name` of this field, but
-			// excludes the `cls` and `fld` columns.
+			// data, which includes the `NameId.name` of this field and that of
+			// the `enmGrp`, but excludes the ROWID columns (i.e., `cls`, `fld`
+			// and `enmGrp`).
 			//
 			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
 			$"csum BLOB NOT NULL," +
