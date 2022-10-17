@@ -628,10 +628,12 @@ internal static class Setup_v0w1 {
 			$"cls INTEGER NOT NULL REFERENCES {P.Class} {OnRowIdFkCascDel} {WithFkDfr}," +
 
 			// The included entity class.
-			$"incl INTEGER NOT NULL REFERENCES {P.Class} {OnRowIdFk}," +
+			$"incl INTEGER NOT NULL," +
 
 			// The included entity class's `uid`
-			$"uid BLOB NOT NULL REFERENCES {P.Class}(uid) {OnUidFk}," +
+			$"uid BLOB NOT NULL," +
+
+			$"FOREIGN KEY(incl, uid) REFERENCES {P.Class}(rowid, uid) ON UPDATE CASCADE," +
 
 			$"PRIMARY KEY(cls, incl)" +
 
@@ -641,22 +643,11 @@ internal static class Setup_v0w1 {
 	// linear scan for any dependent row during a parent key update or deletion.
 	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
 	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
-	public const string CreateIndex_IX_ClassToInclude_C_incl =
+	public const string CreateIndex_IX_ClassToInclude_C_incl_C_uid =
 		$"CREATE INDEX [" +
-			$"IX_{P.ClassToInclude}_C_incl" +
+			$"IX_{P.ClassToInclude}_C_incl_C_uid" +
 		$"] ON " +
-			$"{P.ClassToInclude}(incl)" +
-		$"";
-
-	// The index is also used to optimize FK enforcements, to avoid the costly
-	// linear scan for any dependent row during a parent key update or deletion.
-	// See, “3. Required and Suggested Database Indexes | SQLite Foreign Key
-	// Support” -- https://www.sqlite.org/foreignkeys.html#fk_indexes
-	public const string CreateIndex_IX_ClassToInclude_C_uid =
-		$"CREATE INDEX [" +
-			$"IX_{P.ClassToInclude}_C_uid" +
-		$"] ON " +
-			$"{P.ClassToInclude}(uid)" +
+			$"{P.ClassToInclude}(incl, uid)" +
 		$"";
 
 	public const string CreateIndex_IX_ClassToInclude_C_cls_C_uid =
