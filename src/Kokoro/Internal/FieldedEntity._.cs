@@ -395,9 +395,9 @@ public abstract partial class FieldedEntity : DataEntity, IEnumerable<KeyValuePa
 	private protected static void E_FloatingFieldDataTooLarge(KokoroSqliteDb db, uint currentSize) {
 		long limit = SQLitePCL.raw.sqlite3_limit(db.Handle, SQLitePCL.raw.SQLITE_LIMIT_LENGTH, -1);
 		throw new InvalidOperationException(
-			$"Total number of bytes for floating field data " +
-			$"{(currentSize <= limit ? "" : $"(currently {currentSize}) ")}" +
-			$"exceeded the limit of {limit} bytes.");
+			$"Total number of bytes for floating field data (currently " +
+			$"{currentSize}) caused the DB row to exceed the limit of {limit}" +
+			$" bytes.");
 	}
 
 	// --
