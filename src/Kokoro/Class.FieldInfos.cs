@@ -495,7 +495,8 @@ partial class Class {
 			updCmd_csum = null!;
 
 		try {
-			do {
+			{
+			Loop:
 				var (fieldName, info) = changes_iter.Current;
 				long fld;
 				if (info._IsLoaded) {
@@ -514,7 +515,7 @@ partial class Class {
 					} else {
 						// Deletion requested, but there's nothing to delete, as
 						// the field name is nonexistent.
-						continue;
+						goto Continue;
 					}
 				}
 
@@ -605,7 +606,7 @@ partial class Class {
 					int updated = updCmd.ExecuteNonQuery();
 					Debug.Assert(updated == 1, $"Updated: {updated}");
 
-					continue;
+					goto Continue;
 				}
 
 			InitToDeleteFieldInfo:
@@ -631,10 +632,16 @@ partial class Class {
 					// the field info didn't exist in the first place.
 					Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
 
-					continue;
+					goto Continue;
 				}
 
-			} while (changes_iter.MoveNext());
+			Continue:
+				if (changes_iter.MoveNext()) {
+					// This becomes a conditional jump backward -- similar to a
+					// `do…while` loop.
+					goto Loop;
+				}
+			}
 
 		} finally {
 			updCmd?.Dispose();
