@@ -518,27 +518,6 @@ partial class Class {
 				}
 			}
 
-		InitToUpdateFieldInfo:
-			{
-				updCmd = db.CreateCommand();
-				updCmd.Set(
-					$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto,enmGrp)\n" +
-					$"VALUES($cls,$fld,$csum,$ord,$sto,$enmGrp)\n" +
-					$"ON CONFLICT DO UPDATE\n" +
-					$"SET csum=$csum,ord=$ord,sto=$sto,enmGrp=$enmGrp"
-				).AddParams(
-					cmd_cls, cmd_fld,
-					updCmd_ord = new() { ParameterName = "$ord" },
-					updCmd_sto = new() { ParameterName = "$sto" },
-					updCmd_enmGrp = new() { ParameterName = "$enmGrp" },
-					updCmd_csum = new() { ParameterName = "$csum" }
-				);
-				Debug.Assert(
-					cmd_cls.Value != null
-				);
-				goto UpdateFieldInfo;
-			}
-
 		UpdateFieldInfo:
 			{
 				var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
@@ -608,6 +587,48 @@ partial class Class {
 				goto Continue;
 			}
 
+		DeleteFieldInfo:
+			{
+				cmd_fld.Value = fld;
+
+				int deleted = delCmd.ExecuteNonQuery();
+				// NOTE: It's possible for nothing to be deleted, for when the
+				// field info didn't exist in the first place.
+				Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
+
+				goto Continue;
+			}
+
+		Continue:
+			if (!changes_iter.MoveNext()) {
+				goto Break;
+			} else {
+				// This becomes a conditional jump backward -- similar to a
+				// `do…while` loop.
+				goto Loop;
+			}
+
+		InitToUpdateFieldInfo:
+			{
+				updCmd = db.CreateCommand();
+				updCmd.Set(
+					$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto,enmGrp)\n" +
+					$"VALUES($cls,$fld,$csum,$ord,$sto,$enmGrp)\n" +
+					$"ON CONFLICT DO UPDATE\n" +
+					$"SET csum=$csum,ord=$ord,sto=$sto,enmGrp=$enmGrp"
+				).AddParams(
+					cmd_cls, cmd_fld,
+					updCmd_ord = new() { ParameterName = "$ord" },
+					updCmd_sto = new() { ParameterName = "$sto" },
+					updCmd_enmGrp = new() { ParameterName = "$enmGrp" },
+					updCmd_csum = new() { ParameterName = "$csum" }
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto UpdateFieldInfo;
+			}
+
 		InitToDeleteFieldInfo:
 			{
 				delCmd = db.CreateCommand();
@@ -622,24 +643,8 @@ partial class Class {
 				goto DeleteFieldInfo;
 			}
 
-		DeleteFieldInfo:
-			{
-				cmd_fld.Value = fld;
-
-				int deleted = delCmd.ExecuteNonQuery();
-				// NOTE: It's possible for nothing to be deleted, for when the
-				// field info didn't exist in the first place.
-				Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
-
-				goto Continue;
-			}
-
-		Continue:
-			if (changes_iter.MoveNext()) {
-				// This becomes a conditional jump backward -- similar to a
-				// `do…while` loop.
-				goto Loop;
-			}
+		Break:
+			;
 
 		} finally {
 			updCmd?.Dispose();
