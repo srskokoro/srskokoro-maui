@@ -590,7 +590,7 @@ partial class FieldedEntity {
 			/// 0. The bare schema `usum`.
 			/// 1. The result of each shared field's <see cref="FieldVal.FeedTo(ref Blake2bHashState)"/>
 			/// method, including those with null field values, provided that,
-			/// the aforesaid method treats each shared field data as several
+			/// the aforesaid method treats each shared field value as several
 			/// inputs composed of the following, in strict order:
 			///   1.1. The type hint, as a 32-bit integer.
 			///   1.2. If not a null field value (indicated by the type hint),
