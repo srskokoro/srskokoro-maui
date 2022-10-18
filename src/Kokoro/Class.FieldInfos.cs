@@ -495,7 +495,6 @@ partial class Class {
 			updCmd_csum = null!;
 
 		try {
-			{
 		Loop:
 			var (fieldName, info) = changes_iter.Current;
 			long fld;
@@ -640,7 +639,6 @@ partial class Class {
 				// This becomes a conditional jump backward -- similar to a
 				// `do…while` loop.
 				goto Loop;
-			}
 			}
 
 		} finally {
