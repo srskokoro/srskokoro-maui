@@ -512,8 +512,8 @@ partial class Class {
 					} else
 						goto InitToDeleteFieldInfo;
 				} else {
-					// Deletion requested, but there's nothing to delete, as
-					// the field name is nonexistent.
+					// Deletion requested, but there's nothing to delete, as the
+					// field name is nonexistent.
 					goto Continue;
 				}
 			}
@@ -542,8 +542,8 @@ partial class Class {
 		UpdateFieldInfo:
 			{
 				var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
-				/// WARNING: The expected order of inputs to be fed to the
-				/// above hasher must be strictly as follows:
+				/// WARNING: The expected order of inputs to be fed to the above
+				/// hasher must be strictly as follows:
 				///
 				/// 0. `fieldName` in UTF8 with a (32-bit) length prepended
 				/// 1. `info.Ordinal`
@@ -568,9 +568,9 @@ partial class Class {
 				/// expected to be fixed-sized (e.g., not length-prepended).
 				///
 				/// The version varint needs not to change if further input
-				/// entries were to be appended (from the list of inputs
-				/// above), provided that the last input entry has a clear
-				/// termination, i.e., fixed-sized or length-prepended.
+				/// entries were to be appended (from the list of inputs above),
+				/// provided that the last input entry has a clear termination,
+				/// i.e., fixed-sized or length-prepended.
 				///
 				int hasher_fld_debug_i = 0; // Used only to help assert the above
 
@@ -627,8 +627,8 @@ partial class Class {
 				cmd_fld.Value = fld;
 
 				int deleted = delCmd.ExecuteNonQuery();
-				// NOTE: It's possible for nothing to be deleted, for when
-				// the field info didn't exist in the first place.
+				// NOTE: It's possible for nothing to be deleted, for when the
+				// field info didn't exist in the first place.
 				Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
 
 				goto Continue;
