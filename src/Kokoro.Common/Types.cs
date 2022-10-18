@@ -19,4 +19,8 @@ internal static class Types {
 	[Conditional("DEBUG")]
 	public static void DAssert_IsReferenceOrContainsReferences<T>(in T var)
 		=> Debug.Assert(IsReferenceOrContainsReferences(var));
+
+	[Conditional("DEBUG")]
+	public static void DAssert_IsValueType<T>(in T var)
+		=> Debug.Assert(typeof(T).IsValueType);
 }
