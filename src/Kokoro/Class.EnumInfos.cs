@@ -1,5 +1,9 @@
 ﻿namespace Kokoro;
+using Blake2Fast;
+using Blake2Fast.Implementation;
+using Kokoro.Common.Util;
 using Kokoro.Internal.Sqlite;
+using Microsoft.Data.Sqlite;
 using System.Runtime.InteropServices;
 
 partial class Class {
@@ -416,5 +420,254 @@ partial class Class {
 			if (Exists)
 				InternalLoadEnumGroupNames(db);
 		}
+	}
+
+	// --
+
+	/// <remarks>
+	/// CONTRACT:
+	/// <br/>- Must be called while inside a transaction (ideally, using <see cref="NestingWriteTransaction"/>).
+	/// <para>
+	/// Violation of the above contract may result in undefined behavior.
+	/// </para>
+	/// </remarks>
+	[SkipLocalsInit]
+	private static void InternalSaveEnumGroups(KokoroSqliteDb db, Dictionary<StringKey, List<EnumInfo>?> changes, long clsId) {
+		var changes_iter = changes.GetEnumerator();
+		if (!changes_iter.MoveNext()) goto NoChanges;
+
+		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
+
+		SqliteCommand?
+			updCmd = null,
+			delCmd = null;
+
+		SqliteParameter
+			cmd_cls = new("$cls", clsId),
+			cmd_enmGrp = new() { ParameterName = "$enmGrp" };
+
+		SqliteParameter
+			updCmd_ord = null!,
+			updCmd_type = null!,
+			updCmd_data = null!,
+			updCmd_csum = null!;
+
+		try {
+		Loop:
+			var (enumGroup, elems) = changes_iter.Current;
+			long enumGroupId;
+			if (elems != null) {
+				if (elems.Count != 0) {
+					goto HasElems;
+				} else {
+					goto EmptyElems;
+				}
+			} else {
+				goto NoElems;
+			}
+
+		EmptyElems:
+			elems = null;
+		NoElems:
+			enumGroupId = db.LoadStaleNameId(enumGroup);
+			if (enumGroupId != 0) {
+				goto DoProcess;
+			} else {
+				// Deletion requested, but there's nothing to delete, as the
+				// enum group name is nonexistent.
+				goto Continue;
+			}
+
+		HasElems:
+			enumGroupId = db.LoadStaleOrEnsureNameId(enumGroup);
+		DoProcess:
+			if (delCmd != null) {
+				goto DeleteEnumGroup;
+			} else {
+				goto InitToDeleteEnumGroup;
+			}
+
+		DeleteEnumGroup:
+			{
+				cmd_enmGrp.Value = enumGroupId;
+
+				// NOTE: It's possible for nothing to be deleted, for when the
+				// enum group didn't exist in the first place.
+				delCmd.ExecuteNonQuery();
+
+				if (elems != null) {
+					if (updCmd != null) {
+						goto UpdateEnumGroup;
+					} else {
+						goto InitToUpdateEnumGroup;
+					}
+				} else {
+					// Nothing to update.
+					goto Continue;
+				}
+			}
+
+		UpdateEnumGroup:
+			{
+				// Used to generate each field enum element's `csum`
+				var hasher_base = Blake2b.CreateIncrementalHasher(EnumInfoCsumDigestLength);
+				/// WARNING: The expected order of inputs to be fed to the above
+				/// hasher must be strictly as follows:
+				///
+				/// 0. `enumGroup` name string in UTF8 with its (32-bit) length
+				/// prepended.
+				/// 1. `elem.Ordinal`
+				/// 2. `elem.Value`'s <see cref="FieldVal.FeedTo(ref Blake2bHashState)"/>
+				/// method, provided that, the aforesaid method treats the field
+				/// value as several inputs composed of the following, in strict
+				/// order:
+				///   2.1. The type hint, as a 32-bit integer.
+				///   2.2. If not a null field value (indicated by the type
+				///   hint), then the field value data bytes with its (32-bit)
+				///   length prepended.
+				///     - NOTE: The length said here is the length of the field
+				///     value data bytes, excluding the type hint.
+				///
+				/// Unless stated otherwise, all integer inputs should be
+				/// consumed in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
+				///
+				/// The resulting hash BLOB shall be prepended with a version
+				/// varint. Should any of the following happens, the version
+				/// varint must change:
+				///
+				/// - The resulting hash BLOB length changes.
+				/// - The algorithm for the resulting hash BLOB changes.
+				/// - An input entry (from the list of inputs above) was
+				/// removed.
+				/// - The order of an input entry (from the list of inputs
+				/// above) was changed or shifted.
+				/// - An input entry's size (in bytes) changed while it's
+				/// expected to be fixed-sized (e.g., not length-prepended).
+				///
+				/// The version varint needs not to change if further input
+				/// entries were to be appended (from the list of inputs above),
+				/// provided that the last input entry has a clear termination,
+				/// i.e., fixed-sized or length-prepended.
+
+				Debug.Assert(cmd_enmGrp.Value is long v && v == enumGroupId);
+				hasher_base.UpdateWithLELength(enumGroup.Value.ToUTF8Bytes());
+
+				foreach (var elem in elems) {
+					Types.DAssert_IsValueType(hasher_base);
+					var hasher = hasher_base; // Value copy semantics
+
+					// Used only to help assert the hashing contract
+					int hasher_debug_i = 1;
+
+					updCmd_ord.Value = elem.Ordinal;
+					hasher.UpdateLE(elem.Ordinal);
+					Debug.Assert(1 == hasher_debug_i++);
+
+					var fval = elem.Value;
+					updCmd_type.Value = (long)(FieldTypeHintInt)fval.TypeHint;
+					updCmd_data.Value = fval.DangerousGetDataBytes();
+					fval.FeedTo(ref hasher);
+					Debug.Assert(2 == hasher_debug_i++);
+
+					byte[] csum = FinishWithEnumInfoCsum(ref hasher);
+					updCmd_csum.Value = csum;
+
+					try {
+						int updated = updCmd.ExecuteNonQuery();
+						Debug.Assert(updated == 1, $"Updated: {updated}");
+					} catch (SqliteException ex) when (
+						ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
+					) {
+						E_EnumFValDataTooLarge(db, (uint)fval.Data.Length);
+						return;
+					}
+
+					// Allow early GC
+					updCmd_data.Value = null;
+				}
+
+				goto Continue;
+			}
+
+		Continue:
+			if (!changes_iter.MoveNext()) {
+				goto Break;
+			} else {
+				// This becomes a conditional jump backward -- similar to a
+				// `do…while` loop.
+				goto Loop;
+			}
+
+		InitToDeleteEnumGroup:
+			{
+				delCmd = db.CreateCommand();
+				delCmd.Set(
+					$"DELETE FROM {Prot.ClassToEnum} WHERE (cls,enmGrp)=($cls,$enmGrp)"
+				).AddParams(
+					cmd_cls, cmd_enmGrp
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto DeleteEnumGroup;
+			}
+
+		InitToUpdateEnumGroup:
+			{
+				updCmd = db.CreateCommand();
+				updCmd.Set(
+					$"INSERT INTO {Prot.ClassToEnum}(cls,enmGrp,csum,ord,type,data)\n" +
+					$"VALUES($cls,$enmGrp,$csum,$ord,$type,$data)"
+				).AddParams(
+					cmd_cls, cmd_enmGrp,
+					updCmd_ord = new() { ParameterName = "$ord" },
+					updCmd_type = new() { ParameterName = "$type" },
+					updCmd_data = new() { ParameterName = "$data" },
+					updCmd_csum = new() { ParameterName = "$csum" }
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto UpdateEnumGroup;
+			}
+
+		Break:
+			;
+
+		} finally {
+			updCmd?.Dispose();
+			delCmd?.Dispose();
+		}
+
+	NoChanges:
+		;
+	}
+
+	private const int EnumInfoCsumDigestLength = 31; // 248-bit hash
+
+	private static byte[] FinishWithEnumInfoCsum(ref Blake2bHashState hasher) {
+		const int CsumVer = 1; // The version varint
+		const int CsumVerLength = 1; // The varint length is a single byte for now
+		VarInts.DAssert_Equals(stackalloc byte[CsumVerLength] { CsumVer }, CsumVer);
+
+		Span<byte> csum = stackalloc byte[CsumVerLength + EnumInfoCsumDigestLength];
+		hasher.Finish(csum.Slice(CsumVerLength));
+
+		// Prepend version varint
+		csum[0] = CsumVer;
+
+		// TODO In the future, once we're either using `sqlite3_stmt` directly or have replaced `Microsoft.Data.Sqlite`
+		// with a custom version more suited to our needs, rent/stackalloc a buffer for the hash output instead, then
+		// pass that as a `ReadOnlySpan<byte>` to `sqlite3_bind_blob()`.
+		return csum.ToArray();
+	}
+
+	[DoesNotReturn]
+	private static void E_EnumFValDataTooLarge(KokoroSqliteDb db, uint currentSize) {
+		long limit = SQLitePCL.raw.sqlite3_limit(db.Handle, SQLitePCL.raw.SQLITE_LIMIT_LENGTH, -1);
+		throw new InvalidOperationException(
+			$"Total number of bytes for field enum's field value data " +
+			$"(currently {currentSize}) caused the DB row to exceed the limit" +
+			$" of {limit} bytes.");
 	}
 }

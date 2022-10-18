@@ -235,6 +235,14 @@ public sealed partial class Class : DataEntity {
 					InternalSaveIncludes(db, includes, rowid);
 			}
 
+			// Save enum groups
+			// --
+			{
+				var enumGroupChanges = _EnumGroups?.Changes;
+				if (enumGroupChanges != null)
+					InternalSaveEnumGroups(db, enumGroupChanges, rowid);
+			}
+
 			// Save core state
 			// --
 
@@ -292,6 +300,9 @@ public sealed partial class Class : DataEntity {
 
 			HashWithClassIncludes(db, rowid, ref hasher);
 			Debug.Assert(3 == hasher_debug_i++);
+
+			HashWithEnumInfos(db, rowid, ref hasher);
+			Debug.Assert(4 == hasher_debug_i++);
 
 			byte[] csum = FinishWithClassCsum(ref hasher);
 			cmdParams.Add(new("$csum", csum));
@@ -369,6 +380,14 @@ public sealed partial class Class : DataEntity {
 					InternalSaveIncludes(db, includes, rowid);
 			}
 
+			// Save enum groups
+			// --
+			{
+				var enumGroupChanges = _EnumGroups?.Changes;
+				if (enumGroupChanges != null)
+					InternalSaveEnumGroups(db, enumGroupChanges, rowid);
+			}
+
 			// Save core state
 			// --
 
@@ -389,6 +408,8 @@ public sealed partial class Class : DataEntity {
 			/// ordered by `csum` -- see, https://crypto.stackexchange.com/q/54544
 			/// 3. The 512-bit hash of, the list of `uid` data from `<see cref="Prot.ClassToInclude"/>`,
 			/// ordered by `uid`
+			/// 4. The 512-bit hash of, the list of `csum` data from `<see cref="Prot.ClassToEnum"/>`,
+			/// ordered by `csum` -- see, https://crypto.stackexchange.com/q/54544
 			///
 			/// Unless stated otherwise, all integer inputs should be consumed
 			/// in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
@@ -491,6 +512,9 @@ public sealed partial class Class : DataEntity {
 			HashWithClassIncludes(db, rowid, ref hasher);
 			Debug.Assert(3 == hasher_debug_i++);
 
+			HashWithEnumInfos(db, rowid, ref hasher);
+			Debug.Assert(4 == hasher_debug_i++);
+
 			byte[] csum = FinishWithClassCsum(ref hasher);
 			cmdParams.Add(new("$csum", csum));
 
@@ -574,6 +598,30 @@ public sealed partial class Class : DataEntity {
 		}
 
 		hasher.Update(hasher_incls.FinishAndGet(stackalloc byte[hasher_incls_dlen]));
+	}
+
+	private static void HashWithEnumInfos(KokoroSqliteDb db, long cls, ref Blake2bHashState hasher) {
+		const int hasher_enums_dlen = 64; // 512-bit hash
+		var hasher_enums = Blake2b.CreateIncrementalHasher(hasher_enums_dlen);
+
+		using var cmd = db.CreateCommand();
+		cmd.Set(
+			$"SELECT csum\n" +
+			$"FROM {Prot.ClassToEnum}\n" +
+			$"WHERE cls=$cls\n" +
+			$"ORDER BY csum" // See, https://crypto.stackexchange.com/q/54544
+		).AddParams(new("$cls", cls));
+
+		using var r = cmd.ExecuteReader();
+		while (r.Read()) {
+			r.DAssert_Name(0, "csum");
+			// NOTE: Will be an empty span on null (i.e., won't throw NRE)
+			var csum = (ReadOnlySpan<byte>)r.GetBytesOrNull(0);
+			Debug.Assert(csum.Length > 0, $"Unexpected: enum info has no `csum` (under class rowid {cls})");
+			hasher_enums.Update(csum);
+		}
+
+		hasher.Update(hasher_enums.FinishAndGet(stackalloc byte[hasher_enums_dlen]));
 	}
 
 	private const int ClassCsumDigestLength = 31; // 248-bit hash
