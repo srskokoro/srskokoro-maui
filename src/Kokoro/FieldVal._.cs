@@ -21,6 +21,7 @@ public sealed partial class FieldVal : IEquatable<FieldVal> {
 
 	public ReadOnlySpan<byte> Data {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		// Optimized for the non-null `_Data` case, but throws NRE when null.
 		get => _Data.AsDangerousROSpan();
 	}
 
