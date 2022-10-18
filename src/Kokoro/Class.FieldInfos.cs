@@ -496,151 +496,151 @@ partial class Class {
 
 		try {
 			{
-			Loop:
-				var (fieldName, info) = changes_iter.Current;
-				long fld;
-				if (info._IsLoaded) {
-					fld = db.LoadStaleOrEnsureNameId(fieldName);
-					if (updCmd != null) {
-						goto UpdateFieldInfo;
-					} else
-						goto InitToUpdateFieldInfo;
-				} else {
-					fld = db.LoadStaleNameId(fieldName);
-					if (fld != 0) {
-						if (delCmd != null) {
-							goto DeleteFieldInfo;
-						} else
-							goto InitToDeleteFieldInfo;
-					} else {
-						// Deletion requested, but there's nothing to delete, as
-						// the field name is nonexistent.
-						goto Continue;
-					}
-				}
-
-			InitToUpdateFieldInfo:
-				{
-					updCmd = db.CreateCommand();
-					updCmd.Set(
-						$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto,enmGrp)\n" +
-						$"VALUES($cls,$fld,$csum,$ord,$sto,$enmGrp)\n" +
-						$"ON CONFLICT DO UPDATE\n" +
-						$"SET csum=$csum,ord=$ord,sto=$sto,enmGrp=$enmGrp"
-					).AddParams(
-						cmd_cls, cmd_fld,
-						updCmd_ord = new() { ParameterName = "$ord" },
-						updCmd_sto = new() { ParameterName = "$sto" },
-						updCmd_enmGrp = new() { ParameterName = "$enmGrp" },
-						updCmd_csum = new() { ParameterName = "$csum" }
-					);
-					Debug.Assert(
-						cmd_cls.Value != null
-					);
+		Loop:
+			var (fieldName, info) = changes_iter.Current;
+			long fld;
+			if (info._IsLoaded) {
+				fld = db.LoadStaleOrEnsureNameId(fieldName);
+				if (updCmd != null) {
 					goto UpdateFieldInfo;
-				}
-
-			UpdateFieldInfo:
-				{
-					var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
-					/// WARNING: The expected order of inputs to be fed to the
-					/// above hasher must be strictly as follows:
-					///
-					/// 0. `fieldName` in UTF8 with a (32-bit) length prepended
-					/// 1. `info.Ordinal`
-					/// 2. `info.StoreType`
-					/// 3. `info.EnumGroup` in UTF8 with 1 plus the (32-bit)
-					/// length prepended, or `0` if `info.EnumGroup` is null.
-					///
-					/// Unless stated otherwise, all integer inputs should be
-					/// consumed in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
-					///
-					/// The resulting hash BLOB shall be prepended with a version
-					/// varint. Should any of the following happens, the version
-					/// varint must change:
-					///
-					/// - The resulting hash BLOB length changes.
-					/// - The algorithm for the resulting hash BLOB changes.
-					/// - An input entry (from the list of inputs above) was
-					/// removed.
-					/// - The order of an input entry (from the list of inputs
-					/// above) was changed or shifted.
-					/// - An input entry's size (in bytes) changed while it's
-					/// expected to be fixed-sized (e.g., not length-prepended).
-					///
-					/// The version varint needs not to change if further input
-					/// entries were to be appended (from the list of inputs
-					/// above), provided that the last input entry has a clear
-					/// termination, i.e., fixed-sized or length-prepended.
-					///
-					int hasher_fld_debug_i = 0; // Used only to help assert the above
-
-					hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
-					Debug.Assert(0 == hasher_fld_debug_i++);
-
-					cmd_fld.Value = fld;
-
-					updCmd_ord.Value = info.Ordinal;
-					hasher_fld.UpdateLE(info.Ordinal);
-					Debug.Assert(1 == hasher_fld_debug_i++);
-
-					if (!info.StoreType.IsValid()) goto E_InvalidFieldStoreType;
-					updCmd_sto.Value = (FieldStoreTypeInt)info.StoreType;
-					Debug.Assert(sizeof(FieldStoreTypeInt) == 1);
-					hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
-					Debug.Assert(2 == hasher_fld_debug_i++);
-
-					var enumGroup = info.EnumGroup;
-					if (enumGroup is null) {
-						updCmd_enmGrp.Value = DBNull.Value;
-						hasher_fld.UpdateLE(0);
-					} else {
-						updCmd_enmGrp.Value = db.LoadStaleOrEnsureNameId(enumGroup);
-						hasher_fld.UpdateWithLELength(enumGroup.Value.ToUTF8Bytes(), lengthOffset: 1);
-					}
-					Debug.Assert(3 == hasher_fld_debug_i++);
-
-					byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
-					updCmd_csum.Value = csum;
-
-					int updated = updCmd.ExecuteNonQuery();
-					Debug.Assert(updated == 1, $"Updated: {updated}");
-
+				} else
+					goto InitToUpdateFieldInfo;
+			} else {
+				fld = db.LoadStaleNameId(fieldName);
+				if (fld != 0) {
+					if (delCmd != null) {
+						goto DeleteFieldInfo;
+					} else
+						goto InitToDeleteFieldInfo;
+				} else {
+					// Deletion requested, but there's nothing to delete, as
+					// the field name is nonexistent.
 					goto Continue;
 				}
+			}
 
-			InitToDeleteFieldInfo:
-				{
-					delCmd = db.CreateCommand();
-					delCmd.Set(
-						$"DELETE FROM {Prot.ClassToField} WHERE (cls,fld)=($cls,$fld)"
-					).AddParams(
-						cmd_cls, cmd_fld
-					);
-					Debug.Assert(
-						cmd_cls.Value != null
-					);
-					goto DeleteFieldInfo;
+		InitToUpdateFieldInfo:
+			{
+				updCmd = db.CreateCommand();
+				updCmd.Set(
+					$"INSERT INTO {Prot.ClassToField}(cls,fld,csum,ord,sto,enmGrp)\n" +
+					$"VALUES($cls,$fld,$csum,$ord,$sto,$enmGrp)\n" +
+					$"ON CONFLICT DO UPDATE\n" +
+					$"SET csum=$csum,ord=$ord,sto=$sto,enmGrp=$enmGrp"
+				).AddParams(
+					cmd_cls, cmd_fld,
+					updCmd_ord = new() { ParameterName = "$ord" },
+					updCmd_sto = new() { ParameterName = "$sto" },
+					updCmd_enmGrp = new() { ParameterName = "$enmGrp" },
+					updCmd_csum = new() { ParameterName = "$csum" }
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto UpdateFieldInfo;
+			}
+
+		UpdateFieldInfo:
+			{
+				var hasher_fld = Blake2b.CreateIncrementalHasher(FieldInfoCsumDigestLength);
+				/// WARNING: The expected order of inputs to be fed to the
+				/// above hasher must be strictly as follows:
+				///
+				/// 0. `fieldName` in UTF8 with a (32-bit) length prepended
+				/// 1. `info.Ordinal`
+				/// 2. `info.StoreType`
+				/// 3. `info.EnumGroup` in UTF8 with 1 plus the (32-bit)
+				/// length prepended, or `0` if `info.EnumGroup` is null.
+				///
+				/// Unless stated otherwise, all integer inputs should be
+				/// consumed in their little-endian form. <see href="https://en.wikipedia.org/wiki/Endianness"/>
+				///
+				/// The resulting hash BLOB shall be prepended with a version
+				/// varint. Should any of the following happens, the version
+				/// varint must change:
+				///
+				/// - The resulting hash BLOB length changes.
+				/// - The algorithm for the resulting hash BLOB changes.
+				/// - An input entry (from the list of inputs above) was
+				/// removed.
+				/// - The order of an input entry (from the list of inputs
+				/// above) was changed or shifted.
+				/// - An input entry's size (in bytes) changed while it's
+				/// expected to be fixed-sized (e.g., not length-prepended).
+				///
+				/// The version varint needs not to change if further input
+				/// entries were to be appended (from the list of inputs
+				/// above), provided that the last input entry has a clear
+				/// termination, i.e., fixed-sized or length-prepended.
+				///
+				int hasher_fld_debug_i = 0; // Used only to help assert the above
+
+				hasher_fld.UpdateWithLELength(fieldName.Value.ToUTF8Bytes());
+				Debug.Assert(0 == hasher_fld_debug_i++);
+
+				cmd_fld.Value = fld;
+
+				updCmd_ord.Value = info.Ordinal;
+				hasher_fld.UpdateLE(info.Ordinal);
+				Debug.Assert(1 == hasher_fld_debug_i++);
+
+				if (!info.StoreType.IsValid()) goto E_InvalidFieldStoreType;
+				updCmd_sto.Value = (FieldStoreTypeInt)info.StoreType;
+				Debug.Assert(sizeof(FieldStoreTypeInt) == 1);
+				hasher_fld.UpdateLE((FieldStoreTypeInt)info.StoreType);
+				Debug.Assert(2 == hasher_fld_debug_i++);
+
+				var enumGroup = info.EnumGroup;
+				if (enumGroup is null) {
+					updCmd_enmGrp.Value = DBNull.Value;
+					hasher_fld.UpdateLE(0);
+				} else {
+					updCmd_enmGrp.Value = db.LoadStaleOrEnsureNameId(enumGroup);
+					hasher_fld.UpdateWithLELength(enumGroup.Value.ToUTF8Bytes(), lengthOffset: 1);
 				}
+				Debug.Assert(3 == hasher_fld_debug_i++);
 
-			DeleteFieldInfo:
-				{
-					cmd_fld.Value = fld;
+				byte[] csum = FinishWithFieldInfoCsum(ref hasher_fld);
+				updCmd_csum.Value = csum;
 
-					int deleted = delCmd.ExecuteNonQuery();
-					// NOTE: It's possible for nothing to be deleted, for when
-					// the field info didn't exist in the first place.
-					Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
+				int updated = updCmd.ExecuteNonQuery();
+				Debug.Assert(updated == 1, $"Updated: {updated}");
 
-					goto Continue;
-				}
+				goto Continue;
+			}
 
-			Continue:
-				if (changes_iter.MoveNext()) {
-					// This becomes a conditional jump backward -- similar to a
-					// `do…while` loop.
-					goto Loop;
-				}
+		InitToDeleteFieldInfo:
+			{
+				delCmd = db.CreateCommand();
+				delCmd.Set(
+					$"DELETE FROM {Prot.ClassToField} WHERE (cls,fld)=($cls,$fld)"
+				).AddParams(
+					cmd_cls, cmd_fld
+				);
+				Debug.Assert(
+					cmd_cls.Value != null
+				);
+				goto DeleteFieldInfo;
+			}
+
+		DeleteFieldInfo:
+			{
+				cmd_fld.Value = fld;
+
+				int deleted = delCmd.ExecuteNonQuery();
+				// NOTE: It's possible for nothing to be deleted, for when
+				// the field info didn't exist in the first place.
+				Debug.Assert(deleted is 1 or 0, $"Deleted: {deleted}");
+
+				goto Continue;
+			}
+
+		Continue:
+			if (changes_iter.MoveNext()) {
+				// This becomes a conditional jump backward -- similar to a
+				// `do…while` loop.
+				goto Loop;
+			}
 			}
 
 		} finally {
