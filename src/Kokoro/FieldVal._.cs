@@ -21,7 +21,7 @@ public sealed partial class FieldVal : IEquatable<FieldVal> {
 
 	public ReadOnlySpan<byte> Data {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => _Data;
+		get => _Data.AsDangerousROSpan();
 	}
 
 	/// <seealso cref="DangerousResetHashCode()"/>
