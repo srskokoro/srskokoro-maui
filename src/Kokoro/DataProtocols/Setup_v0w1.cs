@@ -669,6 +669,14 @@ internal static class Setup_v0w1 {
 			// element (with the latter also referred simply as "field enum").
 			$"enmGrp INTEGER NOT NULL REFERENCES {P.NameId} {OnRowIdFk}," +
 
+			// The cryptographic checksum of the field enum's primary data,
+			// which includes almost all columns in this table, and also the
+			// `NameId.name` of the `enmGrp`, but excludes the ROWID columns
+			// (i.e., `cls` and `enmGrp`).
+			//
+			// TODO TRIGGER: If `csum` didn't change during an update, raise abort.
+			$"csum BLOB NOT NULL," +
+
 			// The field enum's ordinal.
 			$"{Ord_Int32Nn}," +
 
@@ -691,5 +699,12 @@ internal static class Setup_v0w1 {
 			$"IX_{P.ClassToEnum}_C_enmGrp" +
 		$"] ON " +
 			$"{P.ClassToEnum}(enmGrp)" +
+		$"";
+
+	public const string CreateIndex_IX_ClassToEnum_C_cls_C_csum =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToEnum}_C_cls_C_csum" +
+		$"] ON " +
+			$"{P.ClassToEnum}(cls, csum)" +
 		$"";
 }
