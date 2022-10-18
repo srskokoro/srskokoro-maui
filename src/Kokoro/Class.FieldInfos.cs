@@ -513,7 +513,7 @@ partial class Class {
 							goto InitToDeleteFieldInfo;
 					} else {
 						// Deletion requested, but there's nothing to delete, as
-						// the field is nonexistent.
+						// the field name is nonexistent.
 						continue;
 					}
 				}
