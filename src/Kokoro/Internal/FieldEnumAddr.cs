@@ -70,7 +70,7 @@ internal readonly struct FieldEnumAddr {
 	[Conditional("DEBUG")]
 	private static void DAssert_Valid(int index, int group) {
 		Debug.Assert((uint)index <= (uint)MaxIndex, $"{nameof(Index)}: {index}");
-		Debug.Assert((uint)group <= (uint)MaxGroup, $"{nameof(Group)}: {group}");
+		Debug.Assert((uint)group <= (uint)MaxGroup && group != 0, $"{nameof(Group)}: {group}");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

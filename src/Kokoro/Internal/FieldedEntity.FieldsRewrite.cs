@@ -1154,6 +1154,7 @@ partial class FieldedEntity {
 		if (r.Read()) {
 			r.DAssert_Name(0, "idx_e");
 			FieldEnumAddr enumAddr = r.GetInt32(0);
+			enumAddr.DAssert_Valid();
 			return FieldVal.From(enumAddr);
 		}
 		return origVal;
