@@ -1266,9 +1266,9 @@ partial class FieldedEntity {
 				long clsRowId, long enmGrpId
 			) {
 				ref int enmGrpNum = ref CollectionsMarshal.GetValueRefOrAddDefault(
-					enmGrpMap, key: (clsRowId, enmGrpId), out _
+					enmGrpMap, key: (clsRowId, enmGrpId), out bool exists
 				);
-				if (enmGrpNum == 0) {
+				if (!exists) {
 					enmGrpNum = enmGrpMap.Count;
 					Debug.Assert(enmGrpNum > 0);
 
@@ -1325,14 +1325,16 @@ partial class FieldedEntity {
 					// Check if nothing was actually inserted
 					if (((FieldEnumAddr)enumAddr).Index == 0) {
 						// This becomes a conditional jump forward to not favor it
-						goto UndoMap;
+						goto UndoNumMapping;
 					}
 				}
+
+			Return:
 				return enmGrpNum;
 
-			UndoMap:
-				enmGrpMap.Remove((clsRowId, enmGrpId));
-				return 0;
+			UndoNumMapping:
+				enmGrpNum = 0;
+				goto Return;
 			}
 		}
 
