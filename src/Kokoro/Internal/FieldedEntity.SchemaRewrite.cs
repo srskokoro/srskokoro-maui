@@ -30,18 +30,17 @@ partial class FieldedEntity {
 			public int Ord;
 
 			public string Name;
-#if DEBUG
 			public long ClsRowId;
-#endif
+			public long EnmGrpId;
+
+			public UniqueId ClsUid;
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public FieldInfo(
 				long RowId,
 				int ClsOrd, FieldStoreType Sto, int Ord,
-				string Name
-#if DEBUG
-				, long ClsRowId
-#endif
+				string Name, long ClsRowId, long EnmGrpId,
+				UniqueId ClsUid
 			) {
 				this.RowId = RowId;
 
@@ -50,9 +49,10 @@ partial class FieldedEntity {
 				this.Ord = Ord;
 
 				this.Name = Name;
-#if DEBUG
 				this.ClsRowId = ClsRowId;
-#endif
+				this.EnmGrpId = EnmGrpId;
+
+				this.ClsUid = ClsUid;
 			}
 		}
 
@@ -1030,8 +1030,11 @@ partial class FieldedEntity {
 					$"fld.name name,\n" +
 					$"cls2fld.ord ord,\n" +
 					$"cls2fld.sto sto,\n" +
-					$"cls.ord clsOrd\n" +
-				$"FROM {Prot.Class} cls,{Prot.ClassToField} cls2fld,{Prot.NameId} fld\n" +
+					$"cls.ord clsOrd,\n" +
+					$"ifnull(enmGrp.rowid,0)enmGrp,\n" +
+					$"cls.uid clsUid\n" +
+				$"FROM ({Prot.Class} cls,{Prot.ClassToField} cls2fld,{Prot.NameId} fld)" +
+					$"LEFT JOIN {Prot.NameId} enmGrp ON enmGrp.rowid=cls2fld.enmGrp\n" +
 				$"WHERE cls.rowid=$rowid AND cls2fld.cls=cls.rowid AND fld.rowid=cls2fld.fld"
 			).AddParams(cmd_rowid);
 
@@ -1085,6 +1088,12 @@ partial class FieldedEntity {
 					r.DAssert_Name(4, "clsOrd");
 					int clsOrd = r.GetInt32(4);
 
+					r.DAssert_Name(5, "enmGrp");
+					long enmGrpId = r.GetInt64(5);
+
+					r.DAssert_Name(6, "clsUid");
+					UniqueId clsUid = r.GetUniqueId(6);
+
 					ref int i = ref CollectionsMarshal.GetValueRefOrAddDefault(
 						fldMap, key: fldId, out bool exists
 					);
@@ -1094,10 +1103,8 @@ partial class FieldedEntity {
 						fldList.Add(new(
 							RowId: fldId,
 							ClsOrd: clsOrd, Sto: sto, Ord: ord,
-							Name: name
-#if DEBUG
-							, ClsRowId: cls.RowId
-#endif
+							Name: name, ClsRowId: cls.RowId, EnmGrpId: enmGrpId,
+							ClsUid: clsUid
 						));
 					} else {
 						// Get a `ref` to the already existing entry
@@ -1124,17 +1131,26 @@ partial class FieldedEntity {
 						{
 							var a = ord; var b = fld.Ord;
 							if (a < b) goto ReplaceEntry;
-							//if (a > b) goto LeaveEntry;
+							if (a > b) goto LeaveEntry;
 						}
+						// The enum group, if any, may be different at this
+						// point: the class with the lowest UID gets to define
+						// the enum group to use (if any).
 						{
-#if DEBUG
 							Debug.Assert(cls.RowId != fld.ClsRowId,
 								$"Unexpected! Duplicate rows returned for class-and-field pair:" +
 								$"{Environment.NewLine}Class ID: {cls.RowId}" +
 								$"{Environment.NewLine}Field Name: {name}" +
 								$"{Environment.NewLine}Field ID: {fldId}");
-#endif
-							// Same entry or practically the same
+
+							var a = clsUid; var b = fld.ClsUid;
+							if (a < b) goto ReplaceEntry;
+							//if (a > b) goto LeaveEntry;
+
+							Debug.Assert(a != b, $"Impossible! Two classes " +
+								$"have different ROWIDs ({cls.RowId} and {fld.ClsRowId})" +
+								$" but same UID: {a}");
+
 							goto LeaveEntry;
 						}
 
@@ -1152,10 +1168,8 @@ partial class FieldedEntity {
 						fld = new(
 							RowId: fldId,
 							ClsOrd: clsOrd, Sto: sto, Ord: ord,
-							Name: name
-#if DEBUG
-							, ClsRowId: cls.RowId
-#endif
+							Name: name, ClsRowId: cls.RowId, EnmGrpId: enmGrpId,
+							ClsUid: clsUid
 						);
 					}
 
