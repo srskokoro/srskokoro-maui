@@ -10,11 +10,11 @@ partial class Class {
 
 	private EnumGroups? _EnumGroups;
 
-	private sealed class EnumGroups : Dictionary<StringKey, List<EnumInfo>?> {
+	private sealed class EnumGroups : Dictionary<StringKey, EnumGroupInfo?> {
 		public EnumGroupChanges? Changes;
 	}
 
-	private sealed class EnumGroupChanges : Dictionary<StringKey, List<EnumInfo>?> { }
+	private sealed class EnumGroupChanges : Dictionary<StringKey, EnumGroupInfo?> { }
 
 
 	public readonly struct EnumInfo {
@@ -31,6 +31,23 @@ partial class Class {
 		}
 	}
 
+	public sealed class EnumGroupInfo : HashSet<EnumInfo> {
+
+		private sealed class EqualityComparer : IEqualityComparer<EnumInfo> {
+			public static readonly EqualityComparer Inst = new();
+
+			public bool Equals(EnumInfo x, EnumInfo y) => x.Value.Equals(y.Value);
+
+			public int GetHashCode([DisallowNull] EnumInfo obj) => obj.Value.GetHashCode();
+		}
+
+		public EnumGroupInfo() : base(EqualityComparer.Inst) { }
+
+		public EnumGroupInfo(int capacity) : base(capacity, EqualityComparer.Inst) { }
+
+		public EnumGroupInfo(IEnumerable<EnumInfo> collection) : base(collection, EqualityComparer.Inst) { }
+	}
+
 
 	public ICollection<StringKey> EnumGroupNames {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,7 +55,7 @@ partial class Class {
 	}
 
 	private static class EmptyEnumGroupNames {
-		internal static readonly Dictionary<StringKey, List<EnumInfo>?>.KeyCollection Instance = new(new());
+		internal static readonly Dictionary<StringKey, EnumGroupInfo?>.KeyCollection Instance = new(new());
 	}
 
 	public void EnsureCachedEnumGroupName(StringKey name) {
@@ -58,7 +75,7 @@ partial class Class {
 	}
 
 
-	public bool TryGetEnumGroup(StringKey name, [MaybeNullWhen(false)] out List<EnumInfo> elems) {
+	public bool TryGetEnumGroup(StringKey name, [MaybeNullWhen(false)] out EnumGroupInfo elems) {
 		var enumGroups = _EnumGroups;
 		if (enumGroups != null) {
 			enumGroups.TryGetValue(name, out elems);
@@ -68,7 +85,7 @@ partial class Class {
 		return false;
 	}
 
-	public List<EnumInfo>? GetEnumGroup(StringKey name) {
+	public EnumGroupInfo? GetEnumGroup(StringKey name) {
 		var enumGroups = _EnumGroups;
 		if (enumGroups != null) {
 			enumGroups.TryGetValue(name, out var elems);
@@ -77,7 +94,7 @@ partial class Class {
 		return null;
 	}
 
-	public void SetEnumGroup(StringKey name, List<EnumInfo>? elems) {
+	public void SetEnumGroup(StringKey name, EnumGroupInfo? elems) {
 		var enumGroups = _EnumGroups;
 		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
@@ -105,9 +122,9 @@ partial class Class {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void DeleteEnumGroup(StringKey name) => SetEnumGroup(name, null);
 
-	/// <seealso cref="SetEnumGroupAsLoaded(StringKey, List{EnumInfo}?)"/>
+	/// <seealso cref="SetEnumGroupAsLoaded(StringKey, EnumGroupInfo?)"/>
 	[SkipLocalsInit]
-	public void SetCachedEnumGroup(StringKey name, List<EnumInfo>? elems) {
+	public void SetCachedEnumGroup(StringKey name, EnumGroupInfo? elems) {
 		var enumGroups = _EnumGroups;
 		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
@@ -138,9 +155,9 @@ partial class Class {
 
 	/// <summary>
 	/// Same as <see cref="UnmarkEnumGroupAsChanged(StringKey)"/> followed by
-	/// <see cref="SetCachedEnumGroup(StringKey, List{EnumInfo}?)"/>.
+	/// <see cref="SetCachedEnumGroup(StringKey, EnumGroupInfo?)"/>.
 	/// </summary>
-	public void SetEnumGroupAsLoaded(StringKey name, List<EnumInfo>? elems) {
+	public void SetEnumGroupAsLoaded(StringKey name, EnumGroupInfo? elems) {
 		var enumGroups = _EnumGroups;
 		if (enumGroups == null) {
 			// This becomes a conditional jump forward to not favor it
@@ -212,7 +229,7 @@ partial class Class {
 
 			using var r = cmd.ExecuteReader();
 			if (r.Read()) {
-				List<EnumInfo> elems = new();
+				EnumGroupInfo elems = new();
 
 				// Pending changes will be discarded
 				SetEnumGroupAsLoaded(name, elems);
@@ -280,7 +297,7 @@ partial class Class {
 		}
 
 		long prevEnmGrp = 0;
-		List<EnumInfo> elems = null!;
+		EnumGroupInfo elems = null!;
 
 		while (r.Read()) {
 			r.DAssert_Name(0, "enmGrp");
@@ -432,7 +449,7 @@ partial class Class {
 	/// </para>
 	/// </remarks>
 	[SkipLocalsInit]
-	private static void InternalSaveEnumGroups(KokoroSqliteDb db, Dictionary<StringKey, List<EnumInfo>?> changes, long clsId) {
+	private static void InternalSaveEnumGroups(KokoroSqliteDb db, Dictionary<StringKey, EnumGroupInfo?> changes, long clsId) {
 		var changes_iter = changes.GetEnumerator();
 		if (!changes_iter.MoveNext()) goto NoChanges;
 
