@@ -590,8 +590,8 @@ partial class Class {
 					insCmd_csum.Value = csum;
 
 					try {
-						int inserted = insCmd.ExecuteNonQuery();
-						Debug.Assert(inserted == 1, $"Inserted: {inserted}");
+						int updated = insCmd.ExecuteNonQuery();
+						Debug.Assert(updated == 1, $"Updated: {updated}");
 					} catch (SqliteException ex) when (
 						ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
 					) {
