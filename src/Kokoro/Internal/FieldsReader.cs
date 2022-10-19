@@ -387,6 +387,7 @@ internal struct FieldsReader : IDisposable {
 
 				if (typeHint <= FieldTypeHint.Enum) { goto HandleSpecial; }
 
+			DirectLoad:
 				var data = new byte[fValDataLen];
 				var span = data.AsDangerousSpan();
 
@@ -402,9 +403,14 @@ internal struct FieldsReader : IDisposable {
 			HandleSpecial:
 				if (typeHint != FieldTypeHint.Null) {
 					Debug.Assert(typeHint == FieldTypeHint.Enum);
+					int enumGroup = fspec.EnumGroup;
+					if (enumGroup == 0) {
+						// This becomes a conditional jump backward which favors it
+						goto DirectLoad;
+					}
 					return ResolveFieldEnumVal(Db, _Owner.SchemaId, new(
 						index: (int)stream.ReadUIntXLEAsUInt32(fValDataLen),
-						group: fspec.EnumGroup
+						group: enumGroup
 					));
 				} else {
 					goto E_NullFValWithNonZeroLength;
