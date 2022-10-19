@@ -1200,6 +1200,9 @@ partial class FieldedEntity {
 		if (fldCount != 0) {
 			fldList.Sort(SchemaRewrite.Comparison_fldList.Inst);
 
+			// Used to resolve enum group numbers
+			Dictionary<(long ClsRowId, long EnmGrpId), int>? enmGrpMap = null;
+
 			using var cmd = db.CreateCommand();
 			SqliteParameter cmd_idx_e_sto;
 			cmd.Set(
@@ -1214,73 +1217,122 @@ partial class FieldedEntity {
 
 			ref var fld_r0 = ref fldList.AsSpan().DangerousGetReference();
 
-			if (fldSharedCount != 0) {
-				SaveFieldInfos(
-					cmd,
-					cmd_fld: cmd_rowid,
-					cmd_idx_e_sto: cmd_idx_e_sto,
+			int i = 0;
+			int n = fldSharedCount;
+			var sto = FieldStoreType.Shared;
 
-					ref fld_r0,
-					start: 0, end: fldSharedCount,
-					FieldStoreType.Shared
-				);
-			}
+			for (; ; i++) {
+				if (i < n) {
+					ref var fld = ref U.Add(ref fld_r0, i);
+					cmd_rowid.Value = fld.RowId;
 
-			fld_r0 = ref U.Add(ref fld_r0, fldSharedCount);
+					FieldSpec fspec;
+					long enmGrpId = fld.EnmGrpId;
+					if (enmGrpId == 0) {
+						fspec = new(i, sto);
+					} else {
+						int enmGrpNum = SaveEnumGroup(
+							db, cmd_schema,
+							enmGrpMap ??= new(),
+							fld.ClsRowId, enmGrpId
+						);
+						fspec = new(i, enmGrpNum, sto);
+					}
+					cmd_idx_e_sto.Value = fspec.Int;
 
-			if (fldHotCount != 0) {
-				SaveFieldInfos(
-					cmd,
-					cmd_fld: cmd_rowid,
-					cmd_idx_e_sto: cmd_idx_e_sto,
-
-					ref fld_r0,
-					start: 0, end: fldHotCount,
-					FieldStoreType.Hot
-				);
-			}
-
-			if (fldHotCount < fldLocalCount) {
-				SaveFieldInfos(
-					cmd,
-					cmd_fld: cmd_rowid,
-					cmd_idx_e_sto: cmd_idx_e_sto,
-
-					ref fld_r0,
-					start: fldHotCount, end: fldLocalCount,
-					FieldStoreType.Cold
-				);
+					int updated = cmd.ExecuteNonQuery();
+					Debug.Assert(updated == 1, $"Updated: {updated}");
+				} else if (sto == FieldStoreType.Shared) {
+					fld_r0 = ref U.Add(ref fld_r0, fldSharedCount);
+					i = 0;
+					n = fldHotCount;
+					sto = FieldStoreType.Hot;
+				} else if (sto == FieldStoreType.Hot) {
+					Debug.Assert(i == fldHotCount);
+					n = fldLocalCount;
+					sto = FieldStoreType.Cold;
+				} else {
+					Debug.Assert(sto == FieldStoreType.Cold);
+					break;
+				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			[SkipLocalsInit]
-			static void SaveFieldInfos(
-				SqliteCommand cmd,
-				SqliteParameter cmd_fld,
-				SqliteParameter cmd_idx_e_sto,
-
-				ref SchemaRewrite.FieldInfo fld_r0,
-
-				int start, int end,
-				FieldStoreType storeType
+			static int SaveEnumGroup(
+				KokoroSqliteDb db,
+				SqliteParameter cmd_schema,
+				Dictionary<(long ClsRowId, long EnmGrpId), int> enmGrpMap,
+				long clsRowId, long enmGrpId
 			) {
-				Debug.Assert((uint)start < (uint)end);
-				Debug.Assert((uint)end
-					<= (uint)MaxFieldCount && (uint)MaxFieldCount
-					<= (uint)FieldSpec.MaxIndex);
+				ref int enmGrpNum = ref CollectionsMarshal.GetValueRefOrAddDefault(
+					enmGrpMap, key: (clsRowId, enmGrpId), out _
+				);
+				if (enmGrpNum == 0) {
+					enmGrpNum = enmGrpMap.Count;
+					Debug.Assert(enmGrpNum > 0);
 
-				FieldSpec idx_e_sto_c = new(start, storeType);
-				FieldSpec idx_e_sto_n = new(end, storeType);
+					int enumAddr = new FieldEnumAddr(index: 0, enmGrpNum).Int;
+					{
+						using var selCmd = db.CreateCommand();
+						selCmd.Set(
+							$"SELECT type,data\n" +
+							$"FROM {Prot.ClassToEnum}\n" +
+							$"WHERE (cls,enmGrp)=($cls,$enmGrp)\n" +
+							$"ORDER BY ord,type,data"
+						).AddParams(
+							new("$cls", clsRowId),
+							new("$enmGrp", enmGrpId)
+						);
 
-				do {
-					cmd_fld.Value = U.Add(ref fld_r0, idx_e_sto_c.Index).RowId;
-					cmd_idx_e_sto.Value = idx_e_sto_c.Int;
+						using var insCmd = db.CreateCommand();
+						SqliteParameter cmd_idx_e, cmd_type, cmd_data;
+						// NOTE: `INSERT … ON CONFLICT DO NOTHING` ignores rows
+						// that violate uniqueness constraints only (unlike `INSERT OR IGNORE …`)
+						insCmd.Set(
+							$"INSERT INTO {Prot.SchemaToEnum}(schema,idx_e,type,data)\n" +
+							$"VALUES($schema,$idx_e,$type,$data)\n" +
+							$"ON CONFLICT DO NOTHING"
+						).AddParams(
+							cmd_schema,
+							cmd_idx_e = new() { ParameterName = "$idx_e" },
+							cmd_type = new() { ParameterName = "$type" },
+							cmd_data = new() { ParameterName = "$data" }
+						);
 
-					int updated = cmd.ExecuteNonQuery();
-					Debug.Assert(updated == 1, $"Updated: {updated}");
-				} while ((
-					idx_e_sto_c += FieldSpec.IndexIncrement
-				).Value < idx_e_sto_n.Value);
+						using var r = selCmd.ExecuteReader();
+						while (r.Read()) {
+							r.DAssert_Name(0, "type");
+							FieldTypeHint typeHint = (FieldTypeHint)r.GetInt64(0);
+
+							if (typeHint != FieldTypeHint.Null) {
+								cmd_type.Value = (long)(FieldTypeHintInt)typeHint;
+
+								r.DAssert_Name(1, "data");
+								cmd_data.Value = r.GetBytes(1);
+
+								cmd_idx_e.Value = enumAddr;
+
+								int updated = insCmd.ExecuteNonQuery();
+								if (updated != 0) {
+									Debug.Assert(updated == 1, $"Updated: {updated}");
+									enumAddr += (int)FieldEnumAddr.IndexIncrement;
+								}
+							}
+						}
+					}
+
+					// Check if nothing was actually inserted
+					if (((FieldEnumAddr)enumAddr).Index == 0) {
+						// This becomes a conditional jump forward to not favor it
+						goto Undo;
+					}
+				}
+				return enmGrpNum;
+
+			Undo:
+				enmGrpMap.Remove((clsRowId, enmGrpId));
+				return 0;
 			}
 		}
 

@@ -707,4 +707,11 @@ internal static class Setup_v0w1 {
 		$"] ON " +
 			$"{P.ClassToEnum}(cls, csum)" +
 		$"";
+
+	public const string CreateIndex_IX_ClassToEnum_C_cls_C_enmGrp_C_ord_C_type_C_data =
+		$"CREATE INDEX [" +
+			$"IX_{P.ClassToEnum}_C_cls_C_enmGrp_C_ord_C_type_C_data" +
+		$"] ON " +
+			$"{P.ClassToEnum}(cls, enmGrp, ord, type, data)" +
+		$"";
 }
