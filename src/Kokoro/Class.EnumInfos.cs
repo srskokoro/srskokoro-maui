@@ -456,7 +456,7 @@ partial class Class {
 		db.ReloadNameIdCaches(); // Needed by `db.LoadStale…()` below
 
 		SqliteCommand?
-			updCmd = null,
+			insCmd = null,
 			delCmd = null;
 
 		SqliteParameter
@@ -464,10 +464,10 @@ partial class Class {
 			cmd_enmGrp = new() { ParameterName = "$enmGrp" };
 
 		SqliteParameter
-			updCmd_ord = null!,
-			updCmd_type = null!,
-			updCmd_data = null!,
-			updCmd_csum = null!;
+			insCmd_ord = null!,
+			insCmd_type = null!,
+			insCmd_data = null!,
+			insCmd_csum = null!;
 
 		try {
 		Loop:
@@ -513,10 +513,10 @@ partial class Class {
 				delCmd.ExecuteNonQuery();
 
 				if (elems != null) {
-					if (updCmd != null) {
-						goto UpdateEnumGroup;
+					if (insCmd != null) {
+						goto InsertEnumGroup;
 					} else {
-						goto InitToUpdateEnumGroup;
+						goto InitToInsertEnumGroup;
 					}
 				} else {
 					// Nothing to update.
@@ -524,7 +524,7 @@ partial class Class {
 				}
 			}
 
-		UpdateEnumGroup:
+		InsertEnumGroup:
 			{
 				// Used to generate each field enum element's `csum`
 				var hasher_base = Blake2b.CreateIncrementalHasher(EnumInfoCsumDigestLength);
@@ -576,22 +576,22 @@ partial class Class {
 					// Used only to help assert the hashing contract
 					int hasher_debug_i = 1;
 
-					updCmd_ord.Value = elem.Ordinal;
+					insCmd_ord.Value = elem.Ordinal;
 					hasher.UpdateLE(elem.Ordinal);
 					Debug.Assert(1 == hasher_debug_i++);
 
 					var fval = elem.Value;
-					updCmd_type.Value = (long)(FieldTypeHintInt)fval.TypeHint;
-					updCmd_data.Value = fval.DangerousGetDataBytes();
+					insCmd_type.Value = (long)(FieldTypeHintInt)fval.TypeHint;
+					insCmd_data.Value = fval.DangerousGetDataBytes();
 					fval.FeedTo(ref hasher);
 					Debug.Assert(2 == hasher_debug_i++);
 
 					byte[] csum = FinishWithEnumInfoCsum(ref hasher);
-					updCmd_csum.Value = csum;
+					insCmd_csum.Value = csum;
 
 					try {
-						int updated = updCmd.ExecuteNonQuery();
-						Debug.Assert(updated == 1, $"Updated: {updated}");
+						int inserted = insCmd.ExecuteNonQuery();
+						Debug.Assert(inserted == 1, $"Inserted: {inserted}");
 					} catch (SqliteException ex) when (
 						ex.SqliteErrorCode == SQLitePCL.raw.SQLITE_TOOBIG
 					) {
@@ -600,7 +600,7 @@ partial class Class {
 					}
 
 					// Allow early GC
-					updCmd_data.Value = null;
+					insCmd_data.Value = null;
 				}
 
 				goto Continue;
@@ -629,30 +629,30 @@ partial class Class {
 				goto DeleteEnumGroup;
 			}
 
-		InitToUpdateEnumGroup:
+		InitToInsertEnumGroup:
 			{
-				updCmd = db.CreateCommand();
-				updCmd.Set(
+				insCmd = db.CreateCommand();
+				insCmd.Set(
 					$"INSERT INTO {Prot.ClassToEnum}(cls,enmGrp,csum,ord,type,data)\n" +
 					$"VALUES($cls,$enmGrp,$csum,$ord,$type,$data)"
 				).AddParams(
 					cmd_cls, cmd_enmGrp,
-					updCmd_ord = new() { ParameterName = "$ord" },
-					updCmd_type = new() { ParameterName = "$type" },
-					updCmd_data = new() { ParameterName = "$data" },
-					updCmd_csum = new() { ParameterName = "$csum" }
+					insCmd_ord = new() { ParameterName = "$ord" },
+					insCmd_type = new() { ParameterName = "$type" },
+					insCmd_data = new() { ParameterName = "$data" },
+					insCmd_csum = new() { ParameterName = "$csum" }
 				);
 				Debug.Assert(
 					cmd_cls.Value != null
 				);
-				goto UpdateEnumGroup;
+				goto InsertEnumGroup;
 			}
 
 		Break:
 			;
 
 		} finally {
-			updCmd?.Dispose();
+			insCmd?.Dispose();
 			delCmd?.Dispose();
 		}
 
