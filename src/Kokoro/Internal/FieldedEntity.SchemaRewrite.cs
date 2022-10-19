@@ -1325,12 +1325,12 @@ partial class FieldedEntity {
 					// Check if nothing was actually inserted
 					if (((FieldEnumAddr)enumAddr).Index == 0) {
 						// This becomes a conditional jump forward to not favor it
-						goto Undo;
+						goto UndoMap;
 					}
 				}
 				return enmGrpNum;
 
-			Undo:
+			UndoMap:
 				enmGrpMap.Remove((clsRowId, enmGrpId));
 				return 0;
 			}
